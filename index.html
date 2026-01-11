@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Real Playing Game - RPG Habit Tracker</title>
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="stylesheet" href="styles.css">
+    <script src="chart.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <!-- Streak Icon (Redesigned) -->
+            <div class="header-streak grayscale" id="headerStreak" onclick="toggleStreakPopup()">
+                <div class="streak-circle">
+                    <span class="streak-emoji">🔥</span>
+                </div>
+                <div class="streak-badge-count">
+                    <span id="globalStreak">0</span>
+                </div>
+            </div>
+
+            <h1 class="app-title">Real Playing Game</h1>
+
+            <!-- Compact Profile (Avatar + Level) -->
+            <div class="header-profile" onclick="toggleProfilePopup()">
+                <div class="header-avatar-frame" id="headerAvatarFrame">
+                    <span class="header-emoji" id="headerEmoji">⚔️</span>
+                    <img class="header-img hidden" id="headerImg" src="" alt="">
+                </div>
+                <div class="header-level-badge">
+                    <span id="headerLevel">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Profile Popup -->
+        <div class="profile-popup popup-right hidden" id="profilePopup">
+            <div class="popup-header-info">
+                <div class="popup-avatar-frame" onclick="openAvatarModal()">
+                    <span class="popup-emoji" id="popupEmoji">⚔️</span>
+                    <img class="popup-img hidden" id="popupImg" src="" alt="">
+                    <div class="edit-avatar-icon">✎</div>
+                </div>
+                <div class="popup-details">
+                    <h3 class="popup-name" id="popupName">Avventuriero</h3>
+                    <div class="popup-level-info">
+                        <span class="popup-level">Livello <span id="popupLevel">1</span></span>
+                        <span class="popup-title" id="popupTitle">Novizio</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="popup-xp-container">
+                <div class="popup-xp-bar">
+                    <div class="popup-xp-fill" id="popupXpFill" style="width: 0%"></div>
+                </div>
+                <div class="popup-xp-text" id="popupXpText">0 / 100 XP</div>
+            </div>
+
+            <div class="popup-motto-container">
+                <label>Motto Personale</label>
+                <div class="motto-display" id="popupMottoDisplay" onclick="openMottoEdit()">
+                    "Il tuo motto qui..."
+                </div>
+            </div>
+        </div>
+
+        <!-- Streak Popup -->
+        <div class="profile-popup popup-left hidden" id="streakPopup">
+            <div class="popup-header-info">
+                <div class="popup-avatar-frame" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <span class="popup-emoji">🔥</span>
+                </div>
+                <div class="popup-details">
+                    <h3 class="popup-name">Serie Attiva</h3>
+                    <div class="popup-level-info">
+                        <span class="popup-level"><span id="popupStreakCount">0</span> Giorni</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="popup-motto-container">
+                <label>Congelamenti Disponibili</label>
+                <div class="freeze-info">
+                    <span class="freeze-icon">❄️</span>
+                    <span class="freeze-count" id="popupFreezeCount">2</span>
+                    <span class="freeze-max">/ 2 questo mese</span>
+                </div>
+                <p class="freeze-desc">
+                    I congelamenti prevengono l'azzeramento della serie se salti un giorno. Si ripristinano il 1° di
+                    ogni mese.
+                </p>
+            </div>
+        </div>
+
+        <!-- Progress Feedback Popup -->
+        <div class="profile-popup popup-center hidden" id="progressPopup">
+            <div class="popup-header-info" style="justify-content: center; margin-bottom: 12px;">
+                <h3 class="popup-name" style="font-size: 16px; color: var(--accent-primary);">Progresso Rilevato!</h3>
+            </div>
+            <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center;">
+                <canvas id="popupRadarCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Content Sections -->
+        <main class="content-area">
+
+            <!-- HOME Section -->
+            <section id="section-home" class="section active">
+                <div class="character-sheet">
+                    <!-- Stats Radar Chart -->
+
+                    <!-- Stats Radar Chart -->
+                    <div class="stats-chart-container">
+                        <canvas id="statsRadar"></canvas>
+                    </div>
+
+                    <!-- Attributes Accordion -->
+                    <div class="accordion">
+                        <div class="accordion-header">
+                            <span onclick="toggleAccordion('attributes')">⚔️ Attributi</span>
+                            <div class="accordion-actions">
+                                <button class="add-btn-circle" onclick="openModal('attribute')">+</button>
+                                <span class="accordion-arrow" id="arrow-attributes"
+                                    onclick="toggleAccordion('attributes')">▼</span>
+                            </div>
+                        </div>
+                        <div class="accordion-content expanded" id="content-attributes">
+                            <div class="stats-grid" id="attributesList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Abilities Accordion -->
+                    <div class="accordion">
+                        <div class="accordion-header">
+                            <span onclick="toggleAccordion('abilities')">✨ Abilità</span>
+                            <div class="accordion-actions">
+                                <button class="add-btn-circle" onclick="openModal('ability')">+</button>
+                                <span class="accordion-arrow" id="arrow-abilities"
+                                    onclick="toggleAccordion('abilities')">▼</span>
+                            </div>
+                        </div>
+                        <div class="accordion-content expanded" id="content-abilities">
+                            <div class="stats-grid" id="abilitiesList"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HABITS Section -->
+            <section id="section-habits" class="section">
+                <!-- Calendar Header (scroll up to reveal) -->
+                <div class="calendar-container" id="calendarContainer">
+                    <div class="calendar-scroll" id="calendarScroll"></div>
+                </div>
+
+                <!-- Habits Wrapper - occupa tutta l'altezza visibile -->
+                <div class="habits-wrapper">
+                    <div class="section-header">
+                        <h2>📜 Abitudini</h2>
+                        <button class="add-btn-circle" onclick="openModal('habit')">+</button>
+                    </div>
+                    <div class="habits-list" id="habitsList"></div>
+                </div>
+            </section>
+
+            <!-- ONE SHOT Section -->
+            <section id="section-oneshot" class="section">
+                <div class="section-header">
+                    <h2>💥 One Shot</h2>
+                    <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
+                </div>
+                <div class="oneshot-list" id="oneshotList"></div>
+            </section>
+
+            <!-- QUESTS Section -->
+            <section id="section-quest" class="section">
+                <div class="section-header">
+                    <h2>🏆 Quest</h2>
+                    <button class="add-btn-circle" onclick="openModal('quest')">+</button>
+                </div>
+                <div class="quest-list" id="questList"></div>
+            </section>
+
+            <!-- SETTINGS Section -->
+            <section id="section-settings" class="section">
+                <h2>⚙️ Impostazioni</h2>
+
+                <!-- Profilo -->
+                <div class="settings-group">
+                    <h3>👤 Profilo</h3>
+                    <div class="settings-row">
+                        <label>Nome</label>
+                        <input type="text" id="settingName" placeholder="Il tuo nome"
+                            onchange="updatePlayerName(this.value)">
+                    </div>
+                    <div class="settings-row">
+                        <label>Nuovo giorno inizia alle</label>
+                        <select id="dayStartTime" onchange="updateDayStartTime(this.value)">
+                            <option value="0">00:00 (Mezzanotte)</option>
+                            <option value="1">01:00</option>
+                            <option value="2">02:00</option>
+                            <option value="3">03:00</option>
+                            <option value="4">04:00</option>
+                            <option value="5">05:00</option>
+                            <option value="6">06:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Aspetto -->
+                <div class="settings-group">
+                    <h3>🎨 Aspetto</h3>
+                    <div class="settings-row">
+                        <label>Tema</label>
+                        <div class="theme-switcher">
+                            <button class="theme-btn active" id="themeLight" onclick="setTheme('light')">☀️
+                                Chiaro</button>
+                            <button class="theme-btn" id="themeDark" onclick="setTheme('dark')">🌙 Scuro</button>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <label>Colore accento</label>
+                        <div class="color-select-container">
+                            <div id="colorTrigger" class="color-select-trigger" onclick="toggleColorDropdown()">
+                                <span class="trigger-icon">🎨</span>
+                            </div>
+                            <div id="colorDropdown" class="color-select-dropdown hidden"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dati -->
+                <div class="settings-group">
+                    <h3>💾 Dati</h3>
+                    <div class="settings-buttons">
+                        <button class="settings-btn" onclick="exportData()">
+                            <span class="settings-btn-icon">📤</span>
+                            <span>Esporta</span>
+                        </button>
+                        <button class="settings-btn" onclick="document.getElementById('importFile').click()">
+                            <span class="settings-btn-icon">📥</span>
+                            <span>Importa</span>
+                        </button>
+                        <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                    </div>
+                    <div class="settings-buttons" style="margin-top: 12px;">
+                        <button class="settings-btn" onclick="fixData()">
+                            <span class="settings-btn-icon">🔧</span>
+                            <span>Ripara</span>
+                        </button>
+                        <button class="settings-btn danger" onclick="resetAll()">
+                            <span class="settings-btn-icon">⚠️</span>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sistema -->
+                <div class="settings-group">
+                    <h3>🖥️ Sistema</h3>
+                    <div class="settings-buttons">
+                        <button class="settings-btn" onclick="updateApp()">
+                            <span class="settings-btn-icon">🔄</span>
+                            <span>Aggiorna App</span>
+                        </button>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+                        Versione: 2.0.1 • Quest Life PWA
+                    </p>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item" onclick="switchSection('habits')">
+                <span class="nav-icon">📜</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchSection('oneshot')">
+                <span class="nav-icon">💥</span>
+                <span class="nav-badge hidden" id="oneshotBadge">0</span>
+            </a>
+            <div class="nav-center-container">
+                <a href="#" class="nav-item nav-home active" onclick="switchSection('home')">
+                    <span class="nav-icon" id="navAvatar">⚔️</span>
+                </a>
+            </div>
+            <a href="#" class="nav-item" onclick="switchSection('quest')">
+                <span class="nav-icon">🎯</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchSection('settings')">
+                <span class="nav-icon">⚙️</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Aggiungi</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+
+
+    <!-- Avatar Modal -->
+    <div class="modal-overlay" id="avatarModalOverlay">
+        <div class="modal avatar-modal">
+            <div class="modal-header">
+                <h3>Scegli Avatar</h3>
+                <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-tabs">
+                    <button class="avatar-tab active" onclick="switchAvatarTab('emoji')">😀 Emoji</button>
+                    <button class="avatar-tab" onclick="switchAvatarTab('upload')">📷 Foto</button>
+                </div>
+                <div class="avatar-tab-content" id="emojiTab">
+                    <div class="emoji-grid" id="emojiGrid"></div>
+                </div>
+                <div class="avatar-tab-content hidden" id="uploadTab">
+                    <input type="file" id="avatarUpload" accept="image/*" onchange="handleAvatarUpload(event)">
+                    <label for="avatarUpload" class="upload-label">
+                        📷 Carica una foto
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Visibility Popup -->
+    <div class="stats-visibility-popup hidden" id="visibilityPopup">
+        <h4>👁️ Mostra nel grafico</h4>
+        <div id="visibilityList"></div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Streak Celebration Popup -->
+    <div class="streak-celebration hidden" id="streakCelebration" onclick="closeStreakCelebration()">
+        <div class="celebration-content">
+            <div class="celebration-flame">🔥</div>
+            <div class="celebration-title">STREAK!</div>
+            <div class="celebration-count" id="celebrationCount">0</div>
+            <div class="celebration-hint">Tocca per continuare</div>
+        </div>
+    </div>
+
+    <!-- Quest Detail Modal -->
+    <div class="quest-popup-overlay" id="questDetailModal" onclick="closeQuestDetailModal()">
+        <div class="quest-detail-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="questDetailTitle">Titolo Quest</span>
+                <!-- Close X preserved for accessibility, but footer removed -->
+                <button class="close-btn" onclick="closeQuestDetailModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="quest-detail-meta" id="questDetailMeta">
+                    <!-- Dynamic content -->
+                </div>
+                <p class="quest-description" id="questDetailDesc">
+                    <!-- Dynamic content -->
+                </p>
+
+                <h3 class="subsection-title" style="margin-top: 20px;">Sotto-obiettivi</h3>
+                <div class="quest-subtasks-list" id="questDetailSubtasks">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+            <!-- Footer Removed -->
+        </div>
+    </div>
+
+    <!-- Motto Edit Modal -->
+    <div class="modal-overlay" id="mottoEditModal">
+        <div class="modal motto-modal">
+            <div class="modal-header">
+                <h3>Modifica Motto</h3>
+                <button class="modal-close" onclick="closeMottoEdit()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="mottoEditInput" class="motto-textarea" placeholder="Scrivi il tuo motto..." rows="3"
+                    maxlength="100"></textarea>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeMottoEdit()">Annulla</button>
+                    <button class="btn-primary" onclick="confirmMottoEdit()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch((err) => console.log('SW Failed:', err));
+        }
+    </script>
+</body>
+
+</html>
