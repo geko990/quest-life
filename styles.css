@@ -1852,7 +1852,11 @@ body {
 }
 
 .swipe-content.swiped {
-    pointer-events: none;
+    pointer-events: none !important;
+}
+
+.swipe-content.swiped * {
+    pointer-events: none !important;
 }
 
 
