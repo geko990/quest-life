@@ -1851,6 +1851,10 @@ body {
     cursor: pointer;
 }
 
+.swipe-content.swiped {
+    pointer-events: none;
+}
+
 
 .task-card.locked .swipe-content {
     opacity: 0.7;

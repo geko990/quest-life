@@ -1849,10 +1849,13 @@ function initSwipe() {
 
         if (finalX > 40) {
             currentSwipeCard.style.transform = 'translateX(70px)';
+            currentSwipeCard.classList.add('swiped');
         } else if (finalX < -40) {
             currentSwipeCard.style.transform = 'translateX(-70px)';
+            currentSwipeCard.classList.add('swiped');
         } else {
             currentSwipeCard.style.transform = 'translateX(0)';
+            currentSwipeCard.classList.remove('swiped');
         }
     });
 }
@@ -1900,6 +1903,7 @@ window.editCurrentQuestInModal = editCurrentQuestInModal;
 function closeAllSwipes() {
     document.querySelectorAll('.swipe-content').forEach(el => {
         el.style.transform = 'translateX(0)';
+        el.classList.remove('swiped');
     });
 }
 
