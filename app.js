@@ -77,6 +77,10 @@ function getGameDate() {
     return getGameDateObj().toISOString().split('T')[0];
 }
 
+function getGameDateString() {
+    return getGameDateObj().toDateString();
+}
+
 let radarChart = null;
 let contextTarget = null;
 let longPressTimer = null;
@@ -236,7 +240,7 @@ function checkFrozenStreak() {
 }
 
 function recordActivity() {
-    const today = new Date().toDateString();
+    const today = getGameDateString();
 
     // If we haven't done anything today yet
     if (state.player.lastActionDate !== today) {
@@ -266,7 +270,7 @@ function recordActivity() {
 }
 
 function checkUndoActivity() {
-    const today = new Date().toDateString();
+    const today = getGameDateString();
 
     // Check if ANY habit is still completed today
     const hasHabit = state.habits.some(h => h.lastCompleted === today);
@@ -280,7 +284,7 @@ function checkUndoActivity() {
         state.player.globalStreak = Math.max(0, state.player.globalStreak - 1);
 
         // Set date back to yesterday to allow "re-completing" to trigger streak++ again
-        const yest = new Date();
+        const yest = getGameDateObj();
         yest.setDate(yest.getDate() - 1);
         state.player.lastActionDate = yest.toDateString();
 
@@ -405,7 +409,7 @@ function renderHeader() {
     if (streakEl) streakEl.textContent = state.player.globalStreak;
 
     if (streakIcon) {
-        const today = new Date().toDateString();
+        const today = getGameDateString();
         const isActive = state.player.lastActionDate === today;
 
         if (isActive) {
@@ -828,7 +832,7 @@ function renderCalendar() {
     const container = document.getElementById('calendarScroll');
     if (!container) return;
 
-    const today = new Date();
+    const today = getGameDateObj();
     const days = [];
 
     // Generate last 30 days + today
@@ -886,8 +890,8 @@ function getCompletionForDate(dateStr) {
 }
 
 function logCompletion(type, itemId, customDate = null) {
-    const dateStr = customDate || new Date().toISOString().split('T')[0];
-    const today = new Date().toISOString().split('T')[0];
+    const dateStr = customDate || getGameDate();
+    const today = getGameDate();
 
     if (!state.completionLog[dateStr]) {
         state.completionLog[dateStr] = { habits: [], oneshots: [], quests: [] };
@@ -916,7 +920,7 @@ function logCompletion(type, itemId, customDate = null) {
 
 function renderHabits() {
     const container = document.getElementById('habitsList');
-    const isToday = viewedDate === new Date().toISOString().split('T')[0];
+    const isToday = viewedDate === getGameDate();
 
     // If it's today, show only active habits
     // If it's a past date, show habits that were completed on that day OR are active
@@ -1321,7 +1325,7 @@ function addXp(amount, statId) {
 
         // Log XP
         state.xpLog.push({
-            date: new Date().toISOString().split('T')[0],
+            date: getGameDate(),
             statId: statId,
             amount: amount
         });
