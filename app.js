@@ -950,12 +950,6 @@ function renderHabits() {
 
         return `
             <div class="task-card ${habit.locked ? 'locked' : ''}" data-type="habit" data-id="${habit.id}">
-                <div class="swipe-actions swipe-actions-left">
-                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('habit', '${habit.id}')">✏️</button>
-                </div>
-                <div class="swipe-actions swipe-actions-right">
-                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('habit', '${habit.id}')">🗑️</button>
-                </div>
                 <div class="swipe-content" onclick="handleTaskClick(event, 'habit', '${habit.id}')">
                     <div class="card-checkbox ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleHabit('${habit.id}', '${viewedDate}')"></div>
                     <div class="card-content">
@@ -969,6 +963,12 @@ function renderHabits() {
                             ${habit.dueDate ? `<span class="card-due">📅 ${formatDate(habit.dueDate)}</span>` : ''}
                         </div>
                     </div>
+                </div>
+                <div class="swipe-actions swipe-actions-left">
+                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('habit', '${habit.id}')">✏️</button>
+                </div>
+                <div class="swipe-actions swipe-actions-right">
+                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('habit', '${habit.id}')">🗑️</button>
                 </div>
             </div>
         `;
@@ -1058,12 +1058,6 @@ function renderOneshots() {
 
         return `
             <div class="task-card ${oneshot.locked ? 'locked' : ''}" data-type="oneshot" data-id="${oneshot.id}">
-                <div class="swipe-actions swipe-actions-left">
-                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('oneshot', '${oneshot.id}')">✏️</button>
-                </div>
-                <div class="swipe-actions swipe-actions-right">
-                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('oneshot', '${oneshot.id}')">🗑️</button>
-                </div>
                 <div class="swipe-content" onclick="handleTaskClick(event, 'oneshot', '${oneshot.id}')">
                     <div class="card-checkbox" onclick="event.stopPropagation(); completeOneshot('${oneshot.id}')"></div>
                     <div class="card-content">
@@ -1076,6 +1070,12 @@ function renderOneshots() {
                             ${oneshot.dueDate ? `<span class="card-due">📅 ${formatDate(oneshot.dueDate)}</span>` : ''}
                         </div>
                     </div>
+                </div>
+                <div class="swipe-actions swipe-actions-left">
+                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('oneshot', '${oneshot.id}')">✏️</button>
+                </div>
+                <div class="swipe-actions swipe-actions-right">
+                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('oneshot', '${oneshot.id}')">🗑️</button>
                 </div>
             </div>
         `;
@@ -1127,12 +1127,6 @@ function renderQuests() {
 
         return `
             <div class="task-card quest-card ${quest.locked ? 'locked' : ''}" data-type="quest" data-id="${quest.id}">
-                <div class="swipe-actions swipe-actions-left">
-                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('quest', '${quest.id}')">✏️</button>
-                </div>
-                <div class="swipe-actions swipe-actions-right">
-                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('quest', '${quest.id}')">🗑️</button>
-                </div>
                 <div class="swipe-content" onclick="handleTaskClick(event, 'quest', '${quest.id}')">
                     <div class="card-row">
                         <div class="card-checkbox ${quest.completed ? 'checked' : ''}" onclick="event.stopPropagation(); completeQuest('${quest.id}')"></div>
@@ -1154,6 +1148,12 @@ function renderQuests() {
                             </div>
                         </div>
                     ` : ''}
+                </div>
+                <div class="swipe-actions swipe-actions-left">
+                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('quest', '${quest.id}')">✏️</button>
+                </div>
+                <div class="swipe-actions swipe-actions-right">
+                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('quest', '${quest.id}')">🗑️</button>
                 </div>
             </div>
         `;
