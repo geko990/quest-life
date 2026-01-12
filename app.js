@@ -73,13 +73,16 @@ function getGameDateObj() {
     return new Date(now.getTime() - startHour * 60 * 60 * 1000);
 }
 
-function getGameDate() {
-    const d = getGameDateObj();
-    // Use local date, not UTC (toISOString converts to UTC which causes timezone bugs)
+function formatISO(date) {
+    const d = new Date(date);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+function getGameDate() {
+    return formatISO(getGameDateObj());
 }
 
 function getGameDateString() {
@@ -871,7 +874,7 @@ function renderCalendar() {
     }
 
     container.innerHTML = days.map(date => {
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = formatISO(date);
         const isToday = date.toDateString() === today.toDateString();
         const isActive = dateStr === viewedDate;
         const completion = getCompletionForDate(dateStr);
@@ -957,7 +960,7 @@ function renderHabits() {
         // Filter by creation date - if habit was created after the viewed date, don't show it
         if (h.createdAt) {
             // Compare using YYYY-MM-DD format
-            const createdDate = new Date(h.createdAt).toISOString().split('T')[0];
+            const createdDate = formatISO(new Date(h.createdAt));
             if (createdDate > viewedDate) return false;
         }
         // If it's today, also filter out completed habits
@@ -1829,15 +1832,15 @@ function editStat(statId) {
 function initSwipe() {
     let currentX = 0;
     let isSwiping = false;
+    let swipeWasTriggered = false;
     const ACTION_THRESHOLD = 100;
     const MAX_SWIPE = 120;
 
     document.addEventListener('pointerdown', (e) => {
         const content = e.target.closest('.swipe-content');
-        if (!content) {
-            closeAllSwipes();
-            return;
-        }
+        if (!content) return;
+
+        swipeWasTriggered = false;
 
         currentSwipeCard = content;
         swipeStartX = e.clientX;
@@ -1886,12 +1889,20 @@ function initSwipe() {
         // Trigger actions based on swipe distance
         if (finalX > ACTION_THRESHOLD) {
             // Swipe right → Edit
+            swipeWasTriggered = true;
             editTask(type, id);
         } else if (finalX < -ACTION_THRESHOLD) {
             // Swipe left → Delete with confirmation
+            swipeWasTriggered = true;
             showDeleteConfirm(type, id, taskCard);
         }
     });
+
+    window.checkSwipeTrigger = () => {
+        const was = swipeWasTriggered;
+        swipeWasTriggered = false;
+        return was;
+    };
 }
 
 // Delete confirmation modal
@@ -1976,24 +1987,13 @@ window.closeQuestDetailModal = closeQuestDetailModal;
 window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
 window.editCurrentQuestInModal = editCurrentQuestInModal;
 
-function closeAllSwipes() {
-    document.querySelectorAll('.swipe-content').forEach(el => {
-        el.style.transform = 'translateX(0)';
-        el.classList.remove('swiped');
-    });
-}
+// Obsolete - removed in cleanup
 
 function handleTaskClick(e, type, id) {
-    // If we're clicking the checkbox or an action button, do nothing
-    if (e.target.closest('.card-checkbox') || e.target.closest('.swipe-action')) return;
+    if (e.target.closest('.card-checkbox')) return;
 
-    // If the card is currently swiped, close it and don't edit
-    const content = e.currentTarget;
-    const transform = new WebKitCSSMatrix(window.getComputedStyle(content).transform);
-    if (Math.abs(transform.m41) > 10) {
-        content.style.transform = 'translateX(0)';
-        return;
-    }
+    // Prevent click if a swipe action was just triggered
+    if (window.checkSwipeTrigger && window.checkSwipeTrigger()) return;
 
     // Open edit modal or detail view
     const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
@@ -2193,7 +2193,7 @@ function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "questlife_backup_" + new Date().toISOString().split('T')[0] + ".json");
+    downloadAnchorNode.setAttribute("download", "questlife_backup_" + getGameDate() + ".json");
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();

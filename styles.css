@@ -1851,57 +1851,11 @@ body {
     cursor: pointer;
 }
 
-.swipe-content.swiped {
-    pointer-events: none !important;
-}
-
-.swipe-content.swiped * {
-    pointer-events: none !important;
-}
-
-
 .task-card.locked .swipe-content {
     opacity: 0.7;
 }
 
-.swipe-actions {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    z-index: 1;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
-
-.swipe-actions-left {
-    left: 0;
-    background: var(--bg-secondary);
-}
-
-.swipe-actions-right {
-    right: 0;
-    background: var(--bg-secondary);
-}
-
-.swipe-action {
-    width: 70px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-    font-size: 20px;
-    cursor: pointer;
-    border: none;
-    background: none;
-    transition: opacity 0.2s;
-}
-
-.swipe-action:active {
-    opacity: 0.7;
-}
+/* Obsolete swipe actions removed in cleanup */
 
 /* Swipe hint colors */
 .task-card.swipe-edit-hint {
