@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.6";
+const APP_VERSION = "0.3.8.7";
 
 // ============================================
 // DATA STRUCTURES
@@ -2135,7 +2135,13 @@ function handleTaskClick(e, type, id) {
     if (window.checkSwipeTrigger && window.checkSwipeTrigger()) return;
 
     // Open edit modal or detail view
-    const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+    let list;
+    if (type === 'attribute' || type === 'ability') {
+        list = state.stats;
+    } else {
+        list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+    }
+
     const item = list.find(i => i.id === id);
     if (item) {
         if (type === 'quest') {
