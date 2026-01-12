@@ -924,9 +924,19 @@ function renderHabits() {
 
     // If it's today, show only active habits
     // If it's a past date, show habits that were completed on that day OR are active
-    let habitsToShow = isToday
-        ? state.habits.filter(h => !h.completed)
-        : state.habits; // In history, we show everything relevant to that day
+    // Always filter: only show habits created on or before the viewed date
+    let habitsToShow = state.habits.filter(h => {
+        // Filter by creation date - if habit was created after the viewed date, don't show it
+        if (h.createdAt) {
+            const createdDate = new Date(h.createdAt).toDateString();
+            const viewedDateObj = new Date(viewedDate);
+            const createdDateObj = new Date(createdDate);
+            if (createdDateObj > viewedDateObj) return false;
+        }
+        // If it's today, also filter out completed habits
+        if (isToday) return !h.completed;
+        return true;
+    });
 
     // Sort: uncompleted habits first, completed habits at the bottom
     habitsToShow = habitsToShow.slice().sort((a, b) => {
