@@ -138,6 +138,18 @@ function loadState() {
             state.oneshots = parsed.oneshots || [];
             state.quests = parsed.quests || [];
 
+            // Migration: Add createdAt to habits that don't have it
+            const migrationDate = new Date().toISOString();
+            state.habits.forEach(h => {
+                if (!h.createdAt) h.createdAt = migrationDate;
+            });
+            state.oneshots.forEach(o => {
+                if (!o.createdAt) o.createdAt = migrationDate;
+            });
+            state.quests.forEach(q => {
+                if (!q.createdAt) q.createdAt = migrationDate;
+            });
+
             // Deduplicate IDs just in case
             ensureUniqueIds(state.habits, 'habit');
             ensureUniqueIds(state.oneshots, 'oneshot');
