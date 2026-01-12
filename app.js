@@ -1003,9 +1003,7 @@ function renderHabits() {
 
 function isHabitCompletedOnDate(habit, dateStr) {
     const log = state.completionLog[dateStr];
-    const result = log?.habits?.includes(habit.id);
-    console.log(`[DEBUG] isHabitCompletedOnDate: habit=${habit.name}, date=${dateStr}, log=${JSON.stringify(log)}, result=${result}`);
-    return result;
+    return log?.habits?.includes(habit.id);
 }
 
 function isHabitCompletedToday(habit) {
