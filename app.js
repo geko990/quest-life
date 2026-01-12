@@ -74,7 +74,12 @@ function getGameDateObj() {
 }
 
 function getGameDate() {
-    return getGameDateObj().toISOString().split('T')[0];
+    const d = getGameDateObj();
+    // Use local date, not UTC (toISOString converts to UTC which causes timezone bugs)
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function getGameDateString() {
