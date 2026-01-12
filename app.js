@@ -1726,7 +1726,7 @@ function submitModal() {
                 state.habits.push({
                     id: 'habit_' + Date.now(),
                     name, frequency, freqTimes, stars, primaryStatId, secondaryStatId, dueDate,
-                    streak: 0, lastCompleted: null, locked: false, createdAt: new Date().toISOString()
+                    streak: 0, lastCompleted: null, locked: false, createdAt: getGameDateObj().toISOString()
                 });
             }
             break;
@@ -1738,7 +1738,7 @@ function submitModal() {
                 state.oneshots.push({
                     id: 'oneshot_' + Date.now(),
                     name, stars, primaryStatId, secondaryStatId, dueDate,
-                    completed: false, locked: false, createdAt: new Date().toISOString()
+                    completed: false, locked: false, createdAt: getGameDateObj().toISOString()
                 });
             }
             break;
@@ -1769,7 +1769,7 @@ function submitModal() {
                     id: 'quest_' + Date.now(),
                     name, stars, primaryStatId, secondaryStatId, dueDate, subquests, description,
                     customReward: document.getElementById('inputCustomReward')?.value || '',
-                    completed: false, locked: false, createdAt: new Date().toISOString()
+                    completed: false, locked: false, createdAt: getGameDateObj().toISOString()
                 });
             }
             break;
