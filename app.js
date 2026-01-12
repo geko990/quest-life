@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.9";
+const APP_VERSION = "0.3.9.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1328,51 +1328,45 @@ function openStatDetail(statId) {
     const lastEntry = history[0];
 
     content.innerHTML = `
-        <div class="stat-detail-header" style="margin-bottom: 15px;">
+        <div class="stat-detail-header" style="margin-bottom: 20px;">
             <div class="stat-rank-badge">${rank}</div>
         </div>
 
-        <div class="progress-info-big" style="margin-bottom: 15px;">
-            <div class="progress-bar" style="height: 10px; margin-bottom: 8px;">
+        <div class="progress-info-big" style="margin-bottom: 20px;">
+            <div class="progress-bar" style="height: 12px; margin-bottom: 10px;">
                 <div class="progress-fill" style="width: ${progress}%"></div>
             </div>
-            <div class="xp-needed" style="font-size: 11px;">Livello ${stat.level} &bull; <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
+            <div class="xp-needed" style="font-size: 13px;">Livello ${stat.level} &bull; <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
         </div>
 
-        <div class="momentum-section" style="padding: 10px; margin-bottom: 15px;">
-            <div class="momentum-title" style="font-size: 11px; margin-bottom: 10px;">
+        <div class="momentum-section" style="padding: 12px; margin-bottom: 20px;">
+            <div class="momentum-title" style="font-size: 12px; margin-bottom: 12px;">
                 <span>Momentum Settimanale</span>
                 <span style="color:var(--accent-primary)">+${momentum.reduce((s, m) => s + m.xp, 0)} XP</span>
             </div>
-            <div class="momentum-chart" style="height: 60px;">
+            <div class="momentum-chart" style="height: 80px;">
                 ${momentum.map(m => `
                     <div class="momentum-bar-container">
                         <div class="momentum-bar" data-xp="${m.xp}" style="height: ${(m.xp / maxMomentum) * 100}%"></div>
-                        <div class="momentum-day" style="font-size: 8px;">${m.day[0]}</div>
+                        <div class="momentum-day" style="font-size: 10px;">${m.day[0]}</div>
                     </div>
                 `).join('')}
             </div>
         </div>
 
-        <h3 class="subsection-title" style="font-size: 12px; margin-top: 0;">Ultima Attività</h3>
+        <h3 class="subsection-title" style="font-size: 14px; margin-top: 0; margin-bottom: 10px; text-align: center;">Ultima Attività</h3>
         <div id="statLastActivity">
             ${lastEntry ? `
-                <div class="last-activity-box" style="padding: 8px 12px;">
+                <div class="last-activity-box" style="padding: 10px 15px;">
                     <div class="last-activity-info">
-                        <span class="last-activity-name" style="font-size: 12px;">${lastEntry.source || 'Bonus Manuale'}</span>
-                        <span class="last-activity-date" style="font-size: 10px;">${lastEntry.date}</span>
+                        <span class="last-activity-name" style="font-size: 13px;">${lastEntry.source || 'Bonus Manuale'}</span>
+                        <span class="last-activity-date" style="font-size: 11px;">${lastEntry.date}</span>
                     </div>
-                    <div class="last-activity-xp" style="font-size: 12px;">+${lastEntry.amount}</div>
+                    <div class="last-activity-xp" style="font-size: 13px;">+${lastEntry.amount}</div>
                 </div>
-            ` : `<div class="history-empty" style="font-size:11px; padding:5px;">Nessuna attività registrata.</div>`}
+            ` : `<div class="history-empty" style="font-size:12px; padding:10px; text-align:center;">Nessuna attività registrata.</div>`}
         </div>
     `;
-
-    const editBtn = document.getElementById('btnEditStatDetail');
-    editBtn.onclick = () => {
-        closeStatDetailModal();
-        openModal(stat.type, stat);
-    };
 
     document.getElementById('statDetailOverlay').classList.add('active');
     document.getElementById('statDetailModal').classList.remove('hidden');
@@ -2195,6 +2189,8 @@ function editCurrentQuestInModal() {
 
 window.editTask = editTask;
 window.closeQuestDetailModal = closeQuestDetailModal;
+window.closeStatDetailModal = closeStatDetailModal;
+window.openStatDetail = openStatDetail;
 window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
 window.editCurrentQuestInModal = editCurrentQuestInModal;
 
