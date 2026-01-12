@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.4";
+const APP_VERSION = "0.3.8.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -89,6 +89,30 @@ function getGameDate() {
 
 function getGameDateString() {
     return getGameDateObj().toDateString();
+}
+
+// Helpers for periodic habits
+function getWeekIdentifier(dateStr) {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
+}
+
+function getMonthIdentifier(dateStr) {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+}
+
+function getYearIdentifier(dateStr) {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}`;
 }
 
 let radarChart = null;
@@ -1041,6 +1065,16 @@ function renderHabits() {
 }
 
 function isHabitCompletedOnDate(habit, dateStr) {
+    if (!habit.lastCompleted) return false;
+
+    if (habit.frequency === 'weekly') {
+        return getWeekIdentifier(habit.lastCompleted) === getWeekIdentifier(dateStr);
+    } else if (habit.frequency === 'monthly') {
+        return getMonthIdentifier(habit.lastCompleted) === getMonthIdentifier(dateStr);
+    } else if (habit.frequency === 'yearly') {
+        return getYearIdentifier(habit.lastCompleted) === getYearIdentifier(dateStr);
+    }
+
     const log = state.completionLog[dateStr];
     return log?.habits?.includes(habit.id);
 }
@@ -1232,7 +1266,7 @@ function openQuestDetail(questId) {
 
     const content = document.querySelector('#questDetailModal .quest-detail-content');
     content.innerHTML = `
-            < div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
+            <div class="modal-header" style="border:none; padding-bottom:0; flex-shrink: 0;">
                 <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
         </div >
 
@@ -1419,7 +1453,7 @@ function initColorPicker() {
     const dropdown = document.getElementById('colorDropdown');
     if (!dropdown) return;
     dropdown.innerHTML = ACCENT_COLORS.map(color =>
-        `< div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data - color="${color}" onclick = "setAccent('${color}')" ></div > `
+        `<div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data-color="${color}" onclick="setAccent('${color}')"></div>`
     ).join('');
 }
 
@@ -1489,7 +1523,7 @@ function renderSettingsStats() {
 
     if (attrList) {
         attrList.innerHTML = attributes.map(stat => `
-            < div class="stat-manage-item" >
+            <div class="stat-manage-item">
                 <div class="stat-manage-info">
                     <input type="checkbox" ${stat.visible ? 'checked' : ''} onchange="toggleStatVisibility('${stat.id}')">
                     <span>${stat.icon} ${stat.name}</span>
@@ -1542,11 +1576,11 @@ function openModal(type, editData = null) {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
-    const statOptions = state.stats.map(s => `< option value = "${s.id}" > ${s.icon} ${s.name}</option > `).join('');
-    const statOptionsOptional = `< option value = "" > --Nessuna --</option > ` + statOptions;
+    const statOptions = state.stats.map(s => `<option value="${s.id}">${s.icon} ${s.name}</option>`).join('');
+    const statOptionsOptional = `<option value="">-- Nessuna --</option>` + statOptions;
 
     const frequencyOptions = `
-            < option value = "daily" >📅 Giornaliera</option >
+            <option value="daily">📅 Giornaliera</option>
         <option value="weekly">📆 Settimanale</option>
         <option value="monthly">🗓️ Mensile</option>
         <option value="yearly">📅 Annuale</option>
@@ -1558,7 +1592,7 @@ function openModal(type, editData = null) {
         case 'habit':
             title.textContent = editData ? 'Modifica Abitudine' : 'Nuova Abitudine';
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group">
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Meditazione mattutina">
                 </div>
@@ -1606,7 +1640,7 @@ function openModal(type, editData = null) {
         case 'oneshot':
             title.textContent = editData ? 'Modifica One Shot' : 'Nuovo One Shot';
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group">
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Chiamare il dentista">
                 </div>
@@ -1642,7 +1676,7 @@ function openModal(type, editData = null) {
         case 'quest':
             title.textContent = editData ? 'Modifica Quest' : 'Nuova Quest';
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group">
                     <label>Nome Quest</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Imparare una nuova lingua">
                 </div>
@@ -1692,7 +1726,7 @@ function openModal(type, editData = null) {
             const isAbility = type === 'ability';
             title.textContent = editData ? `Modifica ${isAbility ? 'Abilità' : 'Attributo'} ` : `Nuovo ${isAbility ? 'Abilità' : 'Attributo'} `;
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group">
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Creatività">
                 </div>
@@ -1724,7 +1758,7 @@ function closeModal() {
 
 function renderStarRating(selected = 3) {
     return Array.from({ length: 5 }, (_, i) =>
-        `< span class="star ${i < selected ? 'active' : ''}" data - value="${i + 1}" >⭐</span > `
+        `<span class="star ${i < selected ? 'active' : ''}" data-value="${i + 1}">⭐</span>`
     ).join('');
 }
 
@@ -2152,7 +2186,7 @@ function showStatTooltip(statId, event) {
 
     const tooltip = document.getElementById('tooltip');
     tooltip.innerHTML = `
-            < div class="tooltip-title" > ${stat.icon} ${stat.name} - LV${stat.level}</div >
+            <div class="tooltip-title">${stat.icon} ${stat.name} - LV${stat.level}</div>
         <div>${stat.description}</div>
         <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">XP: ${stat.xp}/${getXpForLevel(stat.level + 1)}</div>
         `;
@@ -2351,7 +2385,7 @@ function showVisibilityPopup(e) {
     // Build list
     const list = document.getElementById('visibilityList');
     list.innerHTML = state.stats.map(stat => `
-            < div class="visibility-item" >
+            <div class="visibility-item">
                 <input type="checkbox" id="vis-${stat.id}" ${stat.visible ? 'checked' : ''}
                     onchange="toggleStatVisibilityFromPopup('${stat.id}')">
                     <label for="vis-${stat.id}">${stat.icon} ${stat.name}</label>
