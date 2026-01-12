@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.7";
+const APP_VERSION = "0.3.8.8";
 
 // ============================================
 // DATA STRUCTURES
@@ -1308,17 +1308,65 @@ function openStatDetail(statId) {
     const stat = state.stats.find(s => s.id === statId);
     if (!stat) return;
 
-    document.getElementById('statDetailTitle').innerHTML = `${stat.icon} ${stat.name} <span style="font-size:16px; color:var(--text-muted); vertical-align:middle;">LV${stat.level}</span>`;
-    document.getElementById('statDetailDesc').textContent = stat.description || 'Nessuna descrizione.';
+    const rank = getStatRank(stat.level);
+    const xpForNext = getXpForLevel(stat.level + 1);
+    const xpNeeded = xpForNext - stat.xp;
+    const progress = (stat.xp / xpForNext) * 100;
 
+    // Header & Rank
+    document.getElementById('statDetailTitle').innerHTML = `${stat.icon} ${stat.name}`;
+    document.getElementById('statDetailDesc').innerHTML = `
+        <div class="stat-detail-header">
+            <div class="stat-rank-badge">${rank}</div>
+            <div style="margin-top:10px; font-size:14px; color:var(--text-secondary); font-style:italic;">
+                ${stat.description || 'Nessuna descrizione.'}
+            </div>
+        </div>
+    `;
+
+    // Progress Section
+    const modalBody = document.querySelector('#statDetailModal .modal-body');
+    const momentum = getWeeklyMomentum(statId);
+    const maxMomentum = Math.max(...momentum.map(m => m.xp), 1);
+
+    modalBody.innerHTML = `
+        <div class="progress-info-big">
+            <div class="progress-bar" style="height: 12px; margin-bottom: 15px;">
+                <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <div class="xp-needed">Ti mancano <b>${xpNeeded} XP</b> per il livello ${stat.level + 1}</div>
+        </div>
+
+        <div class="momentum-section">
+            <div class="momentum-title">
+                <span>Momentum (Ultimi 7gg)</span>
+                <span style="color:var(--accent-primary)">+${momentum.reduce((s, m) => s + m.xp, 0)} XP</span>
+            </div>
+            <div class="momentum-chart">
+                ${momentum.map(m => `
+                    <div class="momentum-bar-container">
+                        <div class="momentum-bar" data-xp="${m.xp}" style="height: ${(m.xp / maxMomentum) * 100}%"></div>
+                        <div class="momentum-day">${m.day}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <h3 class="subsection-title">Cronologia Recente</h3>
+        <div class="stat-history-list" id="statHistoryList">
+            <!-- Will be populated below -->
+        </div>
+    `;
+
+    // History rendering
     const historyList = document.getElementById('statHistoryList');
     const history = state.xpLog
         .filter(entry => entry.statId === statId)
         .reverse()
-        .slice(0, 20);
+        .slice(0, 10);
 
     if (history.length === 0) {
-        historyList.innerHTML = `<div class="history-empty">Ancora nessuna attività registrata per questo ${stat.type === 'attribute' ? 'attributo' : 'abilità'}.</div>`;
+        historyList.innerHTML = `<div class="history-empty">Ancora nessuna attività registrata.</div>`;
     } else {
         historyList.innerHTML = history.map(entry => `
             <div class="history-item">
@@ -1467,6 +1515,7 @@ function addXp(amount, statId, sourceName = null) {
         // Log XP
         state.xpLog.push({
             date: getGameDate(),
+            timestamp: Date.now(), // New timestamp for better sorting/filtering
             statId: statId,
             amount: amount,
             source: sourceName
@@ -1480,6 +1529,38 @@ function addXp(amount, statId, sourceName = null) {
 
     saveState();
     renderAll();
+}
+
+function getStatRank(level) {
+    if (level >= 50) return "Leggenda";
+    if (level >= 40) return "Gran Maestro";
+    if (level >= 30) return "Maestro";
+    if (level >= 20) return "Esperto";
+    if (level >= 15) return "Veterano";
+    if (level >= 10) return "Abile";
+    if (level >= 5) return "Apprendista";
+    return "Novizio";
+}
+
+function getWeeklyMomentum(statId) {
+    const momentum = [];
+    const now = getGameDateObj();
+
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dateStr = formatISO(d);
+
+        const dailyXp = state.xpLog
+            .filter(entry => entry.statId === statId && entry.date === dateStr)
+            .reduce((sum, entry) => sum + entry.amount, 0);
+
+        momentum.push({
+            day: DAY_NAMES[d.getDay()],
+            xp: dailyXp
+        });
+    }
+    return momentum;
 }
 
 // ============================================
