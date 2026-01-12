@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.2";
+const APP_VERSION = "0.3.8.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -803,6 +803,10 @@ function renderStatCard(stat) {
     const hiddenClass = stat.visible ? '' : 'stat-hidden';
     return `
         <div class="stat-card ${hiddenClass} task-card" data-type="${stat.type}" data-id="${stat.id}">
+            <div class="swipe-actions">
+                <div class="swipe-action edit">✏️</div>
+                <div class="swipe-action delete">🗑️</div>
+            </div>
             <div class="swipe-content" 
                  onclick="handleTaskClick(event, '${stat.type}', '${stat.id}')"
                  onmouseenter="showStatTooltip('${stat.id}', event)" 
@@ -1013,6 +1017,10 @@ function renderHabits() {
 
         return `
             <div class="task-card ${habit.locked ? 'locked' : ''}" data-type="habit" data-id="${habit.id}">
+                <div class="swipe-actions">
+                    <div class="swipe-action edit">✏️</div>
+                    <div class="swipe-action delete">🗑️</div>
+                </div>
                 <div class="swipe-content" onclick="handleTaskClick(event, 'habit', '${habit.id}')">
                     <div class="card-checkbox ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleHabit('${habit.id}', '${viewedDate}')"></div>
                     <div class="card-content">
@@ -1115,6 +1123,10 @@ function renderOneshots() {
 
         return `
             <div class="task-card ${oneshot.locked ? 'locked' : ''}" data-type="oneshot" data-id="${oneshot.id}">
+                <div class="swipe-actions">
+                    <div class="swipe-action edit">✏️</div>
+                    <div class="swipe-action delete">🗑️</div>
+                </div>
                 <div class="swipe-content" onclick="handleTaskClick(event, 'oneshot', '${oneshot.id}')">
                     <div class="card-checkbox" onclick="event.stopPropagation(); completeOneshot('${oneshot.id}')"></div>
                     <div class="card-content">
@@ -1178,6 +1190,10 @@ function renderQuests() {
 
         return `
             <div class="task-card quest-card ${quest.locked ? 'locked' : ''}" data-type="quest" data-id="${quest.id}">
+                <div class="swipe-actions">
+                    <div class="swipe-action edit">✏️</div>
+                    <div class="swipe-action delete">🗑️</div>
+                </div>
                 <div class="swipe-content" onclick="handleTaskClick(event, 'quest', '${quest.id}')">
                     <div class="card-row">
                         <div class="card-checkbox ${quest.completed ? 'checked' : ''}" onclick="event.stopPropagation(); completeQuest('${quest.id}')"></div>
@@ -1201,7 +1217,7 @@ function renderQuests() {
                     ` : ''}
                 </div>
             </div>
-        `;
+            `;
     }).join('');
 }
 
@@ -1216,34 +1232,34 @@ function openQuestDetail(questId) {
 
     const content = document.querySelector('#questDetailModal .quest-detail-content');
     content.innerHTML = `
-        <div class="modal-header" style="border:none; padding-bottom:0; flex-shrink: 0;">
-             <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
-        </div>
-        
-        <div class="quest-scroll-area">
-            <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
-                ${quest.description || 'Nessuna descrizione.'}
-            </div>
+            < div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
+                <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
+        </div >
 
-            <div class="quest-subtasks-list" id="questDetailSubtasks">
-                ${(quest.subquests || []).map(sub => `
+            <div class="quest-scroll-area">
+                <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
+                    ${quest.description || 'Nessuna descrizione.'}
+                </div>
+
+                <div class="quest-subtasks-list" id="questDetailSubtasks">
+                    ${(quest.subquests || []).map(sub => `
                     <div class="subtask-item-detail ${sub.completed ? 'completed' : ''}" onclick="toggleSubquest('${quest.id}', '${sub.id}')">
                         <div class="subtask-checkbox"></div>
                         <span>${sub.name}</span>
                     </div>
                 `).join('')}
-            </div>
+                </div>
 
-            <div class="quest-reward-area">
-               ${quest.customReward ? `<div style="font-size:18px; font-weight:bold; color:var(--accent-primary); margin-bottom:8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">🎁 ${quest.customReward}</div>` : ''}
-               <div style="display:flex; justify-content:center; gap:12px; font-size:14px; color:var(--text-muted);">
-                    <span>${'⭐'.repeat(quest.stars)}</span>
-                    <span>✨ ${calculateXp(quest.stars) * 2} XP</span>
-                    ${quest.dueDate ? `<span>📅 ${formatDate(quest.dueDate)}</span>` : ''}
-               </div>
+                <div class="quest-reward-area">
+                    ${quest.customReward ? `<div style="font-size:18px; font-weight:bold; color:var(--accent-primary); margin-bottom:8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">🎁 ${quest.customReward}</div>` : ''}
+                    <div style="display:flex; justify-content:center; gap:12px; font-size:14px; color:var(--text-muted);">
+                        <span>${'⭐'.repeat(quest.stars)}</span>
+                        <span>✨ ${calculateXp(quest.stars) * 2} XP</span>
+                        ${quest.dueDate ? `<span>📅 ${formatDate(quest.dueDate)}</span>` : ''}
+                    </div>
+                </div>
             </div>
-        </div>
-    `;
+        `;
 
     document.getElementById('questDetailModal').classList.add('active');
 }
@@ -1403,7 +1419,7 @@ function initColorPicker() {
     const dropdown = document.getElementById('colorDropdown');
     if (!dropdown) return;
     dropdown.innerHTML = ACCENT_COLORS.map(color =>
-        `<div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data-color="${color}" onclick="setAccent('${color}')"></div>`
+        `< div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data - color="${color}" onclick = "setAccent('${color}')" ></div > `
     ).join('');
 }
 
@@ -1473,7 +1489,7 @@ function renderSettingsStats() {
 
     if (attrList) {
         attrList.innerHTML = attributes.map(stat => `
-            <div class="stat-manage-item">
+            < div class="stat-manage-item" >
                 <div class="stat-manage-info">
                     <input type="checkbox" ${stat.visible ? 'checked' : ''} onchange="toggleStatVisibility('${stat.id}')">
                     <span>${stat.icon} ${stat.name}</span>
@@ -1482,13 +1498,13 @@ function renderSettingsStats() {
                     <button onclick="editStat('${stat.id}')">✏️</button>
                     <button onclick="deleteStat('${stat.id}')">🗑️</button>
                 </div>
-            </div>
-        `).join('');
+            </div >
+            `).join('');
     }
 
     if (abilList) {
         abilList.innerHTML = abilities.map(stat => `
-            <div class="stat-manage-item">
+            < div class="stat-manage-item" >
                 <div class="stat-manage-info">
                     <input type="checkbox" ${stat.visible ? 'checked' : ''} onchange="toggleStatVisibility('${stat.id}')">
                     <span>${stat.icon} ${stat.name}</span>
@@ -1497,8 +1513,8 @@ function renderSettingsStats() {
                     <button onclick="editStat('${stat.id}')">✏️</button>
                     <button onclick="deleteStat('${stat.id}')">🗑️</button>
                 </div>
-            </div>
-        `).join('');
+            </div >
+            `).join('');
     }
 }
 
@@ -1526,23 +1542,23 @@ function openModal(type, editData = null) {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
-    const statOptions = state.stats.map(s => `<option value="${s.id}">${s.icon} ${s.name}</option>`).join('');
-    const statOptionsOptional = `<option value="">-- Nessuna --</option>` + statOptions;
+    const statOptions = state.stats.map(s => `< option value = "${s.id}" > ${s.icon} ${s.name}</option > `).join('');
+    const statOptionsOptional = `< option value = "" > --Nessuna --</option > ` + statOptions;
 
     const frequencyOptions = `
-        <option value="daily">📅 Giornaliera</option>
+            < option value = "daily" >📅 Giornaliera</option >
         <option value="weekly">📆 Settimanale</option>
         <option value="monthly">🗓️ Mensile</option>
         <option value="yearly">📅 Annuale</option>
         <option value="times_week">🔢 Volte a settimana</option>
         <option value="times_month">🔢 Volte al mese</option>
-    `;
+        `;
 
     switch (type) {
         case 'habit':
             title.textContent = editData ? 'Modifica Abitudine' : 'Nuova Abitudine';
             body.innerHTML = `
-                <div class="form-group">
+            < div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Meditazione mattutina">
                 </div>
@@ -1578,7 +1594,7 @@ function openModal(type, editData = null) {
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
                 </div>
-            `;
+        `;
             initFrequencyToggle();
             if (editData) {
                 document.getElementById('inputFreq').value = editData.frequency;
@@ -1590,7 +1606,7 @@ function openModal(type, editData = null) {
         case 'oneshot':
             title.textContent = editData ? 'Modifica One Shot' : 'Nuovo One Shot';
             body.innerHTML = `
-                <div class="form-group">
+            < div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Chiamare il dentista">
                 </div>
@@ -1616,7 +1632,7 @@ function openModal(type, editData = null) {
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
                 </div>
-            `;
+        `;
             if (editData) {
                 document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
                 document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
@@ -1626,7 +1642,7 @@ function openModal(type, editData = null) {
         case 'quest':
             title.textContent = editData ? 'Modifica Quest' : 'Nuova Quest';
             body.innerHTML = `
-                <div class="form-group">
+            < div class="form-group" >
                     <label>Nome Quest</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Imparare una nuova lingua">
                 </div>
@@ -1664,7 +1680,7 @@ function openModal(type, editData = null) {
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
                 </div>
-            `;
+        `;
             if (editData) {
                 document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
                 document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
@@ -1674,9 +1690,9 @@ function openModal(type, editData = null) {
         case 'attribute':
         case 'ability':
             const isAbility = type === 'ability';
-            title.textContent = editData ? `Modifica ${isAbility ? 'Abilità' : 'Attributo'}` : `Nuovo ${isAbility ? 'Abilità' : 'Attributo'}`;
+            title.textContent = editData ? `Modifica ${isAbility ? 'Abilità' : 'Attributo'} ` : `Nuovo ${isAbility ? 'Abilità' : 'Attributo'} `;
             body.innerHTML = `
-                <div class="form-group">
+            < div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Creatività">
                 </div>
@@ -1692,7 +1708,7 @@ function openModal(type, editData = null) {
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
                 </div>
-            `;
+        `;
             break;
     }
 
@@ -1708,7 +1724,7 @@ function closeModal() {
 
 function renderStarRating(selected = 3) {
     return Array.from({ length: 5 }, (_, i) =>
-        `<span class="star ${i < selected ? 'active' : ''}" data-value="${i + 1}">⭐</span>`
+        `< span class="star ${i < selected ? 'active' : ''}" data - value="${i + 1}" >⭐</span > `
     ).join('');
 }
 
@@ -1941,15 +1957,15 @@ function showDeleteConfirm(type, id) {
     const overlay = document.createElement('div');
     overlay.className = 'delete-confirm-overlay';
     overlay.innerHTML = `
-        <div class="delete-confirm-modal">
+            < div class="delete-confirm-modal" >
             <div class="delete-confirm-icon">🗑️</div>
             <div class="delete-confirm-text">Eliminare ${label} <strong>"${item.name}"</strong>?</div>
             <div class="delete-confirm-buttons">
                 <button class="btn-cancel" onclick="closeDeleteConfirm()">Annulla</button>
                 <button class="btn-danger" onclick="confirmDelete('${type}', '${id}')">Elimina</button>
             </div>
-        </div>
-    `;
+        </div >
+            `;
     document.body.appendChild(overlay);
     setTimeout(() => overlay.classList.add('active'), 10);
 }
@@ -2047,7 +2063,7 @@ function handleTaskClick(e, type, id) {
 function deleteTask(type, id) {
     const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
     const item = list.find(i => i.id === id);
-    if (item && confirm(`Eliminare "${item.name}"?`)) {
+    if (item && confirm(`Eliminare "${item.name}" ? `)) {
         const idx = list.indexOf(item);
         if (idx > -1) list.splice(idx, 1);
         saveState();
@@ -2087,7 +2103,7 @@ function closeAvatarModal() {
 
 function switchAvatarTab(tab) {
     document.querySelectorAll('.avatar-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[onclick="switchAvatarTab('${tab}')"]`).classList.add('active');
+    document.querySelector(`[onclick = "switchAvatarTab('${tab}')"]`).classList.add('active');
 
     document.getElementById('emojiTab').classList.toggle('hidden', tab !== 'emoji');
     document.getElementById('uploadTab').classList.toggle('hidden', tab !== 'upload');
@@ -2095,7 +2111,7 @@ function switchAvatarTab(tab) {
 
 function renderEmojiGrid() {
     document.getElementById('emojiGrid').innerHTML = AVATAR_EMOJIS.map(emoji =>
-        `<button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick="selectEmoji('${emoji}')">${emoji}</button>`
+        `< button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick = "selectEmoji('${emoji}')" > ${emoji}</button > `
     ).join('');
 }
 
@@ -2136,10 +2152,10 @@ function showStatTooltip(statId, event) {
 
     const tooltip = document.getElementById('tooltip');
     tooltip.innerHTML = `
-        <div class="tooltip-title">${stat.icon} ${stat.name} - LV${stat.level}</div>
+            < div class="tooltip-title" > ${stat.icon} ${stat.name} - LV${stat.level}</div >
         <div>${stat.description}</div>
         <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">XP: ${stat.xp}/${getXpForLevel(stat.level + 1)}</div>
-    `;
+        `;
     tooltip.classList.add('visible');
 
     const rect = event.target.getBoundingClientRect();
@@ -2160,7 +2176,7 @@ function ensureUniqueIds(list, prefix) {
         if (seen.has(item.id)) {
             // Generate new ID
             const newId = prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            console.warn(`Duplicate ID found: ${item.id} -> replaced with ${newId}`);
+            console.warn(`Duplicate ID found: ${item.id} -> replaced with ${newId} `);
             item.id = newId;
         }
         seen.add(item.id);
@@ -2336,12 +2352,12 @@ function showVisibilityPopup(e) {
     // Build list
     const list = document.getElementById('visibilityList');
     list.innerHTML = state.stats.map(stat => `
-        <div class="visibility-item">
-            <input type="checkbox" id="vis-${stat.id}" ${stat.visible ? 'checked' : ''}
-                   onchange="toggleStatVisibilityFromPopup('${stat.id}')">
-            <label for="vis-${stat.id}">${stat.icon} ${stat.name}</label>
-        </div>
-    `).join('');
+            < div class="visibility-item" >
+                <input type="checkbox" id="vis-${stat.id}" ${stat.visible ? 'checked' : ''}
+                    onchange="toggleStatVisibilityFromPopup('${stat.id}')">
+                    <label for="vis-${stat.id}">${stat.icon} ${stat.name}</label>
+                </div>
+        `).join('');
 
     // Position popup centered over chart
     const chartContainer = document.querySelector('.stats-chart-container');
