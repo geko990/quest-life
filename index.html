@@ -392,6 +392,30 @@
         </div>
     </div>
 
+    <!-- Stat Detail Modal -->
+    <div class="quest-popup-overlay" id="statDetailModal" onclick="closeStatDetailModal()">
+        <div class="quest-detail-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="statDetailTitle">Titolo Stat</span>
+                <button class="close-btn" onclick="closeStatDetailModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="quest-description" id="statDetailDesc"
+                    style="text-align:center; color:var(--text-secondary); margin-bottom:20px; font-size:15px; font-style:italic;">
+                    <!-- Dynamic content -->
+                </p>
+
+                <h3 class="subsection-title" style="margin-top: 20px;">Cronologia Recente</h3>
+                <div class="stat-history-list" id="statHistoryList">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button class="btn-primary" id="btnEditStatDetail" style="width: 100%;">Modifica Stat</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Motto Edit Modal -->
     <div class="modal-overlay" id="mottoEditModal">
         <div class="modal motto-modal">

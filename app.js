@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.5";
+const APP_VERSION = "0.3.8.6";
 
 // ============================================
 // DATA STRUCTURES
@@ -1100,9 +1100,9 @@ function toggleHabit(habitId, targetDate = null) {
 
             // Subtract XP (Rollback)
             const xp = calculateXp(habit.stars);
-            addXp(-xp, habit.primaryStatId);
+            addXp(-xp, habit.primaryStatId, habit.name);
             if (habit.secondaryStatId) {
-                addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId);
+                addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
         }
         logCompletion('habits', habit.id, dateStr);
@@ -1120,9 +1120,9 @@ function toggleHabit(habitId, targetDate = null) {
 
             habit.lastCompleted = today;
             const xp = calculateXp(habit.stars);
-            addXp(xp, habit.primaryStatId);
+            addXp(xp, habit.primaryStatId, habit.name);
             if (habit.secondaryStatId) {
-                addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId);
+                addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
             recordActivity();
         }
@@ -1187,9 +1187,9 @@ function completeOneshot(oneshotId) {
     oneshot.completedAt = new Date().toISOString();
 
     const xp = calculateXp(oneshot.stars);
-    addXp(xp, oneshot.primaryStatId);
+    addXp(xp, oneshot.primaryStatId, oneshot.name);
     if (oneshot.secondaryStatId) {
-        addXp(Math.round(xp * XP_CONFIG.secondaryRatio), oneshot.secondaryStatId);
+        addXp(Math.round(xp * XP_CONFIG.secondaryRatio), oneshot.secondaryStatId, oneshot.name);
     }
     logCompletion('oneshots', oneshot.id);
     recordActivity();
@@ -1268,7 +1268,8 @@ function openQuestDetail(questId) {
     content.innerHTML = `
             <div class="modal-header" style="border:none; padding-bottom:0; flex-shrink: 0;">
                 <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
-        </div >
+                <button class="close-btn" onclick="closeQuestDetailModal()" style="position:absolute; right:20px; top:20px;">×</button>
+        </div>
 
             <div class="quest-scroll-area">
                 <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
@@ -1296,6 +1297,51 @@ function openQuestDetail(questId) {
         `;
 
     document.getElementById('questDetailModal').classList.add('active');
+}
+
+function closeQuestDetailModal() {
+    document.getElementById('questDetailModal').classList.remove('active');
+    currentOpenedQuestId = null;
+}
+
+function openStatDetail(statId) {
+    const stat = state.stats.find(s => s.id === statId);
+    if (!stat) return;
+
+    document.getElementById('statDetailTitle').innerHTML = `${stat.icon} ${stat.name} <span style="font-size:16px; color:var(--text-muted); vertical-align:middle;">LV${stat.level}</span>`;
+    document.getElementById('statDetailDesc').textContent = stat.description || 'Nessuna descrizione.';
+
+    const historyList = document.getElementById('statHistoryList');
+    const history = state.xpLog
+        .filter(entry => entry.statId === statId)
+        .reverse()
+        .slice(0, 20);
+
+    if (history.length === 0) {
+        historyList.innerHTML = `<div class="history-empty">Ancora nessuna attività registrata per questo ${stat.type === 'attribute' ? 'attributo' : 'abilità'}.</div>`;
+    } else {
+        historyList.innerHTML = history.map(entry => `
+            <div class="history-item">
+                <div class="history-item-info">
+                    <span class="history-item-name">${entry.source || 'Bonus Manuale'}</span>
+                    <span class="history-item-date">${entry.date}</span>
+                </div>
+                <div class="history-item-xp">+${entry.amount} XP</div>
+            </div>
+        `).join('');
+    }
+
+    const editBtn = document.getElementById('btnEditStatDetail');
+    editBtn.onclick = () => {
+        closeStatDetailModal();
+        openModal(stat.type, stat);
+    };
+
+    document.getElementById('statDetailModal').classList.add('active');
+}
+
+function closeStatDetailModal() {
+    document.getElementById('statDetailModal').classList.remove('active');
 }
 
 function deleteCurrentQuestInModal() {
@@ -1327,9 +1373,9 @@ function toggleSubquest(questId, subquestId) {
 
     if (subquest.completed) {
         // Double XP for subquest (Full habitual XP)
-        addXp(calculateXp(quest.stars), quest.primaryStatId);
+        addXp(calculateXp(quest.stars), quest.primaryStatId, `${quest.name} > ${sub.name}`);
         if (quest.secondaryStatId) {
-            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId);
+            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${sub.name}`);
         }
     }
 
@@ -1357,9 +1403,9 @@ function completeQuest(questId) {
     quest.completedAt = new Date().toISOString();
 
     const xp = calculateXp(quest.stars) * 2;
-    addXp(xp, quest.primaryStatId);
+    addXp(xp, quest.primaryStatId, quest.name);
     if (quest.secondaryStatId) {
-        addXp(Math.round(xp * XP_CONFIG.secondaryRatio), quest.secondaryStatId);
+        addXp(Math.round(xp * XP_CONFIG.secondaryRatio), quest.secondaryStatId, quest.name);
     }
     logCompletion('quests', quest.id);
     recordActivity();
@@ -1383,7 +1429,7 @@ function getXpForLevel(level) {
     return Math.floor(XP_CONFIG.baseXpPerLevel * Math.pow(XP_CONFIG.levelMultiplier, level - 1));
 }
 
-function addXp(amount, statId) {
+function addXp(amount, statId, sourceName = null) {
     state.player.totalXp += amount;
 
     // Level Up Player
@@ -1422,8 +1468,14 @@ function addXp(amount, statId) {
         state.xpLog.push({
             date: getGameDate(),
             statId: statId,
-            amount: amount
+            amount: amount,
+            source: sourceName
         });
+
+        // Limit log size (keep last 200 entries to prevent state bloat)
+        if (state.xpLog.length > 200) {
+            state.xpLog = state.xpLog.slice(-200);
+        }
     }
 
     saveState();
@@ -2088,6 +2140,8 @@ function handleTaskClick(e, type, id) {
     if (item) {
         if (type === 'quest') {
             openQuestDetail(id);
+        } else if (type === 'attribute' || type === 'ability') {
+            openStatDetail(id);
         } else {
             openModal(type, item);
         }
