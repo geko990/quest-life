@@ -940,10 +940,9 @@ function renderHabits() {
     let habitsToShow = state.habits.filter(h => {
         // Filter by creation date - if habit was created after the viewed date, don't show it
         if (h.createdAt) {
-            const createdDate = new Date(h.createdAt).toDateString();
-            const viewedDateObj = new Date(viewedDate);
-            const createdDateObj = new Date(createdDate);
-            if (createdDateObj > viewedDateObj) return false;
+            // Compare using YYYY-MM-DD format
+            const createdDate = new Date(h.createdAt).toISOString().split('T')[0];
+            if (createdDate > viewedDate) return false;
         }
         // If it's today, also filter out completed habits
         if (isToday) return !h.completed;
