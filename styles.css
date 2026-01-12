@@ -1903,6 +1903,90 @@ body {
     opacity: 0.7;
 }
 
+/* Swipe hint colors */
+.task-card.swipe-edit-hint {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
+}
+
+.task-card.swipe-delete-hint {
+    background: linear-gradient(270deg, rgba(239, 68, 68, 0.3) 0%, transparent 50%);
+}
+
+/* Delete confirmation modal */
+.delete-confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.delete-confirm-overlay.active {
+    opacity: 1;
+}
+
+.delete-confirm-modal {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s;
+}
+
+.delete-confirm-overlay.active .delete-confirm-modal {
+    transform: scale(1);
+}
+
+.delete-confirm-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.delete-confirm-text {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.delete-confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.delete-confirm-buttons .btn-cancel {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-confirm-buttons .btn-danger {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 /* Override existing card styles for new structure */
 .card-content {
     flex: 1;

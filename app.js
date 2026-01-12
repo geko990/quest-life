@@ -964,12 +964,6 @@ function renderHabits() {
                         </div>
                     </div>
                 </div>
-                <div class="swipe-actions swipe-actions-left">
-                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('habit', '${habit.id}')">✏️</button>
-                </div>
-                <div class="swipe-actions swipe-actions-right">
-                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('habit', '${habit.id}')">🗑️</button>
-                </div>
             </div>
         `;
     }).join('');
@@ -1071,12 +1065,6 @@ function renderOneshots() {
                         </div>
                     </div>
                 </div>
-                <div class="swipe-actions swipe-actions-left">
-                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('oneshot', '${oneshot.id}')">✏️</button>
-                </div>
-                <div class="swipe-actions swipe-actions-right">
-                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('oneshot', '${oneshot.id}')">🗑️</button>
-                </div>
             </div>
         `;
     }).join('');
@@ -1148,12 +1136,6 @@ function renderQuests() {
                             </div>
                         </div>
                     ` : ''}
-                </div>
-                <div class="swipe-actions swipe-actions-left">
-                    <button class="swipe-action" onclick="event.stopPropagation(); editTask('quest', '${quest.id}')">✏️</button>
-                </div>
-                <div class="swipe-actions swipe-actions-right">
-                    <button class="swipe-action" onclick="event.stopPropagation(); deleteTask('quest', '${quest.id}')">🗑️</button>
                 </div>
             </div>
         `;
@@ -1810,11 +1792,12 @@ function editStat(statId) {
 function initSwipe() {
     let currentX = 0;
     let isSwiping = false;
+    const ACTION_THRESHOLD = 100;
+    const MAX_SWIPE = 120;
 
     document.addEventListener('pointerdown', (e) => {
         const content = e.target.closest('.swipe-content');
         if (!content) {
-            // Close any open swipe
             closeAllSwipes();
             return;
         }
@@ -1824,7 +1807,6 @@ function initSwipe() {
         isSwiping = true;
         content.style.transition = 'none';
 
-        // If it's already swiped, record that offset
         const transform = new WebKitCSSMatrix(window.getComputedStyle(content).transform);
         currentX = transform.m41;
     });
@@ -1833,9 +1815,20 @@ function initSwipe() {
         if (!isSwiping || !currentSwipeCard) return;
 
         const diff = e.clientX - swipeStartX + currentX;
-        // Limit swipe range
-        const limitedDiff = Math.max(-80, Math.min(80, diff));
+        const limitedDiff = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, diff));
         currentSwipeCard.style.transform = `translateX(${limitedDiff}px)`;
+
+        // Visual feedback
+        const taskCard = currentSwipeCard.closest('.task-card');
+        if (limitedDiff > ACTION_THRESHOLD * 0.7) {
+            taskCard.classList.add('swipe-edit-hint');
+            taskCard.classList.remove('swipe-delete-hint');
+        } else if (limitedDiff < -ACTION_THRESHOLD * 0.7) {
+            taskCard.classList.add('swipe-delete-hint');
+            taskCard.classList.remove('swipe-edit-hint');
+        } else {
+            taskCard.classList.remove('swipe-edit-hint', 'swipe-delete-hint');
+        }
     });
 
     document.addEventListener('pointerup', (e) => {
@@ -1844,20 +1837,66 @@ function initSwipe() {
 
         const transform = new WebKitCSSMatrix(window.getComputedStyle(currentSwipeCard).transform);
         const finalX = transform.m41;
+        const taskCard = currentSwipeCard.closest('.task-card');
+        const type = taskCard.dataset.type;
+        const id = taskCard.dataset.id;
 
+        // Reset visual
+        taskCard.classList.remove('swipe-edit-hint', 'swipe-delete-hint');
         currentSwipeCard.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+        currentSwipeCard.style.transform = 'translateX(0)';
 
-        if (finalX > 40) {
-            currentSwipeCard.style.transform = 'translateX(70px)';
-            currentSwipeCard.classList.add('swiped');
-        } else if (finalX < -40) {
-            currentSwipeCard.style.transform = 'translateX(-70px)';
-            currentSwipeCard.classList.add('swiped');
-        } else {
-            currentSwipeCard.style.transform = 'translateX(0)';
-            currentSwipeCard.classList.remove('swiped');
+        // Trigger actions based on swipe distance
+        if (finalX > ACTION_THRESHOLD) {
+            // Swipe right → Edit
+            editTask(type, id);
+        } else if (finalX < -ACTION_THRESHOLD) {
+            // Swipe left → Delete with confirmation
+            showDeleteConfirm(type, id, taskCard);
         }
     });
+}
+
+// Delete confirmation modal
+function showDeleteConfirm(type, id, taskCard) {
+    const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+    const item = list.find(i => i.id === id);
+    if (!item) return;
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'delete-confirm-overlay';
+    overlay.innerHTML = `
+        <div class="delete-confirm-modal">
+            <div class="delete-confirm-icon">🗑️</div>
+            <div class="delete-confirm-text">Eliminare "${item.name}"?</div>
+            <div class="delete-confirm-buttons">
+                <button class="btn-cancel" onclick="closeDeleteConfirm()">Annulla</button>
+                <button class="btn-danger" onclick="confirmDelete('${type}', '${id}')">Elimina</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.classList.add('active'), 10);
+}
+
+function closeDeleteConfirm() {
+    const overlay = document.querySelector('.delete-confirm-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 300);
+    }
+}
+
+function confirmDelete(type, id) {
+    closeDeleteConfirm();
+    const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+    const idx = list.findIndex(i => i.id === id);
+    if (idx > -1) {
+        list.splice(idx, 1);
+        saveState();
+        renderAll();
+    }
 }
 
 
@@ -2301,6 +2340,8 @@ window.selectEmoji = selectEmoji;
 window.handleAvatarUpload = handleAvatarUpload;
 window.showStreakCelebration = showStreakCelebration;
 window.closeStreakCelebration = closeStreakCelebration;
+window.closeDeleteConfirm = closeDeleteConfirm;
+window.confirmDelete = confirmDelete;
 
 // Quest Detail
 window.openQuestDetail = openQuestDetail;
