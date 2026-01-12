@@ -114,6 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initVisibilityPopup();
     renderAll();
 
+    // Set version in UI
+    const versionEl = document.getElementById('appVersion');
+    if (versionEl) versionEl.textContent = APP_VERSION;
+
     // Refresh when app comes back to foreground (handles day change while app was in background)
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
