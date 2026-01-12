@@ -1313,72 +1313,60 @@ function openStatDetail(statId) {
     const xpNeeded = xpForNext - stat.xp;
     const progress = (stat.xp / xpForNext) * 100;
 
-    // Header & Rank
+    // Header & Rank in the Title
     document.getElementById('statDetailTitle').innerHTML = `${stat.icon} ${stat.name}`;
-    document.getElementById('statDetailDesc').innerHTML = `
-        <div class="stat-detail-header">
-            <div class="stat-rank-badge">${rank}</div>
-            <div style="margin-top:10px; font-size:14px; color:var(--text-secondary); font-style:italic;">
-                ${stat.description || 'Nessuna descrizione.'}
-            </div>
-        </div>
-    `;
 
-    // Progress Section
-    const modalBody = document.querySelector('#statDetailModal .modal-body');
+    // Complex Content Area
+    const content = document.getElementById('statDetailContent');
     const momentum = getWeeklyMomentum(statId);
     const maxMomentum = Math.max(...momentum.map(m => m.xp), 1);
 
-    modalBody.innerHTML = `
-        <div class="progress-info-big">
-            <div class="progress-bar" style="height: 12px; margin-bottom: 15px;">
-                <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-            <div class="xp-needed">Ti mancano <b>${xpNeeded} XP</b> per il livello ${stat.level + 1}</div>
+    // Filter history for "Last Activity"
+    const history = state.xpLog
+        .filter(entry => entry.statId === statId)
+        .reverse();
+    const lastEntry = history[0];
+
+    content.innerHTML = `
+        <div class="stat-detail-header" style="margin-bottom: 15px;">
+            <div class="stat-rank-badge">${rank}</div>
         </div>
 
-        <div class="momentum-section">
-            <div class="momentum-title">
-                <span>Momentum (Ultimi 7gg)</span>
+        <div class="progress-info-big" style="margin-bottom: 15px;">
+            <div class="progress-bar" style="height: 10px; margin-bottom: 8px;">
+                <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <div class="xp-needed" style="font-size: 11px;">Livello ${stat.level} &bull; <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
+        </div>
+
+        <div class="momentum-section" style="padding: 10px; margin-bottom: 15px;">
+            <div class="momentum-title" style="font-size: 11px; margin-bottom: 10px;">
+                <span>Momentum Settimanale</span>
                 <span style="color:var(--accent-primary)">+${momentum.reduce((s, m) => s + m.xp, 0)} XP</span>
             </div>
-            <div class="momentum-chart">
+            <div class="momentum-chart" style="height: 60px;">
                 ${momentum.map(m => `
                     <div class="momentum-bar-container">
                         <div class="momentum-bar" data-xp="${m.xp}" style="height: ${(m.xp / maxMomentum) * 100}%"></div>
-                        <div class="momentum-day">${m.day}</div>
+                        <div class="momentum-day" style="font-size: 8px;">${m.day[0]}</div>
                     </div>
                 `).join('')}
             </div>
         </div>
 
-        <h3 class="subsection-title">Ultima Attività</h3>
+        <h3 class="subsection-title" style="font-size: 12px; margin-top: 0;">Ultima Attività</h3>
         <div id="statLastActivity">
-            <!-- Will be populated below -->
+            ${lastEntry ? `
+                <div class="last-activity-box" style="padding: 8px 12px;">
+                    <div class="last-activity-info">
+                        <span class="last-activity-name" style="font-size: 12px;">${lastEntry.source || 'Bonus Manuale'}</span>
+                        <span class="last-activity-date" style="font-size: 10px;">${lastEntry.date}</span>
+                    </div>
+                    <div class="last-activity-xp" style="font-size: 12px;">+${lastEntry.amount}</div>
+                </div>
+            ` : `<div class="history-empty" style="font-size:11px; padding:5px;">Nessuna attività registrata.</div>`}
         </div>
     `;
-
-    // Last Activity rendering
-    const lastActivityContainer = document.getElementById('statLastActivity');
-    const history = state.xpLog
-        .filter(entry => entry.statId === statId)
-        .reverse();
-
-    const lastEntry = history[0];
-
-    if (!lastEntry) {
-        lastActivityContainer.innerHTML = `<div class="history-empty" style="padding:10px;">Ancora nessuna attività.</div>`;
-    } else {
-        lastActivityContainer.innerHTML = `
-            <div class="last-activity-box">
-                <div class="last-activity-info">
-                    <span class="last-activity-name">${lastEntry.source || 'Bonus Manuale'}</span>
-                    <span class="last-activity-date">${lastEntry.date}</span>
-                </div>
-                <div class="last-activity-xp">+${lastEntry.amount} XP</div>
-            </div>
-        `;
-    }
 
     const editBtn = document.getElementById('btnEditStatDetail');
     editBtn.onclick = () => {
@@ -1386,11 +1374,13 @@ function openStatDetail(statId) {
         openModal(stat.type, stat);
     };
 
-    document.getElementById('statDetailModal').classList.add('active');
+    document.getElementById('statDetailOverlay').classList.add('active');
+    document.getElementById('statDetailModal').classList.remove('hidden');
 }
 
 function closeStatDetailModal() {
-    document.getElementById('statDetailModal').classList.remove('active');
+    document.getElementById('statDetailOverlay').classList.remove('active');
+    document.getElementById('statDetailModal').classList.add('hidden');
 }
 
 function deleteCurrentQuestInModal() {
