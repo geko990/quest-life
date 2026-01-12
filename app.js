@@ -2254,14 +2254,13 @@ function exportData() {
 
 function updateApp() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(reg => {
-            if (reg) {
-                reg.update().then(() => {
-                    window.location.reload(true);
-                });
-            } else {
-                window.location.reload(true);
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+                registration.unregister();
             }
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
         });
     } else {
         window.location.reload(true);
