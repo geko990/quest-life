@@ -105,6 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initSwipe();
     initVisibilityPopup();
     renderAll();
+
+    // Refresh when app comes back to foreground (handles day change while app was in background)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            const newDate = getGameDate();
+            if (newDate !== viewedDate) {
+                viewedDate = newDate;
+                renderAll();
+            }
+        }
+    });
 });
 
 function loadState() {
