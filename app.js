@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.8";
+const APP_VERSION = "0.3.8.9";
 
 // ============================================
 // DATA STRUCTURES
@@ -1352,31 +1352,32 @@ function openStatDetail(statId) {
             </div>
         </div>
 
-        <h3 class="subsection-title">Cronologia Recente</h3>
-        <div class="stat-history-list" id="statHistoryList">
+        <h3 class="subsection-title">Ultima Attività</h3>
+        <div id="statLastActivity">
             <!-- Will be populated below -->
         </div>
     `;
 
-    // History rendering
-    const historyList = document.getElementById('statHistoryList');
+    // Last Activity rendering
+    const lastActivityContainer = document.getElementById('statLastActivity');
     const history = state.xpLog
         .filter(entry => entry.statId === statId)
-        .reverse()
-        .slice(0, 10);
+        .reverse();
 
-    if (history.length === 0) {
-        historyList.innerHTML = `<div class="history-empty">Ancora nessuna attività registrata.</div>`;
+    const lastEntry = history[0];
+
+    if (!lastEntry) {
+        lastActivityContainer.innerHTML = `<div class="history-empty" style="padding:10px;">Ancora nessuna attività.</div>`;
     } else {
-        historyList.innerHTML = history.map(entry => `
-            <div class="history-item">
-                <div class="history-item-info">
-                    <span class="history-item-name">${entry.source || 'Bonus Manuale'}</span>
-                    <span class="history-item-date">${entry.date}</span>
+        lastActivityContainer.innerHTML = `
+            <div class="last-activity-box">
+                <div class="last-activity-info">
+                    <span class="last-activity-name">${lastEntry.source || 'Bonus Manuale'}</span>
+                    <span class="last-activity-date">${lastEntry.date}</span>
                 </div>
-                <div class="history-item-xp">+${entry.amount} XP</div>
+                <div class="last-activity-xp">+${lastEntry.amount} XP</div>
             </div>
-        `).join('');
+        `;
     }
 
     const editBtn = document.getElementById('btnEditStatDetail');
@@ -1521,9 +1522,9 @@ function addXp(amount, statId, sourceName = null) {
             source: sourceName
         });
 
-        // Limit log size (keep last 200 entries to prevent state bloat)
-        if (state.xpLog.length > 200) {
-            state.xpLog = state.xpLog.slice(-200);
+        // Limit log size (keep last 1000 entries to ensure 7-day momentum coverage)
+        if (state.xpLog.length > 1000) {
+            state.xpLog = state.xpLog.slice(-1000);
         }
     }
 
