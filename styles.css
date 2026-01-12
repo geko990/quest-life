@@ -702,6 +702,7 @@ body {
     transition: box-shadow 0.2s;
     position: relative;
     overflow: hidden;
+    /* Ensure swipe actions stay inside */
 }
 
 /* Swipe content per stat card */
@@ -743,23 +744,29 @@ body {
 }
 
 .swipe-action.edit {
-    background: var(--accent-light);
-    color: var(--accent-primary);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-right: 1px solid var(--glass-border);
 }
 
 .swipe-action.delete {
-    background: #fee2e2;
-    color: var(--danger);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-left: 1px solid var(--glass-border);
 }
 
-/* Swipe Hints Feedback */
+/* Swipe Hints Feedback - Neutral but visible */
 .task-card.swipe-edit-hint .swipe-action.edit {
+    background: var(--accent-light);
+    color: var(--accent-primary);
     opacity: 1;
     font-size: 24px;
     transform: scale(1.1);
 }
 
 .task-card.swipe-delete-hint .swipe-action.delete {
+    background: #fee2e2;
+    color: var(--danger);
     opacity: 1;
     font-size: 24px;
     transform: scale(1.1);
@@ -1908,7 +1915,7 @@ body {
 
 /* Swipe hint colors */
 .task-card.swipe-edit-hint {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.4) 0%, transparent 60%);
+    background: var(--bg-primary);
 }
 
 .task-card.swipe-edit-hint .swipe-content {
@@ -1916,7 +1923,7 @@ body {
 }
 
 .task-card.swipe-delete-hint {
-    background: linear-gradient(270deg, rgba(239, 68, 68, 0.4) 0%, transparent 60%);
+    background: var(--bg-primary);
 }
 
 .task-card.swipe-delete-hint .swipe-content {

@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.3";
+const APP_VERSION = "0.3.8.4";
 
 // ============================================
 // DATA STRUCTURES
@@ -1957,15 +1957,15 @@ function showDeleteConfirm(type, id) {
     const overlay = document.createElement('div');
     overlay.className = 'delete-confirm-overlay';
     overlay.innerHTML = `
-            < div class="delete-confirm-modal" >
+        <div class="delete-confirm-modal">
             <div class="delete-confirm-icon">🗑️</div>
             <div class="delete-confirm-text">Eliminare ${label} <strong>"${item.name}"</strong>?</div>
             <div class="delete-confirm-buttons">
                 <button class="btn-cancel" onclick="closeDeleteConfirm()">Annulla</button>
                 <button class="btn-danger" onclick="confirmDelete('${type}', '${id}')">Elimina</button>
             </div>
-        </div >
-            `;
+        </div>
+    `;
     document.body.appendChild(overlay);
     setTimeout(() => overlay.classList.add('active'), 10);
 }
