@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.9.1";
+const APP_VERSION = "0.3.9.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -831,10 +831,7 @@ function renderStatCard(stat) {
                 <div class="swipe-action edit">✏️</div>
                 <div class="swipe-action delete">🗑️</div>
             </div>
-            <div class="swipe-content" 
-                 onclick="handleTaskClick(event, '${stat.type}', '${stat.id}')"
-                 onmouseenter="showStatTooltip('${stat.id}', event)" 
-                 onmouseleave="hideStatTooltip()">
+            <div class="swipe-content" onclick="handleTaskClick(event, '${stat.type}', '${stat.id}')">
                 <div class="stat-card-header">
                     <span class="stat-card-icon">${stat.icon}</span>
                     <span class="stat-card-name">${stat.name}</span>
@@ -1308,13 +1305,9 @@ function openStatDetail(statId) {
     const stat = state.stats.find(s => s.id === statId);
     if (!stat) return;
 
-    const rank = getStatRank(stat.level);
     const xpForNext = getXpForLevel(stat.level + 1);
     const xpNeeded = xpForNext - stat.xp;
     const progress = (stat.xp / xpForNext) * 100;
-
-    // Header & Rank in the Title
-    document.getElementById('statDetailTitle').innerHTML = `${stat.icon} ${stat.name}`;
 
     // Complex Content Area
     const content = document.getElementById('statDetailContent');
@@ -1328,19 +1321,24 @@ function openStatDetail(statId) {
     const lastEntry = history[0];
 
     content.innerHTML = `
-        <div class="stat-detail-header" style="margin-bottom: 20px;">
-            <div class="stat-rank-badge">${rank}</div>
+        <div style="text-align: center; margin-bottom: 5px;">
+            <div style="font-size: 32px; margin-bottom: 5px;">${stat.icon}</div>
+            <h2 style="font-size: 22px; margin: 0; color: var(--text-primary); text-align: center; width: 100%;">${stat.name}</h2>
+            <div style="font-size: 13px; color: var(--text-secondary); font-style: italic; margin-top: 8px; padding: 0 10px; line-height: 1.4;">
+                ${stat.description || 'Nessuna descrizione.'}
+            </div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--accent-primary); margin-top: 15px;">Livello ${stat.level}</div>
         </div>
 
-        <div class="progress-info-big" style="margin-bottom: 20px;">
-            <div class="progress-bar" style="height: 12px; margin-bottom: 10px;">
+        <div class="progress-info-big" style="margin: 15px 0 20px 0;">
+            <div class="progress-bar" style="height: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.1);">
                 <div class="progress-fill" style="width: ${progress}%"></div>
             </div>
-            <div class="xp-needed" style="font-size: 13px;">Livello ${stat.level} &bull; <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
+            <div class="xp-needed" style="font-size: 13px; text-align: center;">Mancano <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
         </div>
 
-        <div class="momentum-section" style="padding: 12px; margin-bottom: 20px;">
-            <div class="momentum-title" style="font-size: 12px; margin-bottom: 12px;">
+        <div class="momentum-section" style="padding: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+            <div class="momentum-title" style="font-size: 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
                 <span>Momentum Settimanale</span>
                 <span style="color:var(--accent-primary)">+${momentum.reduce((s, m) => s + m.xp, 0)} XP</span>
             </div>
@@ -1354,7 +1352,7 @@ function openStatDetail(statId) {
             </div>
         </div>
 
-        <h3 class="subsection-title" style="font-size: 14px; margin-top: 0; margin-bottom: 10px; text-align: center;">Ultima Attività</h3>
+        <h3 class="subsection-title" style="font-size: 14px; margin: 0 0 10px 0; text-align: center;">Ultima Attività</h3>
         <div id="statLastActivity">
             ${lastEntry ? `
                 <div class="last-activity-box" style="padding: 10px 15px;">
@@ -1406,7 +1404,7 @@ function toggleSubquest(questId, subquestId) {
 
     if (subquest.completed) {
         // Double XP for subquest (Full habitual XP)
-        addXp(calculateXp(quest.stars), quest.primaryStatId, `${quest.name} > ${sub.name}`);
+        addXp(calculateXp(quest.stars), quest.primaryStatId, `${quest.name} > ${subquest.name}`);
         if (quest.secondaryStatId) {
             addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${sub.name}`);
         }
@@ -2597,6 +2595,8 @@ window.confirmDelete = confirmDelete;
 // Quest Detail
 window.openQuestDetail = openQuestDetail;
 window.closeQuestDetailModal = closeQuestDetailModal;
+window.openStatDetail = openStatDetail;
+window.closeStatDetailModal = closeStatDetailModal;
 window.toggleSubquest = toggleSubquest;
 window.editCurrentQuestInModal = editCurrentQuestInModal;
 window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
