@@ -1905,11 +1905,19 @@ body {
 
 /* Swipe hint colors */
 .task-card.swipe-edit-hint {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.3) 0%, transparent 50%);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.4) 0%, transparent 60%);
+}
+
+.task-card.swipe-edit-hint .swipe-content {
+    background: transparent;
 }
 
 .task-card.swipe-delete-hint {
-    background: linear-gradient(270deg, rgba(239, 68, 68, 0.3) 0%, transparent 50%);
+    background: linear-gradient(270deg, rgba(239, 68, 68, 0.4) 0%, transparent 60%);
+}
+
+.task-card.swipe-delete-hint .swipe-content {
+    background: transparent;
 }
 
 /* Delete confirmation modal */
