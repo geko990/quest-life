@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.8.1";
+const APP_VERSION = "0.3.8.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -116,9 +116,31 @@ document.addEventListener('DOMContentLoaded', () => {
     initVisibilityPopup();
     renderAll();
 
-    // Set version in UI
+    // Set version in UI and handle PWA update force
     const versionEl = document.getElementById('appVersion');
-    if (versionEl) versionEl.textContent = APP_VERSION;
+    if (versionEl) {
+        versionEl.textContent = APP_VERSION;
+
+        // Help PWA update: if stored version is different, attempt a hard reload
+        // and update the stored version.
+        const storedVersion = localStorage.getItem('questlife_app_version');
+        if (storedVersion && storedVersion !== APP_VERSION) {
+            console.log("New version detected, updating PWA cache...");
+            localStorage.setItem('questlife_app_version', APP_VERSION);
+
+            // Unregister SW and reload to be extra aggressive for iOS PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) registration.unregister();
+                    setTimeout(() => location.reload(true), 100);
+                });
+            } else {
+                location.reload(true);
+            }
+        } else if (!storedVersion) {
+            localStorage.setItem('questlife_app_version', APP_VERSION);
+        }
+    }
 
     // Refresh when app comes back to foreground (handles day change while app was in background)
     document.addEventListener('visibilitychange', () => {
@@ -780,14 +802,9 @@ function renderStatCard(stat) {
     const xpProgress = Math.min(100, (stat.xp / xpForNext) * 100);
     const hiddenClass = stat.visible ? '' : 'stat-hidden';
     return `
-        <div class="stat-card ${hiddenClass}" data-stat="${stat.id}">
-            <div class="swipe-actions swipe-actions-left">
-                <button class="swipe-action" onclick="editStat('${stat.id}')">✏️</button>
-            </div>
-            <div class="swipe-actions swipe-actions-right">
-                <button class="swipe-action" onclick="deleteStat('${stat.id}')">🗑️</button>
-            </div>
+        <div class="stat-card ${hiddenClass} task-card" data-type="${stat.type}" data-id="${stat.id}">
             <div class="swipe-content" 
+                 onclick="handleTaskClick(event, '${stat.type}', '${stat.id}')"
                  onmouseenter="showStatTooltip('${stat.id}', event)" 
                  onmouseleave="hideStatTooltip()">
                 <div class="stat-card-header">
@@ -1494,12 +1511,7 @@ function toggleStatVisibility(statId) {
     }
 }
 
-function deleteStat(statId) {
-    if (!confirm('Eliminare questo attributo/abilità?')) return;
-    state.stats = state.stats.filter(s => s.id !== statId);
-    saveState();
-    renderAll();
-}
+// Stat cleanup handled by unified deleteTask/showDeleteConfirm
 
 // ============================================
 // MODAL SYSTEM
@@ -1824,12 +1836,7 @@ function submitModal() {
     closeModal();
 }
 
-function editStat(statId) {
-    const stat = state.stats.find(s => s.id === statId);
-    if (stat) {
-        openModal(stat.type, stat);
-    }
-}
+// editStat replaced by unified editTask
 
 // ============================================
 // SWIPE ACTIONS
@@ -1912,10 +1919,23 @@ function initSwipe() {
 }
 
 // Delete confirmation modal
-function showDeleteConfirm(type, id, taskCard) {
-    const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+function showDeleteConfirm(type, id) {
+    let list;
+    if (type === 'habit') list = state.habits;
+    else if (type === 'oneshot') list = state.oneshots;
+    else if (type === 'quest') list = state.quests;
+    else if (type === 'attribute' || type === 'ability') list = state.stats;
+
     const item = list.find(i => i.id === id);
     if (!item) return;
+
+    // Determine label
+    let label = "task";
+    if (type === 'habit') label = "abitudine";
+    else if (type === 'oneshot') label = "one shot";
+    else if (type === 'quest') label = "quest";
+    else if (type === 'attribute') label = "attributo";
+    else if (type === 'ability') label = "abilità";
 
     // Create overlay
     const overlay = document.createElement('div');
@@ -1923,7 +1943,7 @@ function showDeleteConfirm(type, id, taskCard) {
     overlay.innerHTML = `
         <div class="delete-confirm-modal">
             <div class="delete-confirm-icon">🗑️</div>
-            <div class="delete-confirm-text">Eliminare "${item.name}"?</div>
+            <div class="delete-confirm-text">Eliminare ${label} <strong>"${item.name}"</strong>?</div>
             <div class="delete-confirm-buttons">
                 <button class="btn-cancel" onclick="closeDeleteConfirm()">Annulla</button>
                 <button class="btn-danger" onclick="confirmDelete('${type}', '${id}')">Elimina</button>
@@ -1944,7 +1964,17 @@ function closeDeleteConfirm() {
 
 function confirmDelete(type, id) {
     closeDeleteConfirm();
-    const list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+    let list;
+    if (type === 'habit') list = state.habits;
+    else if (type === 'oneshot') list = state.oneshots;
+    else if (type === 'quest') list = state.quests;
+    else if (type === 'attribute' || type === 'ability') {
+        state.stats = state.stats.filter(i => i.id !== id);
+        saveState();
+        renderAll();
+        return;
+    }
+
     const idx = list.findIndex(i => i.id === id);
     if (idx > -1) {
         list.splice(idx, 1);
@@ -1961,6 +1991,7 @@ function editTask(type, id) {
     if (type === 'habit') list = state.habits;
     else if (type === 'oneshot') list = state.oneshots;
     else if (type === 'quest') list = state.quests;
+    else if (type === 'attribute' || type === 'ability') list = state.stats;
 
     const item = list.find(i => i.id === id);
     if (item) openModal(type, item);
