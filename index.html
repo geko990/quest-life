@@ -526,10 +526,17 @@
                 </div>
             </div>
         </div>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <div id="diceRollResult" class="dice-result hidden">
+            <div class="dice-container">
+                <div class="d10-dice" id="d10Dice">?</div>
+            </div>
+            <div class="dice-bonus" id="diceBonus"></div>
+        </div>
+        <div class="daily-planner-actions" style="display: flex; gap: 10px; margin-top: 15px;">
             <button class="recap-close-btn" style="flex:1; background: var(--bg-primary); color: var(--text-primary);"
                 onclick="closeDailyPlanner()">Salta</button>
-            <button class="recap-close-btn" style="flex:2;" onclick="saveDailyPlan()">Conferma Piano 🚀</button>
+            <button class="recap-close-btn" style="flex:2;" id="rollDiceBtn" onclick="rollD10AndSave()">🎲 Lancia un
+                D10!</button>
         </div>
     </div>
 

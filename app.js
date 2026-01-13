@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.0.0";
+const APP_VERSION = "1.0.1.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1314,12 +1314,13 @@ function completeOneshot(oneshotId) {
     oneshot.completed = true;
     oneshot.completedAt = new Date().toISOString();
 
-    // Calculate XP with bonus for same-day daily plan completion
+    // Calculate XP with bonus from D10 roll (same-day only)
     let xp = calculateXp(oneshot.stars);
     const today = getGameDateString();
-    if (oneshot.fromDailyPlan && oneshot.dailyPlanDate === today) {
-        xp = Math.round(xp * 1.5);
-        console.log('🎲 Bonus giornaliero! XP x1.5');
+    if (oneshot.fromDailyPlan && oneshot.dailyPlanDate === today && oneshot.d10Roll) {
+        const bonusMultiplier = 1 + (oneshot.d10Roll / 10); // 1-10 → 1.1-2.0
+        xp = Math.round(xp * bonusMultiplier);
+        console.log(`🎲 D10 Bonus: +${oneshot.d10Roll * 10}% → XP x${bonusMultiplier}`);
     }
 
     addXp(xp, oneshot.primaryStatId, oneshot.name);
@@ -3186,6 +3187,111 @@ function saveDailyPlan() {
     }
 }
 
+function rollD10AndSave() {
+    const diceResultDiv = document.getElementById('diceRollResult');
+    const d10Dice = document.getElementById('d10Dice');
+    const diceBonus = document.getElementById('diceBonus');
+    const rollBtn = document.getElementById('rollDiceBtn');
+
+    // Check if any slots are filled
+    const slots = document.querySelectorAll('.daily-slot');
+    let hasContent = false;
+    slots.forEach(slot => {
+        if (slot.querySelector('.slot-name')?.value.trim()) hasContent = true;
+    });
+
+    if (!hasContent) {
+        // No tasks entered, just close
+        closeDailyPlanner();
+        return;
+    }
+
+    // Show dice area and hide button
+    diceResultDiv?.classList.remove('hidden');
+    if (rollBtn) rollBtn.style.display = 'none';
+
+    // Animate dice rolling - cycle through numbers
+    let rollCount = 0;
+    const maxRolls = 15;
+    const rollInterval = setInterval(() => {
+        d10Dice.textContent = Math.floor(Math.random() * 10) + 1;
+        d10Dice.classList.add('rolling');
+        rollCount++;
+
+        if (rollCount >= maxRolls) {
+            clearInterval(rollInterval);
+
+            // Final roll result
+            const finalRoll = Math.floor(Math.random() * 10) + 1;
+            d10Dice.textContent = finalRoll;
+            d10Dice.classList.remove('rolling');
+
+            // Calculate bonus: 1-10 -> 10%-100% (so multiplier is 1.1 to 2.0)
+            const bonusPercent = finalRoll * 10;
+            diceBonus.textContent = `+${bonusPercent}% XP Bonus! 🎉`;
+
+            // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            // Save after 1.5 seconds
+            setTimeout(() => {
+                saveDailyPlanWithBonus(finalRoll);
+            }, 1500);
+        }
+    }, 100);
+}
+
+function saveDailyPlanWithBonus(d10Roll) {
+    const slots = document.querySelectorAll('.daily-slot');
+    const today = getGameDateString();
+    let createdCount = 0;
+
+    const slotIcons = {
+        action: '🎯',
+        bonus: '⚡',
+        movement: '🚶',
+        reaction: '🛡️'
+    };
+
+    slots.forEach(slot => {
+        const name = slot.querySelector('.slot-name')?.value.trim();
+        if (!name) return;
+
+        const slotType = slot.dataset.slot;
+        const stars = parseInt(slot.querySelector('.star-selector')?.dataset.stars) || 3;
+        const statId = slot.querySelector('.slot-stat')?.value || 'int';
+
+        const oneshot = {
+            id: 'dp-' + Date.now() + '-' + slotType,
+            name: `${slotIcons[slotType]} ${name}`,
+            stars: stars,
+            primaryStatId: statId,
+            secondaryStatId: null,
+            dueDate: null,
+            completed: false,
+            locked: false,
+            fromDailyPlan: true,
+            dailyPlanDate: today,
+            d10Roll: d10Roll  // Store the dice roll for bonus calculation
+        };
+
+        state.oneshots.unshift(oneshot);
+        createdCount++;
+    });
+
+    state.dailyPlan.lastPlanDate = today;
+    saveState();
+    renderOneshots();
+    closeDailyPlanner();
+
+    // Reset dice UI
+    document.getElementById('diceRollResult')?.classList.add('hidden');
+    const rollBtn = document.getElementById('rollDiceBtn');
+    if (rollBtn) rollBtn.style.display = '';
+
+    console.log(`🎲 D10 Roll: ${d10Roll} → +${d10Roll * 10}% bonus!`);
+}
+
 // ============================================
 // WEEKLY RECAP
 // ============================================
@@ -3301,6 +3407,7 @@ function calculateWeeklyRecap() {
 window.showDailyPlanner = showDailyPlanner;
 window.closeDailyPlanner = closeDailyPlanner;
 window.saveDailyPlan = saveDailyPlan;
+window.rollD10AndSave = rollD10AndSave;
 
 // Expose Weekly Recap functions
 window.closeWeeklyRecap = closeWeeklyRecap;
