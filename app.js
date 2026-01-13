@@ -488,9 +488,7 @@ function initNavSwipe() {
             switchSection(navTargetSection);
         }
 
-        // Reset bubble transform to prevent jump
-        bubble.style.transform = '';
-
+        // Just remove swiping class - bubble fades in place
         nav.classList.remove('swiping');
         navSwipeStart = null;
         navTargetSection = null;
