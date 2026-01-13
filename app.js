@@ -2288,23 +2288,26 @@ function initSwipe() {
             if (dragList && dragType && dragId) {
                 const items = Array.from(dragList.querySelectorAll('.task-card'));
                 const dragIndex = items.indexOf(dragCard);
-
-                // Find target position based on Y
-                let targetIndex = dragIndex;
-                const dragRect = dragCard.getBoundingClientRect();
                 const centerY = e.clientY;
 
-                items.forEach((item, idx) => {
-                    if (item === dragCard) return;
-                    const itemRect = item.getBoundingClientRect();
-                    const itemCenter = itemRect.top + itemRect.height / 2;
+                console.log('Drop at Y:', centerY, 'dragIndex:', dragIndex);
 
-                    if (centerY < itemCenter && idx < targetIndex) {
-                        targetIndex = idx;
-                    } else if (centerY > itemCenter && idx > targetIndex) {
-                        targetIndex = idx;
+                // Find the item we're hovering over
+                let targetIndex = dragIndex;
+                for (let i = 0; i < items.length; i++) {
+                    if (i === dragIndex) continue;
+                    const rect = items[i].getBoundingClientRect();
+                    const mid = rect.top + rect.height / 2;
+
+                    if (centerY < mid && i < dragIndex) {
+                        targetIndex = i;
+                        break;
+                    } else if (centerY > mid && i > dragIndex) {
+                        targetIndex = i;
                     }
-                });
+                }
+
+                console.log('targetIndex:', targetIndex);
 
                 // Reorder array
                 if (targetIndex !== dragIndex) {
@@ -2314,8 +2317,9 @@ function initSwipe() {
                     else if (dragType === 'quest') arr = state.quests;
 
                     if (arr) {
-                        const item = arr.splice(dragIndex, 1)[0];
-                        arr.splice(targetIndex, 0, item);
+                        console.log('Reordering', dragType, 'from', dragIndex, 'to', targetIndex);
+                        const [removed] = arr.splice(dragIndex, 1);
+                        arr.splice(targetIndex, 0, removed);
                         saveState();
                         renderAll();
                     }
