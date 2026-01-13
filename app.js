@@ -2201,30 +2201,37 @@ function initSwipe() {
     let dragList = null;
     let dragType = null;
     let dragId = null;
+    let hasMoved = false;
 
     document.addEventListener('pointerdown', (e) => {
         const content = e.target.closest('.swipe-content');
         if (!content) return;
 
         swipeWasTriggered = false;
+        hasMoved = false;
         const taskCard = content.closest('.task-card');
 
-        // Start long-press timer for drag
-        dragTimer = setTimeout(() => {
-            if (taskCard && !isSwiping) {
-                isDragging = true;
-                dragCard = taskCard;
-                dragStartY = e.clientY;
-                dragType = taskCard.dataset.type;
-                dragId = taskCard.dataset.id;
-                dragList = taskCard.parentElement;
+        // Start long-press timer for drag (only for habits/oneshots/quests, not stats)
+        const type = taskCard?.dataset?.type;
+        if (type === 'habit' || type === 'oneshot' || type === 'quest') {
+            dragTimer = setTimeout(() => {
+                if (taskCard && !hasMoved) {
+                    isDragging = true;
+                    isSwiping = false; // Cancel swipe mode
+                    dragCard = taskCard;
+                    dragStartY = e.clientY;
+                    dragType = type;
+                    dragId = taskCard.dataset.id;
+                    dragList = taskCard.parentElement;
 
-                taskCard.classList.add('dragging');
+                    taskCard.classList.add('dragging');
+                    console.log('Drag started!', dragType, dragId);
 
-                // Haptic feedback
-                if (navigator.vibrate) navigator.vibrate(50);
-            }
-        }, 400);
+                    // Haptic feedback
+                    if (navigator.vibrate) navigator.vibrate(50);
+                }
+            }, 400);
+        }
 
         currentSwipeCard = content;
         swipeStartX = e.clientX;
@@ -2249,6 +2256,7 @@ function initSwipe() {
         // Cancel long-press if moving horizontally
         if (Math.abs(e.clientX - swipeStartX) > 10) {
             clearTimeout(dragTimer);
+            hasMoved = true;
         }
 
         const diff = e.clientX - swipeStartX + currentX;
