@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.4.0";
+const APP_VERSION = "1.0.5.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1296,8 +1296,7 @@ function renderOneshots() {
                         <div class="card-meta">
                             <span class="card-stars">${'⭐'.repeat(oneshot.stars)}</span>
                             <span class="card-xp">+${calculateXp(oneshot.stars)} XP</span>
-                            ${primaryStat ? `<span class="card-stat">${primaryStat.icon}</span>` : ''}
-                            ${secondaryStat ? `<span class="card-stat" style="opacity:0.6">${secondaryStat.icon}</span>` : ''}
+                            <span class="card-stats-col">${primaryStat ? primaryStat.icon : ''}${secondaryStat ? secondaryStat.icon : ''}</span>
                             ${oneshot.d10Roll && oneshot.dailyPlanDate === getGameDateString() ? `<span class="card-bonus">Oggi +${oneshot.d10Roll * 10}%</span>` : ''}
                             ${oneshot.dueDate ? `<span class="card-due">📅 ${formatDate(oneshot.dueDate)}</span>` : ''}
                         </div>

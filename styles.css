@@ -1165,6 +1165,11 @@ body {
     min-width: 18px;
 }
 
+.card-stats-col {
+    min-width: 36px;
+    display: inline-block;
+}
+
 .card-due {
     color: var(--danger);
 }
@@ -1922,33 +1927,33 @@ body {
 .daily-planner-slots {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 10px;
+    margin-top: 12px;
 }
 
 .daily-slot {
     background: var(--bg-primary);
-    border-radius: var(--radius-sm);
-    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
     border: 1px solid var(--border-color);
 }
 
 .slot-header {
     font-size: 13px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     color: var(--text-primary);
 }
 
 .slot-name {
     width: 100%;
-    padding: 6px 8px;
+    padding: 7px 10px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     background: var(--bg-secondary);
     color: var(--text-primary);
-    font-size: 13px;
-    margin-bottom: 5px;
+    font-size: 14px;
+    margin-bottom: 6px;
     box-sizing: border-box;
 }
 
@@ -1991,13 +1996,20 @@ body {
 
 /* D10 Dice Roll Animation */
 .dice-result {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 15px 0;
-    margin-top: 5px;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9999;
 }
 
 .dice-result.hidden {
@@ -2009,18 +2021,18 @@ body {
 }
 
 .d10-dice {
-    width: 90px;
-    height: 90px;
+    width: 120px;
+    height: 120px;
     background: var(--accent-gradient);
-    border-radius: 12px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 40px;
+    font-size: 52px;
     font-weight: bold;
     color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 10px 30px rgba(var(--accent-rgb, 139, 92, 246), 0.4);
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
     transform-style: preserve-3d;
 }
 
@@ -2055,10 +2067,11 @@ body {
 }
 
 .dice-bonus {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--accent-color);
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
     text-align: center;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* Last Activity Box */
