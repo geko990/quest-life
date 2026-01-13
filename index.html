@@ -181,7 +181,11 @@
             <section id="section-oneshot" class="section">
                 <div class="section-header">
                     <h2>💥 One Shot</h2>
-                    <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
+                    <div class="header-actions" style="display: flex; gap: 8px;">
+                        <button class="add-btn-circle secondary" onclick="openToxicInventory()"
+                            title="Zaino Tossico">🎒</button>
+                        <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
+                    </div>
                 </div>
                 <div class="oneshot-list" id="oneshotList"></div>
             </section>
@@ -397,6 +401,22 @@
     <div class="profile-popup popup-center hidden" id="statDetailModal">
         <div id="statDetailContent" style="padding: 10px 5px;">
             <!-- Dynamic Boxless Content: Icon Name -> Liv -> Bar -> Momentum -> Activity -->
+        </div>
+    </div>
+
+    <!-- Toxic Inventory Modal -->
+    <div class="modal-overlay" id="toxicInventoryOverlay" onclick="closeToxicInventory()"></div>
+    <div class="profile-popup popup-center hidden" id="toxicInventoryModal">
+        <div class="profile-header-pill">Zaino Tossico</div>
+        <div class="profile-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin:0; font-size: 20px;">🎒 Inventario</h2>
+                <button class="add-btn-circle" onclick="openModal('toxic')"
+                    style="width: 28px; height: 28px; font-size: 16px;">+</button>
+            </div>
+            <div id="toxicItemList" class="toxic-grid">
+                <!-- Dynamically populated -->
+            </div>
         </div>
     </div>
 

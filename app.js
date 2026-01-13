@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.9.5";
+const APP_VERSION = "0.4.0.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -64,6 +64,7 @@ let state = {
     habits: [],
     oneshots: [],
     quests: [],
+    toxicItems: [], // New for "Zaino Tossico"
     completionLog: {},
     xpLog: [], // Log di XP guadagnato: [{date, statId, amount}]
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0 }
@@ -208,6 +209,7 @@ function loadState() {
             state.habits = parsed.habits || [];
             state.oneshots = parsed.oneshots || [];
             state.quests = parsed.quests || [];
+            state.toxicItems = parsed.toxicItems || [];
 
             // Migration: Add createdAt to habits that don't have it
             const migrationDate = new Date().toISOString();
@@ -219,6 +221,9 @@ function loadState() {
             });
             state.quests.forEach(q => {
                 if (!q.createdAt) q.createdAt = migrationDate;
+            });
+            state.toxicItems.forEach(t => {
+                if (!t.createdAt) t.createdAt = migrationDate;
             });
 
             // Deduplicate IDs just in case
@@ -1858,6 +1863,39 @@ function openModal(type, editData = null) {
                 </div>
         `;
             break;
+
+        case 'toxic':
+            title.textContent = editData ? 'Modifica Oggetto Tossico' : 'Nuovo Oggetto Tossico';
+            body.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group" style="flex: 0 0 80px;">
+                        <label>Icona</label>
+                        <input type="text" id="inputIcon" value="${editData?.icon || '💀'}" style="text-align:center; font-size: 24px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome Oggetto</label>
+                        <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Junk Food">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Danneggia Stat</label>
+                        <select id="inputPrimaryStat">${statOptions}</select>
+                    </div>
+                    <div class="form-group">
+                        <label>Penalità XP</label>
+                        <input type="number" id="inputPenalty" value="${editData?.penalty || 20}" min="1">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" onclick="closeModal()">Annulla</button>
+                    <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
+                </div>
+            `;
+            if (editData) {
+                document.getElementById('inputPrimaryStat').value = editData.statId;
+            }
+            break;
     }
 
     document.getElementById('modalOverlay').classList.add('active');
@@ -1992,6 +2030,23 @@ function submitModal() {
                     visible: true, level: 1, xp: 0
                 });
             }
+            break;
+
+        case 'toxic':
+            const iconT = document.getElementById('inputIcon')?.value || '💀';
+            const penalty = parseInt(document.getElementById('inputPenalty')?.value) || 20;
+            const statId = document.getElementById('inputPrimaryStat')?.value;
+
+            if (editingItem) {
+                Object.assign(editingItem, { name, icon: iconT, penalty, statId });
+            } else {
+                state.toxicItems.push({
+                    id: 'toxic_' + Date.now(),
+                    name, icon: iconT, penalty, statId,
+                    createdAt: getGameDateObj().toISOString()
+                });
+            }
+            renderToxicInventory();
             break;
     }
 
@@ -2545,6 +2600,90 @@ function toggleStatVisibilityFromPopup(statId) {
         renderStatsGrid();
     }
 }
+
+// ============================================
+// TOXIC INVENTORY
+// ============================================
+
+function openToxicInventory() {
+    document.getElementById('toxicInventoryOverlay').classList.add('active');
+    document.getElementById('toxicInventoryModal').classList.remove('hidden');
+    renderToxicInventory();
+}
+
+function closeToxicInventory() {
+    document.getElementById('toxicInventoryOverlay').classList.remove('active');
+    document.getElementById('toxicInventoryModal').classList.add('hidden');
+}
+
+function renderToxicInventory() {
+    const list = document.getElementById('toxicItemList');
+    if (!list) return;
+
+    if (state.toxicItems.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px;">
+                <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;">🎒</div>
+                Il tuo zaino è vuoto.<br>Crea oggetti tossici per tracciare le cattive abitudini.
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = state.toxicItems.map(item => {
+        const stat = state.stats.find(s => s.id === item.statId);
+        return `
+            <div class="toxic-item-card">
+                <div class="toxic-item-info">
+                    <div class="toxic-item-icon">${item.icon}</div>
+                    <div class="toxic-item-details">
+                        <h4>${item.name}</h4>
+                        <div class="toxic-item-penalty">-${item.penalty} XP a ${stat ? stat.name : 'Attributo'}</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span onclick="editToxicItem('${item.id}')" style="cursor:pointer; opacity: 0.6; font-size: 14px;">✏️</span>
+                    <button class="btn-use-toxic" onclick="useToxicItem('${item.id}')">Usa</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function useToxicItem(id) {
+    const item = state.toxicItems.find(it => it.id === id);
+    if (!item) return;
+
+    // Deduct XP
+    addXp(-item.penalty, item.statId, item.name);
+
+    // Feedback
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = 'Fatto! 💀';
+    btn.style.background = '#ff4d4d';
+    btn.style.color = 'white';
+
+    setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+        btn.style.color = '';
+        renderAll();
+    }, 1000);
+}
+
+function editToxicItem(id) {
+    const item = state.toxicItems.find(it => it.id === id);
+    if (item) {
+        openModal('toxic', item);
+    }
+}
+
+// Expose functions to window
+window.openToxicInventory = openToxicInventory;
+window.closeToxicInventory = closeToxicInventory;
+window.useToxicItem = useToxicItem;
+window.editToxicItem = editToxicItem;
 
 // Expose to console
 window.loadDemoData = loadDemoData;

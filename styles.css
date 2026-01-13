@@ -1579,6 +1579,68 @@ body {
     margin-bottom: 20px;
 }
 
+/* Toxic Inventory */
+.toxic-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.toxic-item-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.toxic-item-card:hover {
+    background: rgba(255, 0, 0, 0.05);
+    border-color: rgba(255, 0, 0, 0.2);
+}
+
+.toxic-item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toxic-item-icon {
+    font-size: 24px;
+}
+
+.toxic-item-details h4 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.toxic-item-penalty {
+    font-size: 11px;
+    color: #ff4d4d;
+    font-weight: 600;
+}
+
+.btn-use-toxic {
+    background: #ff4d4d22;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d44;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-use-toxic:hover {
+    background: #ff4d4d;
+    color: white;
+}
+
 .xp-needed {
     font-size: 13px;
     color: var(--text-muted);
