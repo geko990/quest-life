@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.9.0.0";
+const APP_VERSION = "0.9.0.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -2225,6 +2225,7 @@ function initSwipe() {
                     dragList = taskCard.parentElement;
 
                     taskCard.classList.add('dragging');
+                    document.body.style.overflow = 'hidden'; // Prevent page scroll
                     console.log('Drag started!', dragType, dragId);
 
                     // Haptic feedback
@@ -2284,6 +2285,7 @@ function initSwipe() {
         if (isDragging && dragCard) {
             dragCard.classList.remove('dragging');
             dragCard.style.transform = '';
+            document.body.style.overflow = ''; // Restore scroll
 
             // Calculate new position based on Y coordinate
             if (dragList && dragType && dragId) {
