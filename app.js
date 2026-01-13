@@ -2980,7 +2980,9 @@ function checkWeeklyRecap() {
 }
 
 function showWeeklyRecap() {
+    console.log('showWeeklyRecap called');
     const recap = calculateWeeklyRecap();
+    console.log('Recap:', recap);
 
     const weekLabel = document.getElementById('recapWeekLabel');
     if (weekLabel) {
@@ -3018,6 +3020,7 @@ function showWeeklyRecap() {
 
     document.getElementById('weeklyRecapModal')?.classList.remove('hidden');
     document.getElementById('weeklyRecapOverlay')?.classList.remove('hidden');
+    console.log('Modal should be visible now');
 }
 
 function closeWeeklyRecap() {
