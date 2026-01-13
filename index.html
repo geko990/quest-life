@@ -228,6 +228,22 @@
                             <option value="6">06:00</option>
                         </select>
                     </div>
+                    <div class="settings-row">
+                        <label>Popup Mattutino (D&D)</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableDailyPlanner"
+                                onchange="updateSettingToggle('enableDailyPlanner', this.checked)" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row">
+                        <label>Recap Settimanale</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableWeeklyRecap"
+                                onchange="updateSettingToggle('enableWeeklyRecap', this.checked)" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Aspetto -->

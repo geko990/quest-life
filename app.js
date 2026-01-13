@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.1.0";
+const APP_VERSION = "1.0.2.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1295,6 +1295,7 @@ function renderOneshots() {
                         <div class="card-title">${oneshot.name}</div>
                         <div class="card-meta">
                             <span class="card-stars">${'⭐'.repeat(oneshot.stars)}</span>
+                            ${oneshot.d10Roll && oneshot.dailyPlanDate === getGameDateString() ? `<span class="card-bonus">+${oneshot.d10Roll * 10}%</span>` : ''}
                             <span class="card-xp">+${calculateXp(oneshot.stars)} XP</span>
                             ${primaryStat ? `<span class="card-stat">${primaryStat.icon}</span>` : ''}
                             ${secondaryStat ? `<span class="card-stat" style="opacity:0.6">${secondaryStat.icon}</span>` : ''}
@@ -1710,6 +1711,16 @@ function initSettings() {
     if (dayStartSelect) {
         dayStartSelect.value = state.settings.dayStartTime || 0;
     }
+
+    // Sync popup toggle settings
+    const dailyPlannerToggle = document.getElementById('enableDailyPlanner');
+    if (dailyPlannerToggle) {
+        dailyPlannerToggle.checked = state.settings.enableDailyPlanner !== false;
+    }
+    const weeklyRecapToggle = document.getElementById('enableWeeklyRecap');
+    if (weeklyRecapToggle) {
+        weeklyRecapToggle.checked = state.settings.enableWeeklyRecap !== false;
+    }
 }
 
 
@@ -1777,6 +1788,12 @@ function updateDayStartTime(hour) {
         renderHeader();
         renderAll();
     }
+}
+
+function updateSettingToggle(setting, value) {
+    state.settings[setting] = value;
+    saveState();
+    console.log(`⚙️ ${setting} = ${value}`);
 }
 
 function renderSettingsStats() {
@@ -3079,6 +3096,9 @@ function completePomodoro() {
 // ============================================
 
 function checkDailyPlan() {
+    // Check if disabled in settings
+    if (state.settings.enableDailyPlanner === false) return;
+
     const now = new Date();
     const today = getGameDateString();
 
@@ -3297,6 +3317,9 @@ function saveDailyPlanWithBonus(d10Roll) {
 // ============================================
 
 function checkWeeklyRecap() {
+    // Check if disabled in settings
+    if (state.settings.enableWeeklyRecap === false) return;
+
     const today = getGameDateObj();
     const dayOfWeek = today.getDay(); // 0 = Sunday
 
@@ -3419,6 +3442,7 @@ window.closePomodoroTimer = closePomodoroTimer;
 window.togglePomodoro = togglePomodoro;
 window.resetPomodoro = resetPomodoro;
 window.savePomodoroSettings = savePomodoroSettings;
+window.updateSettingToggle = updateSettingToggle;
 
 // Expose functions to window
 window.openToxicInventory = openToxicInventory;
