@@ -1897,13 +1897,13 @@ body {
     opacity: 0;
     pointer-events: none;
     z-index: 1;
-    transition: opacity 0.15s ease-out;
+    /* No transition - instant disappear */
     left: 0;
     bottom: 5px;
 }
 
 .bottom-nav.swiping .nav-bubble {
-    transition: left 0.02s linear, opacity 0.1s;
+    transition: transform 0.03s linear;
     opacity: 0.7;
 }
 
