@@ -1016,16 +1016,6 @@ body {
     flex-shrink: 0;
 }
 
-.add-btn-circle.secondary {
-    border-color: var(--text-muted);
-    color: var(--text-muted);
-}
-
-.add-btn-circle.secondary:hover {
-    background: var(--text-muted);
-    color: white;
-}
-
 .add-btn-circle:hover {
     background: var(--accent-primary);
     color: white;
