@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.5.1.0";
+const APP_VERSION = "0.5.1.1";
 
 // ============================================
 // DATA STRUCTURES
@@ -451,21 +451,22 @@ function initNavSwipe() {
 
         // Move bubble based on touch X
         let x = touch.clientX - rect.left;
-        // Constraint bubble within nav
         x = Math.max(25, Math.min(rect.width - 25, x));
-        bubble.style.transform = `translate3d(${x - 25}px, -50%, 0)`;
+        bubble.style.transform = `translate3d(${x - 25}px, 0, 0)`;
 
-        // Clear previous reactive states and identify current target
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('bubble-near'));
-        const elementOver = document.elementFromPoint(touch.clientX, touch.clientY);
-        const navItem = elementOver?.closest('.nav-item');
-        if (navItem) {
-            navItem.classList.add('bubble-near');
-            const section = navItem.dataset.section;
-            if (section && section !== navTargetSection) {
-                navTargetSection = section;
+        // Find nearest icon by position comparison
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('bubble-near');
+            const itemRect = item.getBoundingClientRect();
+            const itemCenterX = itemRect.left + itemRect.width / 2;
+            const distance = Math.abs(touch.clientX - itemCenterX);
+
+            if (distance < 35) {
+                item.classList.add('bubble-near');
+                const section = item.dataset.section;
+                if (section) navTargetSection = section;
             }
-        }
+        });
     }, { passive: true });
 
     nav.addEventListener('touchend', () => {
