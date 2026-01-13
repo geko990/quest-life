@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.9.0.4";
+const APP_VERSION = "0.9.0.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -344,11 +344,15 @@ function checkFrozenStreak() {
         } else {
             console.log('💔 Serie persa! Nessun congelamento rimasto.');
             state.player.globalStreak = 0;
+            state.player.streakFreezes = 2; // Restore freezes on streak loss
+            console.log('❄️ Congelamenti ripristinati a 2');
         }
     } else {
         // Missed > 1 day: Streak broken regardless of freezes
         console.log('💔 Serie persa! Troppi giorni saltati.');
         state.player.globalStreak = 0;
+        state.player.streakFreezes = 2; // Restore freezes on streak loss
+        console.log('❄️ Congelamenti ripristinati a 2');
     }
 
     saveState();
@@ -1311,6 +1315,12 @@ function completeOneshot(oneshotId) {
     const popupXp = Math.round(15 * diffMultiplier);
     showProgressPopup(oneshot.primaryStatId, popupXp);
 
+    // Grant freeze for 5-star task completion
+    if (oneshot.stars === 5 && state.player.streakFreezes < 2) {
+        state.player.streakFreezes++;
+        console.log('❄️ Congelamento guadagnato! Ora:', state.player.streakFreezes);
+    }
+
     saveState();
     renderOneshots();
     renderCalendar();
@@ -1555,6 +1565,12 @@ function completeQuest(questId) {
     logCompletion('quests', quest.id);
     recordActivity();
     showProgressPopup(quest.primaryStatId, xp);
+
+    // Grant freeze for quest completion (quests are major achievements)
+    if (state.player.streakFreezes < 2) {
+        state.player.streakFreezes++;
+        console.log('❄️ Congelamento guadagnato dalla Quest! Ora:', state.player.streakFreezes);
+    }
 
     saveState();
     renderQuests();
