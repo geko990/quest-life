@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.7.0.0";
+const APP_VERSION = "0.8.0.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -74,6 +74,7 @@ let state = {
         sessionsToday: 0,
         lastSessionDate: null
     },
+    lastRecapWeek: null, // Week ID when last recap was shown
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0 }
 };
 
@@ -153,6 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initVisibilityPopup();
     initNavSwipe(); // New Liquid Glass Nav
     renderAll();
+
+    // Check for weekly recap (Sunday)
+    setTimeout(() => checkWeeklyRecap(), 1000);
 
     // Set version in UI and handle PWA update force
     const versionEl = document.getElementById('appVersion');
@@ -2955,6 +2959,117 @@ function completePomodoro() {
     }
     document.getElementById('pomodoroStatus').textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName}!`;
 }
+
+// ============================================
+// WEEKLY RECAP
+// ============================================
+
+function checkWeeklyRecap() {
+    const today = getGameDateObj();
+    const dayOfWeek = today.getDay(); // 0 = Sunday
+
+    // Only show on Sunday
+    if (dayOfWeek !== 0) return;
+
+    // Check if already shown this week
+    const currentWeek = getWeekIdentifier(getGameDateString());
+    if (state.lastRecapWeek === currentWeek) return;
+
+    // Show recap
+    showWeeklyRecap();
+}
+
+function showWeeklyRecap() {
+    const recap = calculateWeeklyRecap();
+
+    const weekLabel = document.getElementById('recapWeekLabel');
+    if (weekLabel) {
+        const today = getGameDateObj();
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - 6);
+        weekLabel.textContent = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${today.getDate()}/${today.getMonth() + 1}`;
+    }
+
+    const cardsEl = document.getElementById('recapCards');
+    if (cardsEl) {
+        cardsEl.innerHTML = `
+            <div class="recap-card">
+                <div class="recap-card-icon">⚡</div>
+                <div class="recap-card-value">${recap.totalXp}</div>
+                <div class="recap-card-label">XP Guadagnati</div>
+            </div>
+            <div class="recap-card">
+                <div class="recap-card-icon">${recap.topStat?.icon || '🏆'}</div>
+                <div class="recap-card-value">${recap.topStat?.name || '-'}</div>
+                <div class="recap-card-label">Stat Top</div>
+            </div>
+            <div class="recap-card">
+                <div class="recap-card-icon">✅</div>
+                <div class="recap-card-value">${recap.bestHabit?.name || '-'}</div>
+                <div class="recap-card-label">Abitudine Top</div>
+            </div>
+            <div class="recap-card">
+                <div class="recap-card-icon">🍅</div>
+                <div class="recap-card-value">${recap.pomodoroCount}</div>
+                <div class="recap-card-label">Pomodori</div>
+            </div>
+        `;
+    }
+
+    document.getElementById('weeklyRecapModal')?.classList.remove('hidden');
+    document.getElementById('weeklyRecapOverlay')?.classList.remove('hidden');
+}
+
+function closeWeeklyRecap() {
+    document.getElementById('weeklyRecapModal')?.classList.add('hidden');
+    document.getElementById('weeklyRecapOverlay')?.classList.add('hidden');
+
+    // Mark as shown for this week
+    state.lastRecapWeek = getWeekIdentifier(getGameDateString());
+    saveState();
+}
+
+function calculateWeeklyRecap() {
+    const today = getGameDateObj();
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        weekDates.push(formatISO(d));
+    }
+
+    // Total XP this week
+    const weekXpEntries = state.xpLog.filter(entry => weekDates.includes(entry.date) && entry.amount > 0);
+    const totalXp = weekXpEntries.reduce((sum, e) => sum + e.amount, 0);
+
+    // Top stat (most XP gained)
+    const statXp = {};
+    weekXpEntries.forEach(entry => {
+        statXp[entry.statId] = (statXp[entry.statId] || 0) + entry.amount;
+    });
+    const topStatId = Object.entries(statXp).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const topStat = state.stats.find(s => s.id === topStatId);
+
+    // Best habit (most completions)
+    const habitCompletions = {};
+    state.habits.forEach(habit => {
+        let count = 0;
+        weekDates.forEach(date => {
+            if (state.completionLog[date]?.includes(habit.id)) count++;
+        });
+        habitCompletions[habit.id] = count;
+    });
+    const bestHabitId = Object.entries(habitCompletions).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const bestHabit = state.habits.find(h => h.id === bestHabitId);
+
+    // Pomodoro count (approximate from xpLog)
+    const pomodoroCount = weekXpEntries.filter(e => e.sourceName?.includes('Pomodoro')).length;
+
+    return { totalXp, topStat, bestHabit, pomodoroCount };
+}
+
+// Expose Weekly Recap functions
+window.closeWeeklyRecap = closeWeeklyRecap;
 
 // Expose Pomodoro functions to window
 window.openPomodoroTimer = openPomodoroTimer;

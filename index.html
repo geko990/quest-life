@@ -460,6 +460,19 @@
         </div>
     </div>
 
+    <!-- Weekly Recap Modal -->
+    <div class="recap-overlay hidden" id="weeklyRecapOverlay" onclick="closeWeeklyRecap()"></div>
+    <div class="recap-popup hidden" id="weeklyRecapModal">
+        <div class="recap-header">
+            <h2>📊 Recap Settimanale</h2>
+            <span class="recap-week" id="recapWeekLabel"></span>
+        </div>
+        <div class="recap-cards" id="recapCards">
+            <!-- Dynamically populated -->
+        </div>
+        <button class="recap-close-btn" onclick="closeWeeklyRecap()">Continua 🚀</button>
+    </div>
+
     <!-- Motto Edit Modal -->
     <div class="modal-overlay" id="mottoEditModal">
         <div class="modal motto-modal">
