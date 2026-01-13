@@ -2245,6 +2245,7 @@ function initSwipe() {
     document.addEventListener('pointermove', (e) => {
         // Drag-to-reorder
         if (isDragging && dragCard) {
+            e.preventDefault(); // Prevent iOS scroll
             clearTimeout(dragTimer);
             const deltaY = e.clientY - dragStartY;
             dragCard.style.transform = `translateY(${deltaY}px) scale(1.02)`;

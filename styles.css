@@ -2359,6 +2359,7 @@ body {
     opacity: 0.85;
     z-index: 100;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    touch-action: none;
 }
 
 .task-card.drop-placeholder {
