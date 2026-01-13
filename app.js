@@ -3070,6 +3070,7 @@ function calculateWeeklyRecap() {
 
 // Expose Weekly Recap functions
 window.closeWeeklyRecap = closeWeeklyRecap;
+window.showWeeklyRecap = showWeeklyRecap; // TEST: Remove after testing
 
 // Expose Pomodoro functions to window
 window.openPomodoroTimer = openPomodoroTimer;
