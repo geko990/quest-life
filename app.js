@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.8.0.0";
+const APP_VERSION = "0.9.0.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -2193,11 +2193,38 @@ function initSwipe() {
     const ACTION_THRESHOLD = 100;
     const MAX_SWIPE = 120;
 
+    // Drag-to-reorder state
+    let dragTimer = null;
+    let isDragging = false;
+    let dragCard = null;
+    let dragStartY = 0;
+    let dragList = null;
+    let dragType = null;
+    let dragId = null;
+
     document.addEventListener('pointerdown', (e) => {
         const content = e.target.closest('.swipe-content');
         if (!content) return;
 
         swipeWasTriggered = false;
+        const taskCard = content.closest('.task-card');
+
+        // Start long-press timer for drag
+        dragTimer = setTimeout(() => {
+            if (taskCard && !isSwiping) {
+                isDragging = true;
+                dragCard = taskCard;
+                dragStartY = e.clientY;
+                dragType = taskCard.dataset.type;
+                dragId = taskCard.dataset.id;
+                dragList = taskCard.parentElement;
+
+                taskCard.classList.add('dragging');
+
+                // Haptic feedback
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        }, 400);
 
         currentSwipeCard = content;
         swipeStartX = e.clientX;
@@ -2209,7 +2236,20 @@ function initSwipe() {
     });
 
     document.addEventListener('pointermove', (e) => {
+        // Drag-to-reorder
+        if (isDragging && dragCard) {
+            clearTimeout(dragTimer);
+            const deltaY = e.clientY - dragStartY;
+            dragCard.style.transform = `translateY(${deltaY}px) scale(1.02)`;
+            return;
+        }
+
         if (!isSwiping || !currentSwipeCard) return;
+
+        // Cancel long-press if moving horizontally
+        if (Math.abs(e.clientX - swipeStartX) > 10) {
+            clearTimeout(dragTimer);
+        }
 
         const diff = e.clientX - swipeStartX + currentX;
         const limitedDiff = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, diff));
@@ -2229,6 +2269,56 @@ function initSwipe() {
     });
 
     document.addEventListener('pointerup', (e) => {
+        clearTimeout(dragTimer);
+
+        // Handle drag-to-reorder end
+        if (isDragging && dragCard) {
+            dragCard.classList.remove('dragging');
+            dragCard.style.transform = '';
+
+            // Calculate new position based on Y coordinate
+            if (dragList && dragType && dragId) {
+                const items = Array.from(dragList.querySelectorAll('.task-card'));
+                const dragIndex = items.indexOf(dragCard);
+
+                // Find target position based on Y
+                let targetIndex = dragIndex;
+                const dragRect = dragCard.getBoundingClientRect();
+                const centerY = e.clientY;
+
+                items.forEach((item, idx) => {
+                    if (item === dragCard) return;
+                    const itemRect = item.getBoundingClientRect();
+                    const itemCenter = itemRect.top + itemRect.height / 2;
+
+                    if (centerY < itemCenter && idx < targetIndex) {
+                        targetIndex = idx;
+                    } else if (centerY > itemCenter && idx > targetIndex) {
+                        targetIndex = idx;
+                    }
+                });
+
+                // Reorder array
+                if (targetIndex !== dragIndex) {
+                    let arr;
+                    if (dragType === 'habit') arr = state.habits;
+                    else if (dragType === 'oneshot') arr = state.oneshots;
+                    else if (dragType === 'quest') arr = state.quests;
+
+                    if (arr) {
+                        const item = arr.splice(dragIndex, 1)[0];
+                        arr.splice(targetIndex, 0, item);
+                        saveState();
+                        renderAll();
+                    }
+                }
+            }
+
+            isDragging = false;
+            dragCard = null;
+            return;
+        }
+
         if (!isSwiping || !currentSwipeCard) return;
         isSwiping = false;
 
@@ -2378,24 +2468,15 @@ function handleTaskClick(e, type, id) {
     // Prevent click if a swipe action was just triggered
     if (window.checkSwipeTrigger && window.checkSwipeTrigger()) return;
 
-    // Open edit modal or detail view
-    let list;
-    if (type === 'attribute' || type === 'ability') {
-        list = state.stats;
-    } else {
-        list = type === 'habit' ? state.habits : (type === 'oneshot' ? state.oneshots : state.quests);
+    // Only open detail views for quests and stats
+    // Habits/oneshots now use swipe-to-edit only
+    if (type === 'quest') {
+        const quest = state.quests.find(q => q.id === id);
+        if (quest) openQuestDetail(id);
+    } else if (type === 'attribute' || type === 'ability') {
+        openStatDetail(id);
     }
-
-    const item = list.find(i => i.id === id);
-    if (item) {
-        if (type === 'quest') {
-            openQuestDetail(id);
-        } else if (type === 'attribute' || type === 'ability') {
-            openStatDetail(id);
-        } else {
-            openModal(type, item);
-        }
-    }
+    // For habits and oneshots: do nothing on tap (use swipe to edit)
 }
 
 function deleteTask(type, id) {

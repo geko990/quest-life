@@ -2351,6 +2351,18 @@ body {
     user-select: none;
     -webkit-user-select: none;
     box-sizing: border-box;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.task-card.dragging {
+    transform: scale(1.02);
+    opacity: 0.85;
+    z-index: 100;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.task-card.drop-placeholder {
+    opacity: 0.3;
 }
 
 .swipe-container {
