@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.9.2";
+const APP_VERSION = "0.3.9.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -1330,12 +1330,10 @@ function openStatDetail(statId) {
             <div style="font-size: 16px; font-weight: 700; color: var(--accent-primary); margin-top: 15px;">Livello ${stat.level}</div>
         </div>
 
-        <div class="progress-info-big" style="margin: 15px 0 20px 0;">
-            <div class="progress-bar" style="height: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.1);">
-                <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-            <div class="xp-needed" style="font-size: 13px; text-align: center;">Mancano <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
+        <div class="popup-xp-bar" style="height: 12px; margin: 15px 0 10px 0;">
+            <div class="popup-xp-fill" style="width: ${progress}%"></div>
         </div>
+        <div class="xp-needed" style="font-size: 13px; text-align: center; margin-bottom: 20px;">Mancano <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
 
         <div class="momentum-section" style="padding: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
             <div class="momentum-title" style="font-size: 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
