@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.3.9.4";
+const APP_VERSION = "0.3.9.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -1404,7 +1404,7 @@ function toggleSubquest(questId, subquestId) {
         // Double XP for subquest (Full habitual XP)
         addXp(calculateXp(quest.stars), quest.primaryStatId, `${quest.name} > ${subquest.name}`);
         if (quest.secondaryStatId) {
-            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${sub.name}`);
+            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${subquest.name}`);
         }
     }
 
