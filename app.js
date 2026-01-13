@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.5.0.0";
+const APP_VERSION = "0.5.1.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -468,6 +468,9 @@ function initNavSwipe() {
     }, { passive: true });
 
     nav.addEventListener('touchend', () => {
+        // Clear all reactive states
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('bubble-near'));
+
         if (navTargetSection) {
             switchSection(navTargetSection);
         } else {

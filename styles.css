@@ -1893,19 +1893,19 @@ body {
     height: 50px;
     background: var(--accent-primary);
     border-radius: 50%;
-    filter: blur(10px);
-    opacity: 0.3;
+    filter: blur(12px);
+    opacity: 0;
     pointer-events: none;
-    z-index: -1;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+    z-index: 1;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s;
     left: 0;
     top: 50%;
     margin-top: -25px;
 }
 
 .bottom-nav.swiping .nav-bubble {
-    transition: none;
-    opacity: 0.6;
+    transition: transform 0.05s linear, opacity 0.1s;
+    opacity: 0.7;
 }
 
 
@@ -1928,17 +1928,18 @@ body {
 /* Active State: No persistent background, just color change and lift */
 .nav-item.active:not(.nav-home) {
     color: var(--accent-primary);
-    transform: translateY(-4px);
-    /* Background and shadow removed as requested for cleaner look */
-    /* Only subtle text shadow/filter if needed, but color is enough */
+    transform: translateY(-3px) scale(1.1);
 }
 
-/* Hover/Interaction Effect: Rounded square that appears on hover/touch */
+/* Hover: Subtle scale only, no background */
 .nav-item:not(.nav-home):hover {
-    background: var(--glass-bg);
-    border-radius: var(--radius-md);
-    /* Squared but rounded */
-    box-shadow: 0 4px 12px var(--glass-shadow);
+    transform: scale(1.1);
+}
+
+/* Reactive: When swiping and bubble is near */
+.nav-item.bubble-near {
+    color: var(--accent-primary);
+    transform: scale(1.2);
 }
 
 .nav-home.active {
