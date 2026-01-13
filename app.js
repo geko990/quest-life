@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.5.0";
+const APP_VERSION = "1.0.5.1";
 
 // ============================================
 // DATA STRUCTURES
@@ -1729,11 +1729,14 @@ function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
 
 function setPopupSetting(setting, value) {
     state.settings[setting] = value;
-    saveState();
+
+    // Update visual immediately before save
     syncPopupToggleButtons(setting,
         setting === 'enableDailyPlanner' ? 'dailyPlannerOn' : 'weeklyRecapOn',
         setting === 'enableDailyPlanner' ? 'dailyPlannerOff' : 'weeklyRecapOff'
     );
+
+    saveState();
     console.log(`⚙️ ${setting} = ${value}`);
 }
 
@@ -2256,7 +2259,7 @@ function initSwipe() {
     let currentX = 0;
     let isSwiping = false;
     let swipeWasTriggered = false;
-    const ACTION_THRESHOLD = 100;
+    const ACTION_THRESHOLD = 70;  // Reduced for easier swipe trigger
     const MAX_SWIPE = 120;
 
     // Drag-to-reorder state
