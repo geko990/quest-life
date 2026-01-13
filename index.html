@@ -460,6 +460,78 @@
         </div>
     </div>
 
+    <!-- Daily D&D Planner Modal -->
+    <div class="recap-overlay hidden" id="dailyPlannerOverlay"></div>
+    <div class="recap-popup hidden" id="dailyPlannerModal" style="max-height: 85vh; overflow-y: auto;">
+        <div class="recap-header">
+            <h2>🎲 Piano Giornaliero</h2>
+            <span class="recap-week">Cosa farai oggi?</span>
+        </div>
+        <div class="daily-planner-slots" id="dailyPlannerSlots">
+            <div class="daily-slot" data-slot="action">
+                <div class="slot-header">🎯 Azione Principale</div>
+                <input type="text" class="slot-name" placeholder="Es: Completare il report">
+                <div class="slot-options">
+                    <div class="star-selector" data-stars="3">
+                        <span class="star" data-value="1">⭐</span>
+                        <span class="star" data-value="2">⭐</span>
+                        <span class="star" data-value="3">⭐</span>
+                        <span class="star dim" data-value="4">⭐</span>
+                        <span class="star dim" data-value="5">⭐</span>
+                    </div>
+                    <select class="slot-stat"></select>
+                </div>
+            </div>
+            <div class="daily-slot" data-slot="bonus">
+                <div class="slot-header">⚡ Azione Bonus</div>
+                <input type="text" class="slot-name" placeholder="Es: Chiamare il medico">
+                <div class="slot-options">
+                    <div class="star-selector" data-stars="2">
+                        <span class="star" data-value="1">⭐</span>
+                        <span class="star" data-value="2">⭐</span>
+                        <span class="star dim" data-value="3">⭐</span>
+                        <span class="star dim" data-value="4">⭐</span>
+                        <span class="star dim" data-value="5">⭐</span>
+                    </div>
+                    <select class="slot-stat"></select>
+                </div>
+            </div>
+            <div class="daily-slot" data-slot="movement">
+                <div class="slot-header">🚶 Movimento</div>
+                <input type="text" class="slot-name" placeholder="Es: Passeggiata 30min">
+                <div class="slot-options">
+                    <div class="star-selector" data-stars="2">
+                        <span class="star" data-value="1">⭐</span>
+                        <span class="star" data-value="2">⭐</span>
+                        <span class="star dim" data-value="3">⭐</span>
+                        <span class="star dim" data-value="4">⭐</span>
+                        <span class="star dim" data-value="5">⭐</span>
+                    </div>
+                    <select class="slot-stat"></select>
+                </div>
+            </div>
+            <div class="daily-slot" data-slot="reaction">
+                <div class="slot-header">🛡️ Reazione</div>
+                <input type="text" class="slot-name" placeholder="Es: Rispondere a 3 email">
+                <div class="slot-options">
+                    <div class="star-selector" data-stars="1">
+                        <span class="star" data-value="1">⭐</span>
+                        <span class="star dim" data-value="2">⭐</span>
+                        <span class="star dim" data-value="3">⭐</span>
+                        <span class="star dim" data-value="4">⭐</span>
+                        <span class="star dim" data-value="5">⭐</span>
+                    </div>
+                    <select class="slot-stat"></select>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="recap-close-btn" style="flex:1; background: var(--bg-primary); color: var(--text-primary);"
+                onclick="closeDailyPlanner()">Salta</button>
+            <button class="recap-close-btn" style="flex:2;" onclick="saveDailyPlan()">Conferma Piano 🚀</button>
+        </div>
+    </div>
+
     <!-- Weekly Recap Modal -->
     <div class="recap-overlay hidden" id="weeklyRecapOverlay" onclick="closeWeeklyRecap()"></div>
     <div class="recap-popup hidden" id="weeklyRecapModal">

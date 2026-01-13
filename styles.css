@@ -1850,6 +1850,77 @@ body {
     transform: scale(1.02);
 }
 
+/* Daily D&D Planner */
+.daily-planner-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.daily-slot {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.slot-header {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.slot-name {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+.slot-name:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.slot-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.star-selector {
+    display: flex;
+    gap: 2px;
+}
+
+.star-selector .star {
+    cursor: pointer;
+    font-size: 16px;
+    transition: opacity 0.2s;
+}
+
+.star-selector .star.dim {
+    opacity: 0.3;
+}
+
+.slot-stat {
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 13px;
+    min-width: 100px;
+}
+
 /* Last Activity Box */
 .last-activity-box {
     background: var(--bg-primary);

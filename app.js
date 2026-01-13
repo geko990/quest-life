@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.9.0.5";
+const APP_VERSION = "1.0.0.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -73,6 +73,9 @@ let state = {
         xpPerSession: 20,
         sessionsToday: 0,
         lastSessionDate: null
+    },
+    dailyPlan: {
+        lastPlanDate: null  // Date when last daily plan was shown
     },
     lastRecapWeek: null, // Week ID when last recap was shown
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0 }
@@ -157,6 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check for weekly recap (Sunday)
     setTimeout(() => checkWeeklyRecap(), 1000);
+
+    // Check for daily D&D planner (after 6 AM)
+    setTimeout(() => checkDailyPlan(), 1500);
 
     // Set version in UI and handle PWA update force
     const versionEl = document.getElementById('appVersion');
@@ -264,6 +270,11 @@ function loadState() {
 
             // Ensure dayStartTime exists
             if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
+
+            // Migrate dailyPlan
+            if (parsed.dailyPlan) {
+                state.dailyPlan = { ...state.dailyPlan, ...parsed.dailyPlan };
+            }
 
             // Update viewedDate based on loaded settings
             viewedDate = getGameDate();
@@ -1303,7 +1314,14 @@ function completeOneshot(oneshotId) {
     oneshot.completed = true;
     oneshot.completedAt = new Date().toISOString();
 
-    const xp = calculateXp(oneshot.stars);
+    // Calculate XP with bonus for same-day daily plan completion
+    let xp = calculateXp(oneshot.stars);
+    const today = getGameDateString();
+    if (oneshot.fromDailyPlan && oneshot.dailyPlanDate === today) {
+        xp = Math.round(xp * 1.5);
+        console.log('🎲 Bonus giornaliero! XP x1.5');
+    }
+
     addXp(xp, oneshot.primaryStatId, oneshot.name);
     if (oneshot.secondaryStatId) {
         addXp(Math.round(xp * XP_CONFIG.secondaryRatio), oneshot.secondaryStatId, oneshot.name);
@@ -3056,6 +3074,119 @@ function completePomodoro() {
 }
 
 // ============================================
+// DAILY D&D PLANNER
+// ============================================
+
+function checkDailyPlan() {
+    const now = new Date();
+    const today = getGameDateString();
+
+    // Only trigger after 6 AM
+    if (now.getHours() < 6) return;
+
+    // Check if already shown today
+    if (state.dailyPlan.lastPlanDate === today) return;
+
+    // Show planner
+    showDailyPlanner();
+}
+
+function showDailyPlanner() {
+    // Populate stat dropdowns
+    const selects = document.querySelectorAll('.slot-stat');
+    selects.forEach(select => {
+        select.innerHTML = state.stats.map(stat =>
+            `<option value="${stat.id}">${stat.icon} ${stat.name}</option>`
+        ).join('');
+    });
+
+    // Clear previous inputs
+    document.querySelectorAll('.slot-name').forEach(input => input.value = '');
+
+    // Initialize star selectors
+    document.querySelectorAll('.star-selector').forEach(selector => {
+        const stars = parseInt(selector.dataset.stars) || 3;
+        updateStarDisplay(selector, stars);
+
+        selector.querySelectorAll('.star').forEach(star => {
+            star.onclick = () => {
+                const value = parseInt(star.dataset.value);
+                selector.dataset.stars = value;
+                updateStarDisplay(selector, value);
+            };
+        });
+    });
+
+    document.getElementById('dailyPlannerModal')?.classList.remove('hidden');
+    document.getElementById('dailyPlannerOverlay')?.classList.remove('hidden');
+}
+
+function updateStarDisplay(selector, activeCount) {
+    selector.querySelectorAll('.star').forEach(star => {
+        const val = parseInt(star.dataset.value);
+        star.classList.toggle('dim', val > activeCount);
+    });
+}
+
+function closeDailyPlanner() {
+    document.getElementById('dailyPlannerModal')?.classList.add('hidden');
+    document.getElementById('dailyPlannerOverlay')?.classList.add('hidden');
+
+    // Mark as shown today
+    state.dailyPlan.lastPlanDate = getGameDateString();
+    saveState();
+}
+
+function saveDailyPlan() {
+    const slots = document.querySelectorAll('.daily-slot');
+    const today = getGameDateString();
+    let createdCount = 0;
+
+    const slotIcons = {
+        action: '🎯',
+        bonus: '⚡',
+        movement: '🚶',
+        reaction: '🛡️'
+    };
+
+    slots.forEach(slot => {
+        const name = slot.querySelector('.slot-name')?.value.trim();
+        if (!name) return; // Skip empty slots
+
+        const slotType = slot.dataset.slot;
+        const stars = parseInt(slot.querySelector('.star-selector')?.dataset.stars) || 3;
+        const statId = slot.querySelector('.slot-stat')?.value || 'int';
+
+        // Create One Shot with daily plan flag
+        const oneshot = {
+            id: 'dp-' + Date.now() + '-' + slotType,
+            name: `${slotIcons[slotType]} ${name}`,
+            stars: stars,
+            primaryStatId: statId,
+            secondaryStatId: null,
+            dueDate: null,
+            completed: false,
+            locked: false,
+            fromDailyPlan: true,
+            dailyPlanDate: today
+        };
+
+        state.oneshots.unshift(oneshot);
+        createdCount++;
+    });
+
+    // Mark as shown today
+    state.dailyPlan.lastPlanDate = today;
+    saveState();
+    renderOneshots();
+    closeDailyPlanner();
+
+    if (createdCount > 0) {
+        console.log(`📋 Piano giornaliero: ${createdCount} task creati!`);
+    }
+}
+
+// ============================================
 // WEEKLY RECAP
 // ============================================
 
@@ -3165,6 +3296,11 @@ function calculateWeeklyRecap() {
 
     return { totalXp, topStat, bestHabit, pomodoroCount };
 }
+
+// Expose Daily Planner functions
+window.showDailyPlanner = showDailyPlanner;
+window.closeDailyPlanner = closeDailyPlanner;
+window.saveDailyPlan = saveDailyPlan;
 
 // Expose Weekly Recap functions
 window.closeWeeklyRecap = closeWeeklyRecap;
