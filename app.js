@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.5.2";
+const APP_VERSION = "1.0.5.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -1065,7 +1065,7 @@ function renderCalendar() {
                 <div class="calendar-day-name">${DAY_NAMES[date.getDay()]}</div>
                 <div class="calendar-day-number">
                     ${date.getDate()}
-                    ${completion > 0 ? `<div class="completion-ring" style="--percent: ${completion}%"></div>` : ''}
+                    ${completion > 0 ? `<div class="completion-ring" style="--percent: ${completion}"></div>` : ''}
                 </div>
             </div>
         `;
@@ -1730,6 +1730,9 @@ function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
             onBtn.classList.remove('active');
             offBtn.classList.add('active');
         }
+        // Force immediate repaint on iOS Safari
+        onBtn.offsetHeight;
+        offBtn.offsetHeight;
     }
 }
 
