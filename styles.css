@@ -2612,6 +2612,8 @@ body {
     align-items: center;
     gap: 12px;
     cursor: pointer;
+    touch-action: pan-y;
+    /* Prevent horizontal scroll interference on iOS */
 }
 
 .task-card.locked .swipe-content {

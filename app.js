@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.5.1";
+const APP_VERSION = "1.0.5.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -1722,8 +1722,14 @@ function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
     const isEnabled = state.settings[setting] !== false;
 
     if (onBtn && offBtn) {
-        onBtn.classList.toggle('active', isEnabled);
-        offBtn.classList.toggle('active', !isEnabled);
+        // Use explicit add/remove for reliable class switching
+        if (isEnabled) {
+            onBtn.classList.add('active');
+            offBtn.classList.remove('active');
+        } else {
+            onBtn.classList.remove('active');
+            offBtn.classList.add('active');
+        }
     }
 }
 
