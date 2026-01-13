@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.9.0.2";
+const APP_VERSION = "0.9.0.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -2213,8 +2213,10 @@ function initSwipe() {
 
         // Start long-press timer for drag (only for habits/oneshots/quests, not stats)
         const type = taskCard?.dataset?.type;
+        console.log('Pointerdown on:', type, taskCard?.dataset?.id);
         if (type === 'habit' || type === 'oneshot' || type === 'quest') {
             dragTimer = setTimeout(() => {
+                console.log('Timer fired! hasMoved:', hasMoved);
                 if (taskCard && !hasMoved) {
                     isDragging = true;
                     isSwiping = false; // Cancel swipe mode
