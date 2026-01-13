@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.5.1.4";
+const APP_VERSION = "0.5.1.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -460,10 +460,10 @@ function initNavSwipe() {
 
         if (!hasMoved) return;
 
-        // Move bubble based on touch X
+        // Move bubble based on touch X (using left instead of transform)
         let x = touch.clientX - rect.left;
-        x = Math.max(25, Math.min(rect.width - 25, x));
-        bubble.style.transform = `translate3d(${x - 25}px, 0, 0)`;
+        x = Math.max(0, Math.min(rect.width - 50, x - 25));
+        bubble.style.left = `${x}px`;
 
         // Find nearest icon by position comparison
         document.querySelectorAll('.nav-item').forEach(item => {
