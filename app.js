@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.5.1.1";
+const APP_VERSION = "0.5.1.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -438,16 +438,27 @@ function initNavSwipe() {
     const bubble = document.getElementById('navBubble');
     if (!nav || !bubble) return;
 
+    let hasMoved = false;
+
     nav.addEventListener('touchstart', (e) => {
         const touch = e.touches[0];
         navSwipeStart = { x: touch.clientX, time: Date.now() };
-        nav.classList.add('swiping');
+        hasMoved = false;
+        // Don't add 'swiping' class yet - wait for movement
     }, { passive: true });
 
     nav.addEventListener('touchmove', (e) => {
         if (!navSwipeStart) return;
         const touch = e.touches[0];
         const rect = nav.getBoundingClientRect();
+
+        // Only activate bubble after some movement
+        if (!hasMoved && Math.abs(touch.clientX - navSwipeStart.x) > 10) {
+            hasMoved = true;
+            nav.classList.add('swiping');
+        }
+
+        if (!hasMoved) return;
 
         // Move bubble based on touch X
         let x = touch.clientX - rect.left;
@@ -473,16 +484,17 @@ function initNavSwipe() {
         // Clear all reactive states
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('bubble-near'));
 
-        if (navTargetSection) {
+        if (hasMoved && navTargetSection) {
             switchSection(navTargetSection);
-        } else {
-            // Reset bubble to active item
-            const activeItem = document.querySelector('.nav-item.active');
-            if (activeItem) updateBubblePosition(activeItem);
         }
+
+        // Reset bubble transform to prevent jump
+        bubble.style.transform = '';
+
         nav.classList.remove('swiping');
         navSwipeStart = null;
         navTargetSection = null;
+        hasMoved = false;
     });
 }
 
