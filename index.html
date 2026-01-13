@@ -290,23 +290,24 @@
         </main>
 
         <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <a href="#" class="nav-item" onclick="switchSection('habits')">
+        <nav class="bottom-nav" id="bottomNav">
+            <div class="nav-bubble" id="navBubble"></div>
+            <a href="#" class="nav-item" data-section="habits" onclick="switchSection('habits')">
                 <span class="nav-icon">📜</span>
             </a>
-            <a href="#" class="nav-item" onclick="switchSection('oneshot')">
+            <a href="#" class="nav-item" data-section="oneshot" onclick="switchSection('oneshot')">
                 <span class="nav-icon">💥</span>
                 <span class="nav-badge hidden" id="oneshotBadge">0</span>
             </a>
             <div class="nav-center-container">
-                <a href="#" class="nav-item nav-home active" onclick="switchSection('home')">
+                <a href="#" class="nav-item nav-home active" data-section="home" onclick="switchSection('home')">
                     <span class="nav-icon" id="navAvatar">⚔️</span>
                 </a>
             </div>
-            <a href="#" class="nav-item" onclick="switchSection('quest')">
+            <a href="#" class="nav-item" data-section="quest" onclick="switchSection('quest')">
                 <span class="nav-icon">🎯</span>
             </a>
-            <a href="#" class="nav-item" onclick="switchSection('settings')">
+            <a href="#" class="nav-item" data-section="settings" onclick="switchSection('settings')">
                 <span class="nav-icon">⚙️</span>
             </a>
         </nav>

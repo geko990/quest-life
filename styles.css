@@ -1872,17 +1872,40 @@ body {
     transform: translateX(-50%);
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     padding: 10px 24px;
-    border-radius: 30px;
+    border-radius: 35px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     width: 90%;
     max-width: 440px;
-    /* Slightly narrower than container for better look */
+    user-select: none;
+    touch-action: pan-y;
+}
+
+.nav-bubble {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: -1;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+    left: 0;
+    top: 50%;
+    margin-top: -25px;
+}
+
+.bottom-nav.swiping .nav-bubble {
+    transition: none;
+    opacity: 0.6;
 }
 
 
@@ -1892,13 +1915,14 @@ body {
     padding: 10px;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.3s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     color: var(--text-muted);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
+    z-index: 2;
 }
 
 /* Active State: No persistent background, just color change and lift */

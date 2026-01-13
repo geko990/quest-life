@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.4.0.2";
+const APP_VERSION = "0.5.0.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initColorPicker();
     initSwipe();
     initVisibilityPopup();
+    initNavSwipe(); // New Liquid Glass Nav
     renderAll();
 
     // Set version in UI and handle PWA update force
@@ -419,8 +420,77 @@ function renderStreakPopup() {
 // NAVIGATION
 // ============================================
 
+// ============================================
+
+let navSwipeStart = null;
+let navTargetSection = null;
+
 function initNavigation() {
-    // Navigation is now handled via onclick handlers in HTML
+    // Basic initialization for nav bubble
+    setTimeout(() => {
+        const activeItem = document.querySelector('.nav-item.active');
+        if (activeItem) updateBubblePosition(activeItem);
+    }, 500);
+}
+
+function initNavSwipe() {
+    const nav = document.getElementById('bottomNav');
+    const bubble = document.getElementById('navBubble');
+    if (!nav || !bubble) return;
+
+    nav.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        navSwipeStart = { x: touch.clientX, time: Date.now() };
+        nav.classList.add('swiping');
+    }, { passive: true });
+
+    nav.addEventListener('touchmove', (e) => {
+        if (!navSwipeStart) return;
+        const touch = e.touches[0];
+        const rect = nav.getBoundingClientRect();
+
+        // Move bubble based on touch X
+        let x = touch.clientX - rect.left;
+        // Constraint bubble within nav
+        x = Math.max(25, Math.min(rect.width - 25, x));
+        bubble.style.transform = `translate3d(${x - 25}px, -50%, 0)`;
+
+        // Identify which section we are over
+        const elementOver = document.elementFromPoint(touch.clientX, touch.clientY);
+        const navItem = elementOver?.closest('.nav-item');
+        if (navItem) {
+            const section = navItem.dataset.section;
+            if (section && section !== navTargetSection) {
+                navTargetSection = section;
+                // Optional: trigger subtle vibrate or haptic if API available
+            }
+        }
+    }, { passive: true });
+
+    nav.addEventListener('touchend', () => {
+        if (navTargetSection) {
+            switchSection(navTargetSection);
+        } else {
+            // Reset bubble to active item
+            const activeItem = document.querySelector('.nav-item.active');
+            if (activeItem) updateBubblePosition(activeItem);
+        }
+        nav.classList.remove('swiping');
+        navSwipeStart = null;
+        navTargetSection = null;
+    });
+}
+
+function updateBubblePosition(navItem) {
+    const bubble = document.getElementById('navBubble');
+    const nav = document.getElementById('bottomNav');
+    if (!bubble || !nav || !navItem) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = navItem.getBoundingClientRect();
+    const x = (itemRect.left - navRect.left) + (itemRect.width / 2);
+
+    bubble.style.transform = `translate3d(${x - 25}px, -50%, 0)`;
 }
 
 function switchSection(sectionName) {
@@ -439,7 +509,9 @@ function switchSection(sectionName) {
     // Let's re-add data-section to HTML for styling matching, OR just select by href/onclick content? Use data-section in HTML for style mapping.
 
     document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${sectionName}'`));
+        const isActive = item.dataset.section === sectionName;
+        item.classList.toggle('active', isActive);
+        if (isActive) updateBubblePosition(item);
     });
 
     document.querySelectorAll('.section').forEach(section => {
