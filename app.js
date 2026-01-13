@@ -1692,6 +1692,14 @@ function openModal(type, editData = null) {
     currentModalType = type;
     editingItem = editData;
 
+    // Layering: If opening toxic form, hide inventory backpack temporarily
+    if (type === 'toxic') {
+        const invModal = document.getElementById('toxicInventoryModal');
+        const invOverlay = document.getElementById('toxicInventoryOverlay');
+        if (invModal) invModal.classList.add('hidden');
+        if (invOverlay) invOverlay.classList.remove('active');
+    }
+
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
@@ -1867,12 +1875,12 @@ function openModal(type, editData = null) {
         case 'toxic':
             title.textContent = editData ? 'Modifica Oggetto Tossico' : 'Nuovo Oggetto Tossico';
             body.innerHTML = `
-                <div class="form-row">
-                    <div class="form-group" style="flex: 0 0 80px;">
+                <div class="form-row toxic-form-row">
+                    <div class="form-group icon-group">
                         <label>Icona</label>
                         <input type="text" id="inputIcon" value="${editData?.icon || '💀'}" style="text-align:center; font-size: 24px;">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group name-group">
                         <label>Nome Oggetto</label>
                         <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Junk Food">
                     </div>
@@ -1880,9 +1888,9 @@ function openModal(type, editData = null) {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Danneggia Stat</label>
-                        <select id="inputPrimaryStat">${statOptions}</select>
+                        <select id="inputPrimaryStat" style="width: 100%;">${statOptions}</select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="flex: 0 0 100px;">
                         <label>Penalità XP</label>
                         <input type="number" id="inputPenalty" value="${editData?.penalty || 20}" min="1">
                     </div>
@@ -1904,6 +1912,12 @@ function openModal(type, editData = null) {
 
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
+
+    // Layering: If we were in toxic form, re-open inventory
+    if (currentModalType === 'toxic') {
+        openToxicInventory();
+    }
+
     currentModalType = null;
     editingItem = null;
 }

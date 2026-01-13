@@ -1651,6 +1651,24 @@ body {
     color: white;
 }
 
+/* Toxic Form Refinements */
+.toxic-form-row {
+    display: flex !important;
+    gap: 12px;
+}
+
+.toxic-form-row .icon-group {
+    flex: 0 0 70px;
+}
+
+.toxic-form-row .name-group {
+    flex: 1;
+}
+
+.toxic-form-row input {
+    width: 100%;
+}
+
 .xp-needed {
     font-size: 13px;
     color: var(--text-muted);
