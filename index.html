@@ -230,19 +230,21 @@
                     </div>
                     <div class="settings-row">
                         <label>Popup Mattutino (D&D)</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="enableDailyPlanner"
-                                onchange="updateSettingToggle('enableDailyPlanner', this.checked)" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="theme-switcher" style="min-width:120px;">
+                            <button class="theme-btn active" id="dailyPlannerOn"
+                                onclick="setPopupSetting('enableDailyPlanner', true)">ON</button>
+                            <button class="theme-btn" id="dailyPlannerOff"
+                                onclick="setPopupSetting('enableDailyPlanner', false)">OFF</button>
+                        </div>
                     </div>
                     <div class="settings-row">
                         <label>Recap Settimanale</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="enableWeeklyRecap"
-                                onchange="updateSettingToggle('enableWeeklyRecap', this.checked)" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="theme-switcher" style="min-width:120px;">
+                            <button class="theme-btn active" id="weeklyRecapOn"
+                                onclick="setPopupSetting('enableWeeklyRecap', true)">ON</button>
+                            <button class="theme-btn" id="weeklyRecapOff"
+                                onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
+                        </div>
                     </div>
                 </div>
 

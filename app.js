@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.2.0";
+const APP_VERSION = "1.0.3.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1295,7 +1295,7 @@ function renderOneshots() {
                         <div class="card-title">${oneshot.name}</div>
                         <div class="card-meta">
                             <span class="card-stars">${'⭐'.repeat(oneshot.stars)}</span>
-                            ${oneshot.d10Roll && oneshot.dailyPlanDate === getGameDateString() ? `<span class="card-bonus">+${oneshot.d10Roll * 10}%</span>` : ''}
+                            ${oneshot.d10Roll && oneshot.dailyPlanDate === getGameDateString() ? `<span class="card-bonus">Oggi +${oneshot.d10Roll * 10}%</span>` : ''}
                             <span class="card-xp">+${calculateXp(oneshot.stars)} XP</span>
                             ${primaryStat ? `<span class="card-stat">${primaryStat.icon}</span>` : ''}
                             ${secondaryStat ? `<span class="card-stat" style="opacity:0.6">${secondaryStat.icon}</span>` : ''}
@@ -1712,15 +1712,30 @@ function initSettings() {
         dayStartSelect.value = state.settings.dayStartTime || 0;
     }
 
-    // Sync popup toggle settings
-    const dailyPlannerToggle = document.getElementById('enableDailyPlanner');
-    if (dailyPlannerToggle) {
-        dailyPlannerToggle.checked = state.settings.enableDailyPlanner !== false;
+    // Sync popup toggle settings (button style)
+    syncPopupToggleButtons('enableDailyPlanner', 'dailyPlannerOn', 'dailyPlannerOff');
+    syncPopupToggleButtons('enableWeeklyRecap', 'weeklyRecapOn', 'weeklyRecapOff');
+}
+
+function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
+    const onBtn = document.getElementById(onBtnId);
+    const offBtn = document.getElementById(offBtnId);
+    const isEnabled = state.settings[setting] !== false;
+
+    if (onBtn && offBtn) {
+        onBtn.classList.toggle('active', isEnabled);
+        offBtn.classList.toggle('active', !isEnabled);
     }
-    const weeklyRecapToggle = document.getElementById('enableWeeklyRecap');
-    if (weeklyRecapToggle) {
-        weeklyRecapToggle.checked = state.settings.enableWeeklyRecap !== false;
-    }
+}
+
+function setPopupSetting(setting, value) {
+    state.settings[setting] = value;
+    saveState();
+    syncPopupToggleButtons(setting,
+        setting === 'enableDailyPlanner' ? 'dailyPlannerOn' : 'weeklyRecapOn',
+        setting === 'enableDailyPlanner' ? 'dailyPlannerOff' : 'weeklyRecapOff'
+    );
+    console.log(`⚙️ ${setting} = ${value}`);
 }
 
 
@@ -3443,6 +3458,7 @@ window.togglePomodoro = togglePomodoro;
 window.resetPomodoro = resetPomodoro;
 window.savePomodoroSettings = savePomodoroSettings;
 window.updateSettingToggle = updateSettingToggle;
+window.setPopupSetting = setPopupSetting;
 
 // Expose functions to window
 window.openToxicInventory = openToxicInventory;
