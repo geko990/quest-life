@@ -1253,6 +1253,11 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
+    width: 140px;
+    min-width: 140px;
+}
+
+.settings-row .theme-switcher {
     min-width: 140px;
 }
 
@@ -1917,33 +1922,33 @@ body {
 .daily-planner-slots {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 15px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .daily-slot {
     background: var(--bg-primary);
-    border-radius: var(--radius-md);
-    padding: 12px;
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
     border: 1px solid var(--border-color);
 }
 
 .slot-header {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     color: var(--text-primary);
 }
 
 .slot-name {
     width: 100%;
-    padding: 8px 10px;
+    padding: 6px 8px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     background: var(--bg-secondary);
     color: var(--text-primary);
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 13px;
+    margin-bottom: 5px;
     box-sizing: border-box;
 }
 
@@ -1985,15 +1990,14 @@ body {
 }
 
 /* D10 Dice Roll Animation */
-/* D10 Dice Roll Animation */
 .dice-result {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    padding: 30px 0;
-    margin-top: 10px;
+    gap: 10px;
+    padding: 15px 0;
+    margin-top: 5px;
 }
 
 .dice-result.hidden {
