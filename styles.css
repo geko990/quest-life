@@ -1669,6 +1669,79 @@ body {
     color: var(--accent-primary);
 }
 
+/* Pomodoro Timer Styles */
+.pomodoro-display {
+    margin: 20px 0;
+}
+
+.pomodoro-time {
+    font-size: 64px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.pomodoro-status {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+.pomodoro-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pomodoro-btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pomodoro-btn:hover {
+    background: var(--bg-card);
+    transform: scale(1.02);
+}
+
+.pomodoro-btn.primary {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+}
+
+.pomodoro-btn.primary:hover {
+    opacity: 0.9;
+}
+
+.pomodoro-btn.running {
+    background: #ff6b6b;
+}
+
+.pomodoro-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 15px;
+}
+
+.pomodoro-settings {
+    border-top: 1px solid var(--border-color);
+    margin-top: 15px;
+    padding-top: 10px;
+}
+
 /* Last Activity Box */
 .last-activity-box {
     background: var(--bg-primary);

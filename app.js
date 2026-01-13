@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.6.0.0";
+const APP_VERSION = "0.7.0.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -67,6 +67,13 @@ let state = {
     toxicItems: [], // New for "Zaino Tossico"
     completionLog: {},
     xpLog: [], // Log di XP guadagnato: [{date, statId, amount}]
+    pomodoro: {
+        workDuration: 25,
+        targetStatId: 'int',
+        xpPerSession: 20,
+        sessionsToday: 0,
+        lastSessionDate: null
+    },
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0 }
 };
 
@@ -126,6 +133,11 @@ let currentSwipeCard = null;
 let editingItem = null;
 let viewedDate = getGameDate();
 let profilePopupTimer = null; // reused or new logic for toggle
+
+// Pomodoro Timer
+let pomodoroInterval = null;
+let pomodoroTimeLeft = 25 * 60; // seconds
+let pomodoroRunning = false;
 
 // ============================================
 // INITIALIZATION
@@ -235,6 +247,16 @@ function loadState() {
             state.completionLog = parsed.completionLog || {};
             state.xpLog = parsed.xpLog || []; // Log XP mensile
             state.settings = { ...state.settings, ...parsed.settings };
+
+            // Migrate pomodoro settings
+            if (parsed.pomodoro) {
+                state.pomodoro = { ...state.pomodoro, ...parsed.pomodoro };
+            }
+            // Reset session counter if new day
+            const today = getGameDateString();
+            if (state.pomodoro.lastSessionDate !== today) {
+                state.pomodoro.sessionsToday = 0;
+            }
 
             // Ensure dayStartTime exists
             if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
@@ -2777,6 +2799,169 @@ function editToxicItem(id) {
         openModal('toxic', item);
     }
 }
+
+// ============================================
+// POMODORO TIMER
+// ============================================
+
+function openPomodoroTimer() {
+    const modal = document.getElementById('pomodoroModal');
+    const overlay = document.getElementById('pomodoroOverlay');
+    if (modal) modal.classList.remove('hidden');
+    if (overlay) overlay.classList.add('active');
+
+    // Populate stat selector
+    const statSelect = document.getElementById('pomodoroStat');
+    if (statSelect) {
+        statSelect.innerHTML = state.stats.map(s =>
+            `<option value="${s.id}" ${s.id === state.pomodoro.targetStatId ? 'selected' : ''}>${s.icon} ${s.name}</option>`
+        ).join('');
+    }
+
+    // Set duration input
+    const durationInput = document.getElementById('pomodoroDuration');
+    if (durationInput) durationInput.value = state.pomodoro.workDuration;
+
+    updatePomodoroDisplay();
+}
+
+function closePomodoroTimer() {
+    const modal = document.getElementById('pomodoroModal');
+    const overlay = document.getElementById('pomodoroOverlay');
+    if (modal) modal.classList.add('hidden');
+    if (overlay) overlay.classList.remove('active');
+}
+
+function savePomodoroSettings() {
+    const statSelect = document.getElementById('pomodoroStat');
+    const durationInput = document.getElementById('pomodoroDuration');
+
+    if (statSelect) state.pomodoro.targetStatId = statSelect.value;
+    if (durationInput) {
+        state.pomodoro.workDuration = Math.max(1, Math.min(60, parseInt(durationInput.value) || 25));
+        if (!pomodoroRunning) {
+            pomodoroTimeLeft = state.pomodoro.workDuration * 60;
+            updatePomodoroDisplay();
+        }
+    }
+    saveState();
+}
+
+function togglePomodoro() {
+    if (pomodoroRunning) {
+        pausePomodoro();
+    } else {
+        startPomodoro();
+    }
+}
+
+function startPomodoro() {
+    pomodoroRunning = true;
+    const btn = document.getElementById('pomodoroStartBtn');
+    if (btn) {
+        btn.textContent = '⏸️ Pausa';
+        btn.classList.add('running');
+    }
+    document.getElementById('pomodoroStatus').textContent = 'In corso...';
+
+    pomodoroInterval = setInterval(tickPomodoro, 1000);
+}
+
+function pausePomodoro() {
+    pomodoroRunning = false;
+    clearInterval(pomodoroInterval);
+    const btn = document.getElementById('pomodoroStartBtn');
+    if (btn) {
+        btn.textContent = '▶️ Riprendi';
+        btn.classList.remove('running');
+    }
+    document.getElementById('pomodoroStatus').textContent = 'In pausa';
+}
+
+function resetPomodoro() {
+    pomodoroRunning = false;
+    clearInterval(pomodoroInterval);
+    pomodoroTimeLeft = state.pomodoro.workDuration * 60;
+    updatePomodoroDisplay();
+    const btn = document.getElementById('pomodoroStartBtn');
+    if (btn) {
+        btn.textContent = '▶️ Avvia';
+        btn.classList.remove('running');
+    }
+    document.getElementById('pomodoroStatus').textContent = 'Pronto';
+}
+
+function tickPomodoro() {
+    if (pomodoroTimeLeft > 0) {
+        pomodoroTimeLeft--;
+        updatePomodoroDisplay();
+    } else {
+        completePomodoro();
+    }
+}
+
+function updatePomodoroDisplay() {
+    const minutes = Math.floor(pomodoroTimeLeft / 60);
+    const seconds = pomodoroTimeLeft % 60;
+    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    const timeEl = document.getElementById('pomodoroTime');
+    if (timeEl) timeEl.textContent = timeStr;
+
+    const countEl = document.getElementById('pomodoroCount');
+    if (countEl) countEl.textContent = state.pomodoro.sessionsToday;
+
+    const xpEl = document.getElementById('pomodoroXp');
+    if (xpEl) xpEl.textContent = state.pomodoro.xpPerSession;
+}
+
+function completePomodoro() {
+    clearInterval(pomodoroInterval);
+    pomodoroRunning = false;
+
+    // Add XP
+    const statName = state.stats.find(s => s.id === state.pomodoro.targetStatId)?.name || 'Stat';
+    addXp(state.pomodoro.xpPerSession, state.pomodoro.targetStatId, '🍅 Pomodoro');
+
+    // Update session count
+    state.pomodoro.sessionsToday++;
+    state.pomodoro.lastSessionDate = getGameDateString();
+    saveState();
+
+    // Play sound (simple beep)
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        gain.gain.value = 0.3;
+        osc.start();
+        setTimeout(() => osc.stop(), 200);
+    } catch (e) { /* Audio not supported */ }
+
+    // Vibrate on mobile
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+    // Reset timer
+    pomodoroTimeLeft = state.pomodoro.workDuration * 60;
+    updatePomodoroDisplay();
+
+    const btn = document.getElementById('pomodoroStartBtn');
+    if (btn) {
+        btn.textContent = '▶️ Avvia';
+        btn.classList.remove('running');
+    }
+    document.getElementById('pomodoroStatus').textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName}!`;
+}
+
+// Expose Pomodoro functions to window
+window.openPomodoroTimer = openPomodoroTimer;
+window.closePomodoroTimer = closePomodoroTimer;
+window.togglePomodoro = togglePomodoro;
+window.resetPomodoro = resetPomodoro;
+window.savePomodoroSettings = savePomodoroSettings;
 
 // Expose functions to window
 window.openToxicInventory = openToxicInventory;

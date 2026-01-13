@@ -171,7 +171,11 @@
                 <div class="habits-wrapper">
                     <div class="section-header">
                         <h2>📜 Abitudini</h2>
-                        <button class="add-btn-circle" onclick="openModal('habit')">+</button>
+                        <div class="header-actions" style="display: flex; gap: 8px;">
+                            <button class="add-btn-circle" onclick="openPomodoroTimer()"
+                                title="Timer Pomodoro">🍅</button>
+                            <button class="add-btn-circle" onclick="openModal('habit')">+</button>
+                        </div>
                     </div>
                     <div class="habits-list" id="habitsList"></div>
                 </div>
@@ -415,6 +419,43 @@
             </div>
             <div id="toxicItemList" class="toxic-grid">
                 <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Pomodoro Timer Modal -->
+    <div class="modal-overlay" id="pomodoroOverlay" onclick="closePomodoroTimer()"></div>
+    <div class="profile-popup popup-center hidden" id="pomodoroModal">
+        <div class="profile-content" style="text-align: center;">
+            <h2 style="margin: 0 0 20px 0; font-size: 20px;">🍅 Pomodoro Timer</h2>
+
+            <div class="pomodoro-display" id="pomodoroDisplay">
+                <div class="pomodoro-time" id="pomodoroTime">25:00</div>
+                <div class="pomodoro-status" id="pomodoroStatus">Pronto</div>
+            </div>
+
+            <div class="pomodoro-controls" id="pomodoroControls">
+                <button class="pomodoro-btn primary" id="pomodoroStartBtn" onclick="togglePomodoro()">▶️ Avvia</button>
+                <button class="pomodoro-btn" onclick="resetPomodoro()">🔄 Reset</button>
+            </div>
+
+            <div class="pomodoro-stats">
+                <span>🍅 Oggi: <strong id="pomodoroCount">0</strong></span>
+                <span>⚡ +<span id="pomodoroXp">20</span> XP</span>
+            </div>
+
+            <div class="pomodoro-settings" id="pomodoroSettings">
+                <div class="form-row" style="margin-top: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Stat</label>
+                        <select id="pomodoroStat" onchange="savePomodoroSettings()"></select>
+                    </div>
+                    <div class="form-group" style="flex: 0 0 80px;">
+                        <label>Minuti</label>
+                        <input type="number" id="pomodoroDuration" value="25" min="1" max="60"
+                            onchange="savePomodoroSettings()">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
