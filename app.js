@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "0.9.0.3";
+const APP_VERSION = "0.9.0.4";
 
 // ============================================
 // DATA STRUCTURES
@@ -2211,30 +2211,11 @@ function initSwipe() {
         hasMoved = false;
         const taskCard = content.closest('.task-card');
 
-        // Start long-press timer for drag (only for habits/oneshots/quests, not stats)
-        const type = taskCard?.dataset?.type;
-        console.log('Pointerdown on:', type, taskCard?.dataset?.id);
-        if (type === 'habit' || type === 'oneshot' || type === 'quest') {
-            dragTimer = setTimeout(() => {
-                console.log('Timer fired! hasMoved:', hasMoved);
-                if (taskCard && !hasMoved) {
-                    isDragging = true;
-                    isSwiping = false; // Cancel swipe mode
-                    dragCard = taskCard;
-                    dragStartY = e.clientY;
-                    dragType = type;
-                    dragId = taskCard.dataset.id;
-                    dragList = taskCard.parentElement;
-
-                    taskCard.classList.add('dragging');
-                    document.body.style.overflow = 'hidden'; // Prevent page scroll
-                    console.log('Drag started!', dragType, dragId);
-
-                    // Haptic feedback
-                    if (navigator.vibrate) navigator.vibrate(50);
-                }
-            }, 400);
-        }
+        // DISABLED: Drag-to-reorder (to be recovered later)
+        // const type = taskCard?.dataset?.type;
+        // if (type === 'habit' || type === 'oneshot' || type === 'quest') {
+        //     dragTimer = setTimeout(() => { ... }, 400);
+        // }
 
         currentSwipeCard = content;
         swipeStartX = e.clientX;
