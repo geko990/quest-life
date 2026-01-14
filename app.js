@@ -1818,16 +1818,30 @@ function setAccent(color) {
 }
 
 function applyTheme() {
-    document.body.dataset.theme = state.settings.theme;
+    // Migration from v1 'light'/'dark'
+    if (state.settings.theme === 'light') {
+        state.settings.theme = 'standard';
+        saveState();
+    } else if (state.settings.theme === 'dark') {
+        state.settings.theme = 'futuristic';
+        saveState();
+    }
+
+    const theme = state.settings.theme;
+    document.body.dataset.theme = theme;
     document.body.dataset.accent = state.settings.accent;
 
     // Update setting buttons
-    const btnLight = document.getElementById('themeLight');
-    const btnDark = document.getElementById('themeDark');
-    if (btnLight && btnDark) {
-        btnLight.classList.toggle('active', state.settings.theme === 'light');
-        btnDark.classList.toggle('active', state.settings.theme === 'dark');
-    }
+    document.querySelectorAll('.theme-switcher .theme-btn').forEach(btn => btn.classList.remove('active'));
+    
+    let activeBtnId = 'themeStandard';
+    if (theme === 'fantasy') activeBtnId = 'themeFantasy';
+    else if (theme === 'dnd') activeBtnId = 'themeDnD';
+    else if (theme === 'futuristic') activeBtnId = 'themeFuturistic';
+    else if (theme === 'pirate') activeBtnId = 'themePirate';
+
+    const activeBtn = document.getElementById(activeBtnId);
+    if (activeBtn) activeBtn.classList.add('active');
 }
 
 function setTheme(theme) {
