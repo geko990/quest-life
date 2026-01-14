@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.13";
+const APP_VERSION = "2.0.0.14";
 
 // ============================================
 // DATA STRUCTURES
@@ -1296,7 +1296,11 @@ function toggleHabit(habitId, targetDate = null) {
         }
 
         logCompletion('habits', habit.id, dateStr);
-        playSound('success');
+        if (habit.streak > 1 && habit.lastCompleted === today) {
+            playSound('streak');
+        } else {
+            playSound('success');
+        }
     }
 
     habit.completed = isHabitCompletedOnDate(habit, dateStr);
@@ -2981,6 +2985,8 @@ function useToxicItem(id) {
     const item = state.toxicItems.find(it => it.id === id);
     if (!item) return;
 
+    playSound('toxic');
+
     // Deduct XP
     addXp(-item.penalty, item.statId, item.name);
 
@@ -3613,4 +3619,75 @@ window.addEventListener('click', (e) => {
 });
 
 // window.navigateTo removed
-function playSound(type) { console.log('Sound played:', type); }
+// ============================================
+// SOUND MANAGER (Web Audio API)
+// ============================================
+let audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function playTone(freq, type, duration, startTime = 0) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startTime);
+
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime + startTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(audioCtx.currentTime + startTime);
+    osc.stop(audioCtx.currentTime + startTime + duration);
+}
+
+function playSuccessSound() {
+    playTone(880, 'sine', 0.1, 0);       // A5
+    playTone(1108, 'sine', 0.3, 0.1);    // C#6
+}
+
+function playStreakSound() {
+    playTone(523.25, 'triangle', 0.1, 0);   // C5
+    playTone(659.25, 'triangle', 0.1, 0.1); // E5
+    playTone(783.99, 'triangle', 0.1, 0.2); // G5
+    playTone(1046.50, 'triangle', 0.4, 0.3); // C6
+}
+
+function playDiceSound() {
+    // Simulate rattling
+    for (let i = 0; i < 5; i++) {
+        playTone(200 + Math.random() * 100, 'square', 0.05, i * 0.05);
+    }
+    // Final thud
+    playTone(150, 'square', 0.2, 0.3);
+}
+
+function playToxicSound() {
+    playTone(100, 'sawtooth', 0.1, 0);
+    playTone(80, 'sawtooth', 0.2, 0.1);
+}
+
+function playSound(type) {
+    try {
+        initAudio(); // Lazy init
+        switch (type) {
+            case 'success': playSuccessSound(); break;
+            case 'streak': playStreakSound(); break;
+            case 'dice': playDiceSound(); break;
+            case 'toxic': playToxicSound(); break;
+            default: console.log('Unknown sound:', type);
+        }
+    } catch (e) {
+        console.warn('Audio failed:', e);
+    }
+}
