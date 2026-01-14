@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.9";
+const APP_VERSION = "2.0.0.10";
 
 // ============================================
 // DATA STRUCTURES
@@ -1235,76 +1235,81 @@ function isHabitCompletedToday(habit) {
 }
 
 function toggleHabit(habitId, targetDate = null) {
-    const habit = state.habits.find(h => h.id === habitId);
-    if (!habit || habit.locked) return;
+    try {
+        const habit = state.habits.find(h => h.id === habitId);
+        if (!habit || habit.locked) return;
 
-    const today = getGameDateObj().toDateString();
-    const dateStr = targetDate || getGameDate();
-    const isTargetingToday = !targetDate || targetDate === getGameDate();
+        const today = getGameDateObj().toDateString();
+        const dateStr = targetDate || getGameDate();
+        const isTargetingToday = !targetDate || targetDate === getGameDate();
 
-    if (isHabitCompletedOnDate(habit, dateStr)) {
-        // Un-complete
-        if (isTargetingToday) {
-            habit.lastCompleted = null;
-            checkUndoActivity();
+        if (isHabitCompletedOnDate(habit, dateStr)) {
+            // Un-complete
+            if (isTargetingToday) {
+                habit.lastCompleted = null;
+                checkUndoActivity();
 
-            // Subtract XP (Rollback)
-            const xp = calculateXp(habit.stars);
-            addXp(-xp, habit.primaryStatId, habit.name);
-            if (habit.secondaryStatId) {
-                addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
-            }
-        } else {
-            // RETROACTIVE UN-COMPLETE
-            // If we uncheck a past task, we must clear the lastCompleted date
-            // otherwise it will still look completed due to frequency logic
-            habit.lastCompleted = null;
-        }
-        logCompletion('habits', habit.id, dateStr);
-    } else {
-        // Complete
-        if (isTargetingToday) {
-            const yesterday = getGameDateObj();
-            yesterday.setDate(yesterday.getDate() - 1);
-
-            if (habit.lastCompleted === yesterday.toDateString()) {
-                habit.streak++;
+                // Subtract XP (Rollback)
+                const xp = calculateXp(habit.stars);
+                addXp(-xp, habit.primaryStatId, habit.name);
+                if (habit.secondaryStatId) {
+                    addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
+                }
             } else {
-                habit.streak = Math.max(1, Math.floor(habit.streak * 0.3) + 1);
+                // RETROACTIVE UN-COMPLETE
+                // If we uncheck a past task, we must clear the lastCompleted date
+                // otherwise it will still look completed due to frequency logic
+                habit.lastCompleted = null;
+            }
+            logCompletion('habits', habit.id, dateStr);
+        } else {
+            // Complete
+            if (isTargetingToday) {
+                const yesterday = getGameDateObj();
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                if (habit.lastCompleted === yesterday.toDateString()) {
+                    habit.streak++;
+                } else {
+                    habit.streak = Math.max(1, Math.floor(habit.streak * 0.3) + 1);
+                }
+
+                habit.lastCompleted = today;
+                const xp = calculateXp(habit.stars);
+                addXp(xp, habit.primaryStatId, habit.name);
+                if (habit.secondaryStatId) {
+                    addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
+                }
+                recordActivity();
+                const xpGained = calculateXp(habit.stars);
+                showProgressPopup(habit.primaryStatId, xpGained);
+            } else {
+                // RETROACTIVE COMPLETION: Update lastCompleted even for past dates
+                // IMPORTANT: Parse YYYY-MM-DD to local date safely. 
+                // We use noon (12:00) to avoid timezone rollover issues when converting to string.
+                if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    const [y, m, d] = dateStr.split('-').map(Number);
+                    const targetDateObj = new Date(y, m - 1, d, 12, 0, 0);
+                    habit.lastCompleted = targetDateObj.toDateString();
+                } else {
+                    habit.lastCompleted = new Date().toDateString(); // Fallback
+                }
             }
 
-            habit.lastCompleted = today;
-            const xp = calculateXp(habit.stars);
-            addXp(xp, habit.primaryStatId, habit.name);
-            if (habit.secondaryStatId) {
-                addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
-            }
-            recordActivity();
-            const xpGained = calculateXp(habit.stars);
-            showProgressPopup(habit.primaryStatId, xpGained);
-        } else {
-            // RETROACTIVE COMPLETION: Update lastCompleted even for past dates
-            // IMPORTANT: Parse YYYY-MM-DD to local date safely. 
-            // We use noon (12:00) to avoid timezone rollover issues when converting to string.
-            if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                const [y, m, d] = dateStr.split('-').map(Number);
-                const targetDateObj = new Date(y, m - 1, d, 12, 0, 0);
-                habit.lastCompleted = targetDateObj.toDateString();
-            } else {
-                habit.lastCompleted = new Date().toDateString(); // Fallback
-            }
+            logCompletion('habits', habit.id, dateStr);
+            playSound('success');
         }
 
-        logCompletion('habits', habit.id, dateStr);
-        playSound('success');
+        habit.completed = isHabitCompletedOnDate(habit, dateStr);
+        saveState();
+
+        // Update UI immediately (removed setTimeout to fix perceived lag)
+        renderHabits();
+        renderCalendar();
+    } catch (e) {
+        alert("CRITICAL ERROR in toggleHabit:\n" + e.message + "\n" + e.stack);
+        console.error(e);
     }
-
-    habit.completed = isHabitCompletedOnDate(habit, dateStr);
-    saveState();
-
-    // Update UI immediately (removed setTimeout to fix perceived lag)
-    renderHabits();
-    renderCalendar();
 }
 
 // ============================================
