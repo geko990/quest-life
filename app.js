@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.15";
+const APP_VERSION = "2.0.0.16";
 
 // ============================================
 // DATA STRUCTURES
@@ -1320,7 +1320,7 @@ function renderOneshots() {
     const pending = state.oneshots.filter(o => !o.completed && !o.locked);
 
     if (pending.length === 0) {
-        container.innerHTML = `< div class="empty-state" ><div class="empty-state-icon">💥</div><div class="empty-state-text">Nessun task</div><div class="empty-state-hint">Perfetto per azioni singole!</div></div > `;
+        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💥</div><div class="empty-state-text">Nessun task</div><div class="empty-state-hint">Perfetto per azioni singole!</div></div>`;
         return;
     }
 
@@ -1329,7 +1329,7 @@ function renderOneshots() {
         const secondaryStat = oneshot.secondaryStatId ? state.stats.find(s => s.id === oneshot.secondaryStatId) : null;
 
         return `
-            < div class="task-card ${oneshot.locked ? 'locked' : ''}" data - type="oneshot" data - id="${oneshot.id}" >
+            <div class="task-card ${oneshot.locked ? 'locked' : ''}" data-type="oneshot" data-id="${oneshot.id}">
                 <div class="swipe-actions">
                     <div class="swipe-action edit">✏️</div>
                     <div class="swipe-action delete">🗑️</div>
