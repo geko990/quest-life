@@ -7,7 +7,7 @@
     /* Light Theme */
     --bg-primary: #f8f9fc;
     --bg-secondary: #ffffff;
-    --bg-card: #ffffff;
+    --bg-card: #f1f3f9;
     --text-primary: #1a1a2e;
     --text-secondary: #4a4a6a;
     --text-muted: #8888aa;
@@ -1222,14 +1222,6 @@ body {
     border-radius: var(--radius-md);
     padding: 14px;
     margin-bottom: 14px;
-    /* Ensure visibility in light mode */
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-/* Specific override for light mode to give "gray box" feel if bg-card is white */
-:root:not([data-theme="dark"]) .settings-group {
-    background: #f1f3f9;
-    border: none;
 }
 
 .settings-group h3 {
