@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.5";
+const APP_VERSION = "2.0.0.6";
 
 // ============================================
 // DATA STRUCTURES
@@ -1259,6 +1259,11 @@ function toggleHabit(habitId, targetDate = null) {
             if (habit.secondaryStatId) {
                 addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
+        } else {
+            // RETROACTIVE UN-COMPLETE
+            // If we uncheck a past task, we must clear the lastCompleted date
+            // otherwise it will still look completed due to frequency logic
+            habit.lastCompleted = null;
         }
         logCompletion('habits', habit.id, dateStr);
     } else {
@@ -1302,11 +1307,9 @@ function toggleHabit(habitId, targetDate = null) {
     habit.completed = isHabitCompletedOnDate(habit, dateStr);
     saveState();
 
-    // Update UI - Use slight delay to ensure DOM and logic are synced
+    // Update UI immediately (removed setTimeout to fix perceived lag)
     renderHabits();
-    setTimeout(() => {
-        renderCalendar();
-    }, 50);
+    renderCalendar();
 }
 
 // ============================================
