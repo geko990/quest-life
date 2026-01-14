@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.12";
+const APP_VERSION = "2.0.0.13";
 
 // ============================================
 // DATA STRUCTURES
@@ -1305,10 +1305,6 @@ function toggleHabit(habitId, targetDate = null) {
     // Update UI immediately (removed setTimeout to fix perceived lag)
     renderHabits();
     renderCalendar();
-} catch (e) {
-    alert("CRITICAL ERROR in toggleHabit:\n" + e.message + "\n" + e.stack);
-    console.error(e);
-}
 }
 
 // ============================================
