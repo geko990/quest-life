@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.1.0.4";
+const APP_VERSION = "1.1.0.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -1085,24 +1085,37 @@ function setViewedDate(dateStr) {
     // We could also filter oneshots/quests if they had a completion date or if the user wants to see history
 }
 
+// Helper to get exactly which habits should exist for a specific date
+function getHabitsForDate(dateStr) {
+    return state.habits.filter(h => {
+        // 1. Exclude locked/deleted habits (unless we want to show history of deleted ones, but we decided for WYSIWYG)
+        if (h.locked) return false;
+
+        // 2. Filter by creation date - if habit was created AFTER the date we are looking at, it shouldn't exist
+        if (h.createdAt) {
+            const createdDate = formatISO(new Date(h.createdAt));
+            if (createdDate > dateStr) return false;
+        }
+
+        return true;
+    });
+}
+
 function getCompletionForDate(dateStr) {
+    // 1. Get habits that visibly exist for this date
+    const visibleHabits = getHabitsForDate(dateStr);
+    const totalHabits = visibleHabits.length;
+
+    if (totalHabits === 0) return 0;
+
     const log = state.completionLog[dateStr];
-
-    // 1. Get ALL currently active (non-locked) habits from the system.
-    // We ignore historical snapshots to ensure the visual state matches the ring.
-    // If a habit was deleted, it's gone from history computations too.
-    const currentActiveHabits = state.habits.filter(h => !h.locked);
-    const totalHabits = currentActiveHabits.length;
-
-    if (totalHabits === 0) return 0; // Or 100 if you consider empty day "done", but 0 makes more sense for "nothing to do"
-
     if (!log || !log.habits) return 0;
 
-    // 2. Count how many of THESE specific habits are marked as completed for this date
-    const currentActiveIds = currentActiveHabits.map(h => h.id);
-    const completedCount = log.habits.filter(id => currentActiveIds.includes(id)).length;
+    // 2. Count how many of THESE specific visible habits are completed
+    const visibleHabitIds = visibleHabits.map(h => h.id);
+    const completedCount = log.habits.filter(id => visibleHabitIds.includes(id)).length;
 
-    // 3. Simple Math
+    // 3. Math
     return Math.round((completedCount / totalHabits) * 100);
 }
 
@@ -1146,22 +1159,16 @@ function logCompletion(type, itemId, customDate = null) {
 
 function renderHabits() {
     const container = document.getElementById('habitsList');
-    const isToday = viewedDate === getGameDate();
+    // Use shared logic for base list
+    let habitsToShow = getHabitsForDate(viewedDate);
 
-    // If it's today, show only active habits
-    // If it's a past date, show habits that were completed on that day OR are active
-    // Always filter: only show habits created on or before the viewed date
-    let habitsToShow = state.habits.filter(h => {
-        // Filter by creation date - if habit was created after the viewed date, don't show it
-        if (h.createdAt) {
-            // Compare using YYYY-MM-DD format
-            const createdDate = formatISO(new Date(h.createdAt));
-            if (createdDate > viewedDate) return false;
-        }
-        // If it's today, also filter out completed habits
-        if (isToday) return !h.completed;
-        return true;
-    });
+    // Additional UI-only filtering (if needed in future, but trying to keep it minimal)
+    // Note: older version filtered !h.completed for today, but that might hide achievements. 
+    // Let's keep showing everything for clarity, or if you prefer hiding completed for today we can add it back.
+    // Given the issues, showing EVERYTHING is safer for "counting consistency".
+
+    // BUT, the specific logic to filter out completed logic for "Active" vs "History" view might be desired.
+    // Let's stick to showing all valid habits for that date to match the circle count perfectly.
 
     // Sort: uncompleted habits first, completed habits at the bottom
     habitsToShow = habitsToShow.slice().sort((a, b) => {
