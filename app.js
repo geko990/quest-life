@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.6";
+const APP_VERSION = "2.0.0.7";
 
 // ============================================
 // DATA STRUCTURES
@@ -1163,23 +1163,16 @@ function logCompletion(type, itemId, customDate = null) {
 function renderHabits() {
     const container = document.getElementById('habitsList');
     const isToday = viewedDate === getGameDate();
-    // Use shared logic for base list
-    let habitsToShow = getHabitsForDate(viewedDate);
-
-    // Additional UI-only filtering (if needed in future, but trying to keep it minimal)
-    // Note: older version filtered !h.completed for today, but that might hide achievements. 
-    // Let's keep showing everything for clarity, or if you prefer hiding completed for today we can add it back.
-    // Given the issues, showing EVERYTHING is safer for "counting consistency".
-
-    // BUT, the specific logic to filter out completed logic for "Active" vs "History" view might be desired.
-    // Let's stick to showing all valid habits for that date to match the circle count perfectly.
+    // Use shared logic for base list, then map to include completion status permanently for this render cycle
+    let habitsToShow = getHabitsForDate(viewedDate).map(h => ({
+        original: h,
+        isCompleted: isHabitCompletedOnDate(h, viewedDate)
+    }));
 
     // Sort: uncompleted habits first, completed habits at the bottom
-    habitsToShow = habitsToShow.slice().sort((a, b) => {
-        const aCompleted = isHabitCompletedOnDate(a, viewedDate);
-        const bCompleted = isHabitCompletedOnDate(b, viewedDate);
-        if (aCompleted === bCompleted) return 0;
-        return aCompleted ? 1 : -1;
+    habitsToShow.sort((a, b) => {
+        if (a.isCompleted === b.isCompleted) return 0;
+        return a.isCompleted ? 1 : -1;
     });
 
     if (habitsToShow.length === 0) {
@@ -1187,15 +1180,24 @@ function renderHabits() {
         return;
     }
 
-    container.innerHTML = habitsToShow.map(habit => {
-        const isCompleted = isHabitCompletedOnDate(habit, viewedDate);
-        if (!isToday && !isCompleted && habit.completed) return ''; // Hide tasks completed in the future when viewing history
+    container.innerHTML = habitsToShow.map(item => {
+        const habit = item.original;
+        const isCompleted = item.isCompleted;
+        // Logic to hide future completions in history view if desired
+        if (!isToday && !isCompleted && habit.completed) return '';
 
         const primaryStat = state.stats.find(s => s.id === habit.primaryStatId);
         const secondaryStat = habit.secondaryStatId ? state.stats.find(s => s.id === habit.secondaryStatId) : null;
 
         return `
             <div class="task-card ${habit.locked ? 'locked' : ''}" data-type="habit" data-id="${habit.id}">
+                <div class="swipe-actions">
+
+        const primaryStat = state.stats.find(s => s.id === habit.primaryStatId);
+        const secondaryStat = habit.secondaryStatId ? state.stats.find(s => s.id === habit.secondaryStatId) : null;
+
+        return `
+            < div class="task-card ${habit.locked ? 'locked' : ''}" data - type="habit" data - id="${habit.id}" >
                 <div class="swipe-actions">
                     <div class="swipe-action edit">✏️</div>
                     <div class="swipe-action delete">🗑️</div>
@@ -1214,8 +1216,8 @@ function renderHabits() {
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
     }).join('');
 }
 
@@ -1321,7 +1323,7 @@ function renderOneshots() {
     const pending = state.oneshots.filter(o => !o.completed && !o.locked);
 
     if (pending.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💥</div><div class="empty-state-text">Nessun task</div><div class="empty-state-hint">Perfetto per azioni singole!</div></div>`;
+        container.innerHTML = `< div class="empty-state" ><div class="empty-state-icon">💥</div><div class="empty-state-text">Nessun task</div><div class="empty-state-hint">Perfetto per azioni singole!</div></div > `;
         return;
     }
 
@@ -1330,7 +1332,7 @@ function renderOneshots() {
         const secondaryStat = oneshot.secondaryStatId ? state.stats.find(s => s.id === oneshot.secondaryStatId) : null;
 
         return `
-            <div class="task-card ${oneshot.locked ? 'locked' : ''}" data-type="oneshot" data-id="${oneshot.id}">
+            < div class="task-card ${oneshot.locked ? 'locked' : ''}" data - type="oneshot" data - id="${oneshot.id}" >
                 <div class="swipe-actions">
                     <div class="swipe-action edit">✏️</div>
                     <div class="swipe-action delete">🗑️</div>
@@ -1348,8 +1350,8 @@ function renderOneshots() {
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
     }).join('');
 }
 
@@ -1366,7 +1368,7 @@ function completeOneshot(oneshotId) {
     if (oneshot.fromDailyPlan && oneshot.dailyPlanDate === today && oneshot.d10Roll) {
         const bonusMultiplier = 1 + (oneshot.d10Roll / 10); // 1-10 → 1.1-2.0
         xp = Math.round(xp * bonusMultiplier);
-        console.log(`🎲 D10 Bonus: +${oneshot.d10Roll * 10}% → XP x${bonusMultiplier}`);
+        console.log(`🎲 D10 Bonus: +${ oneshot.d10Roll * 10 }% → XP x${ bonusMultiplier } `);
     }
 
     addXp(xp, oneshot.primaryStatId, oneshot.name);
@@ -1400,7 +1402,7 @@ function renderQuests() {
     const active = state.quests.filter(q => !q.completed);
 
     if (active.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Le grandi avventure iniziano qui!</div></div>`;
+        container.innerHTML = `< div class="empty-state" ><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Le grandi avventure iniziano qui!</div></div > `;
         return;
     }
 
@@ -1411,7 +1413,7 @@ function renderQuests() {
         const primaryStat = state.stats.find(s => s.id === quest.primaryStatId);
 
         return `
-            <div class="task-card quest-card ${quest.locked ? 'locked' : ''}" data-type="quest" data-id="${quest.id}">
+            < div class="task-card quest-card ${quest.locked ? 'locked' : ''}" data - type="quest" data - id="${quest.id}" >
                 <div class="swipe-actions">
                     <div class="swipe-action edit">✏️</div>
                     <div class="swipe-action delete">🗑️</div>
@@ -1438,7 +1440,7 @@ function renderQuests() {
                         </div>
                     ` : ''}
                 </div>
-            </div>
+            </div >
             `;
     }).join('');
 }
@@ -1454,10 +1456,10 @@ function openQuestDetail(questId) {
 
     const content = document.querySelector('#questDetailModal .quest-detail-content');
     content.innerHTML = `
-            <div class="modal-header" style="border:none; padding-bottom:0; flex-shrink: 0;">
+            < div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
                 <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
                 <button class="close-btn" onclick="closeQuestDetailModal()" style="position:absolute; right:20px; top:20px;">×</button>
-        </div>
+        </div >
 
             <div class="quest-scroll-area">
                 <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
@@ -1512,14 +1514,14 @@ function openStatDetail(statId) {
     const lastEntry = history[0];
 
     content.innerHTML = `
-        <div style="text-align: center; margin-bottom: 5px;">
+            < div style = "text-align: center; margin-bottom: 5px;" >
             <div style="font-size: 32px; margin-bottom: 5px;">${stat.icon}</div>
             <h2 style="font-size: 22px; margin: 0; color: var(--text-primary); text-align: center; width: 100%;">${stat.name}</h2>
             <div style="font-size: 13px; color: var(--text-secondary); font-style: italic; margin-top: 8px; padding: 0 10px; line-height: 1.4;">
                 ${stat.description || 'Nessuna descrizione.'}
             </div>
             <div style="font-size: 16px; font-weight: 700; color: var(--accent-primary); margin-top: 15px;">Livello ${stat.level}</div>
-        </div>
+        </div >
 
         <div class="popup-xp-bar" style="height: 12px; margin: 15px 0 10px 0;">
             <div class="popup-xp-fill" style="width: ${progress}%"></div>
@@ -1553,7 +1555,7 @@ function openStatDetail(statId) {
                 </div>
             ` : `<div class="history-empty" style="font-size:12px; padding:10px; text-align:center;">Nessuna attività registrata.</div>`}
         </div>
-    `;
+        `;
 
     document.getElementById('statDetailOverlay').classList.add('active');
     document.getElementById('statDetailModal').classList.remove('hidden');
@@ -1593,9 +1595,9 @@ function toggleSubquest(questId, subquestId) {
 
     if (subquest.completed) {
         // Double XP for subquest (Full habitual XP)
-        addXp(calculateXp(quest.stars), quest.primaryStatId, `${quest.name} > ${subquest.name}`);
+        addXp(calculateXp(quest.stars), quest.primaryStatId, `${ quest.name } > ${ subquest.name } `);
         if (quest.secondaryStatId) {
-            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${subquest.name}`);
+            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${ quest.name } > ${ subquest.name } `);
         }
     }
 
@@ -1796,7 +1798,7 @@ function setPopupSetting(setting, value) {
     );
 
     saveState();
-    console.log(`⚙️ ${setting} = ${value}`);
+    console.log(`⚙️ ${ setting } = ${ value } `);
 }
 
 
@@ -1805,7 +1807,7 @@ function initColorPicker() {
     const dropdown = document.getElementById('colorDropdown');
     if (!dropdown) return;
     dropdown.innerHTML = ACCENT_COLORS.map(color =>
-        `<div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data-color="${color}" onclick="setAccent('${color}')"></div>`
+        `< div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data - color="${color}" onclick = "setAccent('${color}')" ></div > `
     ).join('');
 }
 
@@ -1869,7 +1871,7 @@ function updateDayStartTime(hour) {
 function updateSettingToggle(setting, value) {
     state.settings[setting] = value;
     saveState();
-    console.log(`⚙️ ${setting} = ${value}`);
+    console.log(`⚙️ ${ setting } = ${ value } `);
 }
 
 function renderSettingsStats() {
@@ -1881,7 +1883,7 @@ function renderSettingsStats() {
 
     if (attrList) {
         attrList.innerHTML = attributes.map(stat => `
-            <div class="stat-manage-item">
+            < div class="stat-manage-item" >
                 <div class="stat-manage-info">
                     <input type="checkbox" ${stat.visible ? 'checked' : ''} onchange="toggleStatVisibility('${stat.id}')">
                     <span>${stat.icon} ${stat.name}</span>
@@ -1942,11 +1944,11 @@ function openModal(type, editData = null) {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
-    const statOptions = state.stats.map(s => `<option value="${s.id}">${s.icon} ${s.name}</option>`).join('');
-    const statOptionsOptional = `<option value="">-- Nessuna --</option>` + statOptions;
+    const statOptions = state.stats.map(s => `< option value = "${s.id}" > ${ s.icon } ${ s.name }</option > `).join('');
+    const statOptionsOptional = `< option value = "" > --Nessuna --</option > ` + statOptions;
 
     const frequencyOptions = `
-            <option value="daily">📅 Giornaliera</option>
+            < option value = "daily" >📅 Giornaliera</option >
         <option value="weekly">📆 Settimanale</option>
         <option value="monthly">🗓️ Mensile</option>
         <option value="yearly">📅 Annuale</option>
@@ -1958,7 +1960,7 @@ function openModal(type, editData = null) {
         case 'habit':
             title.textContent = editData ? 'Modifica Abitudine' : 'Nuova Abitudine';
             body.innerHTML = `
-            <div class="form-group">
+            < div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Meditazione mattutina">
                 </div>
@@ -2006,7 +2008,7 @@ function openModal(type, editData = null) {
         case 'oneshot':
             title.textContent = editData ? 'Modifica One Shot' : 'Nuovo One Shot';
             body.innerHTML = `
-            <div class="form-group">
+            < div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Chiamare il dentista">
                 </div>
@@ -2042,7 +2044,7 @@ function openModal(type, editData = null) {
         case 'quest':
             title.textContent = editData ? 'Modifica Quest' : 'Nuova Quest';
             body.innerHTML = `
-            <div class="form-group">
+            < div class="form-group" >
                     <label>Nome Quest</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Imparare una nuova lingua">
                 </div>
@@ -2090,9 +2092,9 @@ function openModal(type, editData = null) {
         case 'attribute':
         case 'ability':
             const isAbility = type === 'ability';
-            title.textContent = editData ? `Modifica ${isAbility ? 'Abilità' : 'Attributo'} ` : `Nuovo ${isAbility ? 'Abilità' : 'Attributo'} `;
+            title.textContent = editData ? `Modifica ${ isAbility ? 'Abilità' : 'Attributo' } ` : `Nuovo ${ isAbility ? 'Abilità' : 'Attributo' } `;
             body.innerHTML = `
-            <div class="form-group">
+            < div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Creatività">
                 </div>
@@ -2114,7 +2116,7 @@ function openModal(type, editData = null) {
         case 'toxic':
             title.textContent = editData ? 'Modifica Oggetto Tossico' : 'Nuovo Oggetto Tossico';
             body.innerHTML = `
-                <div class="form-row toxic-form-row">
+            < div class="form-row toxic-form-row" >
                     <div class="form-group icon-group">
                         <label>Icona</label>
                         <input type="text" id="inputIcon" value="${editData?.icon || '💀'}" style="text-align:center; font-size: 24px;">
@@ -2123,7 +2125,7 @@ function openModal(type, editData = null) {
                         <label>Nome Oggetto</label>
                         <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Junk Food">
                     </div>
-                </div>
+                </div >
                 <div class="form-row">
                     <div class="form-group">
                         <label>Danneggia Stat</label>
@@ -2138,7 +2140,7 @@ function openModal(type, editData = null) {
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
                 </div>
-            `;
+        `;
             if (editData) {
                 document.getElementById('inputPrimaryStat').value = editData.statId;
             }
@@ -2163,7 +2165,7 @@ function closeModal() {
 
 function renderStarRating(selected = 3) {
     return Array.from({ length: 5 }, (_, i) =>
-        `<span class="star ${i < selected ? 'active' : ''}" data-value="${i + 1}">⭐</span>`
+        `< span class="star ${i < selected ? 'active' : ''}" data - value="${i + 1}" >⭐</span > `
     ).join('');
 }
 
@@ -2360,7 +2362,7 @@ function initSwipe() {
             e.preventDefault(); // Prevent iOS scroll
             clearTimeout(dragTimer);
             const deltaY = e.clientY - dragStartY;
-            dragCard.style.transform = `translateY(${deltaY}px) scale(1.02)`;
+            dragCard.style.transform = `translateY(${ deltaY }px) scale(1.02)`;
             return;
         }
 
@@ -2374,7 +2376,7 @@ function initSwipe() {
 
         const diff = e.clientX - swipeStartX + currentX;
         const limitedDiff = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, diff));
-        currentSwipeCard.style.transform = `translateX(${limitedDiff}px)`;
+        currentSwipeCard.style.transform = `translateX(${ limitedDiff }px)`;
 
         // Visual feedback
         const taskCard = currentSwipeCard.closest('.task-card');
@@ -2501,15 +2503,15 @@ function showDeleteConfirm(type, id) {
     const overlay = document.createElement('div');
     overlay.className = 'delete-confirm-overlay';
     overlay.innerHTML = `
-        <div class="delete-confirm-modal">
+            < div class="delete-confirm-modal" >
             <div class="delete-confirm-icon">🗑️</div>
             <div class="delete-confirm-text">Eliminare ${label} <strong>"${item.name}"</strong>?</div>
             <div class="delete-confirm-buttons">
                 <button class="btn-cancel" onclick="closeDeleteConfirm()">Annulla</button>
                 <button class="btn-danger" onclick="confirmDelete('${type}', '${id}')">Elimina</button>
             </div>
-        </div>
-    `;
+        </div >
+            `;
     document.body.appendChild(overlay);
     setTimeout(() => overlay.classList.add('active'), 10);
 }
@@ -2656,7 +2658,7 @@ function switchAvatarTab(tab) {
 
 function renderEmojiGrid() {
     document.getElementById('emojiGrid').innerHTML = AVATAR_EMOJIS.map(emoji =>
-        `< button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick = "selectEmoji('${emoji}')" > ${emoji}</button > `
+        `< button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick = "selectEmoji('${emoji}')" > ${ emoji }</button > `
     ).join('');
 }
 
@@ -2697,7 +2699,7 @@ function showStatTooltip(statId, event) {
 
     const tooltip = document.getElementById('tooltip');
     tooltip.innerHTML = `
-            <div class="tooltip-title">${stat.icon} ${stat.name} - LV${stat.level}</div>
+            < div class="tooltip-title" > ${ stat.icon } ${ stat.name } - LV${ stat.level }</div >
         <div>${stat.description}</div>
         <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">XP: ${stat.xp}/${getXpForLevel(stat.level + 1)}</div>
         `;
@@ -2721,7 +2723,7 @@ function ensureUniqueIds(list, prefix) {
         if (seen.has(item.id)) {
             // Generate new ID
             const newId = prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            console.warn(`Duplicate ID found: ${item.id} -> replaced with ${newId} `);
+            console.warn(`Duplicate ID found: ${ item.id } -> replaced with ${ newId } `);
             item.id = newId;
         }
         seen.add(item.id);
@@ -2896,7 +2898,7 @@ function showVisibilityPopup(e) {
     // Build list
     const list = document.getElementById('visibilityList');
     list.innerHTML = state.stats.map(stat => `
-            <div class="visibility-item">
+            < div class="visibility-item" >
                 <input type="checkbox" id="vis-${stat.id}" ${stat.visible ? 'checked' : ''}
                     onchange="toggleStatVisibilityFromPopup('${stat.id}')">
                     <label for="vis-${stat.id}">${stat.icon} ${stat.name}</label>
@@ -2954,18 +2956,18 @@ function renderToxicInventory() {
 
     if (state.toxicItems.length === 0) {
         list.innerHTML = `
-            <div style="text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px;">
+            < div style = "text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px;" >
                 <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;">🎒</div>
-                Il tuo zaino è vuoto.<br>Crea oggetti tossici per tracciare le cattive abitudini.
-            </div>
-        `;
+                Il tuo zaino è vuoto.< br > Crea oggetti tossici per tracciare le cattive abitudini.
+            </div >
+            `;
         return;
     }
 
     list.innerHTML = state.toxicItems.map(item => {
         const stat = state.stats.find(s => s.id === item.statId);
         return `
-            <div class="toxic-item-card">
+            < div class="toxic-item-card" >
                 <div class="toxic-item-info">
                     <div class="toxic-item-icon">${item.icon}</div>
                     <div class="toxic-item-details">
@@ -2977,8 +2979,8 @@ function renderToxicInventory() {
                     <span onclick="editToxicItem('${item.id}')" style="cursor:pointer; opacity: 0.6; font-size: 14px;">✏️</span>
                     <button class="btn-use-toxic" onclick="useToxicItem('${item.id}')">Usa</button>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
     }).join('');
 }
 
@@ -3025,7 +3027,7 @@ function openPomodoroTimer() {
     const statSelect = document.getElementById('pomodoroStat');
     if (statSelect) {
         statSelect.innerHTML = state.stats.map(s =>
-            `<option value="${s.id}" ${s.id === state.pomodoro.targetStatId ? 'selected' : ''}>${s.icon} ${s.name}</option>`
+            `< option value = "${s.id}" ${ s.id === state.pomodoro.targetStatId ? 'selected' : '' }> ${ s.icon } ${ s.name }</option > `
         ).join('');
     }
 
@@ -3114,7 +3116,7 @@ function tickPomodoro() {
 function updatePomodoroDisplay() {
     const minutes = Math.floor(pomodoroTimeLeft / 60);
     const seconds = pomodoroTimeLeft % 60;
-    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timeStr = `${ minutes.toString().padStart(2, '0') }:${ seconds.toString().padStart(2, '0') } `;
 
     const timeEl = document.getElementById('pomodoroTime');
     if (timeEl) timeEl.textContent = timeStr;
@@ -3164,7 +3166,7 @@ function completePomodoro() {
         btn.textContent = '▶️ Avvia';
         btn.classList.remove('running');
     }
-    document.getElementById('pomodoroStatus').textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName}!`;
+    document.getElementById('pomodoroStatus').textContent = `✅ +${ state.pomodoro.xpPerSession } XP ${ statName } !`;
 }
 
 // ============================================
@@ -3193,7 +3195,7 @@ function showDailyPlanner() {
     const selects = document.querySelectorAll('.slot-stat');
     selects.forEach(select => {
         select.innerHTML = state.stats.map(stat =>
-            `<option value="${stat.id}">${stat.icon} ${stat.name}</option>`
+            `< option value = "${stat.id}" > ${ stat.icon } ${ stat.name }</option > `
         ).join('');
     });
 
@@ -3257,7 +3259,7 @@ function saveDailyPlan() {
         // Create One Shot with daily plan flag
         const oneshot = {
             id: 'dp-' + Date.now() + '-' + slotType,
-            name: `${slotIcons[slotType]} ${name}`,
+            name: `${ slotIcons[slotType] } ${ name } `,
             stars: stars,
             primaryStatId: statId,
             secondaryStatId: null,
@@ -3279,7 +3281,7 @@ function saveDailyPlan() {
     closeDailyPlanner();
 
     if (createdCount > 0) {
-        console.log(`📋 Piano giornaliero: ${createdCount} task creati!`);
+        console.log(`📋 Piano giornaliero: ${ createdCount } task creati!`);
     }
 }
 
@@ -3324,7 +3326,7 @@ function rollD10AndSave() {
 
             // Calculate bonus: 1-10 -> 10%-100% (so multiplier is 1.1 to 2.0)
             const bonusPercent = finalRoll * 10;
-            diceBonus.textContent = `+${bonusPercent}% XP Bonus! 🎉`;
+            diceBonus.textContent = `+ ${ bonusPercent }% XP Bonus! 🎉`;
 
             // Haptic feedback
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -3359,7 +3361,7 @@ function saveDailyPlanWithBonus(d10Roll) {
 
         const oneshot = {
             id: 'dp-' + Date.now() + '-' + slotType,
-            name: `${slotIcons[slotType]} ${name}`,
+            name: `${ slotIcons[slotType] } ${ name } `,
             stars: stars,
             primaryStatId: statId,
             secondaryStatId: null,
@@ -3385,7 +3387,7 @@ function saveDailyPlanWithBonus(d10Roll) {
     const rollBtn = document.getElementById('rollDiceBtn');
     if (rollBtn) rollBtn.style.display = '';
 
-    console.log(`🎲 D10 Roll: ${d10Roll} → +${d10Roll * 10}% bonus!`);
+    console.log(`🎲 D10 Roll: ${ d10Roll } → +${ d10Roll * 10 }% bonus!`);
 }
 
 // ============================================
@@ -3420,17 +3422,17 @@ function showWeeklyRecap() {
         const today = getGameDateObj();
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - 6);
-        weekLabel.textContent = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${today.getDate()}/${today.getMonth() + 1}`;
+        weekLabel.textContent = `${ weekStart.getDate() } /${weekStart.getMonth() + 1} - ${today.getDate()}/${ today.getMonth() + 1 } `;
     }
 
     const cardsEl = document.getElementById('recapCards');
     if (cardsEl) {
         cardsEl.innerHTML = `
-            <div class="recap-card">
+            < div class="recap-card" >
                 <div class="recap-card-icon">⚡</div>
                 <div class="recap-card-value">${recap.totalXp}</div>
                 <div class="recap-card-label">XP Guadagnati</div>
-            </div>
+            </div >
             <div class="recap-card">
                 <div class="recap-card-icon">${recap.topStat?.icon || '🏆'}</div>
                 <div class="recap-card-value">${recap.topStat?.name || '-'}</div>
