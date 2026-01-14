@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.1.0.2";
+const APP_VERSION = "1.1.0.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -1089,42 +1089,42 @@ function getCompletionForDate(dateStr) {
     const log = state.completionLog[dateStr];
     if (!log) return 0;
 
-    // Get active habits IDs
-    const today = getGameDate();
-    let activeHabitIds;
+    // Use the explicitly saved total count if available
+    // If not (legacy data), calculate from snapshot or current active list
+    let totalHabitsForDay;
 
-    if (dateStr === today) {
-        // For TODAY, always use the current list of active (non-locked) habits
-        // This ensures that if I add a habit today, the total increases immediately
-        activeHabitIds = state.habits.filter(h => !h.locked).map(h => h.id);
+    if (log.dailyTotalSnapshot !== undefined) {
+        totalHabitsForDay = log.dailyTotalSnapshot;
     } else {
-        // For PAST days, trust the snapshot if it exists
-        // If snapshot is missing (legacy data), fallback to current active habits
-        activeHabitIds = log.activeHabitsSnapshot || state.habits.filter(h => !h.locked).map(h => h.id);
+        const today = getGameDate();
+        if (dateStr === today) {
+            totalHabitsForDay = state.habits.filter(h => !h.locked).length;
+        } else {
+            totalHabitsForDay = (log.activeHabitsSnapshot || state.habits.filter(h => !h.locked)).length;
+        }
     }
 
-    const totalHabitsForDay = activeHabitIds.length;
+    const completedHabits = (log.habits || []).length;
 
-    // Count only completed habits that are part of the active set for that day
-    const completedHabits = (log.habits || []).filter(id => activeHabitIds.includes(id)).length;
-
+    // Avoid division by zero
     if (totalHabitsForDay === 0) return completedHabits > 0 ? 100 : 0;
-    return Math.round((completedHabits / totalHabitsForDay) * 100);
+
+    // Cap at 100% just in case
+    return Math.min(100, Math.round((completedHabits / totalHabitsForDay) * 100));
 }
 
 function logCompletion(type, itemId, customDate = null) {
     const dateStr = customDate || getGameDate();
-    const today = getGameDate();
 
     if (!state.completionLog[dateStr]) {
         state.completionLog[dateStr] = { habits: [], oneshots: [], quests: [] };
     }
 
-    // Salva lo snapshot delle abitudini attive solo per oggi (quando si crea o aggiorna)
-    // Questo preserva lo storico: le abitudini di un giorno passato non cambiano
+    // Always update the total count snapshot for TODAY when modifying
     if (dateStr === getGameDate() && type === 'habits') {
-        const activeHabitIds = state.habits.filter(h => !h.locked).map(h => h.id);
-        state.completionLog[dateStr].activeHabitsSnapshot = activeHabitIds;
+        const activeHabits = state.habits.filter(h => !h.locked);
+        state.completionLog[dateStr].activeHabitsSnapshot = activeHabits.map(h => h.id);
+        state.completionLog[dateStr].dailyTotalSnapshot = activeHabits.length;
     }
 
     const index = state.completionLog[dateStr][type].indexOf(itemId);
@@ -1133,7 +1133,17 @@ function logCompletion(type, itemId, customDate = null) {
     } else if (customDate) {
         // Toggle off if it's a custom date (allowing removal from history)
         state.completionLog[dateStr][type].splice(index, 1);
+    } else if (index !== -1 && !customDate) {
+        // Default behavior: toggle off for today
+        state.completionLog[dateStr][type].splice(index, 1);
     }
+
+    // If we're removing completion from today (toggle off), ensure the total count is still updated
+    // (In case the total changed since the completion was logged)
+    if (dateStr === getGameDate() && type === 'habits') {
+        state.completionLog[dateStr].dailyTotalSnapshot = state.habits.filter(h => !h.locked).length;
+    }
+
     saveState();
 }
 
