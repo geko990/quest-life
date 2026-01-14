@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.16";
+const APP_VERSION = "2.0.0.17";
 
 // ============================================
 // DATA STRUCTURES
@@ -1759,6 +1759,7 @@ function initSettings() {
     // Sync popup toggle settings (button style)
     syncPopupToggleButtons('enableDailyPlanner', 'dailyPlannerOn', 'dailyPlannerOff');
     syncPopupToggleButtons('enableWeeklyRecap', 'weeklyRecapOn', 'weeklyRecapOff');
+    syncPopupToggleButtons('soundEnabled', 'soundOn', 'soundOff');
 }
 
 function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
@@ -1789,10 +1790,12 @@ function setPopupSetting(setting, value) {
     state.settings[setting] = value;
 
     // Update visual immediately before save
-    syncPopupToggleButtons(setting,
-        setting === 'enableDailyPlanner' ? 'dailyPlannerOn' : 'weeklyRecapOn',
-        setting === 'enableDailyPlanner' ? 'dailyPlannerOff' : 'weeklyRecapOff'
-    );
+    const onBtnId = setting === 'enableDailyPlanner' ? 'dailyPlannerOn' :
+        setting === 'enableWeeklyRecap' ? 'weeklyRecapOn' : 'soundOn';
+    const offBtnId = setting === 'enableDailyPlanner' ? 'dailyPlannerOff' :
+        setting === 'enableWeeklyRecap' ? 'weeklyRecapOff' : 'soundOff';
+
+    syncPopupToggleButtons(setting, onBtnId, offBtnId);
 
     saveState();
     console.log(`⚙️ ${setting} = ${value} `);
@@ -3679,6 +3682,8 @@ function playToxicSound() {
 }
 
 function playSound(type) {
+    if (state.settings.soundEnabled === false) return;
+
     try {
         initAudio(); // Lazy init
         switch (type) {
