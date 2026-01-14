@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.5.5";
+const APP_VERSION = "1.0.5.7";
 
 // ============================================
 // DATA STRUCTURES
@@ -1089,11 +1089,23 @@ function getCompletionForDate(dateStr) {
     const log = state.completionLog[dateStr];
     if (!log) return 0;
 
-    // Get the snapshot of active habits for that day
-    const activeHabitIds = log.activeHabitsSnapshot || state.habits.filter(h => !h.locked).map(h => h.id);
+    // Get active habits IDs
+    const today = getGameDate();
+    let activeHabitIds;
+
+    if (dateStr === today) {
+        // For TODAY, always use the current list of active (non-locked) habits
+        // This ensures that if I add a habit today, the total increases immediately
+        activeHabitIds = state.habits.filter(h => !h.locked).map(h => h.id);
+    } else {
+        // For PAST days, trust the snapshot if it exists
+        // If snapshot is missing (legacy data), fallback to current active habits
+        activeHabitIds = log.activeHabitsSnapshot || state.habits.filter(h => !h.locked).map(h => h.id);
+    }
+
     const totalHabitsForDay = activeHabitIds.length;
 
-    // Only count completed habits that were actually in the snapshot (exclude deleted ones)
+    // Count only completed habits that are part of the active set for that day
     const completedHabits = (log.habits || []).filter(id => activeHabitIds.includes(id)).length;
 
     if (totalHabitsForDay === 0) return completedHabits > 0 ? 100 : 0;
@@ -1723,16 +1735,18 @@ function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
     const isEnabled = state.settings[setting] !== false;
 
     if (onBtn && offBtn) {
-        // Use requestAnimationFrame for reliable repaint on iOS Safari
-        requestAnimationFrame(() => {
-            if (isEnabled) {
-                onBtn.classList.add('active');
-                offBtn.classList.remove('active');
-            } else {
-                onBtn.classList.remove('active');
-                offBtn.classList.add('active');
-            }
-        });
+        // Use inline styles for reliable Safari dark mode compatibility
+        if (isEnabled) {
+            onBtn.style.background = 'var(--accent-gradient)';
+            onBtn.style.color = 'white';
+            offBtn.style.background = 'transparent';
+            offBtn.style.color = 'var(--text-secondary)';
+        } else {
+            onBtn.style.background = 'transparent';
+            onBtn.style.color = 'var(--text-secondary)';
+            offBtn.style.background = 'var(--accent-gradient)';
+            offBtn.style.color = 'white';
+        }
     }
 }
 
