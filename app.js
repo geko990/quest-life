@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.1";
+const APP_VERSION = "2.0.0.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -1159,6 +1159,7 @@ function logCompletion(type, itemId, customDate = null) {
 
 function renderHabits() {
     const container = document.getElementById('habitsList');
+    const isToday = viewedDate === getGameDate();
     // Use shared logic for base list
     let habitsToShow = getHabitsForDate(viewedDate);
 
@@ -3528,8 +3529,8 @@ window.toggleProfilePopup = toggleProfilePopup;
 window.toggleStreakPopup = toggleStreakPopup; // New
 window.switchSection = switchSection; // New
 window.saveMotto = saveMotto; // New
-window.editStat = editStat;
-window.deleteStat = deleteStat;
+// window.editStat = editStat; // Removed non-existent function
+// window.deleteStat = deleteStat; // Removed non-existent function
 window.setAccent = setAccent;
 window.toggleColorDropdown = toggleColorDropdown;
 window.openMottoEdit = openMottoEdit;
