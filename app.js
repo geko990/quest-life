@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.4";
+const APP_VERSION = "2.0.0.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -1284,19 +1284,29 @@ function toggleHabit(habitId, targetDate = null) {
             showProgressPopup(habit.primaryStatId, xpGained);
         } else {
             // RETROACTIVE COMPLETION: Update lastCompleted even for past dates
-            // This ensures frequent habits (weekly/monthly) are correctly marked as done
-            // Note: We don't award XP/Streaks for past dates to prevent cheating/complexity
-            habit.lastCompleted = getGameDateObj(dateStr).toDateString();
+            // IMPORTANT: Parse YYYY-MM-DD to local date safely. 
+            // We use noon (12:00) to avoid timezone rollover issues when converting to string.
+            if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const targetDateObj = new Date(y, m - 1, d, 12, 0, 0);
+                habit.lastCompleted = targetDateObj.toDateString();
+            } else {
+                habit.lastCompleted = new Date().toDateString(); // Fallback
+            }
         }
 
         logCompletion('habits', habit.id, dateStr);
         playSound('success');
     }
 
+    habit.completed = isHabitCompletedOnDate(habit, dateStr);
     saveState();
-    renderHeader();
+
+    // Update UI - Use slight delay to ensure DOM and logic are synced
     renderHabits();
-    renderCalendar();
+    setTimeout(() => {
+        renderCalendar();
+    }, 50);
 }
 
 // ============================================
