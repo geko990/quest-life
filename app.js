@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.14";
+const APP_VERSION = "2.0.0.15";
 
 // ============================================
 // DATA STRUCTURES
@@ -3305,6 +3305,7 @@ function rollD10AndSave() {
 
     // Show dice area and hide button
     diceResultDiv?.classList.remove('hidden');
+    playSound('dice');
     if (rollBtn) rollBtn.style.display = 'none';
 
     // Animate dice rolling - cycle through numbers
