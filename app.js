@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.3";
+const APP_VERSION = "2.0.0.4";
 
 // ============================================
 // DATA STRUCTURES
@@ -1102,18 +1102,21 @@ function getHabitsForDate(dateStr) {
 }
 
 function getCompletionForDate(dateStr) {
-    // 1. Get habits that visibly exist for this date
+    // 1. Get habits that visibly exist for this date (WYSIWYG)
     const visibleHabits = getHabitsForDate(dateStr);
     const totalHabits = visibleHabits.length;
 
     if (totalHabits === 0) return 0;
 
-    const log = state.completionLog[dateStr];
-    if (!log || !log.habits) return 0;
-
     // 2. Count how many of THESE specific visible habits are completed
-    const visibleHabitIds = visibleHabits.map(h => h.id);
-    const completedCount = log.habits.filter(id => visibleHabitIds.includes(id)).length;
+    // We MUST use isHabitCompletedOnDate because it handles frequency logic (weekly/monthly)
+    // Simply checking the log is not enough for frequency-based habits completed on other days
+    let completedCount = 0;
+    visibleHabits.forEach(habit => {
+        if (isHabitCompletedOnDate(habit, dateStr)) {
+            completedCount++;
+        }
+    });
 
     // 3. Math
     return Math.round((completedCount / totalHabits) * 100);
@@ -1277,11 +1280,17 @@ function toggleHabit(habitId, targetDate = null) {
                 addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
             recordActivity();
+            const xpGained = calculateXp(habit.stars);
+            showProgressPopup(habit.primaryStatId, xpGained);
+        } else {
+            // RETROACTIVE COMPLETION: Update lastCompleted even for past dates
+            // This ensures frequent habits (weekly/monthly) are correctly marked as done
+            // Note: We don't award XP/Streaks for past dates to prevent cheating/complexity
+            habit.lastCompleted = getGameDateObj(dateStr).toDateString();
         }
+
         logCompletion('habits', habit.id, dateStr);
-        // Calculate XP gained to pass to popup
-        const xp = calculateXp(habit.stars);
-        showProgressPopup(habit.primaryStatId, xp);
+        playSound('success');
     }
 
     saveState();
