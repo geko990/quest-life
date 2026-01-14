@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.0.5.4";
+const APP_VERSION = "1.0.5.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -1089,11 +1089,12 @@ function getCompletionForDate(dateStr) {
     const log = state.completionLog[dateStr];
     if (!log) return 0;
 
-    const completedHabits = log.habits?.length || 0;
+    // Get the snapshot of active habits for that day
+    const activeHabitIds = log.activeHabitsSnapshot || state.habits.filter(h => !h.locked).map(h => h.id);
+    const totalHabitsForDay = activeHabitIds.length;
 
-    // Usa lo snapshot delle abitudini attive di quel giorno se disponibile
-    // Altrimenti fallback alle abitudini correnti (per retrocompatibilità)
-    const totalHabitsForDay = log.activeHabitsSnapshot?.length ?? state.habits.filter(h => !h.locked).length;
+    // Only count completed habits that were actually in the snapshot (exclude deleted ones)
+    const completedHabits = (log.habits || []).filter(id => activeHabitIds.includes(id)).length;
 
     if (totalHabitsForDay === 0) return completedHabits > 0 ? 100 : 0;
     return Math.round((completedHabits / totalHabitsForDay) * 100);
@@ -1722,17 +1723,16 @@ function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
     const isEnabled = state.settings[setting] !== false;
 
     if (onBtn && offBtn) {
-        // Use explicit add/remove for reliable class switching
-        if (isEnabled) {
-            onBtn.classList.add('active');
-            offBtn.classList.remove('active');
-        } else {
-            onBtn.classList.remove('active');
-            offBtn.classList.add('active');
-        }
-        // Force immediate repaint on iOS Safari
-        onBtn.offsetHeight;
-        offBtn.offsetHeight;
+        // Use requestAnimationFrame for reliable repaint on iOS Safari
+        requestAnimationFrame(() => {
+            if (isEnabled) {
+                onBtn.classList.add('active');
+                offBtn.classList.remove('active');
+            } else {
+                onBtn.classList.remove('active');
+                offBtn.classList.add('active');
+            }
+        });
     }
 }
 
