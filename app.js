@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.17";
+const APP_VERSION = "2.0.0.18";
 
 // ============================================
 // DATA STRUCTURES
@@ -173,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // and update the stored version.
         const storedVersion = localStorage.getItem('questlife_app_version');
         if (storedVersion && storedVersion !== APP_VERSION) {
-            console.log("New version detected, updating PWA cache...");
             localStorage.setItem('questlife_app_version', APP_VERSION);
 
             // Unregister SW and reload to be extra aggressive for iOS PWA
@@ -213,7 +212,6 @@ function loadState() {
             saved = oldSaved;
             localStorage.setItem('questlife_state_v2', oldSaved);
             localStorage.removeItem('questlife_state');
-            console.log('✅ Dati migrati con successo!');
         }
     }
 
@@ -324,7 +322,6 @@ function checkFrozenStreak() {
     if (state.player.lastFreezeReset !== currentMonth) {
         state.player.streakFreezes = 2; // Restore to 2
         state.player.lastFreezeReset = currentMonth;
-        console.log('❄️ Congelamenti ripristinati per il nuovo mese!');
     }
 
     if (!state.player.lastActionDate) {
@@ -347,23 +344,18 @@ function checkFrozenStreak() {
         // Missed exactly 1 day (yesterday)
         if (state.player.streakFreezes > 0) {
             state.player.streakFreezes--;
-            console.log('❄️ Congelamento usato! Serie salvata.');
             // We pretend we did something yesterday to bridge the gap?
             // Ideally we just don't reset. But we need to update date?
             // No, getting back on track today will fix the gap.
             // We just notify user? Or visually indicate freeze usage?
         } else {
-            console.log('💔 Serie persa! Nessun congelamento rimasto.');
             state.player.globalStreak = 0;
             state.player.streakFreezes = 2; // Restore freezes on streak loss
-            console.log('❄️ Congelamenti ripristinati a 2');
         }
     } else {
         // Missed > 1 day: Streak broken regardless of freezes
-        console.log('💔 Serie persa! Troppi giorni saltati.');
         state.player.globalStreak = 0;
         state.player.streakFreezes = 2; // Restore freezes on streak loss
-        console.log('❄️ Congelamenti ripristinati a 2');
     }
 
     saveState();
@@ -1365,7 +1357,6 @@ function completeOneshot(oneshotId) {
     if (oneshot.fromDailyPlan && oneshot.dailyPlanDate === today && oneshot.d10Roll) {
         const bonusMultiplier = 1 + (oneshot.d10Roll / 10); // 1-10 → 1.1-2.0
         xp = Math.round(xp * bonusMultiplier);
-        console.log(`🎲 D10 Bonus: +${oneshot.d10Roll * 10}% → XP x${bonusMultiplier} `);
     }
 
     addXp(xp, oneshot.primaryStatId, oneshot.name);
@@ -1382,7 +1373,6 @@ function completeOneshot(oneshotId) {
     // Grant freeze for 5-star task completion
     if (oneshot.stars === 5 && state.player.streakFreezes < 2) {
         state.player.streakFreezes++;
-        console.log('❄️ Congelamento guadagnato! Ora:', state.player.streakFreezes);
     }
 
     saveState();
@@ -1633,7 +1623,6 @@ function completeQuest(questId) {
     // Grant freeze for quest completion (quests are major achievements)
     if (state.player.streakFreezes < 2) {
         state.player.streakFreezes++;
-        console.log('❄️ Congelamento guadagnato dalla Quest! Ora:', state.player.streakFreezes);
     }
 
     saveState();
@@ -1798,7 +1787,6 @@ function setPopupSetting(setting, value) {
     syncPopupToggleButtons(setting, onBtnId, offBtnId);
 
     saveState();
-    console.log(`⚙️ ${setting} = ${value} `);
 }
 
 
@@ -1871,7 +1859,6 @@ function updateDayStartTime(hour) {
 function updateSettingToggle(setting, value) {
     state.settings[setting] = value;
     saveState();
-    console.log(`⚙️ ${setting} = ${value} `);
 }
 
 function renderSettingsStats() {
@@ -2406,7 +2393,6 @@ function initSwipe() {
                 const dragIndex = items.indexOf(dragCard);
                 const centerY = e.clientY;
 
-                console.log('Drop at Y:', centerY, 'dragIndex:', dragIndex);
 
                 // Find the item we're hovering over
                 let targetIndex = dragIndex;
@@ -2423,7 +2409,6 @@ function initSwipe() {
                     }
                 }
 
-                console.log('targetIndex:', targetIndex);
 
                 // Reorder array
                 if (targetIndex !== dragIndex) {
@@ -2433,7 +2418,6 @@ function initSwipe() {
                     else if (dragType === 'quest') arr = state.quests;
 
                     if (arr) {
-                        console.log('Reordering', dragType, 'from', dragIndex, 'to', targetIndex);
                         const [removed] = arr.splice(dragIndex, 1);
                         arr.splice(targetIndex, 0, removed);
                         saveState();
@@ -3283,7 +3267,6 @@ function saveDailyPlan() {
     closeDailyPlanner();
 
     if (createdCount > 0) {
-        console.log(`📋 Piano giornaliero: ${createdCount} task creati!`);
     }
 }
 
@@ -3390,7 +3373,6 @@ function saveDailyPlanWithBonus(d10Roll) {
     const rollBtn = document.getElementById('rollDiceBtn');
     if (rollBtn) rollBtn.style.display = '';
 
-    console.log(`🎲 D10 Roll: ${d10Roll} → +${d10Roll * 10}% bonus!`);
 }
 
 // ============================================
@@ -3416,9 +3398,7 @@ function checkWeeklyRecap() {
 }
 
 function showWeeklyRecap() {
-    console.log('showWeeklyRecap called');
     const recap = calculateWeeklyRecap();
-    console.log('Recap:', recap);
 
     const weekLabel = document.getElementById('recapWeekLabel');
     if (weekLabel) {
@@ -3456,7 +3436,6 @@ function showWeeklyRecap() {
 
     document.getElementById('weeklyRecapModal')?.classList.remove('hidden');
     document.getElementById('weeklyRecapOverlay')?.classList.remove('hidden');
-    console.log('Modal should be visible now');
 }
 
 function closeWeeklyRecap() {
@@ -3622,7 +3601,6 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// window.navigateTo removed
 // ============================================
 // SOUND MANAGER (Web Audio API)
 // ============================================
@@ -3691,7 +3669,6 @@ function playSound(type) {
             case 'streak': playStreakSound(); break;
             case 'dice': playDiceSound(); break;
             case 'toxic': playToxicSound(); break;
-            default: console.log('Unknown sound:', type);
         }
     } catch (e) {
         console.warn('Audio failed:', e);
