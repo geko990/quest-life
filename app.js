@@ -64,7 +64,7 @@ let state = {
     habits: [],
     oneshots: [],
     quests: [],
-    toxicItems: [], // New for "Zaino Tossico"
+    toxicItems: [],
     completionLog: {},
     xpLog: [], // Log di XP guadagnato: [{date, statId, amount}]
     pomodoro: {
@@ -149,13 +149,13 @@ let pomodoroRunning = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
-    checkFrozenStreak(); // New freeze logic
+    checkFrozenStreak();
     initNavigation();
     initSettings();
     initColorPicker();
     initSwipe();
     initVisibilityPopup();
-    initNavSwipe(); // New Liquid Glass Nav
+    initNavSwipe();
     renderAll();
 
     // Check for weekly recap (Sunday)
@@ -3532,9 +3532,9 @@ window.toggleSubquest = toggleSubquest;
 window.toggleStatVisibility = toggleStatVisibility;
 window.toggleStatVisibilityFromPopup = toggleStatVisibilityFromPopup;
 window.toggleProfilePopup = toggleProfilePopup;
-window.toggleStreakPopup = toggleStreakPopup; // New
-window.switchSection = switchSection; // New
-window.saveMotto = saveMotto; // New
+window.toggleStreakPopup = toggleStreakPopup;
+window.switchSection = switchSection;
+window.saveMotto = saveMotto;
 // window.editStat = editStat; // Removed non-existent function
 // window.deleteStat = deleteStat; // Removed non-existent function
 window.setAccent = setAccent;
