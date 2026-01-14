@@ -1,0 +1,11 @@
+# Task Breakdown: RPG Habit Tracker
+
+## Features & Fixes
+- [x] **Audio Effects** (v2.0.0.17)
+- [x] **Code Cleanup** (v2.0.0.18)
+- [x] **Fix Deployment**: Add `.nojekyll` to unblock GitHub Actions.
+
+## Archived Debugging (Completed v2.0.0.13)
+- [x] Fix Crash when checking items.
+- [x] Fix Syntax Error.
+- [x] Fix Rendering.
