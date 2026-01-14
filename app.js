@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.1.0.3";
+const APP_VERSION = "1.1.0.4";
 
 // ============================================
 // DATA STRUCTURES
@@ -1087,30 +1087,23 @@ function setViewedDate(dateStr) {
 
 function getCompletionForDate(dateStr) {
     const log = state.completionLog[dateStr];
-    if (!log) return 0;
 
-    // Use the explicitly saved total count if available
-    // If not (legacy data), calculate from snapshot or current active list
-    let totalHabitsForDay;
+    // 1. Get ALL currently active (non-locked) habits from the system.
+    // We ignore historical snapshots to ensure the visual state matches the ring.
+    // If a habit was deleted, it's gone from history computations too.
+    const currentActiveHabits = state.habits.filter(h => !h.locked);
+    const totalHabits = currentActiveHabits.length;
 
-    if (log.dailyTotalSnapshot !== undefined) {
-        totalHabitsForDay = log.dailyTotalSnapshot;
-    } else {
-        const today = getGameDate();
-        if (dateStr === today) {
-            totalHabitsForDay = state.habits.filter(h => !h.locked).length;
-        } else {
-            totalHabitsForDay = (log.activeHabitsSnapshot || state.habits.filter(h => !h.locked)).length;
-        }
-    }
+    if (totalHabits === 0) return 0; // Or 100 if you consider empty day "done", but 0 makes more sense for "nothing to do"
 
-    const completedHabits = (log.habits || []).length;
+    if (!log || !log.habits) return 0;
 
-    // Avoid division by zero
-    if (totalHabitsForDay === 0) return completedHabits > 0 ? 100 : 0;
+    // 2. Count how many of THESE specific habits are marked as completed for this date
+    const currentActiveIds = currentActiveHabits.map(h => h.id);
+    const completedCount = log.habits.filter(id => currentActiveIds.includes(id)).length;
 
-    // Cap at 100% just in case
-    return Math.min(100, Math.round((completedHabits / totalHabitsForDay) * 100));
+    // 3. Simple Math
+    return Math.round((completedCount / totalHabits) * 100);
 }
 
 function logCompletion(type, itemId, customDate = null) {
