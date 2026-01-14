@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "1.1.0.1";
+const APP_VERSION = "1.1.0.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -1732,20 +1732,23 @@ function initSettings() {
 function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
     const onBtn = document.getElementById(onBtnId);
     const offBtn = document.getElementById(offBtnId);
-    const isEnabled = state.settings[setting] !== false;
+    // Explicitly check boolean true/false to avoid undefined issues
+    const isEnabled = state.settings[setting] === true || state.settings[setting] === undefined;
 
     if (onBtn && offBtn) {
-        // Use inline styles for reliable Safari dark mode compatibility
+        // CLEANUP: Remove any inline styles caused by previous fix attempt
+        onBtn.style.background = '';
+        onBtn.style.color = '';
+        offBtn.style.background = '';
+        offBtn.style.color = '';
+
+        // Use standard classes which now work correctly with !important fix
         if (isEnabled) {
-            onBtn.style.background = 'var(--accent-gradient)';
-            onBtn.style.color = 'white';
-            offBtn.style.background = 'transparent';
-            offBtn.style.color = 'var(--text-secondary)';
+            onBtn.classList.add('active');
+            offBtn.classList.remove('active');
         } else {
-            onBtn.style.background = 'transparent';
-            onBtn.style.color = 'var(--text-secondary)';
-            offBtn.style.background = 'var(--accent-gradient)';
-            offBtn.style.color = 'white';
+            onBtn.classList.remove('active');
+            offBtn.classList.add('active');
         }
     }
 }
