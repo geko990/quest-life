@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.0.0.2";
+const APP_VERSION = "2.0.0.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -3538,7 +3538,7 @@ window.closeMottoEdit = closeMottoEdit;
 window.confirmMottoEdit = confirmMottoEdit;
 window.showStatTooltip = showStatTooltip;
 window.hideStatTooltip = hideStatTooltip;
-window.contextAction = contextAction;
+// window.contextAction = contextAction; // Removed non-existent function
 window.openAvatarModal = openAvatarModal;
 window.closeAvatarModal = closeAvatarModal;
 window.switchAvatarTab = switchAvatarTab;

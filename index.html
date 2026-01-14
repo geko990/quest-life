@@ -13,20 +13,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f0f1a">
-    <!-- Emergency Error Handler -->
-    <script>
-        window.onerror = function (msg, url, line, col, error) {
-            const errorBox = document.getElementById('error-debug') || document.createElement('div');
-            errorBox.id = 'error-debug';
-            errorBox.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:99999;padding:20px;font-family:monospace;white-space:pre-wrap;overflow:auto;max-height:50vh;';
-            errorBox.innerText += `\nERROR: ${msg}\nLine: ${line}:${col}\n`;
-            document.body.appendChild(errorBox);
-            return false;
-        };
-        window.addEventListener('unhandledrejection', function (event) {
-            window.onerror('Promise Rejection: ' + event.reason, '', '', '', event.reason);
-        });
-    </script>
     <link rel="stylesheet" href="styles.css">
     <script src="chart.min.js"></script>
 </head>
