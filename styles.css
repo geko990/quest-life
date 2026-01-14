@@ -48,7 +48,147 @@
     --radius-xl: 28px;
 }
 
-/* Dark Theme */
+/* Standard Theme (falls back to :root) */
+[data-theme="standard"] {
+    /* Uses root variables */
+}
+
+/* Fantasy Theme (LotR) */
+[data-theme="fantasy"] {
+    --font-main: 'Cinzel', serif;
+    --bg-primary: #3E2723;
+    /* Dark Wood */
+    --bg-secondary: #4E342E;
+    --bg-card: #5D4037;
+    --text-primary: #efebe9;
+    /* Parchment White */
+    --text-secondary: #d7ccc8;
+    --text-muted: #a1887f;
+    --accent-primary: #d4af37;
+    /* Gold */
+    --accent-secondary: #8bc34a;
+    /* Forest Green */
+    --accent-light: #5d4037;
+    --glass-bg: rgba(62, 39, 35, 0.9);
+    --glass-border: rgba(212, 175, 55, 0.3);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    font-family: var(--font-main);
+}
+
+/* D&D Theme (Paper) */
+[data-theme="dnd"] {
+    --font-main: 'Patrick Hand', cursive;
+    --bg-primary: #f0f0f0;
+    /* Paper */
+    --bg-secondary: #ffffff;
+    --bg-card: #fffdf5;
+    /* Old Paper */
+    --text-primary: #1a1a1a;
+    /* Ink */
+    --text-secondary: #4a4a4a;
+    --text-muted: #757575;
+    --accent-primary: #b91c1c;
+    /* Dragon Red */
+    --accent-secondary: #ca8a04;
+    --accent-light: #fee2e2;
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+    /* Paper shadow */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+    --radius-xl: 8px;
+    font-family: var(--font-main);
+}
+
+/* Futuristic Theme (Tron) */
+[data-theme="futuristic"] {
+    --font-main: 'Orbitron', sans-serif;
+    --bg-primary: #000000;
+    --bg-secondary: #050505;
+    --bg-card: #0a0a0a;
+    --text-primary: #00ffff;
+    --text-secondary: #00cccc;
+    --text-muted: #008888;
+    --accent-primary: #00ffff;
+    --accent-secondary: #ff00ff;
+    --accent-light: rgba(0, 255, 255, 0.1);
+    --glass-bg: rgba(0, 0, 0, 0.9);
+    --glass-border: 1px solid #00ffff;
+    --glass-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    --radius-sm: 0px;
+    --radius-md: 2px;
+    --radius-lg: 4px;
+    --radius-xl: 8px;
+    font-family: var(--font-main);
+}
+
+/* Pirate Theme */
+[data-theme="pirate"] {
+    --font-main: 'Crimson Text', serif;
+    --bg-primary: #001f3f;
+    /* Ocean Blue */
+    --bg-secondary: #00162b;
+    --bg-card: #002855;
+    --text-primary: #f4e4bc;
+    /* Parchment */
+    --text-secondary: #d4c49c;
+    --text-muted: #85755b;
+    --accent-primary: #c5a059;
+    /* Gold */
+    --accent-secondary: #800000;
+    /* Crimson */
+    --accent-light: rgba(197, 160, 89, 0.1);
+    --glass-bg: rgba(0, 31, 63, 0.9);
+    --glass-border: rgba(197, 160, 89, 0.3);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    font-family: var(--font-main);
+}
+
+/* Specific Font Overrides for Headings in Themes */
+[data-theme="fantasy"] h1,
+[data-theme="fantasy"] h2,
+[data-theme="fantasy"] h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+}
+
+[data-theme="dnd"] h1,
+[data-theme="dnd"] h2,
+[data-theme="dnd"] h3 {
+    font-family: 'Patrick Hand', cursive;
+    letter-spacing: 1px;
+}
+
+[data-theme="pirate"] h1,
+[data-theme="pirate"] h2,
+[data-theme="pirate"] h3 {
+    font-family: 'Pinyon Script', cursive;
+    /* Use Pinyon specifically for headers if available, or fallback */
+    font-family: 'Crimson Text', serif;
+    /* Use crimson for now as I didn't import Pinyon? Wait I did */
+}
+
+/* Re-checking import: ...Crimson+Text... but no Pinyon Script. I added standard ones. I will stick to Crimson Text for Pirate headers or add Pinyon. 
+   I didn't import Pinyon Script. I'll just use Crimson Text bold/italic. */
+
+[data-theme="pirate"] h1,
+[data-theme="pirate"] h2,
+[data-theme="pirate"] h3 {
+    font-style: italic;
+}
+
+
+/* Dark Theme (Legacy Support or mixed?) - We usually just treat Dark as a theme. 
+   But the user requested specific themes. The existing "Dark" button is now just one option.
+   The variables below were for the old toggle. I will keep them for reference or fallback.
+   Actually, "Dark" content IS mostly covered by Future/Standard Dark modes, but let's keep it safe.
+*/
 [data-theme="dark"] {
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
@@ -2727,6 +2867,19 @@ body {
 
 
 /* Theme Switcher */
+/* Theme Switcher */
+.theme-scroll-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-bottom: 4px;
+}
+
+.theme-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
 .theme-switcher {
     display: flex;
     background: var(--bg-primary);
@@ -2737,7 +2890,8 @@ body {
 }
 
 .theme-btn {
-    flex: 1;
+    flex: 0 0 auto;
+    min-width: 80px;
     padding: 10px 16px;
     border: none;
     background: transparent;
