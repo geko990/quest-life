@@ -729,7 +729,7 @@ function openMottoEdit() {
     const modal = document.getElementById('mottoEditModal');
     const input = document.getElementById('mottoEditInput');
     if (modal && input) {
-        input.value = state.player.motto || '';
+        input.value= state.player.motto || '';
         modal.classList.add('active');
         setTimeout(() => input.focus(), 50);
     }
@@ -1201,7 +1201,7 @@ function renderHabits() {
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
     }).join('');
 }
@@ -1339,7 +1339,7 @@ function renderOneshots() {
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
             `;
     }).join('');
 }
@@ -1389,7 +1389,7 @@ function renderQuests() {
     const active = state.quests.filter(q => !q.completed);
 
     if (active.length === 0) {
-        container.innerHTML = `< div class="empty-state" ><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Le grandi avventure iniziano qui!</div></div > `;
+        container.innerHTML = `<div class="empty-state" ><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Le grandi avventure iniziano qui!</div></div> `;
         return;
     }
 
@@ -1400,7 +1400,7 @@ function renderQuests() {
         const primaryStat = state.stats.find(s => s.id === quest.primaryStatId);
 
         return `
-            < div class="task-card quest-card ${quest.locked ? 'locked' : ''}" data - type="quest" data - id="${quest.id}" >
+            <div class="task-card quest-card ${quest.locked ? 'locked' : ''}" data-type="quest" data-id="${quest.id}" >
                 <div class="swipe-actions">
                     <div class="swipe-action edit">✏️</div>
                     <div class="swipe-action delete">🗑️</div>
@@ -1427,7 +1427,7 @@ function renderQuests() {
                         </div>
                     ` : ''}
                 </div>
-            </div >
+            </div>
             `;
     }).join('');
 }
@@ -1443,10 +1443,10 @@ function openQuestDetail(questId) {
 
     const content = document.querySelector('#questDetailModal .quest-detail-content');
     content.innerHTML = `
-            < div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
+            <div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
                 <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
                 <button class="close-btn" onclick="closeQuestDetailModal()" style="position:absolute; right:20px; top:20px;">×</button>
-        </div >
+        </div>
 
             <div class="quest-scroll-area">
                 <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
@@ -1501,14 +1501,14 @@ function openStatDetail(statId) {
     const lastEntry = history[0];
 
     content.innerHTML = `
-            < div style = "text-align: center; margin-bottom: 5px;" >
+            <div style = "text-align: center; margin-bottom: 5px;" >
             <div style="font-size: 32px; margin-bottom: 5px;">${stat.icon}</div>
             <h2 style="font-size: 22px; margin: 0; color: var(--text-primary); text-align: center; width: 100%;">${stat.name}</h2>
             <div style="font-size: 13px; color: var(--text-secondary); font-style: italic; margin-top: 8px; padding: 0 10px; line-height: 1.4;">
                 ${stat.description || 'Nessuna descrizione.'}
             </div>
             <div style="font-size: 16px; font-weight: 700; color: var(--accent-primary); margin-top: 15px;">Livello ${stat.level}</div>
-        </div >
+        </div>
 
         <div class="popup-xp-bar" style="height: 12px; margin: 15px 0 10px 0;">
             <div class="popup-xp-fill" style="width: ${progress}%"></div>
@@ -1736,13 +1736,13 @@ function getWeeklyMomentum(statId) {
 function initSettings() {
     const nameInput = document.getElementById('settingName');
     if (nameInput) {
-        nameInput.value = state.player.name;
+        nameInput.value= state.player.name;
     }
 
     // Updated init for dayStartTime
     const dayStartSelect = document.getElementById('dayStartTime');
     if (dayStartSelect) {
-        dayStartSelect.value = state.settings.dayStartTime || 0;
+        dayStartSelect.value= state.settings.dayStartTime || 0;
     }
 
     // Sync popup toggle settings (button style)
@@ -1795,7 +1795,7 @@ function initColorPicker() {
     const dropdown = document.getElementById('colorDropdown');
     if (!dropdown) return;
     dropdown.innerHTML = ACCENT_COLORS.map(color =>
-        `< div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data - color="${color}" onclick = "setAccent('${color}')" ></div > `
+        `<div class="color-swatch ${state.settings.accent === color ? 'active' : ''}" data-color="${color}" onclick= "setAccent('${color}')" ></div> `
     ).join('');
 }
 
@@ -1870,7 +1870,7 @@ function renderSettingsStats() {
 
     if (attrList) {
         attrList.innerHTML = attributes.map(stat => `
-            < div class="stat-manage-item" >
+            <div class="stat-manage-item" >
                 <div class="stat-manage-info">
                     <input type="checkbox" ${stat.visible ? 'checked' : ''} onchange="toggleStatVisibility('${stat.id}')">
                     <span>${stat.icon} ${stat.name}</span>
@@ -1879,13 +1879,13 @@ function renderSettingsStats() {
                     <button onclick="editStat('${stat.id}')">✏️</button>
                     <button onclick="deleteStat('${stat.id}')">🗑️</button>
                 </div>
-            </div >
+            </div>
             `).join('');
     }
 
     if (abilList) {
         abilList.innerHTML = abilities.map(stat => `
-            < div class="stat-manage-item" >
+            <div class="stat-manage-item" >
                 <div class="stat-manage-info">
                     <input type="checkbox" ${stat.visible ? 'checked' : ''} onchange="toggleStatVisibility('${stat.id}')">
                     <span>${stat.icon} ${stat.name}</span>
@@ -1894,7 +1894,7 @@ function renderSettingsStats() {
                     <button onclick="editStat('${stat.id}')">✏️</button>
                     <button onclick="deleteStat('${stat.id}')">🗑️</button>
                 </div>
-            </div >
+            </div>
             `).join('');
     }
 }
@@ -1931,11 +1931,11 @@ function openModal(type, editData = null) {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
 
-    const statOptions = state.stats.map(s => `< option value = "${s.id}" > ${s.icon} ${s.name}</option > `).join('');
-    const statOptionsOptional = `< option value = "" > --Nessuna --</option > ` + statOptions;
+    const statOptions = state.stats.map(s => `<option value= "${s.id}" > ${s.icon} ${s.name}</option> `).join('');
+    const statOptionsOptional = `<option value= "" > --Nessuna --</option> ` + statOptions;
 
     const frequencyOptions = `
-            < option value = "daily" >📅 Giornaliera</option >
+            <option value= "daily" >📅 Giornaliera</option>
         <option value="weekly">📆 Settimanale</option>
         <option value="monthly">🗓️ Mensile</option>
         <option value="yearly">📅 Annuale</option>
@@ -1947,7 +1947,7 @@ function openModal(type, editData = null) {
         case 'habit':
             title.textContent = editData ? 'Modifica Abitudine' : 'Nuova Abitudine';
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Meditazione mattutina">
                 </div>
@@ -1986,16 +1986,16 @@ function openModal(type, editData = null) {
         `;
             initFrequencyToggle();
             if (editData) {
-                document.getElementById('inputFreq').value = editData.frequency;
-                document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
-                document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
+                document.getElementById('inputFreq').value= editData.frequency;
+                document.getElementById('inputPrimaryStat').value= editData.primaryStatId;
+                document.getElementById('inputSecondaryStat').value= editData.secondaryStatId || '';
             }
             break;
 
         case 'oneshot':
             title.textContent = editData ? 'Modifica One Shot' : 'Nuovo One Shot';
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Chiamare il dentista">
                 </div>
@@ -2023,15 +2023,15 @@ function openModal(type, editData = null) {
                 </div>
         `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
-                document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
+                document.getElementById('inputPrimaryStat').value= editData.primaryStatId;
+                document.getElementById('inputSecondaryStat').value= editData.secondaryStatId || '';
             }
             break;
 
         case 'quest':
             title.textContent = editData ? 'Modifica Quest' : 'Nuova Quest';
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group" >
                     <label>Nome Quest</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Imparare una nuova lingua">
                 </div>
@@ -2071,8 +2071,8 @@ function openModal(type, editData = null) {
                 </div>
         `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
-                document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
+                document.getElementById('inputPrimaryStat').value= editData.primaryStatId;
+                document.getElementById('inputSecondaryStat').value= editData.secondaryStatId || '';
             }
             break;
 
@@ -2081,7 +2081,7 @@ function openModal(type, editData = null) {
             const isAbility = type === 'ability';
             title.textContent = editData ? `Modifica ${isAbility ? 'Abilità' : 'Attributo'} ` : `Nuovo ${isAbility ? 'Abilità' : 'Attributo'} `;
             body.innerHTML = `
-            < div class="form-group" >
+            <div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Creatività">
                 </div>
@@ -2103,7 +2103,7 @@ function openModal(type, editData = null) {
         case 'toxic':
             title.textContent = editData ? 'Modifica Oggetto Tossico' : 'Nuovo Oggetto Tossico';
             body.innerHTML = `
-            < div class="form-row toxic-form-row" >
+            <div class="form-row toxic-form-row" >
                     <div class="form-group icon-group">
                         <label>Icona</label>
                         <input type="text" id="inputIcon" value="${editData?.icon || '💀'}" style="text-align:center; font-size: 24px;">
@@ -2112,7 +2112,7 @@ function openModal(type, editData = null) {
                         <label>Nome Oggetto</label>
                         <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Junk Food">
                     </div>
-                </div >
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Danneggia Stat</label>
@@ -2129,7 +2129,7 @@ function openModal(type, editData = null) {
                 </div>
         `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value = editData.statId;
+                document.getElementById('inputPrimaryStat').value= editData.statId;
             }
             break;
     }
@@ -2152,7 +2152,7 @@ function closeModal() {
 
 function renderStarRating(selected = 3) {
     return Array.from({ length: 5 }, (_, i) =>
-        `< span class="star ${i < selected ? 'active' : ''}" data - value="${i + 1}" >⭐</span > `
+        `<span class="star ${i < selected ? 'active' : ''}" data-value="${i + 1}" >⭐</span> `
     ).join('');
 }
 
@@ -2162,7 +2162,7 @@ function initStarRating() {
 
     container.querySelectorAll('.star').forEach(star => {
         star.addEventListener('click', () => {
-            const value = parseInt(star.dataset.value);
+            const value= parseInt(star.dataset.value);
             container.querySelectorAll('.star').forEach((s, i) => {
                 s.classList.toggle('active', i < value);
             });
@@ -2487,14 +2487,14 @@ function showDeleteConfirm(type, id) {
     const overlay = document.createElement('div');
     overlay.className = 'delete-confirm-overlay';
     overlay.innerHTML = `
-            < div class="delete-confirm-modal" >
+            <div class="delete-confirm-modal" >
             <div class="delete-confirm-icon">🗑️</div>
             <div class="delete-confirm-text">Eliminare ${label} <strong>"${item.name}"</strong>?</div>
             <div class="delete-confirm-buttons">
                 <button class="btn-cancel" onclick="closeDeleteConfirm()">Annulla</button>
                 <button class="btn-danger" onclick="confirmDelete('${type}', '${id}')">Elimina</button>
             </div>
-        </div >
+        </div>
             `;
     document.body.appendChild(overlay);
     setTimeout(() => overlay.classList.add('active'), 10);
@@ -2634,7 +2634,7 @@ function closeAvatarModal() {
 
 function switchAvatarTab(tab) {
     document.querySelectorAll('.avatar-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[onclick = "switchAvatarTab('${tab}')"]`).classList.add('active');
+    document.querySelector(`[onclick= "switchAvatarTab('${tab}')"]`).classList.add('active');
 
     document.getElementById('emojiTab').classList.toggle('hidden', tab !== 'emoji');
     document.getElementById('uploadTab').classList.toggle('hidden', tab !== 'upload');
@@ -2642,7 +2642,7 @@ function switchAvatarTab(tab) {
 
 function renderEmojiGrid() {
     document.getElementById('emojiGrid').innerHTML = AVATAR_EMOJIS.map(emoji =>
-        `< button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick = "selectEmoji('${emoji}')" > ${emoji}</button > `
+        `<button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick= "selectEmoji('${emoji}')" > ${emoji}</button> `
     ).join('');
 }
 
@@ -2683,7 +2683,7 @@ function showStatTooltip(statId, event) {
 
     const tooltip = document.getElementById('tooltip');
     tooltip.innerHTML = `
-            < div class="tooltip-title" > ${stat.icon} ${stat.name} - LV${stat.level}</div >
+            <div class="tooltip-title" > ${stat.icon} ${stat.name} - LV${stat.level}</div>
         <div>${stat.description}</div>
         <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">XP: ${stat.xp}/${getXpForLevel(stat.level + 1)}</div>
         `;
@@ -2821,7 +2821,7 @@ function importData(input) {
     };
     reader.readAsText(file);
     // Reset input so change event fires again if same file selected
-    input.value = '';
+    input.value= '';
 }
 
 
@@ -2882,7 +2882,7 @@ function showVisibilityPopup(e) {
     // Build list
     const list = document.getElementById('visibilityList');
     list.innerHTML = state.stats.map(stat => `
-            < div class="visibility-item" >
+            <div class="visibility-item" >
                 <input type="checkbox" id="vis-${stat.id}" ${stat.visible ? 'checked' : ''}
                     onchange="toggleStatVisibilityFromPopup('${stat.id}')">
                     <label for="vis-${stat.id}">${stat.icon} ${stat.name}</label>
@@ -2940,10 +2940,10 @@ function renderToxicInventory() {
 
     if (state.toxicItems.length === 0) {
         list.innerHTML = `
-            < div style = "text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px;" >
+            <div style = "text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px;" >
                 <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;">🎒</div>
-                Il tuo zaino è vuoto.< br > Crea oggetti tossici per tracciare le cattive abitudini.
-            </div >
+                Il tuo zaino è vuoto.<br > Crea oggetti tossici per tracciare le cattive abitudini.
+            </div>
             `;
         return;
     }
@@ -2951,7 +2951,7 @@ function renderToxicInventory() {
     list.innerHTML = state.toxicItems.map(item => {
         const stat = state.stats.find(s => s.id === item.statId);
         return `
-            < div class="toxic-item-card" >
+            <div class="toxic-item-card" >
                 <div class="toxic-item-info">
                     <div class="toxic-item-icon">${item.icon}</div>
                     <div class="toxic-item-details">
@@ -2963,7 +2963,7 @@ function renderToxicInventory() {
                     <span onclick="editToxicItem('${item.id}')" style="cursor:pointer; opacity: 0.6; font-size: 14px;">✏️</span>
                     <button class="btn-use-toxic" onclick="useToxicItem('${item.id}')">Usa</button>
                 </div>
-            </div >
+            </div>
             `;
     }).join('');
 }
@@ -3013,13 +3013,13 @@ function openPomodoroTimer() {
     const statSelect = document.getElementById('pomodoroStat');
     if (statSelect) {
         statSelect.innerHTML = state.stats.map(s =>
-            `< option value = "${s.id}" ${s.id === state.pomodoro.targetStatId ? 'selected' : ''}> ${s.icon} ${s.name}</option > `
+            `<option value= "${s.id}" ${s.id === state.pomodoro.targetStatId ? 'selected' : ''}> ${s.icon} ${s.name}</option> `
         ).join('');
     }
 
     // Set duration input
     const durationInput = document.getElementById('pomodoroDuration');
-    if (durationInput) durationInput.value = state.pomodoro.workDuration;
+    if (durationInput) durationInput.value= state.pomodoro.workDuration;
 
     updatePomodoroDisplay();
 }
@@ -3134,8 +3134,8 @@ function completePomodoro() {
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.frequency.value = 800;
-        gain.gain.value = 0.3;
+        osc.frequency.value= 800;
+        gain.gain.value= 0.3;
         osc.start();
         setTimeout(() => osc.stop(), 200);
     } catch (e) { /* Audio not supported */ }
@@ -3181,12 +3181,12 @@ function showDailyPlanner() {
     const selects = document.querySelectorAll('.slot-stat');
     selects.forEach(select => {
         select.innerHTML = state.stats.map(stat =>
-            `< option value = "${stat.id}" > ${stat.icon} ${stat.name}</option > `
+            `<option value= "${stat.id}" > ${stat.icon} ${stat.name}</option> `
         ).join('');
     });
 
     // Clear previous inputs
-    document.querySelectorAll('.slot-name').forEach(input => input.value = '');
+    document.querySelectorAll('.slot-name').forEach(input => input.value= '');
 
     // Initialize star selectors
     document.querySelectorAll('.star-selector').forEach(selector => {
@@ -3194,8 +3194,8 @@ function showDailyPlanner() {
         updateStarDisplay(selector, stars);
 
         selector.querySelectorAll('.star').forEach(star => {
-            star.onclick = () => {
-                const value = parseInt(star.dataset.value);
+            star.onclick= () => {
+                const value= parseInt(star.dataset.value);
                 selector.dataset.stars = value;
                 updateStarDisplay(selector, value);
             };
@@ -3411,11 +3411,11 @@ function showWeeklyRecap() {
     const cardsEl = document.getElementById('recapCards');
     if (cardsEl) {
         cardsEl.innerHTML = `
-            < div class="recap-card" >
+            <div class="recap-card" >
                 <div class="recap-card-icon">⚡</div>
                 <div class="recap-card-value">${recap.totalXp}</div>
                 <div class="recap-card-label">XP Guadagnati</div>
-            </div >
+            </div>
             <div class="recap-card">
                 <div class="recap-card-icon">${recap.topStat?.icon || '🏆'}</div>
                 <div class="recap-card-value">${recap.topStat?.name || '-'}</div>
