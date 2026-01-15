@@ -1431,9 +1431,21 @@ body {
     text-align: left;
 }
 
+.settings-row input,
+.settings-row select {
+    text-align: center;
+    /* Center text as requested */
+    appearance: none;
+    /* Remove browser default rounding (stondato) */
+    -webkit-appearance: none;
+    border-radius: var(--radius-md);
+    /* Consistent rounding */
+}
+
 /* Standardized Heights - 44px Touch Target */
 .settings-row input,
 .settings-row select,
+.color-select-trigger,
 .theme-select-trigger,
 .mode-toggle-large,
 .theme-switcher {
@@ -1470,6 +1482,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.theme-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Ensure Custom Dropdown matches height/alignment */
@@ -1626,10 +1644,7 @@ body {
 }
 
 .color-select-trigger {
-    width: 150px;
-    /* Consistent with input min-width */
-    height: 36px;
-    /* Consistent with input padding/height */
+    /* Removed fixed width/height to match grid standardization */
     border-radius: var(--radius-sm);
     /* Consistent radius (8px) */
     cursor: pointer;
