@@ -1448,7 +1448,6 @@ function openQuestDetail(questId) {
     content.innerHTML = `
             <div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
                 <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
-                <button class="close-btn" onclick="closeQuestDetailModal()" style="position:absolute; right:20px; top:20px;">×</button>
         </div>
 
             <div class="quest-scroll-area">

@@ -1434,12 +1434,13 @@ body {
 .settings-row input,
 .settings-row select {
     text-align: center;
-    /* Center text as requested */
+    text-align-last: center;
+    /* Force center for Selects */
     appearance: none;
-    /* Remove browser default rounding (stondato) */
     -webkit-appearance: none;
     border-radius: var(--radius-md);
-    /* Consistent rounding */
+    background: var(--bg-secondary);
+    /* Thematized background instead of white/primary */
 }
 
 /* Standardized Heights - 44px Touch Target */
