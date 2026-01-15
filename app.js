@@ -709,14 +709,19 @@ function renderProfilePopup() {
         pMotto.style.opacity = state.player.motto ? '1' : '0.7';
     }
 
-    // XP Bar
+    // XP Bar (Cumulative Logic)
     const xpFill = document.getElementById('popupXpFill');
     const xpText = document.getElementById('popupXpText');
-    const nextLevelXp = getXpForLevel(state.player.level + 1);
-    const xpPercent = Math.min(100, (state.player.totalXp / nextLevelXp) * 100);
+
+    const currentLevelTotal = getCumulativeXpForLevel(state.player.level);
+    const nextLevelTotal = getCumulativeXpForLevel(state.player.level + 1);
+    const xpInLevel = state.player.totalXp - currentLevelTotal;
+    const xpNeededForLevel = nextLevelTotal - currentLevelTotal;
+
+    const xpPercent = Math.min(100, Math.max(0, (xpInLevel / xpNeededForLevel) * 100));
 
     if (xpFill) xpFill.style.width = `${xpPercent}%`;
-    if (xpText) xpText.textContent = `${state.player.totalXp} / ${nextLevelXp} XP`;
+    if (xpText) xpText.textContent = `${Math.floor(xpInLevel)} / ${Math.floor(xpNeededForLevel)} XP`;
 }
 
 function saveMotto(val) {
@@ -1645,15 +1650,23 @@ function getXpForLevel(level) {
     return Math.floor(XP_CONFIG.baseXpPerLevel * Math.pow(XP_CONFIG.levelMultiplier, level - 1));
 }
 
+function getCumulativeXpForLevel(targetLevel) {
+    let total = 0;
+    for (let i = 1; i < targetLevel; i++) {
+        total += getXpForLevel(i + 1);
+    }
+    return total;
+}
+
 function addXp(amount, statId, sourceName = null) {
     state.player.totalXp += amount;
 
-    // Level Up Player
-    while (state.player.totalXp >= getXpForLevel(state.player.level + 1)) {
+    // Level Up Player (Cumulative Logic)
+    while (state.player.totalXp >= getCumulativeXpForLevel(state.player.level + 1)) {
         state.player.level++;
     }
     // Level Down Player
-    while (state.player.level > 1 && state.player.totalXp < getXpForLevel(state.player.level)) {
+    while (state.player.level > 1 && state.player.totalXp < getCumulativeXpForLevel(state.player.level)) {
         state.player.level--;
     }
 
