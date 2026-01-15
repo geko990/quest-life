@@ -305,6 +305,17 @@ function loadState() {
     // Apply theme
     applyTheme();
 
+    // Migration v2.1.0: Recalculate level to fix negative XP bug
+    const CorrectLevel = calculateLevelFromXp(state.player.totalXp);
+    if (state.player.level !== CorrectLevel) {
+        // Only downgrade if current level is impossible with current XP (to fix the bug)
+        // Or upgrade if they have too much XP? 
+        // Actually, just trust the math now.
+        if (state.player.level > CorrectLevel) {
+            state.player.level = CorrectLevel;
+        }
+    }
+
     // Save to ensure clean state
     saveState();
 }
@@ -1647,7 +1658,16 @@ function calculateXp(stars) {
 }
 
 function getXpForLevel(level) {
-    return Math.floor(XP_CONFIG.baseXpPerLevel * Math.pow(XP_CONFIG.levelMultiplier, level - 1));
+    const rawXp = XP_CONFIG.baseXpPerLevel * Math.pow(XP_CONFIG.levelMultiplier, level - 1);
+    return Math.round(rawXp / 50) * 50; // Round to nearest 50
+}
+
+function calculateLevelFromXp(totalXp) {
+    let level = 1;
+    while (totalXp >= getCumulativeXpForLevel(level + 1)) {
+        level++;
+    }
+    return level;
 }
 
 function getCumulativeXpForLevel(targetLevel) {
