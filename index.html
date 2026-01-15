@@ -270,7 +270,7 @@
                         <label>Tema</label>
                         <div class="theme-controls-stack">
                             <!-- Theme Dropdown (Custom like Accent Color) -->
-                            <div class="theme-select-container" style="margin-bottom: 12px;">
+                            <div class="theme-select-container">
                                 <div id="themeTrigger" class="theme-select-trigger" onclick="toggleThemeDropdown()">
                                     <span id="themeTriggerIcon">📱</span>
                                     <span id="themeTriggerText">Standard</span>
@@ -283,13 +283,15 @@
                                     <div class="theme-option" onclick="setTheme('pirate')">🏴‍☠️ Pirate</div>
                                 </div>
                             </div>
-
-                            <!-- Mode Toggle (Restored Large Buttons) -->
-                            <div class="mode-toggle-large">
-                                <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
-                                    Chiaro</button>
-                                <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
-                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <label>Modalità</label>
+                        <!-- Mode Toggle (Large Buttons) -->
+                        <div class="mode-toggle-large">
+                            <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
+                                Chiaro</button>
+                            <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
                         </div>
                     </div>
                     <div class="settings-row">
