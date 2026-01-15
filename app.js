@@ -794,7 +794,7 @@ function renderRadarChart() {
     const maxMonthlyXp = Math.max(50, ...monthlyData); // Minimo 50 per scala visibile
 
     const data = {
-        labels: visibleStats.map(s => `${s.icon} ${s.name}`),
+        labels: visibleStats.map(s => s.icon), // Emojis only for cleaner look
         datasets: [{
             label: 'XP Mensile',
             data: monthlyData,
@@ -814,11 +814,14 @@ function renderRadarChart() {
             r: {
                 beginAtZero: true,
                 min: 0,
-                max: maxMonthlyXp + Math.round(maxMonthlyXp * 0.2),
-                ticks: { display: false },
+                max: maxMonthlyXp + Math.round(maxMonthlyXp * 0.2), // Buffer
+                ticks: { display: false }, // Hide numbers
                 grid: { color: 'rgba(128, 128, 128, 0.15)' },
                 angleLines: { color: 'rgba(128, 128, 128, 0.15)' },
-                pointLabels: { font: { size: 11, weight: '600' }, padding: 12 }
+                pointLabels: {
+                    font: { size: 32, weight: '400' }, // Huge Emojis
+                    padding: 4
+                }
             }
         },
         plugins: {

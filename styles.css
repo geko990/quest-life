@@ -1402,11 +1402,21 @@ body {
 }
 
 .settings-row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    /* Fixed width for controls to be aligned */
+    gap: 12px;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--bg-primary);
+    padding: 12px 0;
+    border-bottom: 1px solid var(--glass-border);
+    /* Changed to glass border for consistency */
+}
+
+/* Responsive adjustment for very small screens if needed, mostly 140px is safe */
+@media (min-width: 360px) {
+    .settings-row {
+        grid-template-columns: 1fr 160px;
+    }
 }
 
 .settings-row:last-child {
@@ -1418,6 +1428,17 @@ body {
     font-weight: 500;
     font-size: 14px;
     color: var(--text-primary);
+    text-align: left;
+}
+
+.settings-row input,
+.settings-row select,
+.settings-row .theme-switcher,
+.theme-controls-stack,
+.mode-toggle-large {
+    width: 100%;
+    /* Fill the grid cell */
+    box-sizing: border-box;
 }
 
 .settings-row input,
@@ -1428,12 +1449,29 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
-    width: 140px;
-    min-width: 140px;
+    height: 36px;
+    /* Fixed height for alignment */
 }
 
+/* Ensure Custom Dropdown matches height/alignment */
+.theme-select-trigger {
+    height: 48px;
+    /* Slightly taller for stack, but in row maybe compress? Loop user request said stack is fine for theme */
+}
+
+/* Override for Theme/Mode rows which might want full width if stack? 
+   User asked for "Same column alignment". 
+   Let's ensure the stack fits the grid or spans.
+   Ideally Theme Row: Label | Dropdown
+   Mode Row: Label | Buttons 
+   So the generic grid works!
+*/
+
 .settings-row .theme-switcher {
-    min-width: 140px;
+    min-width: 0;
+    /* Override old min-width */
+    height: 36px;
+    /* Match inputs */
 }
 
 /* Toggle Switch */
