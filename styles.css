@@ -1431,32 +1431,51 @@ body {
     text-align: left;
 }
 
+/* Standardized Heights - 44px Touch Target */
 .settings-row input,
 .settings-row select,
-.settings-row .theme-switcher,
-.theme-controls-stack,
-.mode-toggle-large {
+.theme-select-trigger,
+.mode-toggle-large,
+.theme-switcher {
+    height: 44px;
     width: 100%;
-    /* Fill the grid cell */
     box-sizing: border-box;
 }
 
-.settings-row input,
-.settings-row select {
-    padding: 8px 12px;
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
+/* Secondary Toggles Container (New Turn, Sound, etc.) */
+.theme-switcher {
+    display: flex;
     background: var(--bg-primary);
-    color: var(--text-primary);
-    font-size: 14px;
-    height: 36px;
-    /* Fixed height for alignment */
+    padding: 2px;
+    border-radius: var(--radius-md);
+    gap: 4px;
+    border: 1px solid var(--glass-border);
+}
+
+.theme-btn {
+    flex: 1;
+    height: 100%;
+    /* Fill container */
+    padding: 0 12px;
+    /* Horizontal pad only, height handled by flex */
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Ensure Custom Dropdown matches height/alignment */
 .theme-select-trigger {
-    height: 48px;
-    /* Slightly taller for stack, but in row maybe compress? Loop user request said stack is fine for theme */
+    height: 44px;
+    /* Matches standardized input height */
 }
 
 /* Override for Theme/Mode rows which might want full width if stack? 
@@ -2927,37 +2946,7 @@ body {
     flex: 1;
 }
 
-/* Remove old context menu */
-.context-menu {
-    display: none !important;
-    gap: 4px;
-    border: 1px solid var(--glass-border);
-}
-
-.theme-btn {
-    flex: 1;
-    padding: 8px 12px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.2s;
-    text-align: center;
-}
-
-.theme-btn:hover {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
-.theme-btn.active {
-    background: var(--accent-gradient);
-    color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
+/* End of Theme Controls */
 
 /* Specific styling for Dark Mode toggles if needed */
 [data-mode="dark"] .theme-btn.active {
