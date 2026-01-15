@@ -1526,7 +1526,10 @@ function openStatDetail(statId) {
     // Complex Content Area
     const content = document.getElementById('statDetailContent');
     const momentum = getWeeklyMomentum(statId);
-    const maxMomentum = Math.max(...momentum.map(m => m.xp), 1);
+
+    // SCALE FIX: Use a fixed target of 100 XP as "Full Bar" to make daily progress visible.
+    // If we use dynamic max, one big day (2000 XP) flattens everything else.
+    const maxMomentum = 100;
 
     // Filter history for "Last Activity"
     const history = state.xpLog
@@ -1557,7 +1560,7 @@ function openStatDetail(statId) {
             <div class="momentum-chart" style="height: 80px;">
                 ${momentum.map(m => `
                     <div class="momentum-bar-container">
-                        <div class="momentum-bar" data-xp="${m.xp}" style="height: ${(m.xp / maxMomentum) * 100}%"></div>
+                        <div class="momentum-bar" data-xp="${m.xp}" style="height: ${Math.min((m.xp / maxMomentum) * 100, 100)}%; opacity: ${m.xp > 0 ? 1 : 0.3}"></div>
                         <div class="momentum-day" style="font-size: 10px;">${m.day[0]}</div>
                     </div>
                 `).join('')}
