@@ -253,7 +253,23 @@ function loadState() {
             ensureUniqueIds(state.quests, 'quest');
 
             state.completionLog = parsed.completionLog || {};
-            state.xpLog = parsed.xpLog || []; // Log XP mensile
+            state.completionLog = parsed.completionLog || {};
+            state.xpLog = parsed.xpLog || [];
+
+            // Migration: Backfill missing dates in xpLog
+            state.xpLog.forEach(entry => {
+                if (!entry.date && entry.timestamp) {
+                    // Approximate date from timestamp
+                    // Note: This uses current timezone, might be slightly off if user moved
+                    // but better than nothing.
+                    const d = new Date(entry.timestamp);
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    entry.date = `${year}-${month}-${day}`;
+                }
+            });
+
             state.settings = { ...state.settings, ...parsed.settings };
 
             // Migrate pomodoro settings
@@ -1745,20 +1761,35 @@ function getStatRank(level) {
 
 function getWeeklyMomentum(statId) {
     const momentum = [];
-    const now = getGameDateObj();
+    const now = getGameDateObj(); // Current Game Date (shifted)
+
+    // Create a map for fast lookup: "YYYY-MM-DD" -> totalXP
+    const xpMap = {};
+
+    // Optimize: Filter once, then map
+    // Use last 1000 entries (already sliced in addXp, but good to be safe)
+    state.xpLog.forEach(entry => {
+        if (entry.statId === statId) {
+            // Ensure date exists, fallback to timestamp if needed
+            let dateKey = entry.date;
+            if (!dateKey && entry.timestamp) {
+                dateKey = formatISO(new Date(entry.timestamp));
+            }
+
+            if (dateKey) {
+                xpMap[dateKey] = (xpMap[dateKey] || 0) + Number(entry.amount);
+            }
+        }
+    });
 
     for (let i = 6; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
         const dateStr = formatISO(d);
 
-        const dailyXp = state.xpLog
-            .filter(entry => entry.statId === statId && entry.date === dateStr)
-            .reduce((sum, entry) => sum + entry.amount, 0);
-
         momentum.push({
             day: DAY_NAMES[d.getDay()],
-            xp: dailyXp
+            xp: xpMap[dateStr] || 0
         });
     }
     return momentum;
