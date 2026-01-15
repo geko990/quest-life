@@ -729,7 +729,7 @@ function openMottoEdit() {
     const modal = document.getElementById('mottoEditModal');
     const input = document.getElementById('mottoEditInput');
     if (modal && input) {
-        input.value= state.player.motto || '';
+        input.value = state.player.motto || '';
         modal.classList.add('active');
         setTimeout(() => input.focus(), 50);
     }
@@ -1736,13 +1736,13 @@ function getWeeklyMomentum(statId) {
 function initSettings() {
     const nameInput = document.getElementById('settingName');
     if (nameInput) {
-        nameInput.value= state.player.name;
+        nameInput.value = state.player.name;
     }
 
     // Updated init for dayStartTime
     const dayStartSelect = document.getElementById('dayStartTime');
     if (dayStartSelect) {
-        dayStartSelect.value= state.settings.dayStartTime || 0;
+        dayStartSelect.value = state.settings.dayStartTime || 0;
     }
 
     // Sync popup toggle settings (button style)
@@ -1818,34 +1818,44 @@ function setAccent(color) {
 }
 
 function applyTheme() {
-    // Migration from v1 'light'/'dark'
-    if (state.settings.theme === 'light') {
-        state.settings.theme = 'standard';
-        saveState();
-    } else if (state.settings.theme === 'dark') {
-        state.settings.theme = 'futuristic';
-        saveState();
+    // Migration for v2 Deep Theming
+    if (!state.settings.mode) {
+        state.settings.mode = 'light'; // Default
+        // If coming from old "Futuristic" tracking which was dark-only
+        if (state.settings.theme === 'futuristic') state.settings.mode = 'dark';
     }
 
     const theme = state.settings.theme;
+    const mode = state.settings.mode;
+
     document.body.dataset.theme = theme;
+    document.body.dataset.mode = mode; // New data-mode attribute
     document.body.dataset.accent = state.settings.accent;
 
-    // Update setting buttons
-    document.querySelectorAll('.theme-switcher .theme-btn').forEach(btn => btn.classList.remove('active'));
-    
-    let activeBtnId = 'themeStandard';
-    if (theme === 'fantasy') activeBtnId = 'themeFantasy';
-    else if (theme === 'dnd') activeBtnId = 'themeDnD';
-    else if (theme === 'futuristic') activeBtnId = 'themeFuturistic';
-    else if (theme === 'pirate') activeBtnId = 'themePirate';
+    // Update UI controls
+    const themeSelect = document.getElementById('themeSelect');
+    if (themeSelect) themeSelect.value = theme;
 
-    const activeBtn = document.getElementById(activeBtnId);
-    if (activeBtn) activeBtn.classList.add('active');
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    const activeModeBtn = document.getElementById(mode === 'light' ? 'modeLight' : 'modeDark');
+    if (activeModeBtn) activeModeBtn.classList.add('active');
 }
 
 function setTheme(theme) {
     state.settings.theme = theme;
+    // Optional: Auto-switch mode based on theme preference? 
+    // For now, keep current mode or default.
+    // D&D and Fantasy look bette in Light, Tron in Dark.
+    // Let's force a default if switching TO a specific theme?
+    // No, let user decide. But maybe smart defaults on first switch?
+    // Let's keep it simple: preserve mode.
+
+    applyTheme();
+    saveState();
+}
+
+function setMode(mode) {
+    state.settings.mode = mode;
     applyTheme();
     saveState();
 }
@@ -2000,9 +2010,9 @@ function openModal(type, editData = null) {
         `;
             initFrequencyToggle();
             if (editData) {
-                document.getElementById('inputFreq').value= editData.frequency;
-                document.getElementById('inputPrimaryStat').value= editData.primaryStatId;
-                document.getElementById('inputSecondaryStat').value= editData.secondaryStatId || '';
+                document.getElementById('inputFreq').value = editData.frequency;
+                document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
+                document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
             }
             break;
 
@@ -2037,8 +2047,8 @@ function openModal(type, editData = null) {
                 </div>
         `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value= editData.primaryStatId;
-                document.getElementById('inputSecondaryStat').value= editData.secondaryStatId || '';
+                document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
+                document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
             }
             break;
 
@@ -2085,8 +2095,8 @@ function openModal(type, editData = null) {
                 </div>
         `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value= editData.primaryStatId;
-                document.getElementById('inputSecondaryStat').value= editData.secondaryStatId || '';
+                document.getElementById('inputPrimaryStat').value = editData.primaryStatId;
+                document.getElementById('inputSecondaryStat').value = editData.secondaryStatId || '';
             }
             break;
 
@@ -2143,7 +2153,7 @@ function openModal(type, editData = null) {
                 </div>
         `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value= editData.statId;
+                document.getElementById('inputPrimaryStat').value = editData.statId;
             }
             break;
     }
@@ -2176,7 +2186,7 @@ function initStarRating() {
 
     container.querySelectorAll('.star').forEach(star => {
         star.addEventListener('click', () => {
-            const value= parseInt(star.dataset.value);
+            const value = parseInt(star.dataset.value);
             container.querySelectorAll('.star').forEach((s, i) => {
                 s.classList.toggle('active', i < value);
             });
@@ -2835,7 +2845,7 @@ function importData(input) {
     };
     reader.readAsText(file);
     // Reset input so change event fires again if same file selected
-    input.value= '';
+    input.value = '';
 }
 
 
@@ -3033,7 +3043,7 @@ function openPomodoroTimer() {
 
     // Set duration input
     const durationInput = document.getElementById('pomodoroDuration');
-    if (durationInput) durationInput.value= state.pomodoro.workDuration;
+    if (durationInput) durationInput.value = state.pomodoro.workDuration;
 
     updatePomodoroDisplay();
 }
@@ -3148,8 +3158,8 @@ function completePomodoro() {
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.frequency.value= 800;
-        gain.gain.value= 0.3;
+        osc.frequency.value = 800;
+        gain.gain.value = 0.3;
         osc.start();
         setTimeout(() => osc.stop(), 200);
     } catch (e) { /* Audio not supported */ }
@@ -3200,7 +3210,7 @@ function showDailyPlanner() {
     });
 
     // Clear previous inputs
-    document.querySelectorAll('.slot-name').forEach(input => input.value= '');
+    document.querySelectorAll('.slot-name').forEach(input => input.value = '');
 
     // Initialize star selectors
     document.querySelectorAll('.star-selector').forEach(selector => {
@@ -3208,8 +3218,8 @@ function showDailyPlanner() {
         updateStarDisplay(selector, stars);
 
         selector.querySelectorAll('.star').forEach(star => {
-            star.onclick= () => {
-                const value= parseInt(star.dataset.value);
+            star.onclick = () => {
+                const value = parseInt(star.dataset.value);
                 selector.dataset.stars = value;
                 updateStarDisplay(selector, value);
             };

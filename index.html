@@ -15,7 +15,9 @@
     <meta name="theme-color" content="#0f0f1a">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="chart.min.js"></script>
 </head>
@@ -266,12 +268,18 @@
                     <h3>🎨 Aspetto</h3>
                     <div class="settings-row">
                         <label>Tema</label>
-                        <div class="theme-switcher theme-scroll-container">
-                            <button class="theme-btn active" id="themeStandard" onclick="setTheme('standard')">📱 Standard</button>
-                            <button class="theme-btn" id="themeFantasy" onclick="setTheme('fantasy')">💍 Fantasy</button>
-                            <button class="theme-btn" id="themeDnD" onclick="setTheme('dnd')">📜 D&D</button>
-                            <button class="theme-btn" id="themeFuturistic" onclick="setTheme('futuristic')">👾 Tron</button>
-                            <button class="theme-btn" id="themePirate" onclick="setTheme('pirate')">🏴‍☠️ Pirate</button>
+                        <div class="theme-controls">
+                            <select id="themeSelect" class="theme-select" onchange="setTheme(this.value)">
+                                <option value="standard">📱 Standard</option>
+                                <option value="fantasy">💍 Fantasy</option>
+                                <option value="dnd">📜 D&D</option>
+                                <option value="futuristic">👾 Tron</option>
+                                <option value="pirate">🏴‍☠️ Pirate</option>
+                            </select>
+                            <div class="mode-toggle">
+                                <button class="mode-btn active" id="modeLight" onclick="setMode('light')">☀️</button>
+                                <button class="mode-btn" id="modeDark" onclick="setMode('dark')">🌙</button>
+                            </div>
                         </div>
                     </div>
                     <div class="settings-row">
