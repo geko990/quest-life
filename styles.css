@@ -52,10 +52,7 @@
     /* Dark Brown */
     --text-secondary: #5d4037;
     --text-muted: #8d6e63;
-    --accent-primary: #d4af37;
-    /* Gold */
-    --accent-secondary: #2e7d32;
-    /* Forest Green */
+    /* Accents removed to allow user selection */
     --glass-bg: rgba(245, 230, 211, 0.9);
     --glass-border: rgba(62, 39, 35, 0.2);
     --glass-shadow: 0 4px 10px rgba(62, 39, 35, 0.2);
@@ -72,9 +69,7 @@
     --text-primary: #d7ccc8;
     --text-secondary: #a1887f;
     --text-muted: #6d4c41;
-    --accent-primary: #c0a062;
-    /* Muted Gold */
-    --accent-secondary: #558b2f;
+    /* Accents removed */
     --glass-bg: rgba(45, 36, 31, 0.9);
     --glass-border: rgba(192, 160, 98, 0.2);
     --glass-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
@@ -97,10 +92,7 @@
     --text-primary: #1a1a1a;
     --text-secondary: #424242;
     --text-muted: #757575;
-    --accent-primary: #cf222e;
-    /* Dice Red */
-    --accent-secondary: #d97706;
-    /* Pencil Orange */
+    /* Accents removed */
     --glass-bg: rgba(255, 255, 255, 0.95);
     --glass-border: rgba(0, 0, 0, 0.5);
     /* Strong borders */
@@ -120,8 +112,7 @@
     --text-primary: #eeeeee;
     --text-secondary: #bdbdbd;
     --text-muted: #757575;
-    --accent-primary: #ef5350;
-    --accent-secondary: #ffca28;
+    /* Accents removed */
     --glass-bg: rgba(33, 33, 33, 0.95);
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
@@ -144,10 +135,7 @@
     --text-primary: #00e5ff;
     --text-secondary: #00b8d4;
     --text-muted: #006064;
-    --accent-primary: #d500f9;
-    /* Neon Purple */
-    --accent-secondary: #00e5ff;
-    /* Neon Cyan */
+    /* Accents removed, but Neon Cyan text preserved */
     --glass-bg: rgba(0, 0, 0, 0.8);
     --glass-border: 1px solid rgba(0, 229, 255, 0.5);
     --glass-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
@@ -166,8 +154,7 @@
     --text-primary: #006064;
     --text-secondary: #00838f;
     --text-muted: #4dd0e1;
-    --accent-primary: #aa00ff;
-    --accent-secondary: #00bcd4;
+    /* Accents removed */
     --glass-bg: rgba(255, 255, 255, 0.9);
     --glass-border: 1px solid rgba(0, 96, 100, 0.3);
     --glass-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
@@ -188,8 +175,7 @@
     /* Bone White */
     --text-secondary: #c5a059;
     --text-muted: #607d8b;
-    --accent-primary: #ff4136;
-    /* Flag Red */
+    /* Accents removed */
     --accent-secondary: #ffd700;
     /* Gold */
     --glass-bg: rgba(0, 31, 63, 0.9);
@@ -206,8 +192,7 @@
     /* Navy Blue */
     --text-secondary: #2c7da0;
     --text-muted: #89c2d9;
-    --accent-primary: #d00000;
-    --accent-secondary: #ffb703;
+    /* Accents removed */
     --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-border: rgba(1, 58, 99, 0.2);
     --glass-shadow: 0 4px 15px rgba(1, 58, 99, 0.15);
@@ -2907,6 +2892,38 @@ body {
 /* Remove old context menu */
 .context-menu {
     display: none !important;
+    gap: 4px;
+    border: 1px solid var(--glass-border);
+}
+
+.theme-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.theme-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.theme-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Specific styling for Dark Mode toggles if needed */
+[data-mode="dark"] .theme-btn.active {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 
