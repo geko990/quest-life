@@ -1817,6 +1817,12 @@ function setAccent(color) {
     if (dropdown) dropdown.classList.add('hidden');
 }
 
+// Theme Selection Dropdown Toggle
+function toggleThemeDropdown() {
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
+}
+
 function applyTheme() {
     // Migration for v2 Deep Theming
     if (!state.settings.mode) {
@@ -1832,26 +1838,36 @@ function applyTheme() {
     document.body.dataset.mode = mode; // New data-mode attribute
     document.body.dataset.accent = state.settings.accent;
 
-    // Update UI controls
-    const themeSelect = document.getElementById('themeSelect');
-    if (themeSelect) themeSelect.value = theme;
+    // Update Theme Trigger UI
+    const themeParams = {
+        'standard': { icon: '📱', name: 'Standard' },
+        'fantasy': { icon: '💍', name: 'Fantasy' },
+        'dnd': { icon: '📜', name: 'D&D' },
+        'futuristic': { icon: '👾', name: 'Tron' },
+        'pirate': { icon: '🏴‍☠️', name: 'Pirate' }
+    };
 
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    const currentThemeData = themeParams[theme] || themeParams['standard'];
+    const triggerIcon = document.getElementById('themeTriggerIcon');
+    const triggerText = document.getElementById('themeTriggerText');
+
+    if (triggerIcon) triggerIcon.textContent = currentThemeData.icon;
+    if (triggerText) triggerText.textContent = currentThemeData.name;
+
+    // Update Mode Buttons (Large)
+    document.querySelectorAll('.mode-btn-large').forEach(btn => btn.classList.remove('active'));
     const activeModeBtn = document.getElementById(mode === 'light' ? 'modeLight' : 'modeDark');
     if (activeModeBtn) activeModeBtn.classList.add('active');
 }
 
 function setTheme(theme) {
     state.settings.theme = theme;
-    // Optional: Auto-switch mode based on theme preference? 
-    // For now, keep current mode or default.
-    // D&D and Fantasy look bette in Light, Tron in Dark.
-    // Let's force a default if switching TO a specific theme?
-    // No, let user decide. But maybe smart defaults on first switch?
-    // Let's keep it simple: preserve mode.
-
     applyTheme();
     saveState();
+
+    // Close dropdown
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown) dropdown.classList.add('hidden');
 }
 
 function setMode(mode) {

@@ -2912,56 +2912,121 @@ body {
 
 /* Theme Switcher */
 /* Theme Controls (Dropdown + Toggle) */
-.theme-controls {
+/* Theme Controls (Stack Layout) */
+.theme-controls-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* Custom Theme Dropdown (Box Style like Accent Color) */
+.theme-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.theme-select-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.theme-select-trigger:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-secondary);
+}
+
+.theme-select-trigger span:first-child {
+    font-size: 18px;
+}
+
+.theme-select-trigger span:last-child {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.theme-select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    overflow: hidden;
+    animation: fadeIn 0.15s ease;
+}
+
+.theme-select-dropdown.hidden {
+    display: none;
+}
+
+.theme-option {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    font-size: 15px;
+    color: var(--text-primary);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.theme-option:hover {
+    background: var(--bg-secondary);
+    color: var(--accent-primary);
+}
+
+/* Large Mode Toggle Buttons (Restored) */
+.mode-toggle-large {
     display: flex;
     gap: 8px;
-    flex: 1;
+    width: 100%;
 }
 
-.theme-select {
+.mode-btn-large {
     flex: 1;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    padding: 12px;
     border: 1px solid var(--glass-border);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
     border-radius: var(--radius-md);
-    padding: 8px 12px;
-    font-size: 14px;
-    font-family: inherit;
-    appearance: none;
-    /* Custom arrow if needed, mostly browser default is okay */
     cursor: pointer;
-}
-
-/* Mode Toggle (Segmented Control) */
-.mode-toggle {
+    font-size: 15px;
+    font-weight: 500;
     display: flex;
-    background: var(--bg-primary);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    padding: 2px;
-}
-
-.mode-btn {
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 16px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     transition: all 0.2s;
 }
 
-.mode-btn.active {
-    background: var(--bg-card);
+.mode-btn-large:hover {
+    background: var(--bg-secondary);
     color: var(--text-primary);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Specific styling for Standard Dark Mode to look good */
-[data-theme="standard"][data-mode="dark"] .mode-btn.active {
-    background: var(--accent-primary);
+.mode-btn-large.active {
+    background: var(--accent-gradient);
     color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Specific styling for Standard Dark Mode active button */
+[data-theme="standard"][data-mode="dark"] .mode-btn-large.active {
+    background: var(--accent-primary);
 }
 
 
