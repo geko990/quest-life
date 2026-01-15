@@ -268,17 +268,27 @@
                     <h3>🎨 Aspetto</h3>
                     <div class="settings-row">
                         <label>Tema</label>
-                        <div class="theme-controls">
-                            <select id="themeSelect" class="theme-select" onchange="setTheme(this.value)">
-                                <option value="standard">📱 Standard</option>
-                                <option value="fantasy">💍 Fantasy</option>
-                                <option value="dnd">📜 D&D</option>
-                                <option value="futuristic">👾 Tron</option>
-                                <option value="pirate">🏴‍☠️ Pirate</option>
-                            </select>
-                            <div class="mode-toggle">
-                                <button class="mode-btn active" id="modeLight" onclick="setMode('light')">☀️</button>
-                                <button class="mode-btn" id="modeDark" onclick="setMode('dark')">🌙</button>
+                        <div class="theme-controls-stack">
+                            <!-- Theme Dropdown (Custom like Accent Color) -->
+                            <div class="theme-select-container" style="margin-bottom: 12px;">
+                                <div id="themeTrigger" class="theme-select-trigger" onclick="toggleThemeDropdown()">
+                                    <span id="themeTriggerIcon">📱</span>
+                                    <span id="themeTriggerText">Standard</span>
+                                </div>
+                                <div id="themeDropdown" class="theme-select-dropdown hidden">
+                                    <div class="theme-option" onclick="setTheme('standard')">📱 Standard</div>
+                                    <div class="theme-option" onclick="setTheme('fantasy')">💍 Fantasy</div>
+                                    <div class="theme-option" onclick="setTheme('dnd')">📜 D&D</div>
+                                    <div class="theme-option" onclick="setTheme('futuristic')">👾 Tron</div>
+                                    <div class="theme-option" onclick="setTheme('pirate')">🏴‍☠️ Pirate</div>
+                                </div>
+                            </div>
+
+                            <!-- Mode Toggle (Restored Large Buttons) -->
+                            <div class="mode-toggle-large">
+                                <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
+                                    Chiaro</button>
+                                <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
                             </div>
                         </div>
                     </div>
