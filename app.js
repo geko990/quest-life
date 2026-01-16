@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.1.0";
+const APP_VERSION = "2.2.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -56,6 +56,7 @@ let state = {
         lastActionDate: null, // Last task completion date
         streakFreezes: 2, // Default freezes
         lastFreezeReset: null, // Date of last freezes reset
+        lastBackupDate: null, // Last manual export date
         avatarType: 'emoji',
         avatarEmoji: '⚔️',
         avatarImage: null
@@ -144,6 +145,171 @@ let pomodoroTimeLeft = 25 * 60; // seconds
 let pomodoroRunning = false;
 
 // ============================================
+// FILE SYSTEM ACCESS (Database File)
+// ============================================
+
+let fileHandle = null;
+const DB_NAME = 'QuestLifeDB';
+const DB_VERSION = 1;
+const DB_STORE = 'handles';
+
+// IndexedDB Helper to store/retrieve FileHandle
+async function getDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(DB_STORE)) {
+                db.createObjectStore(DB_STORE);
+            }
+        };
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
+}
+
+async function saveFileHandle(handle) {
+    const db = await getDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        const store = tx.objectStore(DB_STORE);
+        store.put(handle, 'dbFileHandle');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
+async function getFileHandle() {
+    const db = await getDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(DB_STORE, 'readonly');
+        const store = tx.objectStore(DB_STORE);
+        const request = store.get('dbFileHandle');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// Initialize File System Sync (User Action)
+async function linkDatabaseFile() {
+    try {
+        // Options for the file picker
+        const options = {
+            types: [{
+                description: 'Quest Life Database (JSON)',
+                accept: { 'application/json': ['.json'] },
+            }],
+            suggestedName: 'quest-life-db.json',
+        };
+
+        // Show file picker
+        fileHandle = await window.showSaveFilePicker(options);
+
+        // Save handle to IndexedDB
+        await saveFileHandle(fileHandle);
+
+        // Update UI
+        updateDbStatusUI(true, fileHandle.name);
+
+        // Initial save to establish connection and content
+        await saveStateToFile();
+
+        alert(`Database collegato con successo: ${fileHandle.name}`);
+    } catch (err) {
+        console.error('Errore nel collegamento database:', err);
+        // Ignore abort error
+        if (err.name !== 'AbortError') {
+            alert('Impossibile collegare il database. Il tuo browser potrebbe non supportare questa funzione.');
+        }
+    }
+}
+
+async function verifyPermission(handle, withWrite) {
+    const options = {};
+    if (withWrite) {
+        options.mode = 'readwrite';
+    }
+    // Check if permission was already granted
+    if ((await handle.queryPermission(options)) === 'granted') {
+        return true;
+    }
+    // Request permission
+    if ((await handle.requestPermission(options)) === 'granted') {
+        return true;
+    }
+    return false;
+}
+
+async function loadFileHandleOnStart() {
+    try {
+        const handle = await getFileHandle();
+        if (handle) {
+            fileHandle = handle;
+            // Note: We can't automatically ask for permission on load (requires user gesture usually),
+            // but we can update UI to show we have a handle pending.
+            // Or try to verify read permission if possible.
+            updateDbStatusUI(true, handle.name, true);
+        } else {
+            updateDbStatusUI(false);
+        }
+    } catch (e) {
+        console.error("Error loading file handle:", e);
+    }
+}
+
+function updateDbStatusUI(connected, filename = '', pendingPermission = false) {
+    const statusEl = document.getElementById('dbStatus');
+    const actionBtn = document.getElementById('dbActionBtn');
+
+    if (!statusEl || !actionBtn) return;
+
+    if (connected) {
+        if (pendingPermission) {
+            statusEl.innerHTML = `<span style="color:orange">🟠 Riconnetti: ${filename}</span>`;
+            actionBtn.textContent = 'Riconnetti 🔌';
+            actionBtn.onclick = async () => {
+                if (fileHandle && await verifyPermission(fileHandle, true)) {
+                    updateDbStatusUI(true, filename, false);
+                    saveStateToFile(); // Sync immediately
+                }
+            };
+        } else {
+            statusEl.innerHTML = `<span style="color:var(--accent-primary)">🟢 Collegato: ${filename}</span>`;
+            actionBtn.textContent = 'Modifica 📁';
+            actionBtn.onclick = linkDatabaseFile; // Allow changing file
+        }
+    } else {
+        statusEl.innerHTML = `<span style="color:var(--text-muted)">Nessun file collegato</span>`;
+        actionBtn.textContent = 'Collega Database 🔗';
+        actionBtn.onclick = linkDatabaseFile;
+    }
+}
+
+async function saveStateToFile() {
+    if (!fileHandle) return;
+
+    // Check/Request permission before writing
+    // Note: If this is called in background (e.g. auto-save), requestPermission might fail/block?
+    // User needs to activate it first.
+    // We check queryPermission first.
+
+    try {
+        const perm = await fileHandle.queryPermission({ mode: 'readwrite' });
+        if (perm === 'granted') {
+            const writable = await fileHandle.createWritable();
+            await writable.write(JSON.stringify(state, null, 2));
+            await writable.close();
+        } else {
+            // Permission lost or not granted. 
+            // Update UI to ask for reconnection
+            updateDbStatusUI(true, fileHandle.name, true);
+        }
+    } catch (err) {
+        console.error('Error saving to file:', err);
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
@@ -163,6 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check for daily D&D planner (after 6 AM)
     setTimeout(() => checkDailyPlan(), 1500);
+
+    // Initialize File System (Database File)
+    loadFileHandleOnStart();
+
+    // Initialize Backup System (Feature Detection + Mobile Logic)
+    initBackupSystem();
 
     // Set version in UI and handle PWA update force
     const versionEl = document.getElementById('appVersion');
@@ -338,6 +510,8 @@ function loadState() {
 
 function saveState() {
     localStorage.setItem('questlife_state_v2', JSON.stringify(state));
+    // Also save to file if connected
+    saveStateToFile();
 }
 
 function checkFrozenStreak() {
@@ -2882,11 +3056,75 @@ function resetAll() {
     }
 }
 
+// ============================================
+// DATA MANAGEMENT (Export/Import/Backup)
+// ============================================
+
+function initBackupSystem() {
+    const dbSection = document.getElementById('dbConnectionSection');
+    const backupSection = document.getElementById('backupStatusSection');
+
+    // Check for File System Access API support
+    if ('showSaveFilePicker' in window) {
+        // Desktop / Supported
+        if (dbSection) dbSection.style.display = 'block';
+        if (backupSection) backupSection.style.display = 'none'; // Hide manual backup reminder if auto-sync is available
+    } else {
+        // Mobile / Unsupported
+        if (dbSection) dbSection.style.display = 'none';
+        if (backupSection) backupSection.style.display = 'block';
+
+        checkBackupStatus();
+    }
+}
+
+function checkBackupStatus() {
+    const lastBackup = state.player.lastBackupDate;
+    const label = document.getElementById('lastBackupLabel');
+    const warning = document.getElementById('backupWarning');
+
+    if (!label || !warning) return;
+
+    if (!lastBackup) {
+        label.textContent = "Mai";
+        warning.style.display = 'block';
+        warning.textContent = "⚠️ Backup mai eseguito!";
+    } else {
+        const date = new Date(lastBackup);
+        label.textContent = date.toLocaleDateString();
+
+        // Check age
+        const diff = new Date() - date;
+        const days = diff / (1000 * 60 * 60 * 24);
+
+        if (days > 7) {
+            warning.style.display = 'block';
+            warning.textContent = "⚠️ Backup vecchio (> 7 giorni)";
+        } else {
+            warning.style.display = 'none';
+        }
+    }
+}
+
 function exportData() {
+    // Update backup timestamp
+    state.player.lastBackupDate = new Date().toISOString();
+    saveState();
+
+    // Update UI immediately
+    checkBackupStatus();
+
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "questlife_backup_" + getGameDate() + ".json");
+
+    // Smart Export Name: Fixed name for easy replacement
+    // We can append date if needed, but for "Quick Save" replacement flow, fixed name is better.
+    // However, users might want history.
+    // Let's compromise: "quest-life-backup.json" (Browser usually handles duplicates by numbering if not replacing)
+    // The user asked for "overwrite same file". On iOS "Save to Files", if filename is same, it asks "Replace?".
+    downloadAnchorNode.setAttribute("download", "quest-life-backup.json");
+
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
