@@ -308,6 +308,39 @@
                 <!-- Dati -->
                 <div class="settings-group">
                     <h3>💾 Dati</h3>
+
+                    <!-- NEW: Database Connection -->
+                    <div id="dbConnectionSection"
+                        style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="margin:0;">Database File</label>
+                            <span id="dbStatus" style="font-size: 0.8rem;"><span style="color:var(--text-muted)">Nessun
+                                    file collegato</span></span>
+                        </div>
+                        <button class="settings-btn" id="dbActionBtn" onclick="linkDatabaseFile()"
+                            style="width: 100%; justify-content: center;">
+                            <span class="settings-btn-icon">🔗</span>
+                            <span>Collega Database</span>
+                        </button>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 6px 0 0 0; text-align: center;">
+                            Salva automaticamente le modifiche su un file locale (solo Desktop).
+                        </p>
+                    </div>
+
+                    <!-- Backup Status (Mobile) -->
+                    <div id="backupStatusSection" style="margin-bottom: 12px; display: none;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">Ultimo Backup:</span>
+                            <span id="lastBackupLabel" style="font-size: 0.9rem; font-weight: bold;">Mai</span>
+                        </div>
+                        <div id="backupWarning"
+                            style="color: var(--accent-orange); font-size: 0.8rem; margin-top: 4px; display: none;">
+                            ⚠️ Backup consigliato (più di 7 giorni)
+                        </div>
+                    </div>
+
                     <div class="settings-buttons">
                         <button class="settings-btn" onclick="exportData()">
                             <span class="settings-btn-icon">📤</span>
@@ -341,7 +374,7 @@
                         </button>
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
-                        Versione: <span id="appVersion">2.1.0</span> • Quest Life PWA
+                        Versione: <span id="appVersion">2.2.0</span> • Quest Life PWA
                     </p>
                 </div>
             </section>
