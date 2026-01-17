@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.5.0";
+const APP_VERSION = "2.5.1";
 
 // ============================================
 // DATA STRUCTURES
@@ -4288,4 +4288,86 @@ function playSound(type) {
     } catch (e) {
         console.warn('Audio failed:', e);
     }
+}
+
+
+
+// ============================================
+// ARCHIVE FEATURE
+// ============================================
+
+function openArchive() {
+    // No need to close settings section, the modal will overlay it
+    const modal = document.getElementById('archiveModal');
+    const list = document.getElementById('archiveList');
+
+    // Correct class is 'active', not 'visible'
+    modal.classList.add('active');
+
+    // Filter completed tasks
+    const completedOneshots = state.oneshots.filter(o => o.completed).map(o => ({
+        ...o,
+        type: 'oneshot',
+        date: o.completedAt || new Date().toISOString() // Fallback if missing
+    }));
+
+    const completedQuests = state.quests.filter(q => q.completed).map(q => ({
+        ...q,
+        type: 'quest',
+        date: q.completedAt || new Date().toISOString()
+    }));
+
+    // Merge and sort by date descending
+    const allItems = [...completedOneshots, ...completedQuests].sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+    });
+
+    if (allItems.length === 0) {
+        list.innerHTML = `
+            <div class="archive-empty">
+                <div class="archive-empty-icon">📜</div>
+                <div>Nessuna impresa negli annali... ancora!</div>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = allItems.map(item => {
+        const isQuest = item.type === 'quest';
+        const icon = isQuest ? '🎯' : '💥';
+
+        let dateStr = 'Data sconosciuta';
+        try {
+            dateStr = new Date(item.date).toLocaleDateString('it-IT', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (e) { }
+
+        const stars = item.stars || 1;
+        // Recalculate basic XP (approximate since we don't store exact gained XP)
+        const xp = isQuest ? calculateXp(stars) * 2 : calculateXp(stars);
+
+        return `
+            <div class="archive-item ${item.type}">
+                <div class="archive-icon">${icon}</div>
+                <div class="archive-content">
+                    <div class="archive-title">${item.name}</div>
+                    <div class="archive-meta">
+                        <span class="archive-date">Concluso il ${dateStr}</span>
+                        <span class="archive-xp">+${xp} XP</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function closeArchive() {
+    const modal = document.getElementById('archiveModal');
+    modal.classList.remove('active');
+
+    // Since settings is a section (page), closing the overlay simply reveals it again.
+    // No need to call navigation functions.
 }

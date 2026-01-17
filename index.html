@@ -312,6 +312,17 @@
                     </div>
                 </div>
 
+                <!-- Archivio -->
+                <div class="settings-group">
+                    <h3>📜 Archivio</h3>
+                    <div class="settings-buttons">
+                        <button class="settings-btn" onclick="openArchive()">
+                            <span class="settings-btn-icon">🏆</span>
+                            <span>Storico Imprese</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Dati -->
                 <div class="settings-group">
                     <h3>💾 Dati</h3>
@@ -382,7 +393,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.5.0</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.5.1</span> •
                         Quest Life PWA
                     </p>
                 </div>
@@ -664,7 +675,20 @@
             </div>
         </div>
     </div>
-
+    <!-- Archive Modal -->
+    <div class="modal-overlay" id="archiveModal">
+        <div class="modal archive-modal">
+            <div class="modal-header">
+                <h3>📜 Storico Imprese</h3>
+                <button class="modal-close" onclick="closeArchive()">&times;</button>
+            </div>
+            <div class="modal-body archive-body">
+                <div class="archive-list" id="archiveList">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
