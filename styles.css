@@ -1333,6 +1333,16 @@ body {
     min-width: 45px;
 }
 
+.card-progress {
+    background: var(--accent-light);
+    color: var(--accent-primary);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .card-bonus {
     background: linear-gradient(135deg, #8b5cf6, #ec4899);
     color: white;
