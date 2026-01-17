@@ -19,8 +19,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=2.5.0">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-    <script src="chart.min.js"></script>
+
 </head>
 
 <body>
@@ -393,7 +392,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.5.1</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.5.2</span> •
                         Quest Life PWA
                     </p>
                 </div>
@@ -689,6 +688,16 @@
             </div>
         </div>
     </div>
+
+    <!-- Immersive Background Canvas -->
+    <canvas id="bgCanvas"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 2s;"></canvas>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
