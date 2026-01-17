@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.2.3";
+const APP_VERSION = "2.2.4";
 
 // ============================================
 // DATA STRUCTURES
@@ -1736,7 +1736,7 @@ function openStatDetail(statId) {
             <div class="momentum-chart" style="height: 80px;">
                 ${momentum.map(m => `
                     <div class="momentum-bar-container">
-                        <div class="momentum-bar" data-xp="${m.xp}" style="height: ${Math.min((m.xp / maxMomentum) * 75, 75)}%; opacity: ${m.xp > 0 ? 1 : 0.3}"></div>
+                        <div class="momentum-bar" data-xp="${m.xp}" style="height: ${Math.min((m.xp / maxMomentum) * 60, 60)}px; opacity: ${m.xp > 0 ? 1 : 0.3}"></div>
                         <div class="momentum-day" style="font-size: 10px;">${m.day[0]}</div>
                     </div>
                 `).join('')}
