@@ -3721,3 +3721,63 @@ body {
     filter: grayscale(1);
     opacity: 0.3;
 }
+
+/* ============================================
+   REWARD POPUP
+   ============================================ */
+
+.reward-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid var(--accent-gold);
+    padding: 24px 32px;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.2);
+    pointer-events: none;
+    min-width: 280px;
+}
+
+.reward-popup.visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.reward-icon {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+    animation: rewardBounce 1s infinite alternate;
+}
+
+.reward-title {
+    font-family: var(--font-main);
+    color: var(--accent-gold);
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+}
+
+.reward-text {
+    color: white;
+    font-size: 1.15rem;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+@keyframes rewardBounce {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-8px);
+    }
+}
