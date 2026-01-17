@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.3.4">
+    <link rel="stylesheet" href="styles.css?v=2.3.5">
     <script src="chart.min.js"></script>
 </head>
 
@@ -259,6 +259,14 @@
                                 onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
                         </div>
                     </div>
+                    <div class="settings-row">
+                        <label>Inizio Settimana</label>
+                        <div class="theme-switcher" style="min-width:120px;">
+                            <button class="theme-btn" id="weekStartMon" onclick="setWeekStart('monday')">Lun</button>
+                            <button class="theme-btn active" id="weekStartSun"
+                                onclick="setWeekStart('sunday')">Dom</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Aspetto -->
@@ -373,7 +381,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.3.4</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.3.5</span> •
                         Quest Life PWA
                     </p>
                 </div>

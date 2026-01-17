@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.4";
+const APP_VERSION = "2.3.5";
 
 // ============================================
 // DATA STRUCTURES
@@ -79,7 +79,7 @@ let state = {
         lastPlanDate: null  // Date when last daily plan was shown
     },
     lastRecapWeek: null, // Week ID when last recap was shown
-    settings: { theme: 'light', accent: 'violet', dayStartTime: 0 }
+    settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
 };
 
 function getGameDateObj() {
@@ -109,10 +109,25 @@ function getWeekIdentifier(dateStr) {
     if (!dateStr) return null;
     const date = new Date(dateStr);
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+
+    // Get week start preference (default: Sunday = 0)
+    const weekStartMonday = state?.settings?.weekStart === 'monday';
+
+    // Adjust day number based on week start
+    let dayNum = d.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    if (weekStartMonday) {
+        // For Monday start: shift so Monday=1, Sunday=7
+        dayNum = dayNum === 0 ? 7 : dayNum;
+    } else {
+        // For Sunday start: shift so Sunday=1, Saturday=7
+        dayNum = dayNum + 1;
+    }
+
+    // Calculate week number (ISO-like but respecting week start)
+    const startOfYear = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const dayOfYear = Math.floor((d - startOfYear) / 86400000) + 1;
+    const weekNo = Math.ceil((dayOfYear + (weekStartMonday ? 0 : 1)) / 7);
+
     return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
 }
 
@@ -2052,6 +2067,13 @@ function initSettings() {
     syncPopupToggleButtons('enableDailyPlanner', 'dailyPlannerOn', 'dailyPlannerOff');
     syncPopupToggleButtons('enableWeeklyRecap', 'weeklyRecapOn', 'weeklyRecapOff');
     syncPopupToggleButtons('soundEnabled', 'soundOn', 'soundOff');
+
+    // Sync week start buttons
+    const weekStart = state.settings.weekStart || 'sunday';
+    const monBtn = document.getElementById('weekStartMon');
+    const sunBtn = document.getElementById('weekStartSun');
+    if (monBtn) monBtn.classList.toggle('active', weekStart === 'monday');
+    if (sunBtn) sunBtn.classList.toggle('active', weekStart === 'sunday');
 }
 
 function syncPopupToggleButtons(setting, onBtnId, offBtnId) {
@@ -2090,6 +2112,21 @@ function setPopupSetting(setting, value) {
     syncPopupToggleButtons(setting, onBtnId, offBtnId);
 
     saveState();
+}
+
+function setWeekStart(value) {
+    state.settings.weekStart = value;
+
+    // Update UI buttons
+    const monBtn = document.getElementById('weekStartMon');
+    const sunBtn = document.getElementById('weekStartSun');
+    if (monBtn) monBtn.classList.toggle('active', value === 'monday');
+    if (sunBtn) sunBtn.classList.toggle('active', value === 'sunday');
+
+    saveState();
+
+    // Refresh calendar to reflect new week start
+    renderCalendar();
 }
 
 
@@ -3911,6 +3948,7 @@ window.resetPomodoro = resetPomodoro;
 window.savePomodoroSettings = savePomodoroSettings;
 window.updateSettingToggle = updateSettingToggle;
 window.setPopupSetting = setPopupSetting;
+window.setWeekStart = setWeekStart;
 
 // Expose functions to window
 window.openToxicInventory = openToxicInventory;
