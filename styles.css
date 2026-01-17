@@ -1860,6 +1860,8 @@ body {
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
+    height: 100%;
+    /* FIX: Force full height to allow bars to scale correctly */
 }
 
 .momentum-bar {
