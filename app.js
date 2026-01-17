@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.2.7";
+const APP_VERSION = "2.2.8";
 
 // ============================================
 // DATA STRUCTURES
@@ -1320,7 +1320,8 @@ function getCompletionForDate(dateStr) {
     });
 
     // 3. Math
-    return Math.round((completedCount / totalHabits) * 100);
+    if (completedCount === totalHabits) return 100;
+    return Math.floor((completedCount / totalHabits) * 100);
 }
 
 function logCompletion(type, itemId, customDate = null) {
