@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.2.2";
+const APP_VERSION = "2.2.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -3864,6 +3864,7 @@ window.editToxicItem = editToxicItem;
 window.loadDemoData = loadDemoData;
 window.fixData = fixData;
 window.resetAll = resetAll;
+window.updateApp = updateApp;
 window.exportData = exportData;
 window.importData = importData;
 window.updateApp = updateApp;
