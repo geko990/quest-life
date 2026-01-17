@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.0";
+const APP_VERSION = "2.3.1";
 
 // ============================================
 // DATA STRUCTURES
@@ -1289,31 +1289,52 @@ function setViewedDate(dateStr) {
 // Helper to get exactly which habits should exist for a specific date
 function getHabitsForDate(dateStr) {
     return state.habits.filter(h => {
-        // 1. Exclude locked/deleted habits (unless we want to show history of deleted ones, but we decided for WYSIWYG)
+        // 1. Exclude locked/deleted habits
         if (h.locked) return false;
 
-        // 2. Filter by creation date - if habit was created AFTER the date we are looking at, it shouldn't exist
+        // 2. Filter by creation date
         if (h.createdAt) {
             const createdDate = formatISO(new Date(h.createdAt));
             if (createdDate > dateStr) return false;
         }
 
-        // 3. For periodic habits (weekly/monthly/yearly), exclude if already completed in this period ON A DIFFERENT DAY
-        // This prevents counting them in the denominator when they shouldn't appear in the list
-        if (h.frequency && h.frequency !== 'daily' && h.lastCompleted) {
-            const completedOnDifferentDay = h.lastCompleted !== dateStr;
-            const completedInSamePeriod =
-                (h.frequency === 'weekly' && getWeekIdentifier(h.lastCompleted) === getWeekIdentifier(dateStr)) ||
-                (h.frequency === 'monthly' && getMonthIdentifier(h.lastCompleted) === getMonthIdentifier(dateStr)) ||
-                (h.frequency === 'yearly' && getYearIdentifier(h.lastCompleted) === getYearIdentifier(dateStr));
+        // 3. Handle periodic habits (weekly/monthly/yearly)
+        if (h.frequency && h.frequency !== 'daily') {
+            const periodId = h.frequency === 'weekly' ? getWeekIdentifier(dateStr) :
+                h.frequency === 'monthly' ? getMonthIdentifier(dateStr) :
+                    getYearIdentifier(dateStr);
 
-            if (completedOnDifferentDay && completedInSamePeriod) {
-                return false; // Already done this period, don't count it today
+            // Count completions in this period from the log
+            const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
+            const targetCompletions = h.freqTimes || 1;
+
+            // If all completions for this period are done, hide the habit on OTHER days
+            if (completionsThisPeriod >= targetCompletions) {
+                // Only show on the day it was last completed (for history view)
+                const wasCompletedToday = state.completionLog[dateStr]?.habits?.includes(h.id);
+                if (!wasCompletedToday) return false;
             }
         }
 
         return true;
     });
+}
+
+// Helper to count how many times a habit was completed in a given period
+function countCompletionsInPeriod(habitId, frequency, periodId) {
+    let count = 0;
+    for (const dateStr in state.completionLog) {
+        const log = state.completionLog[dateStr];
+        if (!log?.habits?.includes(habitId)) continue;
+
+        const logPeriodId = frequency === 'weekly' ? getWeekIdentifier(dateStr) :
+            frequency === 'monthly' ? getMonthIdentifier(dateStr) :
+                getYearIdentifier(dateStr);
+        if (logPeriodId === periodId) {
+            count++;
+        }
+    }
+    return count;
 }
 
 function getCompletionForDate(dateStr) {
@@ -1405,6 +1426,17 @@ function renderHabits() {
         const primaryStat = state.stats.find(s => s.id === habit.primaryStatId);
         const secondaryStat = habit.secondaryStatId ? state.stats.find(s => s.id === habit.secondaryStatId) : null;
 
+        // Progress badge for periodic habits
+        let progressBadge = '';
+        if (habit.frequency && habit.frequency !== 'daily' && habit.freqTimes > 1) {
+            const periodId = habit.frequency === 'weekly' ? getWeekIdentifier(viewedDate) :
+                habit.frequency === 'monthly' ? getMonthIdentifier(viewedDate) :
+                    getYearIdentifier(viewedDate);
+            const completions = countCompletionsInPeriod(habit.id, habit.frequency, periodId);
+            const periodLabel = habit.frequency === 'weekly' ? 'sett.' : habit.frequency === 'monthly' ? 'mese' : 'anno';
+            progressBadge = `<span class="card-progress">${completions}/${habit.freqTimes} ${periodLabel}</span>`;
+        }
+
         return `
             <div class="task-card ${habit.locked ? 'locked' : ''}" data-type="habit" data-id="${habit.id}">
                 <div class="swipe-actions">
@@ -1419,6 +1451,7 @@ function renderHabits() {
                             <span class="card-stars">${'⭐'.repeat(habit.stars)}</span>
                             <span class="card-streak">🔥 ${habit.streak}</span>
                             <span class="card-xp">+${calculateXp(habit.stars)} XP</span>
+                            ${progressBadge}
                             ${primaryStat ? `<span class="card-stat">${primaryStat.icon}</span>` : ''}
                             ${secondaryStat ? `<span class="card-stat" style="opacity:0.6">${secondaryStat.icon}</span>` : ''}
                             ${habit.dueDate ? `<span class="card-due">📅 ${formatDate(habit.dueDate)}</span>` : ''}
