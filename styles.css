@@ -769,6 +769,7 @@ body {
 
 .avatar-emoji {
     font-size: 42px;
+    border-radius: 50%;
 }
 
 .avatar-image {
@@ -2623,6 +2624,10 @@ body {
 
 .nav-home .nav-icon {
     font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .nav-badge {
@@ -2641,6 +2646,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
 }
 
 .nav-home.active .nav-icon,
@@ -3147,7 +3153,7 @@ body {
     font-size: 28px;
     background: var(--bg-primary);
     border: 2px solid transparent;
-    border-radius: var(--radius-md);
+    border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
