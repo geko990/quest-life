@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.6";
+const APP_VERSION = "2.3.7";
 
 // ============================================
 // DATA STRUCTURES
@@ -1357,15 +1357,26 @@ function countCompletionsInPeriod(habitId, frequency, periodId) {
 }
 
 function getCompletionForDate(dateStr) {
-    // 1. Get habits that visibly exist for this date (WYSIWYG)
+    // 1. Get habits that visibly exist for this date
     const visibleHabits = getHabitsForDate(dateStr);
     const totalHabits = visibleHabits.length;
 
-    if (totalHabits === 0) return 0;
+    // 2. If no visible habits, check if all periodic habits met their targets
+    if (totalHabits === 0) {
+        // Check if there are ANY habits that existed on this date (not locked, created before)
+        const allPossibleHabits = state.habits.filter(h => {
+            if (h.locked) return false;
+            if (h.createdAt) {
+                const createdDate = formatISO(new Date(h.createdAt));
+                if (createdDate > dateStr) return false;
+            }
+            return true;
+        });
+        // If habits exist but are all hidden (targets met), that's 100% completion
+        return allPossibleHabits.length > 0 ? 100 : 0;
+    }
 
-    // 2. Count how many of THESE specific visible habits are completed
-    // We MUST use isHabitCompletedOnDate because it handles frequency logic (weekly/monthly)
-    // Simply checking the log is not enough for frequency-based habits completed on other days
+    // 3. Count how many visible habits are completed ON THIS DATE
     let completedCount = 0;
     visibleHabits.forEach(habit => {
         if (isHabitCompletedOnDate(habit, dateStr)) {
@@ -1373,7 +1384,7 @@ function getCompletionForDate(dateStr) {
         }
     });
 
-    // 3. Math
+    // 4. Math
     if (completedCount === totalHabits) return 100;
     return Math.floor((completedCount / totalHabits) * 100);
 }
@@ -1486,37 +1497,37 @@ function renderHabits() {
 
 function isHabitCompletedOnDate(habit, dateStr) {
     const log = state.completionLog[dateStr];
-    const isInLogToday = log?.habits?.includes(habit.id);
+    const isInLogOnThisDay = log?.habits?.includes(habit.id);
 
-    // For DAILY habits, the completion log is the source of truth
-    if (!habit.frequency || habit.frequency === 'daily') {
-        return isInLogToday;
+    // SIMPLE RULE: Different frequencies have different "completion" meanings
+    switch (habit.frequency) {
+        case 'daily':
+        case undefined:
+        case null:
+            // Daily: completed if in log for THIS specific day
+            return isInLogOnThisDay;
+
+        case 'times_week':
+        case 'times_month':
+            // Progressive (X times per period): completed if in log for THIS day
+            // Each day's completion is independent - the checkmark is for TODAY only
+            return isInLogOnThisDay;
+
+        case 'weekly':
+            // Once per week: completed if ANY completion exists this week
+            return countCompletionsInPeriod(habit.id, habit.frequency, getWeekIdentifier(dateStr)) > 0;
+
+        case 'monthly':
+            // Once per month: completed if ANY completion exists this month
+            return countCompletionsInPeriod(habit.id, habit.frequency, getMonthIdentifier(dateStr)) > 0;
+
+        case 'yearly':
+            // Once per year: completed if ANY completion exists this year
+            return countCompletionsInPeriod(habit.id, habit.frequency, getYearIdentifier(dateStr)) > 0;
+
+        default:
+            return isInLogOnThisDay;
     }
-
-    const isWeekly = habit.frequency === 'weekly' || habit.frequency === 'times_week';
-    const isMonthly = habit.frequency === 'monthly' || habit.frequency === 'times_month';
-
-    // For progressive habits (times_week/times_month with freqTimes > 1), check if target is met
-    if ((isWeekly && habit.frequency === 'times_week') || (isMonthly && habit.frequency === 'times_month')) {
-        const periodId = isWeekly ? getWeekIdentifier(dateStr) : getMonthIdentifier(dateStr);
-        const completions = countCompletionsInPeriod(habit.id, habit.frequency, periodId);
-        const target = habit.freqTimes || 1;
-        return completions >= target;
-    }
-
-    // For simple weekly/monthly/yearly, check if ANY completion exists in this period
-    if (isWeekly) {
-        const periodId = getWeekIdentifier(dateStr);
-        return countCompletionsInPeriod(habit.id, habit.frequency, periodId) > 0;
-    } else if (isMonthly) {
-        const periodId = getMonthIdentifier(dateStr);
-        return countCompletionsInPeriod(habit.id, habit.frequency, periodId) > 0;
-    } else if (habit.frequency === 'yearly') {
-        const periodId = getYearIdentifier(dateStr);
-        return countCompletionsInPeriod(habit.id, habit.frequency, periodId) > 0;
-    }
-
-    return isInLogToday;
 }
 
 function isHabitCompletedToday(habit) {
