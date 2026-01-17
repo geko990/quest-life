@@ -552,8 +552,8 @@ body {
     width: 300px;
     /* Slightly wider */
     animation: popupCenterScaleIn 0.3s ease;
-    z-index: 5000;
-    /* High z-index */
+    z-index: 10000;
+    /* Very high z-index to appear above all modals */
 }
 
 @keyframes popupCenterScaleIn {
