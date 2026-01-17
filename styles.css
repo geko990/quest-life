@@ -1142,9 +1142,17 @@ body {
     border-radius: 50%;
     /* --percent is e.g. "100%" but conic-gradient needs explicit % */
     background: conic-gradient(var(--success) calc(var(--percent) * 1%), transparent 0);
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
-    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
-    transition: background 0.3s;
+    /* Fallback/Correction for 100% to avoid sub-pixel gaps */
+    background-color: transparent;
+}
+
+.completion-ring[style*="--percent: 100"] {
+    background: var(--success);
+}
+
+-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+transition: background 0.3s;
 }
 
 
@@ -2593,8 +2601,7 @@ body {
     /* Ensure home button keeps its own style when active */
     transform: scale(1.1) translateY(-2px);
     box-shadow: 0 12px 24px rgba(124, 58, 237, 0.5);
-    /* Force remove any inherited background if any */
-    background: var(--accent-gradient) !important;
+    /* White background is inherited from .nav-home */
 }
 
 /* Removed old dot ::after style */
@@ -2636,6 +2643,9 @@ body {
     border-radius: 50%;
     width: 54px;
     height: 54px;
+    min-width: 54px;
+    min-height: 54px;
+    flex-shrink: 0;
     background: var(--accent-gradient);
     /* The orange inner circle */
     box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
