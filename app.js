@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.2.0";
+const APP_VERSION = "2.2.1";
 
 // ============================================
 // DATA STRUCTURES
@@ -1701,9 +1701,11 @@ function openStatDetail(statId) {
     const content = document.getElementById('statDetailContent');
     const momentum = getWeeklyMomentum(statId);
 
-    // SCALE FIX: Use a fixed target of 100 XP as "Full Bar" to make daily progress visible.
-    // If we use dynamic max, one big day (2000 XP) flattens everything else.
-    const maxMomentum = 100;
+    // DYNAMIC SCALE: Scale based on the highest XP in the week, but keep a minimum floor.
+    // If the best day is 30 XP, we scale to 50 XP so it looks substantial but not misleadingly full.
+    // If the best day is 200 XP, we scale to 200 XP so it fits.
+    const maxDayXp = Math.max(...momentum.map(m => m.xp));
+    const maxMomentum = Math.max(maxDayXp, 50);
 
     // Filter history for "Last Activity"
     const history = state.xpLog
