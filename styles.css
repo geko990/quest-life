@@ -1144,15 +1144,13 @@ body {
     background: conic-gradient(var(--success) calc(var(--percent) * 1%), transparent 0);
     /* Fallback/Correction for 100% to avoid sub-pixel gaps */
     background-color: transparent;
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+    transition: background 0.3s;
 }
 
 .completion-ring[style*="--percent: 100"] {
     background: var(--success);
-}
-
--webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
-transition: background 0.3s;
 }
 
 
