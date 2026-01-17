@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.5.2";
+const APP_VERSION = "2.5.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -2157,7 +2157,7 @@ function completeQuest(questId) {
     logCompletion('quests', quest.id);
     recordActivity();
     showProgressPopup(quest.primaryStatId, xp);
-    playCelebration('major');
+    playCelebration('major', quest.customReward);
 
     // Grant freeze for quest completion (quests are major achievements)
     if (state.player.streakFreezes < 2) {
@@ -4521,7 +4521,7 @@ function startStars(canvas) {
 }
 
 // Celebration System
-function playCelebration(type) {
+function playCelebration(type, rewardText = null) {
     // Check if confetti is loaded
     if (typeof confetti === 'undefined') return;
 
@@ -4550,4 +4550,29 @@ function playCelebration(type) {
             ticks: 100
         });
     }
+
+    if (rewardText) {
+        showRewardPopup(rewardText);
+    }
+}
+
+function showRewardPopup(text) {
+    const popup = document.createElement('div');
+    popup.className = 'reward-popup';
+    popup.innerHTML = `
+        <div class="reward-icon">🎁</div>
+        <div class="reward-title">Premio Sbloccato!</div>
+        <div class="reward-text">${text}</div>
+    `;
+    document.body.appendChild(popup);
+
+    // Force reflow
+    void popup.offsetWidth;
+
+    setTimeout(() => popup.classList.add('visible'), 50);
+
+    setTimeout(() => {
+        popup.classList.remove('visible');
+        setTimeout(() => popup.remove(), 500);
+    }, 4000);
 }
