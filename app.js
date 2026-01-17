@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.2";
+const APP_VERSION = "2.3.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -1848,11 +1848,15 @@ function toggleSubquest(questId, subquestId) {
     subquest.completed = !subquest.completed;
 
     if (subquest.completed) {
-        // Double XP for subquest (Full habitual XP)
-        addXp(calculateXp(quest.stars), quest.primaryStatId, `${quest.name} > ${subquest.name} `);
+        // XP for subquest (uses parent quest's stars and stats)
+        const xp = calculateXp(quest.stars);
+        addXp(xp, quest.primaryStatId, `${quest.name} > ${subquest.name}`);
         if (quest.secondaryStatId) {
-            addXp(Math.round(calculateXp(quest.stars) * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${subquest.name} `);
+            addXp(Math.round(xp * XP_CONFIG.secondaryRatio), quest.secondaryStatId, `${quest.name} > ${subquest.name}`);
         }
+        // Visual feedback
+        showProgressPopup(quest.primaryStatId, xp);
+        playSound('success');
     }
 
     // Auto-complete quest if all subquests done
