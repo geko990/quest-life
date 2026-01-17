@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.2.9";
+const APP_VERSION = "2.3.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1296,6 +1296,20 @@ function getHabitsForDate(dateStr) {
         if (h.createdAt) {
             const createdDate = formatISO(new Date(h.createdAt));
             if (createdDate > dateStr) return false;
+        }
+
+        // 3. For periodic habits (weekly/monthly/yearly), exclude if already completed in this period ON A DIFFERENT DAY
+        // This prevents counting them in the denominator when they shouldn't appear in the list
+        if (h.frequency && h.frequency !== 'daily' && h.lastCompleted) {
+            const completedOnDifferentDay = h.lastCompleted !== dateStr;
+            const completedInSamePeriod =
+                (h.frequency === 'weekly' && getWeekIdentifier(h.lastCompleted) === getWeekIdentifier(dateStr)) ||
+                (h.frequency === 'monthly' && getMonthIdentifier(h.lastCompleted) === getMonthIdentifier(dateStr)) ||
+                (h.frequency === 'yearly' && getYearIdentifier(h.lastCompleted) === getYearIdentifier(dateStr));
+
+            if (completedOnDifferentDay && completedInSamePeriod) {
+                return false; // Already done this period, don't count it today
+            }
         }
 
         return true;
