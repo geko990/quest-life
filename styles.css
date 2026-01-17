@@ -1105,9 +1105,9 @@ body {
 }
 
 .calendar-day-number {
-    width: 42px;
-    height: 42px;
-    margin: 0 auto;
+    width: 40px;
+    height: 40px;
+    margin: 4px auto;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1116,6 +1116,12 @@ body {
     font-size: 14px;
     position: relative;
     background: var(--bg-primary);
+    transition: all 0.2s;
+}
+
+.calendar-day.active .calendar-day-number {
+    border: 2px solid var(--accent-primary);
+    background: var(--accent-light);
 }
 
 .calendar-day.today .calendar-day-number {
@@ -2531,17 +2537,16 @@ body {
 
 .nav-bubble {
     position: absolute;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: var(--accent-primary);
     border-radius: 50%;
-    filter: blur(12px);
+    filter: blur(20px);
     opacity: 0;
     pointer-events: none;
     z-index: 1;
-    /* No transition - instant disappear */
     left: 0;
-    bottom: 5px;
+    bottom: -5px;
 }
 
 .bottom-nav.swiping .nav-bubble {
@@ -3115,26 +3120,7 @@ body {
     margin-bottom: 16px;
 }
 
-.calendar-day {
-    flex: 0 0 60px;
-    padding: 10px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-}
 
-.calendar-day.active {
-    border-color: var(--accent-primary);
-    background: var(--accent-light);
-}
-
-.calendar-day.today {
-    background: var(--accent-gradient);
-    color: white;
-}
 
 
 .avatar-tab-content {
