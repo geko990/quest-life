@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.4.0";
+const APP_VERSION = "2.5.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -858,6 +858,148 @@ function renderAll() {
     renderQuests();
     renderSettingsStats();
     renderCalendar();
+    initSortable(); // Initialize drag and drop after render
+}
+
+// ============================================
+// SORTABLE DRAG AND DROP
+// ============================================
+
+let sortableInstances = [];
+
+function initSortable() {
+    // Destroy previous instances to avoid duplicates
+    sortableInstances.forEach(instance => {
+        if (instance && instance.destroy) instance.destroy();
+    });
+    sortableInstances = [];
+
+    // Habits list
+    const habitsList = document.getElementById('habitsList');
+    if (habitsList && habitsList.children.length > 0 && !habitsList.querySelector('.empty-state')) {
+        sortableInstances.push(new Sortable(habitsList, {
+            animation: 150,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            delay: 100,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
+            forceFallback: false,
+            onEnd: function (evt) {
+                // Only reorder if position changed
+                if (evt.oldIndex !== evt.newIndex) {
+                    reorderItems('habits', evt.oldIndex, evt.newIndex);
+                }
+            }
+        }));
+    }
+
+    // Oneshots list  
+    const oneshotList = document.getElementById('oneshotList');
+    if (oneshotList && oneshotList.children.length > 0 && !oneshotList.querySelector('.empty-state')) {
+        sortableInstances.push(new Sortable(oneshotList, {
+            animation: 150,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            delay: 100,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
+            forceFallback: false,
+            onEnd: function (evt) {
+                if (evt.oldIndex !== evt.newIndex) {
+                    reorderItems('oneshots', evt.oldIndex, evt.newIndex);
+                }
+            }
+        }));
+    }
+
+    // Quests list
+    const questList = document.getElementById('questList');
+    if (questList && questList.children.length > 0 && !questList.querySelector('.empty-state')) {
+        sortableInstances.push(new Sortable(questList, {
+            animation: 150,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            delay: 100,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
+            forceFallback: false,
+            onEnd: function (evt) {
+                if (evt.oldIndex !== evt.newIndex) {
+                    reorderItems('quests', evt.oldIndex, evt.newIndex);
+                }
+            }
+        }));
+    }
+}
+
+function reorderItems(type, oldIndex, newIndex) {
+    let arr;
+    if (type === 'habits') {
+        // For habits, we need to map visual index to actual array index
+        // because habits are filtered by date and sorted
+        const viewedHabits = getHabitsForDate(viewedDate).map(h => ({
+            original: h,
+            isCompleted: isHabitCompletedOnDate(h, viewedDate)
+        }));
+        viewedHabits.sort((a, b) => a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1);
+
+        // Get the actual habit objects involved
+        const movedHabit = viewedHabits[oldIndex]?.original;
+        const targetHabit = viewedHabits[newIndex]?.original;
+
+        if (movedHabit && targetHabit) {
+            const actualOldIndex = state.habits.findIndex(h => h.id === movedHabit.id);
+            const actualNewIndex = state.habits.findIndex(h => h.id === targetHabit.id);
+
+            if (actualOldIndex !== -1 && actualNewIndex !== -1) {
+                const [removed] = state.habits.splice(actualOldIndex, 1);
+                state.habits.splice(actualNewIndex, 0, removed);
+            }
+        }
+    } else if (type === 'oneshots') {
+        // Filter to pending oneshots as displayed
+        const pending = state.oneshots.filter(o => !o.completed && !o.locked);
+        const movedItem = pending[oldIndex];
+        const targetItem = pending[newIndex];
+
+        if (movedItem && targetItem) {
+            const actualOldIndex = state.oneshots.findIndex(o => o.id === movedItem.id);
+            const actualNewIndex = state.oneshots.findIndex(o => o.id === targetItem.id);
+
+            if (actualOldIndex !== -1 && actualNewIndex !== -1) {
+                const [removed] = state.oneshots.splice(actualOldIndex, 1);
+                state.oneshots.splice(actualNewIndex, 0, removed);
+            }
+        }
+    } else if (type === 'quests') {
+        // Filter to active quests as displayed
+        const active = state.quests.filter(q => !q.completed);
+        const movedItem = active[oldIndex];
+        const targetItem = active[newIndex];
+
+        if (movedItem && targetItem) {
+            const actualOldIndex = state.quests.findIndex(q => q.id === movedItem.id);
+            const actualNewIndex = state.quests.findIndex(q => q.id === targetItem.id);
+
+            if (actualOldIndex !== -1 && actualNewIndex !== -1) {
+                const [removed] = state.quests.splice(actualOldIndex, 1);
+                state.quests.splice(actualNewIndex, 0, removed);
+            }
+        }
+    }
+
+    saveState();
+    // Don't re-render to keep the smooth animation - state is already synced
 }
 
 function renderHeader() {
@@ -1554,6 +1696,7 @@ function renderHabits() {
                             ${habit.dueDate ? `<span class="card-due">📅 ${formatDate(habit.dueDate)}</span>` : ''}
                         </div>
                     </div>
+                    <div class="drag-handle" title="Trascina per riordinare">⋮⋮</div>
                 </div>
             </div>
             `;
@@ -1719,6 +1862,7 @@ function renderOneshots() {
                             ${oneshot.dueDate ? `<span class="card-due">📅 ${formatDate(oneshot.dueDate)}</span>` : ''}
                         </div>
                     </div>
+                    <div class="drag-handle" title="Trascina per riordinare">⋮⋮</div>
                 </div>
             </div>
             `;
@@ -1799,6 +1943,7 @@ function renderQuests() {
                                 ${quest.dueDate ? `<span class="card-due">📅 ${formatDate(quest.dueDate)}</span>` : ''}
                             </div>
                         </div>
+                        <div class="drag-handle" title="Trascina per riordinare">⋮⋮</div>
                     </div>
                     ${totalSubs > 0 ? `
                         <div class="quest-progress">
@@ -2793,31 +2938,17 @@ function initSwipe() {
     const ACTION_THRESHOLD = 70;  // Reduced for easier swipe trigger
     const MAX_SWIPE = 120;
 
-    // Drag-to-reorder state
-    let dragTimer = null;
-    let isDragging = false;
-    let dragCard = null;
-    let dragStartY = 0;
-    let dragList = null;
-    let dragType = null;
-    let dragId = null;
-    let hasMoved = false;
-
     document.addEventListener('pointerdown', (e) => {
+        // Don't start swipe if touching drag handle (handled by SortableJS)
+        if (e.target.closest('.drag-handle')) return;
+
         const content = e.target.closest('.swipe-content');
         if (!content) return;
 
         swipeWasTriggered = false;
-        hasMoved = false;
-        const taskCard = content.closest('.task-card');
-
-        // DISABLED: Drag-to-reorder (to be recovered later)
-        // const type = taskCard?.dataset?.type;
-        // if (type === 'habit' || type === 'oneshot' || type === 'quest') {
-        //     dragTimer = setTimeout(() => { ... }, 400);
-        // }
 
         currentSwipeCard = content;
+        content.closest('.task-card').classList.add('swiping');
         swipeStartX = e.clientX;
         isSwiping = true;
         content.style.transition = 'none';
@@ -2827,22 +2958,7 @@ function initSwipe() {
     });
 
     document.addEventListener('pointermove', (e) => {
-        // Drag-to-reorder
-        if (isDragging && dragCard) {
-            e.preventDefault(); // Prevent iOS scroll
-            clearTimeout(dragTimer);
-            const deltaY = e.clientY - dragStartY;
-            dragCard.style.transform = `translateY(${deltaY}px) scale(1.02)`;
-            return;
-        }
-
         if (!isSwiping || !currentSwipeCard) return;
-
-        // Cancel long-press if moving horizontally
-        if (Math.abs(e.clientX - swipeStartX) > 10) {
-            clearTimeout(dragTimer);
-            hasMoved = true;
-        }
 
         const diff = e.clientX - swipeStartX + currentX;
         const limitedDiff = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, diff));
@@ -2862,64 +2978,14 @@ function initSwipe() {
     });
 
     document.addEventListener('pointerup', (e) => {
-        clearTimeout(dragTimer);
-
-        // Handle drag-to-reorder end
-        if (isDragging && dragCard) {
-            dragCard.classList.remove('dragging');
-            dragCard.style.transform = '';
-            document.body.style.overflow = ''; // Restore scroll
-
-            // Calculate new position based on Y coordinate
-            if (dragList && dragType && dragId) {
-                const items = Array.from(dragList.querySelectorAll('.task-card'));
-                const dragIndex = items.indexOf(dragCard);
-                const centerY = e.clientY;
-
-
-                // Find the item we're hovering over
-                let targetIndex = dragIndex;
-                for (let i = 0; i < items.length; i++) {
-                    if (i === dragIndex) continue;
-                    const rect = items[i].getBoundingClientRect();
-                    const mid = rect.top + rect.height / 2;
-
-                    if (centerY < mid && i < dragIndex) {
-                        targetIndex = i;
-                        break;
-                    } else if (centerY > mid && i > dragIndex) {
-                        targetIndex = i;
-                    }
-                }
-
-
-                // Reorder array
-                if (targetIndex !== dragIndex) {
-                    let arr;
-                    if (dragType === 'habit') arr = state.habits;
-                    else if (dragType === 'oneshot') arr = state.oneshots;
-                    else if (dragType === 'quest') arr = state.quests;
-
-                    if (arr) {
-                        const [removed] = arr.splice(dragIndex, 1);
-                        arr.splice(targetIndex, 0, removed);
-                        saveState();
-                        renderAll();
-                    }
-                }
-            }
-
-            isDragging = false;
-            dragCard = null;
-            return;
-        }
-
         if (!isSwiping || !currentSwipeCard) return;
         isSwiping = false;
 
         const transform = new WebKitCSSMatrix(window.getComputedStyle(currentSwipeCard).transform);
         const finalX = transform.m41;
         const taskCard = currentSwipeCard.closest('.task-card');
+
+        taskCard.classList.remove('swiping');
         const type = taskCard.dataset.type;
         const id = taskCard.dataset.id;
 
