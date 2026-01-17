@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.5";
+const APP_VERSION = "2.3.6";
 
 // ============================================
 // DATA STRUCTURES
@@ -1485,18 +1485,38 @@ function renderHabits() {
 }
 
 function isHabitCompletedOnDate(habit, dateStr) {
-    if (!habit.lastCompleted) return false;
+    const log = state.completionLog[dateStr];
+    const isInLogToday = log?.habits?.includes(habit.id);
 
-    if (habit.frequency === 'weekly') {
-        return getWeekIdentifier(habit.lastCompleted) === getWeekIdentifier(dateStr);
-    } else if (habit.frequency === 'monthly') {
-        return getMonthIdentifier(habit.lastCompleted) === getMonthIdentifier(dateStr);
-    } else if (habit.frequency === 'yearly') {
-        return getYearIdentifier(habit.lastCompleted) === getYearIdentifier(dateStr);
+    // For DAILY habits, the completion log is the source of truth
+    if (!habit.frequency || habit.frequency === 'daily') {
+        return isInLogToday;
     }
 
-    const log = state.completionLog[dateStr];
-    return log?.habits?.includes(habit.id);
+    const isWeekly = habit.frequency === 'weekly' || habit.frequency === 'times_week';
+    const isMonthly = habit.frequency === 'monthly' || habit.frequency === 'times_month';
+
+    // For progressive habits (times_week/times_month with freqTimes > 1), check if target is met
+    if ((isWeekly && habit.frequency === 'times_week') || (isMonthly && habit.frequency === 'times_month')) {
+        const periodId = isWeekly ? getWeekIdentifier(dateStr) : getMonthIdentifier(dateStr);
+        const completions = countCompletionsInPeriod(habit.id, habit.frequency, periodId);
+        const target = habit.freqTimes || 1;
+        return completions >= target;
+    }
+
+    // For simple weekly/monthly/yearly, check if ANY completion exists in this period
+    if (isWeekly) {
+        const periodId = getWeekIdentifier(dateStr);
+        return countCompletionsInPeriod(habit.id, habit.frequency, periodId) > 0;
+    } else if (isMonthly) {
+        const periodId = getMonthIdentifier(dateStr);
+        return countCompletionsInPeriod(habit.id, habit.frequency, periodId) > 0;
+    } else if (habit.frequency === 'yearly') {
+        const periodId = getYearIdentifier(dateStr);
+        return countCompletionsInPeriod(habit.id, habit.frequency, periodId) > 0;
+    }
+
+    return isInLogToday;
 }
 
 function isHabitCompletedToday(habit) {
