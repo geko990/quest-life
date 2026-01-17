@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.1";
+const APP_VERSION = "2.3.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -1298,10 +1298,12 @@ function getHabitsForDate(dateStr) {
             if (createdDate > dateStr) return false;
         }
 
-        // 3. Handle periodic habits (weekly/monthly/yearly)
+        // 3. Handle periodic habits (weekly/monthly/yearly/times_week/times_month)
         if (h.frequency && h.frequency !== 'daily') {
-            const periodId = h.frequency === 'weekly' ? getWeekIdentifier(dateStr) :
-                h.frequency === 'monthly' ? getMonthIdentifier(dateStr) :
+            const isWeekly = h.frequency === 'weekly' || h.frequency === 'times_week';
+            const isMonthly = h.frequency === 'monthly' || h.frequency === 'times_month';
+            const periodId = isWeekly ? getWeekIdentifier(dateStr) :
+                isMonthly ? getMonthIdentifier(dateStr) :
                     getYearIdentifier(dateStr);
 
             // Count completions in this period from the log
@@ -1327,8 +1329,10 @@ function countCompletionsInPeriod(habitId, frequency, periodId) {
         const log = state.completionLog[dateStr];
         if (!log?.habits?.includes(habitId)) continue;
 
-        const logPeriodId = frequency === 'weekly' ? getWeekIdentifier(dateStr) :
-            frequency === 'monthly' ? getMonthIdentifier(dateStr) :
+        const isWeekly = frequency === 'weekly' || frequency === 'times_week';
+        const isMonthly = frequency === 'monthly' || frequency === 'times_month';
+        const logPeriodId = isWeekly ? getWeekIdentifier(dateStr) :
+            isMonthly ? getMonthIdentifier(dateStr) :
                 getYearIdentifier(dateStr);
         if (logPeriodId === periodId) {
             count++;
@@ -1429,11 +1433,13 @@ function renderHabits() {
         // Progress badge for periodic habits
         let progressBadge = '';
         if (habit.frequency && habit.frequency !== 'daily' && habit.freqTimes > 1) {
-            const periodId = habit.frequency === 'weekly' ? getWeekIdentifier(viewedDate) :
-                habit.frequency === 'monthly' ? getMonthIdentifier(viewedDate) :
+            const isWeekly = habit.frequency === 'weekly' || habit.frequency === 'times_week';
+            const isMonthly = habit.frequency === 'monthly' || habit.frequency === 'times_month';
+            const periodId = isWeekly ? getWeekIdentifier(viewedDate) :
+                isMonthly ? getMonthIdentifier(viewedDate) :
                     getYearIdentifier(viewedDate);
             const completions = countCompletionsInPeriod(habit.id, habit.frequency, periodId);
-            const periodLabel = habit.frequency === 'weekly' ? 'sett.' : habit.frequency === 'monthly' ? 'mese' : 'anno';
+            const periodLabel = isWeekly ? 'sett.' : isMonthly ? 'mese' : 'anno';
             progressBadge = `<span class="card-progress">${completions}/${habit.freqTimes} ${periodLabel}</span>`;
         }
 
