@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.5.1";
+const APP_VERSION = "2.5.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -423,6 +423,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Initialize Immersive Effects
+    setTimeout(initImmersiveEffects, 500);
 });
 
 function loadState() {
@@ -1894,6 +1897,7 @@ function completeOneshot(oneshotId) {
     const diffMultiplier = 1 + (['easy', 'medium', 'hard', 'epic'].indexOf(oneshot.difficulty) * 0.5);
     const popupXp = Math.round(15 * diffMultiplier);
     showProgressPopup(oneshot.primaryStatId, popupXp);
+    playCelebration('minor');
 
     // Grant freeze for 5-star task completion
     if (oneshot.stars === 5 && state.player.streakFreezes < 2) {
@@ -2153,6 +2157,7 @@ function completeQuest(questId) {
     logCompletion('quests', quest.id);
     recordActivity();
     showProgressPopup(quest.primaryStatId, xp);
+    playCelebration('major');
 
     // Grant freeze for quest completion (quests are major achievements)
     if (state.player.streakFreezes < 2) {
@@ -2452,6 +2457,7 @@ function setTheme(theme) {
     state.settings.theme = theme;
     applyTheme();
     saveState();
+    updateImmersiveBackground(theme);
 
     // Close dropdown
     const dropdown = document.getElementById('themeDropdown');
@@ -4370,4 +4376,178 @@ function closeArchive() {
 
     // Since settings is a section (page), closing the overlay simply reveals it again.
     // No need to call navigation functions.
+}
+
+
+// ============================================
+// IMMERSIVE EFFECTS (PARTICLES & CELEBRATIONS)
+// ============================================
+
+let particleReqId = null;
+let particles = [];
+const PARTICLE_COUNT = 50;
+
+function initImmersiveEffects() {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+
+    // Start effect based on current theme
+    if (state.settings && state.settings.theme) {
+        updateImmersiveBackground(state.settings.theme);
+    }
+}
+
+function updateImmersiveBackground(theme) {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+
+    // Map 'pirate' to fantasy effects because it uses the serif font
+    if (theme === 'pirate') {
+        canvas.style.opacity = '1';
+        startFireflies(canvas);
+    } else if (theme === 'futuristic') {
+        canvas.style.opacity = '1';
+        startStars(canvas);
+    } else {
+        canvas.style.opacity = '0';
+        setTimeout(() => stopParticles(), 2000); // Wait for transition
+    }
+}
+
+function stopParticles() {
+    if (particleReqId) {
+        cancelAnimationFrame(particleReqId);
+        particleReqId = null;
+    }
+    particles = [];
+    // Clear canvas
+    const canvas = document.getElementById('bgCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+function startFireflies(canvas) {
+    stopParticles();
+
+    const ctx = canvas.getContext('2d');
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < 40; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 2 + 0.5,
+            dx: (Math.random() - 0.5) * 0.5,
+            dy: (Math.random() - 0.5) * 0.5,
+            alpha: Math.random(),
+            pulse: Math.random() * 0.02 + 0.005
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#C5A059'; // Gold/Parchment color from Pirate theme
+
+        particles.forEach(p => {
+            p.x += p.dx;
+            p.y += p.dy;
+            p.alpha += p.pulse;
+
+            if (p.alpha > 0.8 || p.alpha < 0.1) p.pulse *= -1;
+
+            // Wrap around
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+
+            ctx.globalAlpha = p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        particleReqId = requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+function startStars(canvas) {
+    stopParticles();
+
+    const ctx = canvas.getContext('2d');
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < 80; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() < 0.9 ? 1 : 2,
+            speed: Math.random() * 0.5 + 0.1
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+
+        particles.forEach(p => {
+            p.y += p.speed;
+            if (p.y > canvas.height) {
+                p.y = 0;
+                p.x = Math.random() * canvas.width;
+            }
+
+            ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+        });
+
+        particleReqId = requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// Celebration System
+function playCelebration(type) {
+    // Check if confetti is loaded
+    if (typeof confetti === 'undefined') return;
+
+    if (type === 'major') {
+        // Quest Completion: Golden Explosion
+        const colors = state.settings.theme === 'pirate'
+            ? ['#FFD700', '#C5A059', '#ffffff'] // Gold
+            : ['#7c3aed', '#a78bfa', '#ffffff']; // Default Violet
+
+        confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.6 },
+            colors: colors,
+            disableForReducedMotion: true
+        });
+    } else if (type === 'minor') {
+        // OneShot Completion
+        confetti({
+            particleCount: 60,
+            spread: 60,
+            origin: { y: 0.7 },
+            gravity: 1.2,
+            decay: 0.9,
+            scalar: 0.8,
+            ticks: 100
+        });
+    }
 }
