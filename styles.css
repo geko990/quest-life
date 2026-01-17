@@ -902,6 +902,13 @@ body {
     border-radius: var(--radius-md);
     overflow: hidden;
     z-index: 0;
+    opacity: 0;
+    transition: opacity 0.1s;
+    pointer-events: none;
+}
+
+.task-card.swiping .swipe-actions {
+    opacity: 1;
 }
 
 .swipe-action {
@@ -2860,16 +2867,76 @@ body {
     transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.task-card.dragging {
-    transform: scale(1.02);
-    opacity: 0.85;
-    z-index: 100;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
-    touch-action: none;
+/* SortableJS Drag and Drop Styles */
+.task-card.sortable-ghost {
+    opacity: 0.4;
+    background: var(--accent-light) !important;
 }
 
-.task-card.drop-placeholder {
-    opacity: 0.3;
+.task-card.sortable-chosen {
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25) !important;
+    z-index: 100;
+}
+
+.task-card.sortable-chosen .swipe-content {
+    background: var(--bg-card);
+    border: 2px solid var(--accent-primary);
+}
+
+.task-card.sortable-drag {
+    opacity: 1 !important;
+    background: transparent !important;
+}
+
+/* Drag handle indicator */
+.drag-handle {
+    cursor: grab;
+    padding: 8px 8px;
+    margin-left: 4px;
+    margin-right: 0;
+    opacity: 0.35;
+    font-size: 14px;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s, transform 0.2s;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+.drag-handle:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+    opacity: 1;
+}
+
+/* Smooth animation for reordering */
+.habits-list,
+.oneshot-list,
+.quest-list {
+    transition: none;
+}
+
+.habits-list .task-card,
+.oneshot-list .task-card,
+.quest-list .task-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Placeholder animation */
+.task-card.sortable-fallback {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3) !important;
+    border-radius: var(--radius-md);
+    background: var(--bg-card) !important;
 }
 
 .swipe-container {
