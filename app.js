@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.7";
+const APP_VERSION = "2.3.8";
 
 // ============================================
 // DATA STRUCTURES
@@ -1450,8 +1450,7 @@ function renderHabits() {
     container.innerHTML = habitsToShow.map(item => {
         const habit = item.original;
         const isCompleted = item.isCompleted;
-        // Logic to hide future completions in history view if desired
-        if (!isToday && !isCompleted && habit.completed) return '';
+        // NOTE: Removed inconsistent filter. All habits from getHabitsForDate should be displayed.
 
         const primaryStat = state.stats.find(s => s.id === habit.primaryStatId);
         const secondaryStat = habit.secondaryStatId ? state.stats.find(s => s.id === habit.secondaryStatId) : null;
