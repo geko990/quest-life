@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.3.8";
+const APP_VERSION = "2.4.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -141,6 +141,41 @@ function getYearIdentifier(dateStr) {
     if (!dateStr) return null;
     const date = new Date(dateStr);
     return `${date.getFullYear()}`;
+}
+
+// Shift progressive habits that weren't completed yesterday to today
+function shiftProgressiveHabits() {
+    const today = getGameDate();
+    let changed = false;
+
+    state.habits.forEach(h => {
+        if (h.locked) return;
+        if (h.frequency !== 'times_week' && h.frequency !== 'times_month') return;
+
+        const isWeekly = h.frequency === 'times_week';
+        const periodId = isWeekly ? getWeekIdentifier(today) : getMonthIdentifier(today);
+        const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
+        const targetCompletions = h.freqTimes || 1;
+
+        // If target already met, no shifting needed
+        if (completionsThisPeriod >= targetCompletions) {
+            if (h.shiftedToDate) {
+                h.shiftedToDate = null;
+                changed = true;
+            }
+            return;
+        }
+
+        // If habit was scheduled for a past day (before today), shift it to today
+        if (!h.shiftedToDate || h.shiftedToDate < today) {
+            h.shiftedToDate = today;
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        saveState();
+    }
 }
 
 let radarChart = null;
@@ -330,6 +365,7 @@ async function saveStateToFile() {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
+    shiftProgressiveHabits(); // Shift any habits that weren't completed yesterday
     checkFrozenStreak();
     initNavigation();
     initSettings();
@@ -382,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newDate = getGameDate();
             if (newDate !== viewedDate) {
                 viewedDate = newDate;
+                shiftProgressiveHabits(); // Shift habits to the new day
                 renderAll();
             }
         }
@@ -1303,6 +1340,10 @@ function setViewedDate(dateStr) {
 
 // Helper to get exactly which habits should exist for a specific date
 function getHabitsForDate(dateStr) {
+    const today = getGameDate();
+    const isToday = dateStr === today;
+    const isPast = dateStr < today;
+
     return state.habits.filter(h => {
         // 1. Exclude locked/deleted habits
         if (h.locked) return false;
@@ -1313,21 +1354,46 @@ function getHabitsForDate(dateStr) {
             if (createdDate > dateStr) return false;
         }
 
-        // 3. Handle periodic habits (weekly/monthly/yearly/times_week/times_month)
+        // 3. Handle PROGRESSIVE habits (times_week/times_month) with shifting behavior
+        if (h.frequency === 'times_week' || h.frequency === 'times_month') {
+            const isWeekly = h.frequency === 'times_week';
+            const periodId = isWeekly ? getWeekIdentifier(dateStr) : getMonthIdentifier(dateStr);
+            const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
+            const targetCompletions = h.freqTimes || 1;
+
+            // If target met, only show on days it was completed (for history)
+            if (completionsThisPeriod >= targetCompletions) {
+                return state.completionLog[dateStr]?.habits?.includes(h.id);
+            }
+
+            // For PAST days: only show if completed on that day (shifting behavior)
+            if (isPast) {
+                return state.completionLog[dateStr]?.habits?.includes(h.id);
+            }
+
+            // For TODAY: show if shiftedToDate is today or earlier (or not set)
+            if (isToday) {
+                if (h.shiftedToDate && h.shiftedToDate > dateStr) return false;
+                return true;
+            }
+
+            // For FUTURE: only show if shiftedToDate matches
+            if (h.shiftedToDate === dateStr) return true;
+            return false;
+        }
+
+        // 4. Handle simple periodic habits (weekly/monthly/yearly) - original logic
         if (h.frequency && h.frequency !== 'daily') {
-            const isWeekly = h.frequency === 'weekly' || h.frequency === 'times_week';
-            const isMonthly = h.frequency === 'monthly' || h.frequency === 'times_month';
+            const isWeekly = h.frequency === 'weekly';
+            const isMonthly = h.frequency === 'monthly';
             const periodId = isWeekly ? getWeekIdentifier(dateStr) :
                 isMonthly ? getMonthIdentifier(dateStr) :
                     getYearIdentifier(dateStr);
 
-            // Count completions in this period from the log
             const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
             const targetCompletions = h.freqTimes || 1;
 
-            // If all completions for this period are done, hide the habit on OTHER days
             if (completionsThisPeriod >= targetCompletions) {
-                // Only show on the day it was last completed (for history view)
                 const wasCompletedToday = state.completionLog[dateStr]?.habits?.includes(h.id);
                 if (!wasCompletedToday) return false;
             }
@@ -1600,6 +1666,13 @@ function toggleHabit(habitId, targetDate = null) {
             playSound('streak');
         } else {
             playSound('success');
+        }
+
+        // For progressive habits, shift to tomorrow for the next completion slot
+        if ((habit.frequency === 'times_week' || habit.frequency === 'times_month') && isTargetingToday) {
+            const tomorrow = new Date(getGameDateObj());
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            habit.shiftedToDate = formatISO(tomorrow);
         }
     }
 
