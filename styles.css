@@ -3824,3 +3824,22 @@ body {
         transform: translateY(-8px);
     }
 }
+
+/* ============================================
+   FANTASY THEME CONTRAST FIX (v2.6.2)
+   ============================================ */
+/* Unified styling for Habits, Quests, OneShots to match Home/Settings */
+[data-theme="fantasy"] .habits-list .task-card .swipe-content,
+[data-theme="fantasy"] .oneshot-list .task-card .swipe-content,
+[data-theme="fantasy"] .quest-list .task-card .swipe-content {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+[data-theme="fantasy"][data-mode="dark"] .habits-list .task-card .swipe-content,
+[data-theme="fantasy"][data-mode="dark"] .oneshot-list .task-card .swipe-content,
+[data-theme="fantasy"][data-mode="dark"] .quest-list .task-card .swipe-content {
+    background: var(--bg-card);
+    border-color: var(--glass-border);
+}
