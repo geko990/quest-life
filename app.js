@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.6.9";
+const APP_VERSION = "2.7.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -1266,8 +1266,10 @@ function renderProfilePopup() {
         if (state.player.monthlyChallenge.medals.length === 0) {
             mGrid.innerHTML = '<div style="font-size:11px; color:var(--text-muted); width:100%; text-align:center;">Nessuna medaglia ancora...</div>';
         } else {
-            mGrid.innerHTML = state.player.monthlyChallenge.medals.map(m => `
-                <div class="medal-item" onclick="alert('${m.name} - ${m.earnedDate}')">
+            // Show only last 5 reversed
+            const recentMedals = [...state.player.monthlyChallenge.medals].reverse().slice(0, 5);
+            mGrid.innerHTML = recentMedals.map(m => `
+                <div class="medal-item" onclick="alert('${m.name}\\nOttenuta il: ${m.earnedDate}')">
                     <div class="medal-emoji">${m.icon}</div>
                 </div>
             `).join('');
@@ -4340,6 +4342,7 @@ window.showStreakCelebration = showStreakCelebration;
 window.closeStreakCelebration = closeStreakCelebration;
 window.closeDeleteConfirm = closeDeleteConfirm;
 window.confirmDelete = confirmDelete;
+window.openArchive = openArchive;
 
 // Quest Detail
 window.openQuestDetail = openQuestDetail;
