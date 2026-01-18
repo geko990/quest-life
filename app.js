@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.6.0";
+const APP_VERSION = "2.6.1";
 
 // ============================================
 // DATA STRUCTURES
@@ -4664,16 +4664,16 @@ function startEmbers(canvas) {
     window.addEventListener('resize', resize);
     resize();
 
-    // Embers
-    for (let i = 0; i < 60; i++) {
+    // Embers: Fast, rising sparks (Red/Orange)
+    for (let i = 0; i < 80; i++) {
         particles.push({
             x: Math.random() * canvas.width,
             y: canvas.height + Math.random() * 50,
-            size: Math.random() * 3 + 1,
-            speed: Math.random() * 1.5 + 0.5,
-            wiggle: Math.random() * 0.5,
+            size: Math.random() < 0.8 ? Math.random() * 1.5 + 0.5 : Math.random() * 2 + 1,
+            speed: Math.random() * 2.5 + 1.0,
+            wiggle: Math.random() * 0.3,
             alpha: Math.random(),
-            decay: Math.random() * 0.008 + 0.002
+            decay: Math.random() * 0.01 + 0.005
         });
     }
 
@@ -4682,22 +4682,25 @@ function startEmbers(canvas) {
 
         particles.forEach(p => {
             p.y -= p.speed;
-            p.x += Math.sin(Date.now() * 0.002 + p.y * 0.05) * p.wiggle;
+            p.x += Math.sin(Date.now() * 0.005 + p.y * 0.02) * p.wiggle;
             p.alpha -= p.decay;
 
             if (p.alpha <= 0) {
                 p.y = canvas.height + 10;
                 p.x = Math.random() * canvas.width;
                 p.alpha = 1;
+                p.speed = Math.random() * 2.5 + 1.0;
             }
 
+            // Intense Orange-Red
             const r = 255;
-            const g = Math.floor(60 + (p.alpha * 100)); // Orange to Red
+            const g = Math.floor(p.alpha * 100);
             const b = 0;
 
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha})`;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = `rgba(${r}, ${g}, 0, ${p.alpha})`;
+
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = `rgba(255, 50, 0, ${p.alpha})`;
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
