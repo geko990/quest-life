@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.5.4";
+const APP_VERSION = "2.6.0";
 
 // ============================================
 // DATA STRUCTURES
@@ -4425,6 +4425,9 @@ function updateImmersiveBackground(theme) {
     } else if (theme === 'futuristic') {
         canvas.style.opacity = '1';
         startStars(canvas);
+    } else if (theme === 'dnd') {
+        canvas.style.opacity = '1';
+        startEmbers(canvas);
     } else {
         canvas.style.opacity = '0';
         setTimeout(() => stopParticles(), 2000); // Wait for transition
@@ -4499,7 +4502,6 @@ function startFireflies(canvas) {
 
 function startStars(canvas) {
     stopParticles();
-
     const ctx = canvas.getContext('2d');
     const resize = () => {
         canvas.width = window.innerWidth;
@@ -4508,30 +4510,41 @@ function startStars(canvas) {
     window.addEventListener('resize', resize);
     resize();
 
-    for (let i = 0; i < 80; i++) {
+    // Layers: 0 = background (slow, small), 1 = foreground (twinkling)
+    for (let i = 0; i < 100; i++) {
+        const isFore = Math.random() < 0.4; // 40% foreground
         particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            size: Math.random() < 0.9 ? 1 : 2,
-            speed: Math.random() * 0.5 + 0.1
+            size: isFore ? Math.random() * 2 + 1 : Math.random() * 1.5,
+            speed: isFore ? 0 : Math.random() * 0.2 + 0.05,
+            alpha: Math.random(),
+            twinkleSpeed: isFore ? Math.random() * 0.04 + 0.01 : 0,
+            layer: isFore ? 1 : 0
         });
     }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ffffff';
 
         particles.forEach(p => {
-            p.y += p.speed;
-            if (p.y > canvas.height) {
-                p.y = 0;
-                p.x = Math.random() * canvas.width;
+            if (p.layer === 0) {
+                // Background star moving slowly
+                p.y += p.speed;
+                if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * canvas.width; }
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * 0.5})`;
+            } else {
+                // Foreground twinkling
+                p.alpha += p.twinkleSpeed;
+                if (p.alpha > 1 || p.alpha < 0.2) p.twinkleSpeed *= -1;
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = "white";
+                ctx.fillStyle = `rgba(200, 230, 255, ${p.alpha})`;
             }
-
-            ctx.globalAlpha = Math.random() * 0.5 + 0.5;
+            ctx.beginPath();
             ctx.fillRect(p.x, p.y, p.size, p.size);
+            ctx.shadowBlur = 0;
         });
-
         particleReqId = requestAnimationFrame(animate);
     }
     animate();
@@ -4562,9 +4575,9 @@ function startOceanBubbles(canvas) {
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.strokeStyle = 'rgba(173, 216, 230, 0.4)'; // Light blue outline
-        ctx.lineWidth = 1;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';   // Translucent white fill
+        ctx.strokeStyle = 'rgba(200, 240, 255, 0.8)'; // More Visible
+        ctx.lineWidth = 2;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
 
         particles.forEach(p => {
             p.y -= p.speed;
@@ -4642,4 +4655,56 @@ function showRewardPopup(text) {
         popup.classList.remove('visible');
         setTimeout(() => popup.remove(), 500);
     }, 4000);
+}
+
+function startEmbers(canvas) {
+    stopParticles();
+    const ctx = canvas.getContext('2d');
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Embers
+    for (let i = 0; i < 60; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height + Math.random() * 50,
+            size: Math.random() * 3 + 1,
+            speed: Math.random() * 1.5 + 0.5,
+            wiggle: Math.random() * 0.5,
+            alpha: Math.random(),
+            decay: Math.random() * 0.008 + 0.002
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(p => {
+            p.y -= p.speed;
+            p.x += Math.sin(Date.now() * 0.002 + p.y * 0.05) * p.wiggle;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                p.y = canvas.height + 10;
+                p.x = Math.random() * canvas.width;
+                p.alpha = 1;
+            }
+
+            const r = 255;
+            const g = Math.floor(60 + (p.alpha * 100)); // Orange to Red
+            const b = 0;
+
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha})`;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = `rgba(${r}, ${g}, 0, ${p.alpha})`;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+        particleReqId = requestAnimationFrame(animate);
+    }
+    animate();
 }

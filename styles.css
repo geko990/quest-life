@@ -3772,6 +3772,21 @@ body {
     font-weight: 500;
 }
 
+/* ============================================
+   THEME SPECIFIC OVERRIDES
+   ============================================ */
+
+/* D&D: Gradients for depth */
+[data-theme="dnd"] .app-container {
+    background: radial-gradient(circle at center, var(--bg-color) 40%, #c9bca6 100%);
+    background-attachment: fixed;
+}
+
+[data-theme="dnd"][data-mode="dark"] .app-container {
+    background: linear-gradient(to top, #2b0c0c 0%, var(--bg-color) 100%);
+    background-attachment: fixed;
+}
+
 @keyframes rewardBounce {
     from {
         transform: translateY(0);
