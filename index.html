@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.6.9">
+    <link rel="stylesheet" href="styles.css?v=2.7.0">
 
 </head>
 
@@ -73,31 +73,38 @@
                     <div class="popup-xp-fill" id="popupXpFill" style="width: 0%"></div>
                 </div>
                 <div class="popup-xp-text" id="popupXpText">0 / 100 XP</div>
-            </div>
 
-            <div class="popup-motto-container">
-                <label>Motto Personale</label>
-                <div class="motto-display" id="popupMottoDisplay" onclick="openMottoEdit()">
-                    "Il tuo motto qui..."
-                </div>
-            </div>
-
-            <div class="popup-motto-container" style="margin-top: 10px;">
-                <label>Medaglie Mensili</label>
-                <div class="medal-progress-box">
+                <!-- Medal Progress (Now Clickable) -->
+                <div class="medal-progress-box clickable" onclick="openArchive()"
+                    style="margin-top: 15px; cursor: pointer;">
                     <div class="medal-progress-info">
                         <span id="monthlyLabel" style="font-size: 12px; color: var(--text-secondary);">Mese</span>
                         <span id="monthlyPoints"
                             style="font-size: 12px; font-weight: bold; color: var(--accent-primary);">0/50</span>
                     </div>
-                    <div class="popup-xp-bar" style="height: 6px; margin: 4px 0 8px;">
+                    <div class="popup-xp-bar" style="height: 6px; margin: 4px 0 0;">
                         <div class="popup-xp-fill" id="monthlyProgressFill"
                             style="width: 0%; background: var(--accent-gold);"></div>
                     </div>
+                    <div style="font-size: 10px; color: var(--text-muted); text-align: right; margin-top: 4px;">📂 Vedi
+                        Imprese</div>
                 </div>
+            </div>
+
+            <!-- Medals Grid (Recent) -->
+            <div class="popup-motto-container" style="margin-top: 10px;">
+                <label>Medagliere</label>
                 <div class="medals-grid" id="medalsGrid"
                     style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
                     <!-- Medals will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Motto Moved to Bottom -->
+            <div class="popup-motto-container" style="margin-top: 10px;">
+                <label>Motto Personale</label>
+                <div class="motto-display" id="popupMottoDisplay" onclick="openMottoEdit()">
+                    "Il tuo motto qui..."
                 </div>
             </div>
         </div>
@@ -339,16 +346,7 @@
                     </div>
                 </div>
 
-                <!-- Archivio -->
-                <div class="settings-group">
-                    <h3>📜 Archivio</h3>
-                    <div class="settings-buttons">
-                        <button class="settings-btn" onclick="openArchive()">
-                            <span class="settings-btn-icon">🏆</span>
-                            <span>Storico Imprese</span>
-                        </button>
-                    </div>
-                </div>
+
 
                 <!-- Dati -->
                 <div class="settings-group">
@@ -420,7 +418,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.6.9</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.0</span> •
                         Quest Life PWA
                     </p>
                 </div>
