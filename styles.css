@@ -3847,5 +3847,27 @@ body {
     /* Significantly Lighter Brown */
     color: #f0e6d2;
     /* Light text */
+    /* Light text */
+    border-color: var(--glass-border);
+}
+
+/* ============================================
+   D&D THEME UNIFICATION (v2.6.7)
+   ============================================ */
+/* Unified styling for Habits, Quests, OneShots to match Home/Settings */
+[data-theme="dnd"] .habits-list .task-card .swipe-content,
+[data-theme="dnd"] .oneshot-list .task-card .swipe-content,
+[data-theme="dnd"] .quest-list .task-card .swipe-content {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    color: var(--text-primary);
+}
+
+[data-theme="dnd"][data-mode="dark"] .habits-list .task-card .swipe-content,
+[data-theme="dnd"][data-mode="dark"] .oneshot-list .task-card .swipe-content,
+[data-theme="dnd"][data-mode="dark"] .quest-list .task-card .swipe-content {
+    /* Keep consistency with Home transparency */
+    background: var(--bg-card);
     border-color: var(--glass-border);
 }
