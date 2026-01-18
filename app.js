@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.17";
+const APP_VERSION = "2.7.18";
 
 // ============================================
 // DATA STRUCTURES
@@ -5015,13 +5015,14 @@ function startEmbers(canvas) {
 // ============================================
 
 function openInstallModal() {
-    const modal = document.getElementById('installModal');
-    if (modal) modal.classList.add('active');
+    document.getElementById('installModal')?.classList.remove('hidden');
+    document.getElementById('installOverlay')?.classList.remove('hidden');
+    // Ensure scrolling is disabled on body if needed, but overlay covers it.
 }
 
 function closeInstallModal() {
-    const modal = document.getElementById('installModal');
-    if (modal) modal.classList.remove('active');
+    document.getElementById('installModal')?.classList.add('hidden');
+    document.getElementById('installOverlay')?.classList.add('hidden');
 }
 
 function toggleDontShowInstall(checked) {
