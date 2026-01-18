@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.18">
+    <link rel="stylesheet" href="styles.css?v=2.7.19">
 
 </head>
 
@@ -237,7 +237,7 @@
                 <h2>⚙️ Impostazioni</h2>
 
                 <!-- Profilo & Gameplay -->
-                <div class="settings-group collapsed">
+                <div class="settings-group collapsed" id="group-profile">
                     <h3 onclick="toggleSettingsGroup(this)">👤 Profilo & Gameplay <span class="group-arrow">▼</span>
                     </h3>
                     <div class="settings-content">
@@ -271,7 +271,7 @@
                 </div>
 
                 <!-- Personalizzazione -->
-                <div class="settings-group collapsed">
+                <div class="settings-group collapsed" id="group-custom">
                     <h3 onclick="toggleSettingsGroup(this)">🎨 Personalizzazione <span class="group-arrow">▼</span></h3>
                     <div class="settings-content">
                         <div class="settings-row">
@@ -320,7 +320,7 @@
                 </div>
 
                 <!-- Funzionalità -->
-                <div class="settings-group collapsed">
+                <div class="settings-group collapsed" id="group-features">
                     <h3 onclick="toggleSettingsGroup(this)">⚡ Funzionalità <span class="group-arrow">▼</span></h3>
                     <div class="settings-content">
                         <div class="settings-row">
@@ -354,7 +354,7 @@
                 </div>
 
                 <!-- Dati & Cloud -->
-                <div class="settings-group collapsed">
+                <div class="settings-group collapsed" id="group-data">
                     <h3 onclick="toggleSettingsGroup(this)">💾 Dati & Cloud <span class="group-arrow">▼</span></h3>
                     <div class="settings-content">
                         <!-- Database Connection -->
@@ -434,7 +434,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.18</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.19</span> •
                             Quest Life PWA
                         </p>
                     </div>

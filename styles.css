@@ -1427,12 +1427,58 @@ body {
     margin-bottom: 14px;
 }
 
+/* Collapsible Header */
 .settings-group h3 {
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--accent-primary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 14px;
+    letter-spacing: 1px;
+    margin-bottom: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--glass-border);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    width: 100%;
+    transition: border-color 0.3s;
+}
+
+.settings-group.collapsed h3 {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Arrow Animation */
+.group-arrow {
+    display: inline-block;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);
+    /* Expanded: Down */
+    color: var(--text-muted);
+}
+
+.settings-group.collapsed .group-arrow {
+    transform: rotate(-90deg);
+    /* Collapsed: Right */
+}
+
+/* Content Animation */
+.settings-group .settings-content {
+    max-height: 1000px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.4s ease, margin-top 0.4s ease;
+    margin-top: 14px;
+}
+
+.settings-group.collapsed .settings-content {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding: 0;
 }
 
 .settings-row {

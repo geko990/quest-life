@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.18";
+const APP_VERSION = "2.7.19";
 
 // ============================================
 // DATA STRUCTURES
@@ -582,6 +582,8 @@ function loadState() {
         if (!state.stats.find(s => s.id === defaultStat.id)) {
             state.stats.push({ ...defaultStat });
         }
+        // Load saved collapsed/open state
+        loadSettingsGroupsState();
     });
 
     // Apply theme
@@ -5036,7 +5038,45 @@ function toggleDontShowInstall(checked) {
 function toggleSettingsGroup(header) {
     const group = header.parentElement;
     group.classList.toggle('collapsed');
+
+    // Save state
+    saveSettingsGroupsState();
 }
+
+function saveSettingsGroupsState() {
+    const groups = document.querySelectorAll('.settings-group');
+    const state = {};
+    groups.forEach(group => {
+        if (group.id) {
+            state[group.id] = group.classList.contains('collapsed') ? 'collapsed' : 'open';
+        }
+    });
+    localStorage.setItem('settings_groups_state', JSON.stringify(state));
+}
+
+function loadSettingsGroupsState() {
+    try {
+        const saved = localStorage.getItem('settings_groups_state');
+        if (saved) {
+            const state = JSON.parse(saved);
+            for (const [id, value] of Object.entries(state)) {
+                const group = document.getElementById(id);
+                if (group) {
+                    if (value === 'open') group.classList.remove('collapsed');
+                    else group.classList.add('collapsed');
+                }
+            }
+        } else {
+            // Default: Open Profilo (first one) or all?
+            // User said "base siano aperti" (plural). So let's open all by default if no state.
+            // But in HTML they are "collapsed". Let's remove collapsed if no state.
+            document.querySelectorAll('.settings-group').forEach(g => g.classList.remove('collapsed'));
+        }
+    } catch (e) {
+        console.error('Error loading settings groups:', e);
+    }
+}
+
 
 
 // Expose PWA functions
@@ -5044,3 +5084,4 @@ window.openInstallModal = openInstallModal;
 window.closeInstallModal = closeInstallModal;
 window.toggleDontShowInstall = toggleDontShowInstall;
 window.toggleSettingsGroup = toggleSettingsGroup;
+window.loadSettingsGroupsState = loadSettingsGroupsState;
