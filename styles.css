@@ -3796,7 +3796,7 @@ body {
     background-image: url('assets/fantasy-map-bg.png');
     background-size: cover;
     background-position: center;
-    opacity: 0.15;
+    opacity: 0.40;
     z-index: 0;
     pointer-events: none;
     mix-blend-mode: multiply;
