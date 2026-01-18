@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quest-life-v2.7.23';
+const CACHE_NAME = 'quest-life-v2.7.24';
 const ASSETS = [
     './',
     './index.html',
