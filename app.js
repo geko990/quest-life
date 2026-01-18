@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.15";
+const APP_VERSION = "2.7.16";
 
 // ============================================
 // DATA STRUCTURES
@@ -5000,3 +5000,46 @@ function startEmbers(canvas) {
     }
     animate();
 }
+
+// ============================================
+// PWA INSTALL INSTRUCTIONS
+// ============================================
+
+function openInstallModal() {
+    const modal = document.getElementById('installModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeInstallModal() {
+    const modal = document.getElementById('installModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function switchInstallTab(type) {
+    // Buttons
+    const btnIos = document.getElementById('tab-ios');
+    const btnAndroid = document.getElementById('tab-android');
+    if (btnIos) btnIos.classList.toggle('active', type === 'ios');
+    if (btnAndroid) btnAndroid.classList.toggle('active', type === 'android');
+
+    // Content
+    const iosContent = document.getElementById('content-ios');
+    const androidContent = document.getElementById('content-android');
+
+    if (type === 'ios') {
+        iosContent?.classList.remove('hidden');
+        iosContent?.classList.add('active');
+        androidContent?.classList.add('hidden');
+        androidContent?.classList.remove('active');
+    } else {
+        androidContent?.classList.remove('hidden');
+        androidContent?.classList.add('active');
+        iosContent?.classList.add('hidden');
+        iosContent?.classList.remove('active');
+    }
+}
+
+// Expose PWA functions
+window.openInstallModal = openInstallModal;
+window.closeInstallModal = closeInstallModal;
+window.switchInstallTab = switchInstallTab;
