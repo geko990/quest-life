@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.19";
+const APP_VERSION = "2.7.20";
 
 // ============================================
 // DATA STRUCTURES
@@ -4680,7 +4680,7 @@ function closeArchive() {
 
 let particleReqId = null;
 let particles = [];
-const PARTICLE_COUNT = 50;
+let currentResizeHandler = null; // Store resize handler for cleanup
 
 function initImmersiveEffects() {
     const canvas = document.getElementById('bgCanvas');
@@ -4688,7 +4688,8 @@ function initImmersiveEffects() {
 
     // Start effect based on current theme
     if (state.settings && state.settings.theme) {
-        updateImmersiveBackground(state.settings.theme);
+        // Delay slightly to ensure layout is done
+        setTimeout(() => updateImmersiveBackground(state.settings.theme), 100);
     }
 }
 
@@ -4700,25 +4701,28 @@ function updateImmersiveBackground(theme) {
 
     if (!animEnabled) {
         canvas.style.opacity = '0';
-        setTimeout(() => stopParticles(), 2000);
+        setTimeout(() => stopParticles(), 500); // Shorter fade out
         return;
     }
 
+    // Stop previous first
+    stopParticles();
+
+    canvas.style.opacity = '1';
+
+    // Slight delay to allow canvas to be clear
     if (theme === 'pirate') {
-        canvas.style.opacity = '1';
         startOceanBubbles(canvas);
-    } else if (theme === 'fantasy' || theme === 'dnd') {
-        canvas.style.opacity = '1';
+    } else if (theme === 'fantasy') {
         startFireflies(canvas);
     } else if (theme === 'futuristic') {
-        canvas.style.opacity = '1';
         startStars(canvas);
     } else if (theme === 'dnd') {
-        canvas.style.opacity = '1';
         startEmbers(canvas);
     } else {
+        // Default or Standard: No particles or maybe subtle dust?
+        // Let's stop for now to save battery
         canvas.style.opacity = '0';
-        setTimeout(() => stopParticles(), 2000); // Wait for transition
     }
 }
 
@@ -4727,7 +4731,14 @@ function stopParticles() {
         cancelAnimationFrame(particleReqId);
         particleReqId = null;
     }
+
+    if (currentResizeHandler) {
+        window.removeEventListener('resize', currentResizeHandler);
+        currentResizeHandler = null;
+    }
+
     particles = [];
+
     // Clear canvas
     const canvas = document.getElementById('bgCanvas');
     if (canvas) {
@@ -4736,16 +4747,20 @@ function stopParticles() {
     }
 }
 
-function startFireflies(canvas) {
-    stopParticles();
-
-    const ctx = canvas.getContext('2d');
+// Helper to set up canvas
+function setupCanvas(canvas) {
     const resize = () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     };
+    currentResizeHandler = resize;
     window.addEventListener('resize', resize);
     resize();
+    return canvas.getContext('2d');
+}
+
+function startFireflies(canvas) {
+    const ctx = setupCanvas(canvas);
 
     for (let i = 0; i < 40; i++) {
         particles.push({
@@ -4760,9 +4775,10 @@ function startFireflies(canvas) {
     }
 
     function animate() {
+        if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = '#C5A059'; // Gold/Parchment color from Pirate theme
+        ctx.fillStyle = '#FFD700'; // Gold glow
 
         particles.forEach(p => {
             p.x += p.dx;
@@ -4777,29 +4793,23 @@ function startFireflies(canvas) {
             if (p.y < 0) p.y = canvas.height;
             if (p.y > canvas.height) p.y = 0;
 
-            ctx.globalAlpha = p.alpha;
+            ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
         });
 
+        ctx.globalAlpha = 1; // Reset
         particleReqId = requestAnimationFrame(animate);
     }
     animate();
 }
 
 function startStars(canvas) {
-    stopParticles();
-    const ctx = canvas.getContext('2d');
-    const resize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
+    const ctx = setupCanvas(canvas);
 
     // Layers: 0 = background (slow, small), 1 = foreground (twinkling)
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 80; i++) {
         const isFore = Math.random() < 0.4; // 40% foreground
         particles.push({
             x: Math.random() * canvas.width,
@@ -4820,14 +4830,14 @@ function startStars(canvas) {
                 // Background star moving slowly
                 p.y += p.speed;
                 if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * canvas.width; }
-                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * 0.5})`;
+                ctx.fillStyle = `rgba(0, 229, 255, ${p.alpha * 0.4})`; // Cyan tint
             } else {
                 // Foreground twinkling
                 p.alpha += p.twinkleSpeed;
                 if (p.alpha > 1 || p.alpha < 0.2) p.twinkleSpeed *= -1;
                 ctx.shadowBlur = 4;
-                ctx.shadowColor = "white";
-                ctx.fillStyle = `rgba(200, 230, 255, ${p.alpha})`;
+                ctx.shadowColor = "#00e5ff";
+                ctx.fillStyle = `rgba(200, 255, 255, ${p.alpha})`; // Bright Cyan
             }
             ctx.beginPath();
             ctx.fillRect(p.x, p.y, p.size, p.size);
@@ -4839,15 +4849,7 @@ function startStars(canvas) {
 }
 
 function startOceanBubbles(canvas) {
-    stopParticles();
-
-    const ctx = canvas.getContext('2d');
-    const resize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
+    const ctx = setupCanvas(canvas);
 
     for (let i = 0; i < 50; i++) {
         particles.push({
@@ -4863,21 +4865,22 @@ function startOceanBubbles(canvas) {
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Check Mode for Color
-        const isLight = document.body.getAttribute('data-mode') === 'light' ||
-            (!document.body.getAttribute('data-mode') && document.documentElement.getAttribute('data-mode') === 'light');
+        // Dark Mode check: Prefer data-mode on body or html
+        const isDark = document.body.getAttribute('data-mode') === 'dark' ||
+            document.documentElement.getAttribute('data-mode') === 'dark';
 
-        if (isLight) {
-            // Teal/Blue for Light Mode
-            ctx.strokeStyle = 'rgba(0, 120, 160, 0.6)';
-            ctx.fillStyle = 'rgba(0, 120, 160, 0.1)';
+        // Determine colors - ensure reliable visibility
+        if (isDark) {
+            // Dark Mode: Cyan/White bubbles
+            ctx.strokeStyle = 'rgba(200, 240, 255, 0.6)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
         } else {
-            // Cyan/White for Dark Mode
-            ctx.strokeStyle = 'rgba(200, 240, 255, 0.8)';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            // Light Mode: Darker Blue/Grey bubbles
+            ctx.strokeStyle = 'rgba(0, 60, 100, 0.4)';
+            ctx.fillStyle = 'rgba(0, 60, 100, 0.05)';
         }
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
 
         particles.forEach(p => {
             p.y -= p.speed;
@@ -4900,13 +4903,68 @@ function startOceanBubbles(canvas) {
     animate();
 }
 
+function startEmbers(canvas) {
+    const ctx = setupCanvas(canvas);
+
+    for (let i = 0; i < 60; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height + Math.random() * 50,
+            size: Math.random() < 0.8 ? Math.random() * 1.5 + 0.5 : Math.random() * 2 + 1,
+            speed: Math.random() * 2.5 + 1.0,
+            wiggle: Math.random() * 0.3,
+            alpha: Math.random(),
+            decay: Math.random() * 0.01 + 0.005
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(p => {
+            p.y -= p.speed;
+            p.x += Math.sin(Date.now() * 0.005 + p.y * 0.02) * p.wiggle;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                p.y = canvas.height + 10;
+                p.x = Math.random() * canvas.width;
+                p.alpha = 1;
+                p.speed = Math.random() * 2.5 + 1.0;
+            }
+
+            // Fire colors: Red -> Orange -> Yellow
+            const r = 255;
+            const g = Math.floor(p.alpha * 100); // 0-100
+
+            // D&D Dark/Light check for visibility
+            const isDark = document.body.getAttribute('data-mode') === 'dark';
+            const baseAlpha = isDark ? p.alpha : p.alpha * 0.6; // Slightly more transparent in light mode
+
+            ctx.fillStyle = `rgba(${r}, ${g}, 0, ${baseAlpha})`;
+
+            if (isDark) {
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = `rgba(255, 50, 0, ${baseAlpha})`;
+            }
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+        particleReqId = requestAnimationFrame(animate);
+    }
+    animate();
+}
+
 // Celebration System
 function playCelebration(type, rewardText = null) {
     // Check if confetti is loaded
     if (typeof confetti === 'undefined') return;
 
     if (type === 'major') {
-        // Quest Completion: Golden Explosion
+        // Quest Completion: Major Explosion
         const colors = state.settings.theme === 'pirate'
             ? ['#FFD700', '#C5A059', '#ffffff'] // Gold
             : ['#7c3aed', '#a78bfa', '#ffffff']; // Default Violet
@@ -4934,82 +4992,6 @@ function playCelebration(type, rewardText = null) {
     if (rewardText) {
         showRewardPopup(rewardText);
     }
-}
-
-function showRewardPopup(text) {
-    const popup = document.createElement('div');
-    popup.className = 'reward-popup';
-    popup.innerHTML = `
-        <div class="reward-icon">🎁</div>
-        <div class="reward-title">Premio Sbloccato!</div>
-        <div class="reward-text">${text}</div>
-    `;
-    document.body.appendChild(popup);
-
-    // Force reflow
-    void popup.offsetWidth;
-
-    setTimeout(() => popup.classList.add('visible'), 50);
-
-    setTimeout(() => {
-        popup.classList.remove('visible');
-        setTimeout(() => popup.remove(), 500);
-    }, 4000);
-}
-
-function startEmbers(canvas) {
-    stopParticles();
-    const ctx = canvas.getContext('2d');
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Embers: Fast, rising sparks (Red/Orange)
-    for (let i = 0; i < 80; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: canvas.height + Math.random() * 50,
-            size: Math.random() < 0.8 ? Math.random() * 1.5 + 0.5 : Math.random() * 2 + 1,
-            speed: Math.random() * 2.5 + 1.0,
-            wiggle: Math.random() * 0.3,
-            alpha: Math.random(),
-            decay: Math.random() * 0.01 + 0.005
-        });
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        particles.forEach(p => {
-            p.y -= p.speed;
-            p.x += Math.sin(Date.now() * 0.005 + p.y * 0.02) * p.wiggle;
-            p.alpha -= p.decay;
-
-            if (p.alpha <= 0) {
-                p.y = canvas.height + 10;
-                p.x = Math.random() * canvas.width;
-                p.alpha = 1;
-                p.speed = Math.random() * 2.5 + 1.0;
-            }
-
-            // Intense Orange-Red
-            const r = 255;
-            const g = Math.floor(p.alpha * 100);
-            const b = 0;
-
-            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha})`;
-
-            ctx.shadowBlur = 4;
-            ctx.shadowColor = `rgba(255, 50, 0, ${p.alpha})`;
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        });
-        particleReqId = requestAnimationFrame(animate);
-    }
-    animate();
 }
 
 // ============================================
