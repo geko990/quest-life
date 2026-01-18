@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.7";
+const APP_VERSION = "2.7.8";
 
 // ============================================
 // DATA STRUCTURES
@@ -374,6 +374,27 @@ document.addEventListener('DOMContentLoaded', () => {
     shiftProgressiveHabits(); // Shift any habits that weren't completed yesterday
     checkFrozenStreak();
     initNavigation();
+
+    // Auto-update check on idle (10s)
+    let idleTimer = setTimeout(() => {
+        console.log("Idle for 10s at launch, checking for updates...");
+        updateApp();
+    }, 10000);
+
+    // Clear timer on interaction
+    const clearIdle = () => {
+        if (idleTimer) {
+            clearTimeout(idleTimer);
+            idleTimer = null;
+            ['click', 'touchstart', 'scroll', 'keydown'].forEach(evt =>
+                document.removeEventListener(evt, clearIdle)
+            );
+        }
+    };
+
+    ['click', 'touchstart', 'scroll', 'keydown'].forEach(evt =>
+        document.addEventListener(evt, clearIdle, { once: true, passive: true })
+    );
     initSettings();
     initColorPicker();
     initSwipe();
