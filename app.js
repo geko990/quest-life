@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.9";
+const APP_VERSION = "2.7.10";
 
 // ============================================
 // DATA STRUCTURES
@@ -2234,9 +2234,9 @@ function openQuestDetail(questId) {
                 <div class="quest-subtasks-list" id="questDetailSubtasks">
                     ${(quest.subquests || []).map(sub => `
                     <div class="subtask-item-detail ${sub.completed ? 'completed' : ''}" data-id="${sub.id}">
-                        <span class="subquest-drag-handle drag-handle" style="margin-right:8px; cursor:grab; opacity:0.5;">☰</span>
                         <div class="subtask-checkbox" onclick="toggleSubquest('${quest.id}', '${sub.id}')"></div>
                         <span onclick="toggleSubquest('${quest.id}', '${sub.id}')">${sub.name}</span>
+                        <span class="subquest-drag-handle drag-handle" style="margin-left:auto; cursor:grab; opacity:0.5; padding: 0 8px;">☰</span>
                     </div>
                 `).join('')}
                 </div>
