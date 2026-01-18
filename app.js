@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.8";
+const APP_VERSION = "2.7.9";
 
 // ============================================
 // DATA STRUCTURES
@@ -1100,6 +1100,32 @@ function initSortable() {
             }
         }));
     }
+
+    // Subtask lists (Dynamic)
+    document.querySelectorAll('.quest-subtasks-list').forEach(list => {
+        // Avoid duplicate initialization
+        if (list.dataset.sortableInitialized) return;
+        list.dataset.sortableInitialized = 'true';
+
+        sortableInstances.push(new Sortable(list, {
+            animation: 100,
+            handle: '.subquest-drag-handle', // Specific handle
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            delay: 50, // Faster response
+            touchStartThreshold: 3,
+            onEnd: function (evt) {
+                if (evt.oldIndex !== evt.newIndex) {
+                    // In detail view, we rely on currentOpenedQuestId global or find it from DOM
+                    const questId = currentOpenedQuestId;
+                    if (questId) {
+                        reorderSubtasks(questId, evt.oldIndex, evt.newIndex);
+                    }
+                }
+            }
+        }));
+    });
 }
 
 function reorderItems(type, oldIndex, newIndex) {
@@ -1156,10 +1182,34 @@ function reorderItems(type, oldIndex, newIndex) {
                 state.quests.splice(actualNewIndex, 0, removed);
             }
         }
+    } else if (type === 'subtasks') {
+        // Reordering subtasks within a quest
+        // We know questId is passed as custom context or we find it?
+        // Actually, initSortable for subtasks needs to pass questId to this function
+        // OR we parse it from the DOM element's ID if we set one.
+        // Let's assume we pass questId in the reorder call which we will set up in initSortable.
+        // Wait, reorderItems signature is (type, old, new).
+        // I'll add a new function for subtasks or overload this one.
+        // Let's keep it simple: define reorderSubtasks separately.
     }
 
     saveState();
     // Don't re-render to keep the smooth animation - state is already synced
+}
+
+function reorderSubtasks(questId, oldIndex, newIndex) {
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest || !quest.subquests) return;
+
+    // Subtasks are simple arrays, no filtering usually
+    // But be careful if we ever hide completed ones? Currently we show all.
+    const moved = quest.subquests[oldIndex];
+    if (!moved) return;
+
+    quest.subquests.splice(oldIndex, 1);
+    quest.subquests.splice(newIndex, 0, moved);
+
+    saveState();
 }
 
 function renderHeader() {
@@ -2183,9 +2233,10 @@ function openQuestDetail(questId) {
 
                 <div class="quest-subtasks-list" id="questDetailSubtasks">
                     ${(quest.subquests || []).map(sub => `
-                    <div class="subtask-item-detail ${sub.completed ? 'completed' : ''}" onclick="toggleSubquest('${quest.id}', '${sub.id}')">
-                        <div class="subtask-checkbox"></div>
-                        <span>${sub.name}</span>
+                    <div class="subtask-item-detail ${sub.completed ? 'completed' : ''}" data-id="${sub.id}">
+                        <span class="subquest-drag-handle drag-handle" style="margin-right:8px; cursor:grab; opacity:0.5;">☰</span>
+                        <div class="subtask-checkbox" onclick="toggleSubquest('${quest.id}', '${sub.id}')"></div>
+                        <span onclick="toggleSubquest('${quest.id}', '${sub.id}')">${sub.name}</span>
                     </div>
                 `).join('')}
                 </div>
