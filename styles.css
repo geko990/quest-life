@@ -299,6 +299,36 @@
     --xp-bar: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
 }
 
+[data-accent="red"] {
+    --accent-primary: #ef4444;
+    --accent-secondary: #f87171;
+    --accent-light: #fee2e2;
+}
+
+[data-accent="green"] {
+    --accent-primary: #22c55e;
+    --accent-secondary: #4ade80;
+    --accent-light: #dcfce7;
+}
+
+[data-accent="yellow"] {
+    --accent-primary: #eab308;
+    --accent-secondary: #facc15;
+    --accent-light: #fef9c3;
+}
+
+[data-accent="lime"] {
+    --accent-primary: #84cc16;
+    --accent-secondary: #a3e635;
+    --accent-light: #ecfccb;
+}
+
+[data-accent="sky"] {
+    --accent-primary: #0ea5e9;
+    --accent-secondary: #38bdf8;
+    --accent-light: #e0f2fe;
+}
+
 /* ============================================
    BASE STYLES
    ============================================ */
@@ -1178,6 +1208,33 @@ body {
 .section-header h2 {
     font-size: 20px;
     font-weight: 800;
+}
+
+.settings-row input,
+.settings-row select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: center;
+    /* Center text per user preference from before */
+}
+
+input#settingName {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    /* Slightly distinct background */
+    border-color: var(--accent-primary);
+    /* Highlight it slightly */
+    padding: 10px;
+    letter-spacing: 0.5px;
 }
 
 .add-btn {

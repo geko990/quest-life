@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.20";
+const APP_VERSION = "2.7.21";
 
 // ============================================
 // DATA STRUCTURES
@@ -24,7 +24,7 @@ const DEFAULT_ABILITIES = [
 
 const AVATAR_EMOJIS = ['⚔️', '🗡️', '🏹', '🛡️', '👑', '🧙', '🧝', '🧚', '🦸', '🦹', '🥷', '🧑‍🚀', '👤', '🐉', '🦅', '🐺', '🦁', '🐻', '🌟', '💎', '🔥', '❄️', '⚡', '🌙'];
 
-const ACCENT_COLORS = ['violet', 'blue', 'indigo', 'cyan', 'teal', 'emerald', 'gold', 'orange', 'rose', 'pink'];
+const ACCENT_COLORS = ['violet', 'blue', 'indigo', 'cyan', 'teal', 'emerald', 'gold', 'orange', 'rose', 'pink', 'red', 'green', 'yellow', 'lime', 'sky'];
 
 const XP_CONFIG = {
     baseXpPerLevel: 100,
@@ -4778,7 +4778,9 @@ function startFireflies(canvas) {
         if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = '#FFD700'; // Gold glow
+        // Check Mode
+        const isLight = document.body.getAttribute('data-mode') === 'light' ||
+            (!document.body.getAttribute('data-mode') && document.documentElement.getAttribute('data-mode') === 'light');
 
         particles.forEach(p => {
             p.x += p.dx;
@@ -4793,12 +4795,27 @@ function startFireflies(canvas) {
             if (p.y < 0) p.y = canvas.height;
             if (p.y > canvas.height) p.y = 0;
 
-            ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
+            const alpha = Math.max(0, Math.min(1, p.alpha));
+
+            ctx.globalAlpha = alpha;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+
+            if (isLight) {
+                // Darker gold/orange for visibility on white
+                ctx.fillStyle = '#D4AF37';
+                ctx.shadowBlur = 2;
+                ctx.shadowColor = 'rgba(212, 175, 55, 0.5)';
+            } else {
+                // Bright gold for dark mode
+                ctx.fillStyle = '#FFD700';
+                ctx.shadowBlur = 0;
+            }
+
             ctx.fill();
         });
 
+        ctx.shadowBlur = 0; // Reset
         ctx.globalAlpha = 1; // Reset
         particleReqId = requestAnimationFrame(animate);
     }
@@ -5019,7 +5036,25 @@ function toggleDontShowInstall(checked) {
 
 function toggleSettingsGroup(header) {
     const group = header.parentElement;
-    group.classList.toggle('collapsed');
+    const isCollapsing = !group.classList.contains('collapsed');
+
+    if (isCollapsing) {
+        // Collapsing: Hide overflow immediately so animation works
+        group.style.overflow = 'hidden';
+        // Small delay to ensure style applies before class change triggers transition
+        requestAnimationFrame(() => {
+            group.classList.add('collapsed');
+        });
+    } else {
+        // Expanding: Remove class to start animation
+        group.classList.remove('collapsed');
+        // Wait for transition (0.4s) then allow overflow for dropdowns
+        setTimeout(() => {
+            if (!group.classList.contains('collapsed')) {
+                group.style.overflow = 'visible';
+            }
+        }, 400);
+    }
 
     // Save state
     saveSettingsGroupsState();
