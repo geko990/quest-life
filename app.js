@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.16";
+const APP_VERSION = "2.7.17";
 
 // ============================================
 // DATA STRUCTURES
@@ -1000,7 +1000,16 @@ function switchSection(sectionName) {
     } else {
         // Reset scroll per tutte le altre sezioni
         if (container) {
-            container.scrollTop = 0;
+            // If switching to settings, check if we need to show PWA instructions
+            if (sectionName === 'settings') {
+                const seen = localStorage.getItem('pwa_instructions_seen');
+                if (!seen) {
+                    setTimeout(() => openInstallModal(), 500); // Small delay for effect
+                }
+            }
+
+            // Scroll to top
+            window.scrollTo(0, 0);
         }
     }
 }
@@ -5015,31 +5024,22 @@ function closeInstallModal() {
     if (modal) modal.classList.remove('active');
 }
 
-function switchInstallTab(type) {
-    // Buttons
-    const btnIos = document.getElementById('tab-ios');
-    const btnAndroid = document.getElementById('tab-android');
-    if (btnIos) btnIos.classList.toggle('active', type === 'ios');
-    if (btnAndroid) btnAndroid.classList.toggle('active', type === 'android');
-
-    // Content
-    const iosContent = document.getElementById('content-ios');
-    const androidContent = document.getElementById('content-android');
-
-    if (type === 'ios') {
-        iosContent?.classList.remove('hidden');
-        iosContent?.classList.add('active');
-        androidContent?.classList.add('hidden');
-        androidContent?.classList.remove('active');
+function toggleDontShowInstall(checked) {
+    if (checked) {
+        localStorage.setItem('pwa_instructions_seen', 'true');
     } else {
-        androidContent?.classList.remove('hidden');
-        androidContent?.classList.add('active');
-        iosContent?.classList.add('hidden');
-        iosContent?.classList.remove('active');
+        localStorage.removeItem('pwa_instructions_seen');
     }
 }
+
+function toggleSettingsGroup(header) {
+    const group = header.parentElement;
+    group.classList.toggle('collapsed');
+}
+
 
 // Expose PWA functions
 window.openInstallModal = openInstallModal;
 window.closeInstallModal = closeInstallModal;
-window.switchInstallTab = switchInstallTab;
+window.toggleDontShowInstall = toggleDontShowInstall;
+window.toggleSettingsGroup = toggleSettingsGroup;

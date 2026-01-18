@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.16">
+    <link rel="stylesheet" href="styles.css?v=2.7.17">
 
 </head>
 
@@ -237,42 +237,46 @@
                 <h2>⚙️ Impostazioni</h2>
 
                 <!-- Profilo & Gameplay -->
-                <div class="settings-group">
-                    <h3>👤 Profilo & Gameplay</h3>
-                    <div class="settings-row">
-                        <label>Nome</label>
-                        <input type="text" id="settingName" placeholder="Il tuo nome"
-                            onchange="updatePlayerName(this.value)">
-                    </div>
-                    <div class="settings-row">
-                        <label>Inizio nuovo giorno</label>
-                        <select id="dayStartTime" onchange="updateDayStartTime(this.value)">
-                            <option value="0">00:00 (Mezzanotte)</option>
-                            <option value="1">01:00</option>
-                            <option value="2">02:00</option>
-                            <option value="3">03:00</option>
-                            <option value="4">04:00</option>
-                            <option value="5">05:00</option>
-                            <option value="6">06:00</option>
-                        </select>
-                    </div>
-                    <div class="settings-row">
-                        <label>Inizio Settimana</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn" id="weekStartMon" onclick="setWeekStart('monday')">Lun</button>
-                            <button class="theme-btn active" id="weekStartSun"
-                                onclick="setWeekStart('sunday')">Dom</button>
+                <div class="settings-group collapsed">
+                    <h3 onclick="toggleSettingsGroup(this)">👤 Profilo & Gameplay <span class="group-arrow">▼</span>
+                    </h3>
+                    <div class="settings-content">
+                        <div class="settings-row">
+                            <label>Nome</label>
+                            <input type="text" id="settingName" placeholder="Il tuo nome"
+                                onchange="updatePlayerName(this.value)">
+                        </div>
+                        <div class="settings-row">
+                            <label>Inizio nuovo giorno</label>
+                            <select id="dayStartTime" onchange="updateDayStartTime(this.value)">
+                                <option value="0">00:00 (Mezzanotte)</option>
+                                <option value="1">01:00</option>
+                                <option value="2">02:00</option>
+                                <option value="3">03:00</option>
+                                <option value="4">04:00</option>
+                                <option value="5">05:00</option>
+                                <option value="6">06:00</option>
+                            </select>
+                        </div>
+                        <div class="settings-row">
+                            <label>Inizio Settimana</label>
+                            <div class="theme-switcher" style="min-width:120px;">
+                                <button class="theme-btn" id="weekStartMon"
+                                    onclick="setWeekStart('monday')">Lun</button>
+                                <button class="theme-btn active" id="weekStartSun"
+                                    onclick="setWeekStart('sunday')">Dom</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Personalizzazione -->
-                <div class="settings-group">
-                    <h3>🎨 Personalizzazione</h3>
-                    <div class="settings-row">
-                        <label>Tema</label>
-                        <div class="theme-controls-stack">
-                            <div class="theme-select-container">
+                <div class="settings-group collapsed">
+                    <h3 onclick="toggleSettingsGroup(this)">🎨 Personalizzazione <span class="group-arrow">▼</span></h3>
+                    <div class="settings-content">
+                        <div class="settings-row">
+                            <label>Tema</label>
+                            <div class="theme-controls-stack">
                                 <div id="themeTrigger" class="theme-select-trigger" onclick="toggleThemeDropdown()">
                                     <span id="themeTriggerIcon">📱</span>
                                     <span id="themeTriggerText">Standard</span>
@@ -286,147 +290,154 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Modalità</label>
-                        <div class="mode-toggle-large">
-                            <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
-                                Chiaro</button>
-                            <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Colore accento</label>
-                        <div class="color-select-container">
-                            <div id="colorTrigger" class="color-select-trigger" onclick="toggleColorDropdown()">
-                                <span class="trigger-icon">🎨</span>
+                        <div class="settings-row">
+                            <label>Modalità</label>
+                            <div class="mode-toggle-large">
+                                <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
+                                    Chiaro</button>
+                                <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
                             </div>
-                            <div id="colorDropdown" class="color-select-dropdown hidden"></div>
                         </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Sfondo Animato</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn active" id="animBgOn"
-                                onclick="setPopupSetting('animatedBackground', true)">ON</button>
-                            <button class="theme-btn" id="animBgOff"
-                                onclick="setPopupSetting('animatedBackground', false)">OFF</button>
+                        <div class="settings-row">
+                            <label>Colore accento</label>
+                            <div class="color-select-container">
+                                <div id="colorTrigger" class="color-select-trigger" onclick="toggleColorDropdown()">
+                                    <span class="trigger-icon">🎨</span>
+                                </div>
+                                <div id="colorDropdown" class="color-select-dropdown hidden"></div>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Sfondo Animato</label>
+                            <div class="theme-switcher" style="min-width:120px;">
+                                <button class="theme-btn active" id="animBgOn"
+                                    onclick="setPopupSetting('animatedBackground', true)">ON</button>
+                                <button class="theme-btn" id="animBgOff"
+                                    onclick="setPopupSetting('animatedBackground', false)">OFF</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Funzionalità -->
-                <div class="settings-group">
-                    <h3>⚡ Funzionalità</h3>
-                    <div class="settings-row">
-                        <label>Nuovo Turno</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn active" id="dailyPlannerOn"
-                                onclick="setPopupSetting('enableDailyPlanner', true)">ON</button>
-                            <button class="theme-btn" id="dailyPlannerOff"
-                                onclick="setPopupSetting('enableDailyPlanner', false)">OFF</button>
+                <div class="settings-group collapsed">
+                    <h3 onclick="toggleSettingsGroup(this)">⚡ Funzionalità <span class="group-arrow">▼</span></h3>
+                    <div class="settings-content">
+                        <div class="settings-row">
+                            <label>Nuovo Turno</label>
+                            <div class="theme-switcher" style="min-width:120px;">
+                                <button class="theme-btn active" id="dailyPlannerOn"
+                                    onclick="setPopupSetting('enableDailyPlanner', true)">ON</button>
+                                <button class="theme-btn" id="dailyPlannerOff"
+                                    onclick="setPopupSetting('enableDailyPlanner', false)">OFF</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Effetti Sonori</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn active" id="soundOn"
-                                onclick="setPopupSetting('soundEnabled', true)">ON</button>
-                            <button class="theme-btn" id="soundOff"
-                                onclick="setPopupSetting('soundEnabled', false)">OFF</button>
+                        <div class="settings-row">
+                            <label>Effetti Sonori</label>
+                            <div class="theme-switcher" style="min-width:120px;">
+                                <button class="theme-btn active" id="soundOn"
+                                    onclick="setPopupSetting('soundEnabled', true)">ON</button>
+                                <button class="theme-btn" id="soundOff"
+                                    onclick="setPopupSetting('soundEnabled', false)">OFF</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Recap Settimanale</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn active" id="weeklyRecapOn"
-                                onclick="setPopupSetting('enableWeeklyRecap', true)">ON</button>
-                            <button class="theme-btn" id="weeklyRecapOff"
-                                onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
+                        <div class="settings-row">
+                            <label>Recap Settimanale</label>
+                            <div class="theme-switcher" style="min-width:120px;">
+                                <button class="theme-btn active" id="weeklyRecapOn"
+                                    onclick="setPopupSetting('enableWeeklyRecap', true)">ON</button>
+                                <button class="theme-btn" id="weeklyRecapOff"
+                                    onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Dati & Cloud -->
-                <div class="settings-group">
-                    <h3>💾 Dati & Cloud</h3>
-
-                    <!-- Database Connection -->
-                    <div id="dbConnectionSection"
-                        style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <label style="margin:0;">Database File</label>
-                            <span id="dbStatus" style="font-size: 0.8rem;"><span style="color:var(--text-muted)">Nessun
-                                    file collegato</span></span>
+                <div class="settings-group collapsed">
+                    <h3 onclick="toggleSettingsGroup(this)">💾 Dati & Cloud <span class="group-arrow">▼</span></h3>
+                    <div class="settings-content">
+                        <!-- Database Connection -->
+                        <div id="dbConnectionSection"
+                            style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <label style="margin:0;">Database File</label>
+                                <span id="dbStatus" style="font-size: 0.8rem;"><span
+                                        style="color:var(--text-muted)">Nessun
+                                        file collegato</span></span>
+                            </div>
+                            <button class="settings-btn" id="dbActionBtn" onclick="linkDatabaseFile()"
+                                style="width: 100%; justify-content: center;">
+                                <span class="settings-btn-icon">🔗</span>
+                                <span>Collega Database</span>
+                            </button>
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-muted); margin: 6px 0 0 0; text-align: center;">
+                                Salva automaticamente le modifiche su un file locale (solo Desktop).
+                            </p>
                         </div>
-                        <button class="settings-btn" id="dbActionBtn" onclick="linkDatabaseFile()"
-                            style="width: 100%; justify-content: center;">
-                            <span class="settings-btn-icon">🔗</span>
-                            <span>Collega Database</span>
-                        </button>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 6px 0 0 0; text-align: center;">
-                            Salva automaticamente le modifiche su un file locale (solo Desktop).
-                        </p>
-                    </div>
 
-                    <!-- Backup Status (Mobile) -->
-                    <div id="backupStatusSection" style="margin-bottom: 12px; display: none;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-                            <span style="font-size: 0.9rem; color: var(--text-muted);">Ultimo Backup:</span>
-                            <span id="lastBackupLabel" style="font-size: 0.9rem; font-weight: bold;">Mai</span>
+                        <!-- Backup Status (Mobile) -->
+                        <div id="backupStatusSection" style="margin-bottom: 12px; display: none;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+                                <span style="font-size: 0.9rem; color: var(--text-muted);">Ultimo Backup:</span>
+                                <span id="lastBackupLabel" style="font-size: 0.9rem; font-weight: bold;">Mai</span>
+                            </div>
+                            <div id="backupWarning"
+                                style="color: var(--accent-orange); font-size: 0.8rem; margin-top: 4px; display: none;">
+                                ⚠️ Backup consigliato (più di 7 giorni)
+                            </div>
                         </div>
-                        <div id="backupWarning"
-                            style="color: var(--accent-orange); font-size: 0.8rem; margin-top: 4px; display: none;">
-                            ⚠️ Backup consigliato (più di 7 giorni)
-                        </div>
-                    </div>
 
-                    <div class="settings-buttons">
-                        <button class="settings-btn" onclick="exportData()">
-                            <span class="settings-btn-icon">📤</span>
-                            <span>Esporta</span>
-                        </button>
-                        <button class="settings-btn" onclick="document.getElementById('importFile').click()">
-                            <span class="settings-btn-icon">📥</span>
-                            <span>Importa</span>
-                        </button>
-                        <input type="file" id="importFile" style="display:none" onchange="importData(this)">
-                    </div>
-                    <div class="settings-buttons" style="margin-top: 12px;">
-                        <button class="settings-btn" onclick="fixData()">
-                            <span class="settings-btn-icon">🔧</span>
-                            <span>Ripara</span>
-                        </button>
-                        <button class="settings-btn danger" onclick="resetAll()">
-                            <span class="settings-btn-icon">⚠️</span>
-                            <span>Reset</span>
-                        </button>
+                        <div class="settings-buttons">
+                            <button class="settings-btn" onclick="exportData()">
+                                <span class="settings-btn-icon">📤</span>
+                                <span>Esporta</span>
+                            </button>
+                            <button class="settings-btn" onclick="document.getElementById('importFile').click()">
+                                <span class="settings-btn-icon">📥</span>
+                                <span>Importa</span>
+                            </button>
+                            <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                        </div>
+                        <div class="settings-buttons" style="margin-top: 12px;">
+                            <button class="settings-btn" onclick="fixData()">
+                                <span class="settings-btn-icon">🔧</span>
+                                <span>Ripara</span>
+                            </button>
+                            <button class="settings-btn danger" onclick="resetAll()">
+                                <span class="settings-btn-icon">⚠️</span>
+                                <span>Reset</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Info & Installazione -->
                 <div class="settings-group">
-                    <h3>ℹ️ Info & Installazione</h3>
-
-                    <button class="settings-btn" onclick="openInstallModal()"
-                        style="width: 100%; margin-bottom: 12px; justify-content: center; background: var(--accent-gradient); color: white; border: none;">
-                        <span class="settings-btn-icon">📱</span>
-                        <span>Come installare l'App</span>
-                    </button>
-
-                    <div class="settings-buttons">
-                        <button class="settings-btn" onclick="updateApp()">
-                            <span class="settings-btn-icon">🔄</span>
-                            <span>Aggiorna App</span>
+                    <h3 onclick="toggleSettingsGroup(this)">ℹ️ Info & Installazione <span class="group-arrow">▼</span>
+                    </h3>
+                    <div class="settings-content">
+                        <button class="settings-btn" onclick="openInstallModal()"
+                            style="width: 100%; margin-bottom: 12px; justify-content: center; background: var(--accent-gradient); color: white; border: none;">
+                            <span class="settings-btn-icon">📱</span>
+                            <span>Come installare l'App</span>
                         </button>
+
+                        <div class="settings-buttons">
+                            <button class="settings-btn" onclick="updateApp()">
+                                <span class="settings-btn-icon">🔄</span>
+                                <span>Aggiorna App</span>
+                            </button>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+                            Versione: <span id="appVersion" onclick="updateApp()"
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.17</span> •
+                            Quest Life PWA
+                        </p>
                     </div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
-                        Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.16</span> •
-                        Quest Life PWA
-                    </p>
                 </div>
             </section>
 
