@@ -2573,6 +2573,26 @@ input#settingName {
     background: linear-gradient(135deg, #ec4899, #f472b6);
 }
 
+.color-swatch[data-color="red"] {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+}
+
+.color-swatch[data-color="green"] {
+    background: linear-gradient(135deg, #22c55e, #4ade80);
+}
+
+.color-swatch[data-color="yellow"] {
+    background: linear-gradient(135deg, #eab308, #facc15);
+}
+
+.color-swatch[data-color="lime"] {
+    background: linear-gradient(135deg, #84cc16, #a3e635);
+}
+
+.color-swatch[data-color="sky"] {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+}
+
 /* Stats Manage List */
 .stats-manage-list {
     margin-bottom: 10px;
