@@ -4039,6 +4039,32 @@ body {
     background-color: rgba(0, 0, 0, 0.3);
 }
 
-.medal-progress-box:hover {
-    background-color: rgba(0, 0, 0, 0.25);
+.sealed-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-4px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(4px);
+    }
 }
