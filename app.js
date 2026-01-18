@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.1";
+const APP_VERSION = "2.7.2";
 
 // ============================================
 // DATA STRUCTURES
@@ -747,6 +747,10 @@ function showMedalCelebration(medal) {
             <div class="medal-icon">${medal.icon}</div>
             <h2>Medaglia Sbloccata!</h2>
             <p class="medal-name">${medal.name}</p>
+            <p style="font-size: 13px; color: #ddd; margin-bottom: 20px;">
+                Hai sbloccato l'accesso all'<b>Archivio Imprese</b>!<br>
+                Clicca sulla barra delle medaglie o sulla medaglia stessa per rivedere le tue glorie passate.
+            </p>
             <button onclick="this.closest('.medal-celebration-overlay').remove()">Fantastico! 🥂</button>
         </div>
     `;
@@ -4471,6 +4475,11 @@ function playSound(type) {
 // ============================================
 
 function openArchive() {
+    // LOCK: Only accessible if at least one medal has been won
+    if (!state.player.monthlyChallenge || state.player.monthlyChallenge.medals.length === 0) {
+        alert("🔒 L'Archivio Imprese è sigillato.\nVinci la tua prima Medaglia Mensile per sbloccarlo!");
+        return;
+    }
     // No need to close settings section, the modal will overlay it
     const modal = document.getElementById('archiveModal');
     const list = document.getElementById('archiveList');
