@@ -301,6 +301,15 @@
                         </div>
                     </div>
                     <div class="settings-row">
+                        <label>Sfondo Animato</label>
+                        <div class="theme-switcher" style="min-width:120px;">
+                            <button class="theme-btn active" id="animBgOn"
+                                onclick="setPopupSetting('animatedBackground', true)">ON</button>
+                            <button class="theme-btn" id="animBgOff"
+                                onclick="setPopupSetting('animatedBackground', false)">OFF</button>
+                        </div>
+                    </div>
+                    <div class="settings-row">
                         <label>Colore accento</label>
                         <div class="color-select-container">
                             <div id="colorTrigger" class="color-select-trigger" onclick="toggleColorDropdown()">
@@ -392,7 +401,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.5.3</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.5.4</span> •
                         Quest Life PWA
                     </p>
                 </div>
