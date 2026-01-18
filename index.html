@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.15">
+    <link rel="stylesheet" href="styles.css?v=2.7.16">
 
 </head>
 
@@ -236,9 +236,9 @@
             <section id="section-settings" class="section">
                 <h2>⚙️ Impostazioni</h2>
 
-                <!-- Profilo -->
+                <!-- Profilo & Gameplay -->
                 <div class="settings-group">
-                    <h3>👤 Profilo</h3>
+                    <h3>👤 Profilo & Gameplay</h3>
                     <div class="settings-row">
                         <label>Nome</label>
                         <input type="text" id="settingName" placeholder="Il tuo nome"
@@ -256,6 +256,68 @@
                             <option value="6">06:00</option>
                         </select>
                     </div>
+                    <div class="settings-row">
+                        <label>Inizio Settimana</label>
+                        <div class="theme-switcher" style="min-width:120px;">
+                            <button class="theme-btn" id="weekStartMon" onclick="setWeekStart('monday')">Lun</button>
+                            <button class="theme-btn active" id="weekStartSun"
+                                onclick="setWeekStart('sunday')">Dom</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personalizzazione -->
+                <div class="settings-group">
+                    <h3>🎨 Personalizzazione</h3>
+                    <div class="settings-row">
+                        <label>Tema</label>
+                        <div class="theme-controls-stack">
+                            <div class="theme-select-container">
+                                <div id="themeTrigger" class="theme-select-trigger" onclick="toggleThemeDropdown()">
+                                    <span id="themeTriggerIcon">📱</span>
+                                    <span id="themeTriggerText">Standard</span>
+                                </div>
+                                <div id="themeDropdown" class="theme-select-dropdown hidden">
+                                    <div class="theme-option" onclick="setTheme('standard')">📱 Standard</div>
+                                    <div class="theme-option" onclick="setTheme('fantasy')">💍 Fantasy</div>
+                                    <div class="theme-option" onclick="setTheme('dnd')">📜 D&D</div>
+                                    <div class="theme-option" onclick="setTheme('futuristic')">👾 Tron</div>
+                                    <div class="theme-option" onclick="setTheme('pirate')">🏴‍☠️ Pirate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <label>Modalità</label>
+                        <div class="mode-toggle-large">
+                            <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
+                                Chiaro</button>
+                            <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <label>Colore accento</label>
+                        <div class="color-select-container">
+                            <div id="colorTrigger" class="color-select-trigger" onclick="toggleColorDropdown()">
+                                <span class="trigger-icon">🎨</span>
+                            </div>
+                            <div id="colorDropdown" class="color-select-dropdown hidden"></div>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <label>Sfondo Animato</label>
+                        <div class="theme-switcher" style="min-width:120px;">
+                            <button class="theme-btn active" id="animBgOn"
+                                onclick="setPopupSetting('animatedBackground', true)">ON</button>
+                            <button class="theme-btn" id="animBgOff"
+                                onclick="setPopupSetting('animatedBackground', false)">OFF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funzionalità -->
+                <div class="settings-group">
+                    <h3>⚡ Funzionalità</h3>
                     <div class="settings-row">
                         <label>Nuovo Turno</label>
                         <div class="theme-switcher" style="min-width:120px;">
@@ -283,74 +345,13 @@
                                 onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
                         </div>
                     </div>
-                    <div class="settings-row">
-                        <label>Inizio Settimana</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn" id="weekStartMon" onclick="setWeekStart('monday')">Lun</button>
-                            <button class="theme-btn active" id="weekStartSun"
-                                onclick="setWeekStart('sunday')">Dom</button>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Aspetto -->
+                <!-- Dati & Cloud -->
                 <div class="settings-group">
-                    <h3>🎨 Aspetto</h3>
-                    <div class="settings-row">
-                        <label>Tema</label>
-                        <div class="theme-controls-stack">
-                            <!-- Theme Dropdown (Custom like Accent Color) -->
-                            <div class="theme-select-container">
-                                <div id="themeTrigger" class="theme-select-trigger" onclick="toggleThemeDropdown()">
-                                    <span id="themeTriggerIcon">📱</span>
-                                    <span id="themeTriggerText">Standard</span>
-                                </div>
-                                <div id="themeDropdown" class="theme-select-dropdown hidden">
-                                    <div class="theme-option" onclick="setTheme('standard')">📱 Standard</div>
-                                    <div class="theme-option" onclick="setTheme('fantasy')">💍 Fantasy</div>
-                                    <div class="theme-option" onclick="setTheme('dnd')">📜 D&D</div>
-                                    <div class="theme-option" onclick="setTheme('futuristic')">👾 Tron</div>
-                                    <div class="theme-option" onclick="setTheme('pirate')">🏴‍☠️ Pirate</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Modalità</label>
-                        <!-- Mode Toggle (Large Buttons) -->
-                        <div class="mode-toggle-large">
-                            <button class="mode-btn-large active" id="modeLight" onclick="setMode('light')">☀️
-                                Chiaro</button>
-                            <button class="mode-btn-large" id="modeDark" onclick="setMode('dark')">🌙 Scuro</button>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Sfondo Animato</label>
-                        <div class="theme-switcher" style="min-width:120px;">
-                            <button class="theme-btn active" id="animBgOn"
-                                onclick="setPopupSetting('animatedBackground', true)">ON</button>
-                            <button class="theme-btn" id="animBgOff"
-                                onclick="setPopupSetting('animatedBackground', false)">OFF</button>
-                        </div>
-                    </div>
-                    <div class="settings-row">
-                        <label>Colore accento</label>
-                        <div class="color-select-container">
-                            <div id="colorTrigger" class="color-select-trigger" onclick="toggleColorDropdown()">
-                                <span class="trigger-icon">🎨</span>
-                            </div>
-                            <div id="colorDropdown" class="color-select-dropdown hidden"></div>
-                        </div>
-                    </div>
-                </div>
+                    <h3>💾 Dati & Cloud</h3>
 
-
-
-                <!-- Dati -->
-                <div class="settings-group">
-                    <h3>💾 Dati</h3>
-
-                    <!-- NEW: Database Connection -->
+                    <!-- Database Connection -->
                     <div id="dbConnectionSection"
                         style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
                         <div
@@ -405,9 +406,16 @@
                     </div>
                 </div>
 
-                <!-- Sistema -->
+                <!-- Info & Installazione -->
                 <div class="settings-group">
-                    <h3>🖥️ Sistema</h3>
+                    <h3>ℹ️ Info & Installazione</h3>
+
+                    <button class="settings-btn" onclick="openInstallModal()"
+                        style="width: 100%; margin-bottom: 12px; justify-content: center; background: var(--accent-gradient); color: white; border: none;">
+                        <span class="settings-btn-icon">📱</span>
+                        <span>Come installare l'App</span>
+                    </button>
+
                     <div class="settings-buttons">
                         <button class="settings-btn" onclick="updateApp()">
                             <span class="settings-btn-icon">🔄</span>
@@ -416,7 +424,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.15</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.16</span> •
                         Quest Life PWA
                     </p>
                 </div>
@@ -730,6 +738,116 @@
                 .catch((err) => console.log('SW Failed:', err));
         }
     </script>
+    <!-- PWA Install Instructions Modal -->
+    <div class="modal-overlay" id="installModal">
+        <div class="modal install-modal">
+            <div class="modal-header">
+                <h3>📲 Installazione App</h3>
+                <button class="modal-close" onclick="closeInstallModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <style>
+                    .install-steps {
+                        list-style: none;
+                        padding: 0;
+                        margin-top: 20px;
+                    }
+
+                    .install-steps li {
+                        display: flex;
+                        gap: 15px;
+                        margin-bottom: 20px;
+                        align-items: flex-start;
+                    }
+
+                    .step-number {
+                        background: var(--accent-gradient);
+                        color: white;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                        flex-shrink: 0;
+                        margin-top: 2px;
+                    }
+
+                    .step-text {
+                        font-size: 14px;
+                        line-height: 1.5;
+                        color: var(--text-primary);
+                    }
+
+                    .step-text strong {
+                        color: var(--accent-primary);
+                    }
+
+                    .install-note {
+                        background: rgba(0, 0, 0, 0.05);
+                        padding: 10px;
+                        border-radius: 8px;
+                        font-size: 12px;
+                        color: var(--text-muted);
+                        margin-top: 20px;
+                        text-align: center;
+                    }
+
+                    .icon-inline {
+                        font-style: normal;
+                    }
+                </style>
+                <div class="avatar-tabs">
+                    <button class="avatar-tab active" id="tab-ios" onclick="switchInstallTab('ios')">🍎 iOS</button>
+                    <button class="avatar-tab" id="tab-android" onclick="switchInstallTab('android')">🤖
+                        Android</button>
+                </div>
+
+                <div class="install-content active" id="content-ios">
+                    <ol class="install-steps">
+                        <li>
+                            <span class="step-number">1</span>
+                            <div class="step-text">Tocca il tasto <strong>Condividi</strong> <span
+                                    class="icon-inline">📤</span> nella barra del browser.</div>
+                        </li>
+                        <li>
+                            <span class="step-number">2</span>
+                            <div class="step-text">Scorri il menu e seleziona <strong>"Aggiungi alla schermata
+                                    Home"</strong>.</div>
+                        </li>
+                        <li>
+                            <span class="step-number">3</span>
+                            <div class="step-text">Conferma cliccando su <strong>Aggiungi</strong> in alto a destra.
+                            </div>
+                        </li>
+                    </ol>
+                    <div class="install-note">ℹ️ Nota: Funziona al meglio su Safari.</div>
+                </div>
+
+                <div class="install-content hidden" id="content-android">
+                    <ol class="install-steps">
+                        <li>
+                            <span class="step-number">1</span>
+                            <div class="step-text">Tocca il menu <strong>Impostazioni</strong> <span
+                                    class="icon-inline">⋮</span> in alto a destra.</div>
+                        </li>
+                        <li>
+                            <span class="step-number">2</span>
+                            <div class="step-text">Seleziona <strong>"Installa app"</strong> o <strong>"Aggiungi a
+                                    schermata Home"</strong>.</div>
+                        </li>
+                        <li>
+                            <span class="step-number">3</span>
+                            <div class="step-text">Segui le istruzioni per confermare l'installazione.</div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
