@@ -4014,3 +4014,31 @@ body {
         transform: translateY(-10px);
     }
 }
+
+:root {
+    --accent-gold: #FFD700;
+}
+
+#archiveModal {
+    z-index: 20000 !important;
+    /* Primissimo piano */
+}
+
+/* Ensure medal bar track is visible on the dark container */
+.popup-xp-bar {
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s;
+}
+
+.clickable:active {
+    transform: scale(0.98);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.medal-progress-box:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+}
