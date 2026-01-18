@@ -3185,15 +3185,18 @@ input#settingName {
 /* Theme Switcher */
 /* Theme Controls (Dropdown + Toggle) */
 /* Theme Controls (Stack Layout) */
+/* Theme Controls (Stack Layout) */
 .theme-controls-stack {
     display: flex;
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    position: relative;
 }
 
 /* Custom Theme Dropdown (Box Style like Accent Color) */
-.theme-select-container {
+.theme-select-container,
+.color-select-container {
     position: relative;
     width: 100%;
 }
