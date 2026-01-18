@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.6.2";
+const APP_VERSION = "2.6.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -4575,9 +4575,21 @@ function startOceanBubbles(canvas) {
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.strokeStyle = 'rgba(200, 240, 255, 0.8)'; // More Visible
+        // Check Mode for Color
+        const isLight = document.body.getAttribute('data-mode') === 'light' ||
+            (!document.body.getAttribute('data-mode') && document.documentElement.getAttribute('data-mode') === 'light');
+
+        if (isLight) {
+            // Teal/Blue for Light Mode
+            ctx.strokeStyle = 'rgba(0, 120, 160, 0.6)';
+            ctx.fillStyle = 'rgba(0, 120, 160, 0.1)';
+        } else {
+            // Cyan/White for Dark Mode
+            ctx.strokeStyle = 'rgba(200, 240, 255, 0.8)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        }
+
         ctx.lineWidth = 2;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
 
         particles.forEach(p => {
             p.y -= p.speed;
