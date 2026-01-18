@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.21";
+const APP_VERSION = "2.7.22";
 
 // ============================================
 // DATA STRUCTURES
@@ -5036,11 +5036,12 @@ function toggleDontShowInstall(checked) {
 
 function toggleSettingsGroup(header) {
     const group = header.parentElement;
+    const content = group.querySelector('.settings-content');
     const isCollapsing = !group.classList.contains('collapsed');
 
     if (isCollapsing) {
         // Collapsing: Hide overflow immediately so animation works
-        group.style.overflow = 'hidden';
+        if (content) content.style.overflow = 'hidden';
         // Small delay to ensure style applies before class change triggers transition
         requestAnimationFrame(() => {
             group.classList.add('collapsed');
@@ -5050,8 +5051,8 @@ function toggleSettingsGroup(header) {
         group.classList.remove('collapsed');
         // Wait for transition (0.4s) then allow overflow for dropdowns
         setTimeout(() => {
-            if (!group.classList.contains('collapsed')) {
-                group.style.overflow = 'visible';
+            if (!group.classList.contains('collapsed') && content) {
+                content.style.overflow = 'visible';
             }
         }, 400);
     }
@@ -5079,15 +5080,24 @@ function loadSettingsGroupsState() {
             for (const [id, value] of Object.entries(state)) {
                 const group = document.getElementById(id);
                 if (group) {
-                    if (value === 'open') group.classList.remove('collapsed');
-                    else group.classList.add('collapsed');
+                    const content = group.querySelector('.settings-content');
+                    if (value === 'open') {
+                        group.classList.remove('collapsed');
+                        if (content) content.style.overflow = 'visible';
+                    } else {
+                        group.classList.add('collapsed');
+                        if (content) content.style.overflow = 'hidden';
+                    }
                 }
             }
         } else {
-            // Default: Open Profilo (first one) or all?
-            // User said "base siano aperti" (plural). So let's open all by default if no state.
-            // But in HTML they are "collapsed". Let's remove collapsed if no state.
-            document.querySelectorAll('.settings-group').forEach(g => g.classList.remove('collapsed'));
+            // Default: All open
+            const groups = document.querySelectorAll('.settings-group');
+            groups.forEach(group => {
+                group.classList.remove('collapsed');
+                const content = group.querySelector('.settings-content');
+                if (content) content.style.overflow = 'visible';
+            });
         }
     } catch (e) {
         console.error('Error loading settings groups:', e);
