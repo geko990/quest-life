@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.11";
+const APP_VERSION = "2.7.12";
 
 // ============================================
 // DATA STRUCTURES
@@ -2253,6 +2253,25 @@ function openQuestDetail(questId) {
         `;
 
     document.getElementById('questDetailModal').classList.add('active');
+
+    // Re-initialize Sortable for this specific list
+    const subtaskList = document.getElementById('questDetailSubtasks');
+    if (subtaskList) {
+        new Sortable(subtaskList, {
+            animation: 100,
+            handle: '.subquest-drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            delay: 50,
+            touchStartThreshold: 3,
+            onEnd: function (evt) {
+                if (evt.oldIndex !== evt.newIndex) {
+                    reorderSubtasks(questId, evt.oldIndex, evt.newIndex);
+                }
+            }
+        });
+    }
 }
 
 function closeQuestDetailModal() {
