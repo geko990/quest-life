@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.13";
+const APP_VERSION = "2.7.15";
 
 // ============================================
 // DATA STRUCTURES
@@ -1278,7 +1278,7 @@ function toggleProfilePopup() {
 
 function closeProfilePopupOutside(e) {
     const popup = document.getElementById('profilePopup');
-    if (popup && !popup.contains(e.target) && !e.target.closest('.header-profile') && !e.target.closest('.modal')) {
+    if (popup && !popup.contains(e.target) && !e.target.closest('.header-profile') && !e.target.closest('.modal') && !e.target.closest('.medal-celebration-overlay')) {
         popup.classList.add('hidden');
         document.removeEventListener('click', closeProfilePopupOutside);
     }
