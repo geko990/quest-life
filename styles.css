@@ -88,13 +88,13 @@
 [data-theme="dnd"][data-mode="light"] {
     --bg-primary: #ffffff;
     --bg-secondary: #f3f3f3;
-    /* Transparent White for Map Visibility */
-    --bg-card: rgba(255, 255, 255, 0.65);
+    /* Transparent White for Map Visibility (Increased Transparency) */
+    --bg-card: rgba(255, 255, 255, 0.40);
     --text-primary: #1a1a1a;
     --text-secondary: #424242;
     --text-muted: #757575;
     /* Accents removed */
-    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-bg: rgba(255, 255, 255, 0.50);
     --glass-border: rgba(0, 0, 0, 0.5);
     /* Strong borders */
     --glass-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
@@ -109,14 +109,14 @@
 [data-theme="dnd"][data-mode="dark"] {
     --bg-primary: #212121;
     --bg-secondary: #333333;
-    /* Transparent Dark for Map Visibility */
-    --bg-card: rgba(44, 44, 44, 0.65);
+    /* Transparent Dark for Map Visibility (Increased Transparency) */
+    --bg-card: rgba(44, 44, 44, 0.40);
     --text-primary: #ffffff;
     /* Pure white for contrast */
     --text-secondary: #dddddd;
     --text-muted: #aaaaaa;
     /* Accents removed */
-    --glass-bg: rgba(33, 33, 33, 0.75);
+    --glass-bg: rgba(33, 33, 33, 0.50);
     --glass-border: rgba(255, 255, 255, 0.3);
     --glass-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
@@ -3803,9 +3803,9 @@ body {
 }
 
 [data-theme="dnd"][data-mode="dark"] .app-container::before {
-    opacity: 0.1;
-    mix-blend-mode: overlay;
-    filter: sepia(0.5) brightness(0.7);
+    opacity: 0.3;
+    mix-blend-mode: luminosity;
+    filter: sepia(0.5) brightness(0.8);
 }
 
 [data-theme="dnd"] .app-container {
