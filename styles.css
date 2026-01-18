@@ -89,12 +89,12 @@
     --bg-primary: #ffffff;
     --bg-secondary: #f3f3f3;
     /* Transparent White for Map Visibility */
-    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card: rgba(255, 255, 255, 0.65);
     --text-primary: #1a1a1a;
     --text-secondary: #424242;
     --text-muted: #757575;
     /* Accents removed */
-    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-bg: rgba(255, 255, 255, 0.75);
     --glass-border: rgba(0, 0, 0, 0.5);
     /* Strong borders */
     --glass-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
@@ -102,21 +102,21 @@
     /* Graph Paper Pattern - KEEP for fallback, but Map will overlay */
     background-size: 20px 20px;
     background-image:
-        linear-gradient(to right, #e5e5e5 1px, transparent 1px),
-        linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
+        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 }
 
 [data-theme="dnd"][data-mode="dark"] {
     --bg-primary: #212121;
     --bg-secondary: #333333;
     /* Transparent Dark for Map Visibility */
-    --bg-card: rgba(44, 44, 44, 0.85);
+    --bg-card: rgba(44, 44, 44, 0.65);
     --text-primary: #ffffff;
     /* Pure white for contrast */
     --text-secondary: #dddddd;
     --text-muted: #aaaaaa;
     /* Accents removed */
-    --glass-bg: rgba(33, 33, 33, 0.95);
+    --glass-bg: rgba(33, 33, 33, 0.75);
     --glass-border: rgba(255, 255, 255, 0.3);
     --glass-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
