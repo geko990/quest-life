@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.6.8";
+const APP_VERSION = "2.6.9";
 
 // ============================================
 // DATA STRUCTURES
@@ -59,7 +59,13 @@ let state = {
         lastBackupDate: null, // Last manual export date
         avatarType: 'emoji',
         avatarEmoji: '⚔️',
-        avatarImage: null
+        avatarImage: null,
+        monthlyChallenge: {
+            currentMonth: null, // Will be set on init e.g. '2026-01'
+            points: 0,
+            target: 50,
+            medals: [] // Array of {id, name, icon, earnedDate}
+        }
     },
     stats: [...DEFAULT_ATTRIBUTES.map(a => ({ ...a })), ...DEFAULT_ABILITIES.map(a => ({ ...a }))],
     habits: [],
@@ -454,6 +460,17 @@ function loadState() {
             if (state.player.streakFreezes === undefined) state.player.streakFreezes = 2;
             if (state.player.lastActionDate === undefined) state.player.lastActionDate = null;
             if (state.player.lastFreezeReset === undefined) state.player.lastFreezeReset = null;
+
+            // Initialization for Monthly Challenge
+            if (!state.player.monthlyChallenge) {
+                state.player.monthlyChallenge = {
+                    currentMonth: getMonthIdentifier(getGameDate()),
+                    points: 0,
+                    target: 50,
+                    medals: []
+                };
+            }
+
             state.habits = parsed.habits || [];
             state.oneshots = parsed.oneshots || [];
             state.quests = parsed.quests || [];
@@ -645,6 +662,104 @@ function recordActivity() {
     } else {
         // Even if we have done something today, we might need to force a render if this is a re-check
         // But toggleHabit now calls renderHeader explicitly.
+    }
+}
+
+
+
+// ============================================
+// MONTHLY CHALLENGE & MEDALS
+// ============================================
+
+function checkMonthlyChallengeInitialization() {
+    const today = getGameDate();
+    const currentMonthId = getMonthIdentifier(today);
+
+    // If we moved to a new month, reset points but keep medals
+    if (state.player.monthlyChallenge.currentMonth !== currentMonthId) {
+        state.player.monthlyChallenge.currentMonth = currentMonthId;
+        state.player.monthlyChallenge.points = 0;
+        // Target could be dynamic or user set, for now fixed
+        state.player.monthlyChallenge.target = 50;
+        saveState();
+    }
+}
+
+function addMonthlyPoints(amount) {
+    checkMonthlyChallengeInitialization();
+
+    // Safety check
+    if (!state.player.monthlyChallenge) return;
+
+    // Prevent negative points from going below zero (optional, but good for UI)
+    const newPoints = Math.max(0, state.player.monthlyChallenge.points + amount);
+
+    // Check if we just crossed the threshold
+    const target = state.player.monthlyChallenge.target;
+    const oldPoints = state.player.monthlyChallenge.points;
+
+    state.player.monthlyChallenge.points = newPoints;
+    saveState();
+
+    // Check for Medal Unlock
+    if (oldPoints < target && newPoints >= target) {
+        unlockMonthlyMedal();
+    }
+}
+
+function unlockMonthlyMedal() {
+    const monthId = state.player.monthlyChallenge.currentMonth;
+
+    // Check if already earned
+    if (state.player.monthlyChallenge.medals.some(m => m.id === monthId)) return;
+
+    // Create Medal
+    const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+        "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    const monthIndex = parseInt(monthId.split('-')[1]) - 1;
+    const monthName = monthNames[monthIndex];
+    const year = monthId.split('-')[0];
+
+    const medal = {
+        id: monthId,
+        name: `${monthName} ${year}`,
+        description: "Obiettivo mensile completato!",
+        icon: "🏅", // Could vary by month or seasons?
+        earnedDate: getGameDate()
+    };
+
+    state.player.monthlyChallenge.medals.push(medal);
+    saveState();
+
+    // Show Celebration
+    showMedalCelebration(medal);
+}
+
+function showMedalCelebration(medal) {
+    // Re-use streak celebration or create new one?
+    // For now, let's trigger a custom alert or reuse the generic modal structure
+    // We can create a dedicated 'Medal Popup' dynamically
+    const overlay = document.createElement('div');
+    overlay.className = 'medal-celebration-overlay';
+    overlay.innerHTML = `
+        <div class="medal-celebration-content">
+            <div class="medal-glow"></div>
+            <div class="medal-icon">${medal.icon}</div>
+            <h2>Medaglia Sbloccata!</h2>
+            <p class="medal-name">${medal.name}</p>
+            <button onclick="this.closest('.medal-celebration-overlay').remove()">Fantastico! 🥂</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Trigger confetti
+    if (window.confetti) {
+        window.confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#FFD700', '#FFA500', '#ffffff']
+        });
     }
 }
 
@@ -1121,6 +1236,43 @@ function renderProfilePopup() {
 
     if (xpFill) xpFill.style.width = `${xpPercent}%`;
     if (xpText) xpText.textContent = `${Math.floor(xpInLevel)} / ${Math.floor(xpNeededForLevel)} XP`;
+
+    // Medals Logic
+    checkMonthlyChallengeInitialization(); // Ensure correct month logic
+    const mLabel = document.getElementById('monthlyLabel');
+    const mPoints = document.getElementById('monthlyPoints');
+    const mFill = document.getElementById('monthlyProgressFill');
+    const mGrid = document.getElementById('medalsGrid');
+
+    if (mLabel && state.player.monthlyChallenge && state.player.monthlyChallenge.currentMonth) {
+        // Format Month Name: "Gennaio 2026"
+        const monthId = state.player.monthlyChallenge.currentMonth;
+        const [year, month] = monthId.split('-');
+        const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+            "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+        mLabel.textContent = `${monthNames[parseInt(month) - 1]} ${year}`;
+    }
+
+    if (mPoints && state.player.monthlyChallenge) {
+        mPoints.textContent = `${state.player.monthlyChallenge.points} / ${state.player.monthlyChallenge.target}`;
+    }
+
+    if (mFill && state.player.monthlyChallenge) {
+        const pct = Math.min(100, (state.player.monthlyChallenge.points / state.player.monthlyChallenge.target) * 100);
+        mFill.style.width = `${pct}%`;
+    }
+
+    if (mGrid && state.player.monthlyChallenge) {
+        if (state.player.monthlyChallenge.medals.length === 0) {
+            mGrid.innerHTML = '<div style="font-size:11px; color:var(--text-muted); width:100%; text-align:center;">Nessuna medaglia ancora...</div>';
+        } else {
+            mGrid.innerHTML = state.player.monthlyChallenge.medals.map(m => `
+                <div class="medal-item" onclick="alert('${m.name} - ${m.earnedDate}')">
+                    <div class="medal-emoji">${m.icon}</div>
+                </div>
+            `).join('');
+        }
+    }
 }
 
 function saveMotto(val) {
@@ -1767,6 +1919,7 @@ function toggleHabit(habitId, targetDate = null) {
             if (habit.secondaryStatId) {
                 addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
+            addMonthlyPoints(-1); // Remove monthly point
         } else {
             // RETROACTIVE UN-COMPLETE
             // If we uncheck a past task, we must clear the lastCompleted date
@@ -1792,6 +1945,7 @@ function toggleHabit(habitId, targetDate = null) {
             if (habit.secondaryStatId) {
                 addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
+            addMonthlyPoints(1); // Add monthly point
             recordActivity();
             const xpGained = calculateXp(habit.stars);
             showProgressPopup(habit.primaryStatId, xpGained);
@@ -1892,6 +2046,7 @@ function completeOneshot(oneshotId) {
     if (oneshot.secondaryStatId) {
         addXp(Math.round(xp * XP_CONFIG.secondaryRatio), oneshot.secondaryStatId, oneshot.name);
     }
+    addMonthlyPoints(2); // OneShots give 2 points
     logCompletion('oneshots', oneshot.id);
     recordActivity();
     // Calculate XP
@@ -2125,6 +2280,7 @@ function toggleSubquest(questId, subquestId) {
         // Visual feedback
         showProgressPopup(quest.primaryStatId, xp);
         playSound('success');
+        addMonthlyPoints(2); // Subquest Points
     }
 
     // Auto-complete quest if all subquests done
@@ -2155,6 +2311,7 @@ function completeQuest(questId) {
     if (quest.secondaryStatId) {
         addXp(Math.round(xp * XP_CONFIG.secondaryRatio), quest.secondaryStatId, quest.name);
     }
+    addMonthlyPoints(2); // Quest Completion Points
     logCompletion('quests', quest.id);
     recordActivity();
     showProgressPopup(quest.primaryStatId, xp);
@@ -3751,6 +3908,7 @@ function completePomodoro() {
     // Update session count
     state.pomodoro.sessionsToday++;
     state.pomodoro.lastSessionDate = getGameDateString();
+    addMonthlyPoints(1); // Pomodoro Point
     saveState();
 
     // Play sound (simple beep)
