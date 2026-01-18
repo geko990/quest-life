@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.5.3";
+const APP_VERSION = "2.5.4";
 
 // ============================================
 // DATA STRUCTURES
@@ -498,6 +498,7 @@ function loadState() {
             });
 
             state.settings = { ...state.settings, ...parsed.settings };
+            if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
 
             // Migrate pomodoro settings
             if (parsed.pomodoro) {
@@ -2357,14 +2358,20 @@ function setPopupSetting(setting, value) {
     state.settings[setting] = value;
 
     // Update visual immediately before save
-    const onBtnId = setting === 'enableDailyPlanner' ? 'dailyPlannerOn' :
-        setting === 'enableWeeklyRecap' ? 'weeklyRecapOn' : 'soundOn';
-    const offBtnId = setting === 'enableDailyPlanner' ? 'dailyPlannerOff' :
-        setting === 'enableWeeklyRecap' ? 'weeklyRecapOff' : 'soundOff';
+    let onBtnId, offBtnId;
+
+    if (setting === 'enableDailyPlanner') { onBtnId = 'dailyPlannerOn'; offBtnId = 'dailyPlannerOff'; }
+    else if (setting === 'enableWeeklyRecap') { onBtnId = 'weeklyRecapOn'; offBtnId = 'weeklyRecapOff'; }
+    else if (setting === 'animatedBackground') { onBtnId = 'animBgOn'; offBtnId = 'animBgOff'; }
+    else { onBtnId = 'soundOn'; offBtnId = 'soundOff'; } // Sound
 
     syncPopupToggleButtons(setting, onBtnId, offBtnId);
 
     saveState();
+
+    if (setting === 'animatedBackground') {
+        updateImmersiveBackground(state.settings.theme);
+    }
 }
 
 function setWeekStart(value) {
@@ -4401,8 +4408,18 @@ function updateImmersiveBackground(theme) {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
 
-    // Map 'pirate' to fantasy effects because it uses the serif font
+    const animEnabled = state.settings.animatedBackground !== false;
+
+    if (!animEnabled) {
+        canvas.style.opacity = '0';
+        setTimeout(() => stopParticles(), 2000);
+        return;
+    }
+
     if (theme === 'pirate') {
+        canvas.style.opacity = '1';
+        startOceanBubbles(canvas);
+    } else if (theme === 'fantasy' || theme === 'dnd') {
         canvas.style.opacity = '1';
         startFireflies(canvas);
     } else if (theme === 'futuristic') {
@@ -4513,6 +4530,56 @@ function startStars(canvas) {
 
             ctx.globalAlpha = Math.random() * 0.5 + 0.5;
             ctx.fillRect(p.x, p.y, p.size, p.size);
+        });
+
+        particleReqId = requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+function startOceanBubbles(canvas) {
+    stopParticles();
+
+    const ctx = canvas.getContext('2d');
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < 50; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height + Math.random() * 200,
+            r: Math.random() * 3 + 1,
+            speed: Math.random() * 0.5 + 0.2,
+            oscillation: Math.random() * 2,
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = 'rgba(173, 216, 230, 0.4)'; // Light blue outline
+        ctx.lineWidth = 1;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';   // Translucent white fill
+
+        particles.forEach(p => {
+            p.y -= p.speed;
+            p.x += Math.sin(p.y * 0.01 + p.phase) * 0.5;
+
+            // Reset
+            if (p.y < -10) {
+                p.y = canvas.height + 10;
+                p.x = Math.random() * canvas.width;
+            }
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fill();
         });
 
         particleReqId = requestAnimationFrame(animate);
