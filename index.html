@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.17">
+    <link rel="stylesheet" href="styles.css?v=2.7.18">
 
 </head>
 
@@ -434,7 +434,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.17</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.18</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -750,112 +750,48 @@
         }
     </script>
     <!-- PWA Install Instructions Modal -->
-    <div class="modal-overlay" id="installModal">
-        <div class="modal install-modal">
-            <div class="modal-header">
-                <h3>📲 Installazione App</h3>
-                <button class="modal-close" onclick="closeInstallModal()">&times;</button>
+    <div class="modal-overlay hidden" id="installOverlay" onclick="closeInstallModal()"></div>
+    <div class="profile-popup popup-center hidden" id="installModal" style="max-width:350px;">
+        <div class="popup-header-info" style="margin-bottom: 10px; justify-content: center;">
+            <div class="popup-avatar-frame" style="width: 50px; height: 50px;">
+                <div class="popup-emoji" style="font-size: 24px;">📲</div>
             </div>
-            <div class="modal-body">
-                <style>
-                    .install-steps {
-                        list-style: none;
-                        padding: 0;
-                        margin-top: 20px;
-                    }
+        </div>
+        <h3 style="text-align: center; margin-bottom: 15px;">Installa App</h3>
 
-                    .install-steps li {
-                        display: flex;
-                        gap: 15px;
-                        margin-bottom: 20px;
-                        align-items: flex-start;
-                    }
+        <div class="popup-details">
+            <p
+                style="text-align: center; margin-bottom: 20px; color: var(--text-secondary); font-size: 14px; line-height: 1.4;">
+                Salva l'app sulla Home per averla sempre con te a schermo intero!
+            </p>
 
-                    .step-number {
-                        background: var(--accent-gradient);
-                        color: white;
-                        width: 24px;
-                        height: 24px;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-weight: bold;
-                        font-size: 12px;
-                        flex-shrink: 0;
-                        margin-top: 2px;
-                    }
-
-                    .step-text {
-                        font-size: 14px;
-                        line-height: 1.5;
-                        color: var(--text-primary);
-                    }
-
-                    .step-text strong {
-                        color: var(--accent-primary);
-                    }
-
-                    .install-note {
-                        background: rgba(0, 0, 0, 0.05);
-                        padding: 10px;
-                        border-radius: 8px;
-                        font-size: 12px;
-                        color: var(--text-muted);
-                        margin-top: 20px;
-                        text-align: center;
-                    }
-
-                    .icon-inline {
-                        font-style: normal;
-                    }
-                </style>
-                <div class="avatar-tabs">
-                    <button class="avatar-tab active" id="tab-ios" onclick="switchInstallTab('ios')">🍎 iOS</button>
-                    <button class="avatar-tab" id="tab-android" onclick="switchInstallTab('android')">🤖
-                        Android</button>
-                </div>
-
-                <div class="install-content active" id="content-ios">
-                    <ol class="install-steps">
-                        <li>
-                            <span class="step-number">1</span>
-                            <div class="step-text">Tocca il tasto <strong>Condividi</strong> <span
-                                    class="icon-inline">📤</span> nella barra del browser.</div>
-                        </li>
-                        <li>
-                            <span class="step-number">2</span>
-                            <div class="step-text">Scorri il menu e seleziona <strong>"Aggiungi alla schermata
-                                    Home"</strong>.</div>
-                        </li>
-                        <li>
-                            <span class="step-number">3</span>
-                            <div class="step-text">Conferma cliccando su <strong>Aggiungi</strong> in alto a destra.
-                            </div>
-                        </li>
-                    </ol>
-                    <div class="install-note">ℹ️ Nota: Funziona al meglio su Safari.</div>
-                </div>
-
-                <div class="install-content hidden" id="content-android">
-                    <ol class="install-steps">
-                        <li>
-                            <span class="step-number">1</span>
-                            <div class="step-text">Tocca il menu <strong>Impostazioni</strong> <span
-                                    class="icon-inline">⋮</span> in alto a destra.</div>
-                        </li>
-                        <li>
-                            <span class="step-number">2</span>
-                            <div class="step-text">Seleziona <strong>"Installa app"</strong> o <strong>"Aggiungi a
-                                    schermata Home"</strong>.</div>
-                        </li>
-                        <li>
-                            <span class="step-number">3</span>
-                            <div class="step-text">Segui le istruzioni per confermare l'installazione.</div>
-                        </li>
-                    </ol>
-                </div>
+            <div
+                style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                <ol style="padding-left: 20px; font-size: 13px; color: var(--text-primary); line-height: 1.6;">
+                    <li style="margin-bottom: 8px;">
+                        Apri il menu del browser (<span style="font-style: normal;">📤</span> su iOS, <span
+                            style="font-style: normal;">⋮</span> su Android).
+                    </li>
+                    <li style="margin-bottom: 8px;">
+                        Seleziona <strong>"Aggiungi alla schermata Home"</strong> o <strong>"Installa app"</strong>.
+                    </li>
+                    <li>
+                        Conferma cliccando su <strong>Aggiungi</strong>.
+                    </li>
+                </ol>
             </div>
+
+            <div
+                style="margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; color: var(--text-muted);">
+                <input type="checkbox" id="dontShowInstallAgain" onchange="toggleDontShowInstall(this.checked)"
+                    style="accent-color: var(--accent-primary);">
+                <label for="dontShowInstallAgain">Non mostrare più in automatico</label>
+            </div>
+
+            <button class="settings-btn" onclick="closeInstallModal()"
+                style="margin-top: 15px; width: 100%; justify-content: center; background: var(--accent-gradient); color: white; border: none;">
+                Capito!
+            </button>
         </div>
     </div>
 
