@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.2";
+const APP_VERSION = "2.7.3";
 
 // ============================================
 // DATA STRUCTURES
@@ -745,13 +745,6 @@ function showMedalCelebration(medal) {
         <div class="medal-celebration-content">
             <div class="medal-glow"></div>
             <div class="medal-icon">${medal.icon}</div>
-            <h2>Medaglia Sbloccata!</h2>
-            <p class="medal-name">${medal.name}</p>
-            <p style="font-size: 13px; color: #ddd; margin-bottom: 20px;">
-                Hai sbloccato l'accesso all'<b>Archivio Imprese</b>!<br>
-                Clicca sulla barra delle medaglie o sulla medaglia stessa per rivedere le tue glorie passate.
-            </p>
-            <button onclick="this.closest('.medal-celebration-overlay').remove()">Fantastico! 🥂</button>
         </div>
     `;
     document.body.appendChild(overlay);
@@ -764,6 +757,29 @@ function showMedalCelebration(medal) {
             origin: { y: 0.6 },
             colors: ['#FFD700', '#FFA500', '#ffffff']
         });
+    }
+}
+
+function showSealedAlert() {
+    const overlay = document.createElement('div');
+    overlay.className = 'medal-celebration-overlay sealed-overlay';
+    // Fix: Remove spaces in tags
+    overlay.innerHTML = `
+        <div class="medal-celebration-content sealed-content">
+            <div class="sealed-icon">🔒</div>
+            <h2 style="color: #ef4444; margin-bottom: 8px;">Sigillato</h2>
+            <p style="color: #aaa; margin-bottom: 20px; font-size: 14px; line-height: 1.5;">
+                Questo antico tomo è chiuso magicamente.<br>
+                Dimostra il tuo valore vincendo una <b>Medaglia Mensile</b> per spezzare il sigillo.
+            </p>
+            <button onclick="this.closest('.medal-celebration-overlay').remove()" style="background: #333; color: #fff; border: 1px solid #555;">Capito</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Play "locked" sound if available (or error tone)
+    if (state.settings.soundEnabled !== false) {
+        try { playTone(150, 'sawtooth', 0.3, 0); } catch (e) { }
     }
 }
 
@@ -912,7 +928,7 @@ function updateBubblePosition(navItem) {
     const itemRect = navItem.getBoundingClientRect();
     const x = (itemRect.left - navRect.left) + (itemRect.width / 2);
 
-    bubble.style.transform = `translate3d(${x - 25}px, -50%, 0)`;
+    bubble.style.transform = `translate3d(${x - 25}px, -50 %, 0)`;
 }
 
 function switchSection(sectionName) {
@@ -937,7 +953,7 @@ function switchSection(sectionName) {
     });
 
     document.querySelectorAll('.section').forEach(section => {
-        section.classList.toggle('active', section.id === `section-${sectionName}`);
+        section.classList.toggle('active', section.id === `section - ${sectionName} `);
     });
 
     if (sectionName === 'home') setTimeout(() => renderRadarChart(), 100);
@@ -1158,7 +1174,7 @@ function renderHeader() {
             headerImg.src = state.player.avatarImage;
 
             // Also update Nav Avatar
-            if (navAvatar) navAvatar.innerHTML = `<img class="nav-avatar-img" src="${state.player.avatarImage}" alt="">`;
+            if (navAvatar) navAvatar.innerHTML = `< img class="nav-avatar-img" src = "${state.player.avatarImage}" alt = "" > `;
         } else {
             headerEmoji.classList.remove('hidden');
             headerImg.classList.add('hidden');
@@ -1238,7 +1254,7 @@ function renderProfilePopup() {
 
     const xpPercent = Math.min(100, Math.max(0, (xpInLevel / xpNeededForLevel) * 100));
 
-    if (xpFill) xpFill.style.width = `${xpPercent}%`;
+    if (xpFill) xpFill.style.width = `${xpPercent}% `;
     if (xpText) xpText.textContent = `${Math.floor(xpInLevel)} / ${Math.floor(xpNeededForLevel)} XP`;
 
     // Medals Logic
@@ -4477,7 +4493,7 @@ function playSound(type) {
 function openArchive() {
     // LOCK: Only accessible if at least one medal has been won
     if (!state.player.monthlyChallenge || state.player.monthlyChallenge.medals.length === 0) {
-        alert("🔒 L'Archivio Imprese è sigillato.\nVinci la tua prima Medaglia Mensile per sbloccarlo!");
+        showSealedAlert();
         return;
     }
     // No need to close settings section, the modal will overlay it
