@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.5";
+const APP_VERSION = "2.7.6";
 
 // ============================================
 // DATA STRUCTURES
@@ -928,7 +928,7 @@ function updateBubblePosition(navItem) {
     const itemRect = navItem.getBoundingClientRect();
     const x = (itemRect.left - navRect.left) + (itemRect.width / 2);
 
-    bubble.style.transform = `translate3d(${x - 25}px, -50 %, 0)`;
+    bubble.style.transform = `translate3d(${x - 25}px, -50%, 0)`;
 }
 
 function switchSection(sectionName) {
@@ -953,7 +953,7 @@ function switchSection(sectionName) {
     });
 
     document.querySelectorAll('.section').forEach(section => {
-        section.classList.toggle('active', section.id === `section - ${sectionName} `);
+        section.classList.toggle('active', section.id === `section-${sectionName}`);
     });
 
     if (sectionName === 'home') setTimeout(() => renderRadarChart(), 100);
