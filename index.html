@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.6.8">
+    <link rel="stylesheet" href="styles.css?v=2.6.9">
 
 </head>
 
@@ -79,6 +79,25 @@
                 <label>Motto Personale</label>
                 <div class="motto-display" id="popupMottoDisplay" onclick="openMottoEdit()">
                     "Il tuo motto qui..."
+                </div>
+            </div>
+
+            <div class="popup-motto-container" style="margin-top: 10px;">
+                <label>Medaglie Mensili</label>
+                <div class="medal-progress-box">
+                    <div class="medal-progress-info">
+                        <span id="monthlyLabel" style="font-size: 12px; color: var(--text-secondary);">Mese</span>
+                        <span id="monthlyPoints"
+                            style="font-size: 12px; font-weight: bold; color: var(--accent-primary);">0/50</span>
+                    </div>
+                    <div class="popup-xp-bar" style="height: 6px; margin: 4px 0 8px;">
+                        <div class="popup-xp-fill" id="monthlyProgressFill"
+                            style="width: 0%; background: var(--accent-gold);"></div>
+                    </div>
+                </div>
+                <div class="medals-grid" id="medalsGrid"
+                    style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                    <!-- Medals will be rendered here -->
                 </div>
             </div>
         </div>
@@ -401,7 +420,7 @@
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                         Versione: <span id="appVersion" onclick="updateApp()"
-                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.6.8</span> •
+                            style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.6.9</span> •
                         Quest Life PWA
                     </p>
                 </div>
