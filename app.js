@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.34";
+const APP_VERSION = "2.7.35";
 
 // ============================================
 // DATA STRUCTURES
@@ -5185,7 +5185,7 @@ function showMomentumTooltip(event, xp) {
     const tooltip = document.getElementById('tooltip');
     if (!tooltip) return;
 
-    tooltip.innerHTML = `<div class="tooltip-title">+${xp} XP</div>`;
+    tooltip.textContent = `+${xp} XP`;
 
     // Position slightly above the touch point
     const x = event.clientX;
