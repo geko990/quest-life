@@ -2911,10 +2911,20 @@ textarea {
 }
 
 .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
+    /* Allow wrapping on narrow screens */
     gap: 10px;
-    align-items: end;
+    align-items: flex-end;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-row>.form-group {
+    flex: 1 1 120px;
+    /* Grow, shrink, min-width */
+    min-width: 0;
+    /* Prevent flex items from overflowing */
 }
 
 /* Star Rating */
