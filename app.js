@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.40";
+const APP_VERSION = "2.7.41";
 
 // ============================================
 // DATA STRUCTURES
@@ -5198,10 +5198,23 @@ function showMomentumTooltip(event, xp) {
 
     tooltip.classList.add('visible');
 
-    // Hide after 2 seconds
+    // Hide after 1 second
     if (window.tooltipTimeout) clearTimeout(window.tooltipTimeout);
     window.tooltipTimeout = setTimeout(() => {
         tooltip.classList.remove('visible');
-    }, 2000);
+    }, 1000);
+
+    // Also hide on any touch/click anywhere
+    const hideTooltip = () => {
+        tooltip.classList.remove('visible');
+        if (window.tooltipTimeout) clearTimeout(window.tooltipTimeout);
+        document.removeEventListener('touchstart', hideTooltip);
+        document.removeEventListener('click', hideTooltip);
+    };
+    // Use setTimeout to avoid immediate trigger from the same click
+    setTimeout(() => {
+        document.addEventListener('touchstart', hideTooltip, { once: true });
+        document.addEventListener('click', hideTooltip, { once: true });
+    }, 50);
 }
 window.showMomentumTooltip = showMomentumTooltip;
