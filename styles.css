@@ -3409,22 +3409,21 @@ textarea {
 
 .tooltip {
     position: fixed;
-    background: rgba(0, 0, 0, 0.85);
-    /* Dark semi-transparent background */
+    background: rgba(0, 0, 0, 0.9);
     color: #ffffff;
-    /* Explicit white text */
-    padding: 8px 12px;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    font-size: 12px;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1;
     z-index: 9999;
-    /* Very high to be above everything */
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s;
+    transition: opacity 0.15s ease-out;
     white-space: nowrap;
+    /* Reset any external transforms */
+    transform: translateX(-50%);
 }
 
 .tooltip.visible {
