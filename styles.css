@@ -2835,15 +2835,7 @@ input#settingName {
     display: flex;
 }
 
-.modal {
-    background: var(--bg-card);
-    width: 100%;
-    max-width: 480px;
-    max-height: 85vh;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    overflow-y: auto;
-    animation: slideUp 0.3s ease;
-}
+/* Old modal styles removed */
 
 @keyframes slideUp {
     from {
@@ -2872,14 +2864,7 @@ input#settingName {
 }
 
 .modal-close {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: var(--bg-primary);
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    color: var(--text-secondary);
+    display: none !important;
 }
 
 .modal-body {
@@ -4042,6 +4027,35 @@ input#settingName {
     font-size: 20px;
 }
 
+/* Quest Detail Modal - Overlay */
+.quest-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    display: none;
+    /* Hidden by default */
+    align-items: center;
+    /* Center content vertically */
+    justify-content: center;
+    /* Center content horizontally */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.quest-popup-overlay.active {
+    display: flex;
+}
+
+/* Content Box - reuse shared modal styles via class or direct dup if needed */
+/* We will map .quest-detail-content to .modal styles in the shared block */
+.quest-detail-content {
+    /* Styles handled by shared .modal selector now */
+}
+
 /* Celebration Overlay */
 .medal-celebration-overlay {
     position: fixed;
@@ -4166,34 +4180,61 @@ input#settingName {
 }
 
 /* Modal - Centered Popup Style */
-.modal {
+/* Modal - Centered Popup Style */
+.modal,
+.quest-detail-content {
     background: var(--bg-card);
     width: 90%;
     max-width: 400px;
     border-radius: 24px;
     padding: 24px;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2000;
+    position: relative;
+    /* Reset position as flex overlay handles centering */
+    /* top/left/transform removed because parent overlay does centering */
+
+    z-index: 2001;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     border: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
     max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
     animation: popupScaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Ensure overlays center their content */
+.modal-overlay,
+.quest-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    align-items: center !important;
+    justify-content: center !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.modal-overlay.active,
+.quest-popup-overlay.active {
+    display: flex;
 }
 
 @keyframes popupScaleIn {
     from {
         opacity: 0;
-        transform: translate(-50%, -40%) scale(0.95);
+        transform: scale(0.95) translateY(10px);
     }
 
     to {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1) translateY(0);
     }
 }
 
