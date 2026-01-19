@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.30">
+    <link rel="stylesheet" href="styles.css?v=2.7.31">
 
 </head>
 
@@ -434,7 +434,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.30</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.31</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -473,7 +473,6 @@
         <div class="modal" id="modal">
             <div class="modal-header">
                 <h3 id="modalTitle">Aggiungi</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody"></div>
         </div>
@@ -486,7 +485,6 @@
         <div class="modal avatar-modal">
             <div class="modal-header">
                 <h3>Scegli Avatar</h3>
-                <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="avatar-tabs">
@@ -744,7 +742,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.7.30')
+            navigator.serviceWorker.register('./sw.js?v=2.7.31')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
