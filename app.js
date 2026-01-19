@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.38";
+const APP_VERSION = "2.7.39";
 
 // ============================================
 // DATA STRUCTURES
@@ -5187,9 +5187,10 @@ function showMomentumTooltip(event, xp) {
 
     tooltip.textContent = `+${xp} XP`;
 
-    // Position slightly above the touch point, centered
-    const x = event.clientX;
-    const y = event.clientY - 30; // 30px above the click
+    // Get the bar's position to place tooltip directly above it
+    const rect = event.target.closest('.momentum-bar-container').getBoundingClientRect();
+    const x = rect.left + rect.width / 2; // Center of the bar
+    const y = rect.top - 10; // 10px above the bar container top
 
     tooltip.style.left = `${x}px`;
     tooltip.style.top = `${y}px`;
