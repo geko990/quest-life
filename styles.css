@@ -3408,7 +3408,8 @@ textarea {
     font-size: 13px;
     font-weight: 700;
     line-height: 1;
-    z-index: 9999;
+    z-index: 99999;
+    /* Above all popups and modals */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease-out;
