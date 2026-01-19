@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.29";
+const APP_VERSION = "2.7.30";
 
 // ============================================
 // DATA STRUCTURES
@@ -5135,14 +5135,17 @@ function openTaskDetail(type, id) {
     const meta = document.getElementById('questDetailMeta');
     const desc = document.getElementById('questDetailDesc');
     const subtasks = document.getElementById('questDetailSubtasks');
+    const subTitle = document.getElementById('questSubtasksTitle'); // Added this line
 
     if (overlay && title && meta && desc) {
         title.textContent = task.name;
         desc.className = 'task-detail-desc'; // Use the new CSS class
+        desc.style.textAlign = 'center'; // Center text for tasks
         desc.textContent = task.description ? task.description : (type === 'habit' ? "Nessuna descrizione per questa abitudine." : "Nessuna descrizione per questo one-shot.");
 
-        // Hide subtasks container as simpler tasks don't have them
-        if (subtasks) subtasks.innerHTML = '';
+        // Hide subtasks container
+        if (subtasks) subtasks.style.display = 'none'; // Explicitly hide the container
+        if (subTitle) subTitle.style.display = 'none'; // Explicitly hide the title
 
         // Calculate XP Reward
         const baseXP = task.stars * 10;
@@ -5166,8 +5169,8 @@ function openTaskDetail(type, id) {
                 </div>
                 `}
             </div>
-            <div style="font-size: 13px; color: var(--text-muted); text-align: center; width: 100%;">
-                ${'⭐'.repeat(task.stars)} • <span style="color:var(--accent-primary)">${type === 'habit' ? 'Abitudine' : 'One Shot'}</span>
+            <div style="font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; margin-top: 5px;">
+                ${'⭐'.repeat(task.stars)} • <span style="color:var(--accent-primary); text-transform:uppercase; font-weight:600;">${type === 'habit' ? 'Abitudine' : 'One Shot'}</span>
             </div>
         `;
 
