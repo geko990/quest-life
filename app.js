@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.28";
+const APP_VERSION = "2.7.29";
 
 // ============================================
 // DATA STRUCTURES
@@ -2336,7 +2336,7 @@ function openStatDetail(statId) {
             </div>
             <div class="momentum-chart" style="height: 80px;">
                 ${momentum.map(m => `
-                    <div class="momentum-bar-container">
+                    <div class="momentum-bar-container" onclick="alert('${m.xp} XP - ${m.day}')">
                         <div class="momentum-bar" data-xp="${m.xp}" style="height: ${Math.min((m.xp / maxMomentum) * 60, 60)}px; opacity: ${m.xp > 0 ? 1 : 0.3}"></div>
                         <div class="momentum-day" style="font-size: 10px;">${m.day[0]}</div>
                     </div>
@@ -2873,6 +2873,10 @@ function openModal(type, editData = null) {
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Meditazione mattutina">
                 </div>
+                <div class="form-group">
+                    <label>Descrizione (opzionale)</label>
+                    <textarea id="inputDesc" placeholder="Aggiungi dettagli...">${editData?.description || ''}</textarea>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Frequenza</label>
@@ -2920,6 +2924,10 @@ function openModal(type, editData = null) {
             <div class="form-group" >
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Chiamare il dentista">
+                </div>
+                <div class="form-group">
+                    <label>Descrizione (opzionale)</label>
+                    <textarea id="inputDesc" placeholder="Aggiungi dettagli...">${editData?.description || ''}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Difficoltà</label>
@@ -3122,25 +3130,27 @@ function submitModal() {
         case 'habit':
             const frequency = document.getElementById('inputFreq').value;
             const freqTimes = parseInt(document.getElementById('inputFreqTimes')?.value) || 3;
+            const descHabit = document.getElementById('inputDesc')?.value || '';
 
             if (editingItem) {
-                Object.assign(editingItem, { name, frequency, freqTimes, stars, primaryStatId, secondaryStatId, dueDate });
+                Object.assign(editingItem, { name, frequency, freqTimes, stars, primaryStatId, secondaryStatId, dueDate, description: descHabit });
             } else {
                 state.habits.push({
                     id: 'habit_' + Date.now(),
-                    name, frequency, freqTimes, stars, primaryStatId, secondaryStatId, dueDate,
+                    name, frequency, freqTimes, stars, primaryStatId, secondaryStatId, dueDate, description: descHabit,
                     streak: 0, lastCompleted: null, locked: false, createdAt: getGameDateObj().toISOString()
                 });
             }
             break;
 
         case 'oneshot':
+            const descOneshot = document.getElementById('inputDesc')?.value || '';
             if (editingItem) {
-                Object.assign(editingItem, { name, stars, primaryStatId, secondaryStatId, dueDate });
+                Object.assign(editingItem, { name, stars, primaryStatId, secondaryStatId, dueDate, description: descOneshot });
             } else {
                 state.oneshots.push({
                     id: 'oneshot_' + Date.now(),
-                    name, stars, primaryStatId, secondaryStatId, dueDate,
+                    name, stars, primaryStatId, secondaryStatId, dueDate, description: descOneshot,
                     completed: false, locked: false, createdAt: getGameDateObj().toISOString()
                 });
             }
@@ -3424,14 +3434,15 @@ function handleTaskClick(e, type, id) {
     if (window.checkSwipeTrigger && window.checkSwipeTrigger()) return;
 
     // Only open detail views for quests and stats
-    // Habits/oneshots now use swipe-to-edit only
+    // Habits/oneshots now also open detail view on click
     if (type === 'quest') {
         const quest = state.quests.find(q => q.id === id);
         if (quest) openQuestDetail(id);
     } else if (type === 'attribute' || type === 'ability') {
         openStatDetail(id);
+    } else if (type === 'habit' || type === 'oneshot') {
+        openTaskDetail(type, id);
     }
-    // For habits and oneshots: do nothing on tap (use swipe to edit)
 }
 
 function deleteTask(type, id) {
@@ -5112,3 +5123,57 @@ window.closeInstallModal = closeInstallModal;
 window.toggleDontShowInstall = toggleDontShowInstall;
 window.toggleSettingsGroup = toggleSettingsGroup;
 window.loadSettingsGroupsState = loadSettingsGroupsState;
+
+function openTaskDetail(type, id) {
+    const list = type === 'habit' ? state.habits : state.oneshots;
+    const task = list.find(t => t.id === id);
+    if (!task) return;
+
+    // Reuse Quest Popup Structure but simplify content
+    const overlay = document.getElementById('questDetailModal');
+    const title = document.getElementById('questDetailTitle');
+    const meta = document.getElementById('questDetailMeta');
+    const desc = document.getElementById('questDetailDesc');
+    const subtasks = document.getElementById('questDetailSubtasks');
+
+    if (overlay && title && meta && desc) {
+        title.textContent = task.name;
+        desc.className = 'task-detail-desc'; // Use the new CSS class
+        desc.textContent = task.description ? task.description : (type === 'habit' ? "Nessuna descrizione per questa abitudine." : "Nessuna descrizione per questo one-shot.");
+
+        // Hide subtasks container as simpler tasks don't have them
+        if (subtasks) subtasks.innerHTML = '';
+
+        // Calculate XP Reward
+        const baseXP = task.stars * 10;
+        const xpText = `+${baseXP} XP`;
+
+        let metaHtml = `
+            <div class="task-detail-stats" style="width:100%">
+                <div class="detail-stat-box">
+                    <div class="detail-stat-label">Ricompensa</div>
+                    <div class="detail-stat-value">${xpText}</div>
+                </div>
+                ${type === 'habit' ? `
+                <div class="detail-stat-box">
+                    <div class="detail-stat-label">Streak</div>
+                    <div class="detail-stat-value">🔥 ${task.streak || 0}</div>
+                </div>
+                ` : `
+                <div class="detail-stat-box">
+                    <div class="detail-stat-label">Stato</div>
+                    <div class="detail-stat-value">${task.completed ? '✅ Fatto' : '⏳ In corso'}</div>
+                </div>
+                `}
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted); text-align: center; width: 100%;">
+                ${'⭐'.repeat(task.stars)} • <span style="color:var(--accent-primary)">${type === 'habit' ? 'Abitudine' : 'One Shot'}</span>
+            </div>
+        `;
+
+        meta.innerHTML = metaHtml;
+        meta.style.flexDirection = 'column';
+
+        overlay.classList.add('active');
+    }
+}
