@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.25";
+const APP_VERSION = "2.7.27";
 
 // ============================================
 // DATA STRUCTURES
@@ -1529,7 +1529,7 @@ function showProgressPopup(gainedStatId = null, gainedAmount = 0) {
     const maxMonthlyXp = Math.max(50, ...currentData);
 
     const data = {
-        labels: visibleStats.map(s => `${s.icon} ${s.name}`),
+        labels: visibleStats.map(s => s.icon),
         datasets: [
             {
                 label: 'Precedente',
