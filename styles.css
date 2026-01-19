@@ -2867,8 +2867,19 @@ input#settingName {
     display: none !important;
 }
 
+/* Ensure inputs respect container width */
+select,
+input,
+textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 .modal-body {
-    padding: 16px;
+    padding: 4px;
+    /* Reduced padding as modal has padding */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-group {
@@ -4185,9 +4196,12 @@ input#settingName {
 .quest-detail-content {
     background: var(--bg-card);
     width: 90%;
-    max-width: 400px;
+    max-width: 380px;
+    /* Reduced slightly to ensure padding doesn't push bounds */
     border-radius: 24px;
     padding: 24px;
+    box-sizing: border-box;
+    /* Critical for width calculation */
     position: relative;
     /* Reset position as flex overlay handles centering */
     /* top/left/transform removed because parent overlay does centering */
