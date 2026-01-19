@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.32";
+const APP_VERSION = "2.7.33";
 
 // ============================================
 // DATA STRUCTURES
@@ -2336,7 +2336,7 @@ function openStatDetail(statId) {
             </div>
             <div class="momentum-chart" style="height: 80px;">
                 ${momentum.map(m => `
-                    <div class="momentum-bar-container" onclick="alert('${m.xp} XP - ${m.day}')">
+                    <div class="momentum-bar-container" onclick="showMomentumTooltip(event, '${m.xp}')">
                         <div class="momentum-bar" data-xp="${m.xp}" style="height: ${Math.min((m.xp / maxMomentum) * 60, 60)}px; opacity: ${m.xp > 0 ? 1 : 0.3}"></div>
                         <div class="momentum-day" style="font-size: 10px;">${m.day[0]}</div>
                     </div>
@@ -5180,3 +5180,27 @@ function openTaskDetail(type, id) {
         overlay.classList.add('active');
     }
 }
+
+function showMomentumTooltip(event, xp) {
+    const tooltip = document.getElementById('tooltip');
+    if (!tooltip) return;
+
+    tooltip.innerHTML = `<div class="tooltip-title">+${xp} XP</div>`;
+
+    // Position slightly above the touch point
+    const x = event.clientX;
+    const y = event.clientY - 40; // 40px above
+
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+    tooltip.style.transform = 'translate(-50%, -100%)'; // Center horizontally, put above
+
+    tooltip.classList.add('visible');
+
+    // Hide after 2 seconds
+    if (window.tooltipTimeout) clearTimeout(window.tooltipTimeout);
+    window.tooltipTimeout = setTimeout(() => {
+        tooltip.classList.remove('visible');
+    }, 2000);
+}
+window.showMomentumTooltip = showMomentumTooltip;
