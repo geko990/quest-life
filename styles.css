@@ -2010,20 +2010,8 @@ input#settingName {
     position: relative;
 }
 
-.momentum-bar:hover::after {
-    content: attr(data-xp) " XP";
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: scale(0.95);
-    background: var(--bg-primary);
-    color: var(--bg-primary);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    white-space: nowrap;
-    z-index: 10;
-}
+/* Removed: .momentum-bar:hover::after - now using JS tooltip instead */
+
 
 .momentum-day {
     font-size: 10px;
