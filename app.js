@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.45";
+const APP_VERSION = "2.7.46";
 
 // ============================================
 // DATA STRUCTURES
@@ -989,27 +989,29 @@ function switchSection(sectionName) {
     if (sectionName === 'habits') {
         const calendar = document.getElementById('calendarContainer');
 
-        // Hide calendar temporarily to prevent flash
+        // Hide calendar temporarily to prevent flash during scroll
         if (calendar) {
             calendar.style.visibility = 'hidden';
         }
 
         renderCalendar();
 
-        // Use double requestAnimationFrame + setTimeout to ensure scroll happens after full render
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    if (container && calendar) {
-                        // Use fixed value since offsetHeight may not be available yet
-                        // Calendar height is approximately 68px + padding
-                        container.scrollTop = 75;
-                        // Show calendar after scroll is set
-                        calendar.style.visibility = 'visible';
-                    }
-                }, 50);
-            });
-        });
+        // Scroll per nascondere il calendario - delay per garantire render completo
+        setTimeout(() => {
+            const habitsWrapper = document.querySelector('.habits-wrapper');
+
+            if (container && calendar && habitsWrapper) {
+                // Calcola la distanza esatta usando getBoundingClientRect
+                // Sottrai 7px per allineare l'header con le altre sezioni
+                const calendarRect = calendar.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const scrollAmount = calendarRect.bottom - containerRect.top + container.scrollTop - 7;
+                container.scrollTop = scrollAmount;
+
+                // Show calendar after scroll is set
+                calendar.style.visibility = 'visible';
+            }
+        }, 150);
     } else {
         // Reset scroll per tutte le altre sezioni
         if (container) {
