@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.41";
+const APP_VERSION = "2.7.43";
 
 // ============================================
 // DATA STRUCTURES
@@ -401,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initVisibilityPopup();
     initNavSwipe();
     renderAll();
+
+    // Check for first time setup wizard
+    setTimeout(() => checkFirstTimeSetup(), 500);
 
     // Check for weekly recap (Sunday)
     setTimeout(() => checkWeeklyRecap(), 1000);
@@ -1911,8 +1914,18 @@ function renderHabits() {
     });
 
     if (habitsToShow.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div><div class="empty-state-text">Nessuna abitudine</div><div class="empty-state-hint">Clicca "+ Nuova" per iniziare</div></div>`;
+        // Show onboarding guide for first-time users, otherwise show simple empty state
+        if (shouldShowOnboarding('habits')) {
+            container.innerHTML = getOnboardingHTML('habits');
+        } else {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div><div class="empty-state-text">Nessuna abitudine</div><div class="empty-state-hint">Clicca "+" per iniziare</div></div>`;
+        }
         return;
+    }
+
+    // Mark onboarding as complete when user has habits
+    if (shouldShowOnboarding('habits')) {
+        markOnboardingComplete('habits');
     }
 
     container.innerHTML = habitsToShow.map(item => {
@@ -2098,8 +2111,18 @@ function renderOneshots() {
     const pending = state.oneshots.filter(o => !o.completed && !o.locked);
 
     if (pending.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💥</div><div class="empty-state-text">Nessun task</div><div class="empty-state-hint">Perfetto per azioni singole!</div></div>`;
+        // Show onboarding guide for first-time users, otherwise show simple empty state
+        if (shouldShowOnboarding('oneshots')) {
+            container.innerHTML = getOnboardingHTML('oneshots');
+        } else {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💥</div><div class="empty-state-text">Nessun task</div><div class="empty-state-hint">Clicca "+" per iniziare</div></div>`;
+        }
         return;
+    }
+
+    // Mark onboarding as complete when user has oneshots
+    if (shouldShowOnboarding('oneshots')) {
+        markOnboardingComplete('oneshots');
     }
 
     container.innerHTML = pending.map(oneshot => {
@@ -2178,8 +2201,18 @@ function renderQuests() {
     const active = state.quests.filter(q => !q.completed);
 
     if (active.length === 0) {
-        container.innerHTML = `<div class="empty-state" ><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Le grandi avventure iniziano qui!</div></div> `;
+        // Show onboarding guide for first-time users, otherwise show simple empty state
+        if (shouldShowOnboarding('quests')) {
+            container.innerHTML = getOnboardingHTML('quests');
+        } else {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Clicca "+" per iniziare</div></div>`;
+        }
         return;
+    }
+
+    // Mark onboarding as complete when user has quests
+    if (shouldShowOnboarding('quests')) {
+        markOnboardingComplete('quests');
     }
 
     container.innerHTML = active.map(quest => {
@@ -3023,6 +3056,10 @@ function openModal(type, editData = null) {
                     <label>Descrizione</label>
                     <textarea id="inputDesc" placeholder="Descrizione dell'attributo...">${editData?.description || ''}</textarea>
                 </div>
+                <div class="form-group">
+                    <label>Livello Iniziale</label>
+                    <input type="number" id="inputLevel" value="${editData?.level || 1}" min="1" max="50" placeholder="1">
+                </div>
                 <div class="form-actions">
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
@@ -3192,16 +3229,17 @@ function submitModal() {
         case 'ability':
             const icon = document.getElementById('inputIcon')?.value || '✨';
             const description = document.getElementById('inputDesc')?.value || '';
+            const level = Math.max(1, Math.min(50, parseInt(document.getElementById('inputLevel')?.value) || 1));
             const isAbility = currentModalType === 'ability';
 
             if (editingItem) {
-                Object.assign(editingItem, { name, icon, description });
+                Object.assign(editingItem, { name, icon, description, level });
             } else {
                 state.stats.push({
                     id: (isAbility ? 'abil_' : 'attr_') + Date.now(),
                     name, icon, description,
                     type: isAbility ? 'ability' : 'attribute',
-                    visible: true, level: 1, xp: 0
+                    visible: true, level: level, xp: 0
                 });
             }
             break;
@@ -5218,3 +5256,151 @@ function showMomentumTooltip(event, xp) {
     }, 50);
 }
 window.showMomentumTooltip = showMomentumTooltip;
+
+// ============================================
+// INITIAL SETUP WIZARD
+// ============================================
+
+function checkFirstTimeSetup() {
+    const hasCompletedSetup = localStorage.getItem('questlife_setup_completed');
+    if (!hasCompletedSetup) {
+        showSetupWizard();
+    }
+}
+
+function showSetupWizard() {
+    const overlay = document.getElementById('setupWizardOverlay');
+    const modal = document.getElementById('setupWizardModal');
+    const list = document.getElementById('setupStatsList');
+
+    if (!overlay || !modal || !list) return;
+
+    // Render stats list for editing levels
+    list.innerHTML = state.stats.map(stat => `
+        <div class="settings-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px; background: var(--bg-primary); border-radius: 8px;">
+            <span style="font-size: 24px;">${stat.icon}</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 500;">${stat.name}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${stat.type === 'attribute' ? 'Attributo' : 'Abilità'}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <label style="font-size: 12px; color: var(--text-secondary);">Lv.</label>
+                <input type="number" class="setup-level-input" data-stat-id="${stat.id}" 
+                    value="${stat.level}" min="1" max="50" 
+                    style="width: 50px; text-align: center; padding: 6px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; font-weight: 500;">
+            </div>
+        </div>
+    `).join('');
+
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+}
+
+function completeSetupWizard() {
+    // Read and save all level values
+    const inputs = document.querySelectorAll('.setup-level-input');
+    inputs.forEach(input => {
+        const statId = input.dataset.statId;
+        const level = parseInt(input.value) || 1;
+        const stat = state.stats.find(s => s.id === statId);
+        if (stat) {
+            stat.level = Math.max(1, Math.min(50, level));
+        }
+    });
+
+    // Mark setup as completed
+    localStorage.setItem('questlife_setup_completed', 'true');
+
+    // Save and close
+    saveState();
+    closeSetupWizard();
+    renderAll();
+}
+
+function closeSetupWizard() {
+    document.getElementById('setupWizardOverlay')?.classList.add('hidden');
+    document.getElementById('setupWizardModal')?.classList.add('hidden');
+}
+
+// Expose to global
+window.checkFirstTimeSetup = checkFirstTimeSetup;
+window.completeSetupWizard = completeSetupWizard;
+window.closeSetupWizard = closeSetupWizard;
+
+// ============================================
+// ONBOARDING GUIDES
+// ============================================
+
+function shouldShowOnboarding(tabType) {
+    // Check if user has ever created a task of this type
+    const onboardingKey = `questlife_onboarding_${tabType}`;
+    return !localStorage.getItem(onboardingKey);
+}
+
+function markOnboardingComplete(tabType) {
+    localStorage.setItem(`questlife_onboarding_${tabType}`, 'true');
+}
+
+function getOnboardingHTML(tabType) {
+    const guides = {
+        habits: {
+            icon: '📜',
+            title: 'Abitudini',
+            subtitle: 'Attività ricorrenti che vuoi costruire',
+            features: [
+                { icon: '+', label: 'Crea una nuova abitudine', arrow: '↗️' },
+                { icon: '🍅', label: 'Timer Pomodoro per focus', arrow: '↗️' },
+                { icon: '📅', label: 'Scorri il calendario in alto', arrow: '↑' },
+                { icon: '←→', label: 'Swipe su un task per modificare/eliminare', arrow: '' },
+                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
+                { icon: '○', label: 'Tocca il cerchio per completare', arrow: '' }
+            ]
+        },
+        oneshots: {
+            icon: '💥',
+            title: 'One Shot',
+            subtitle: 'Task singoli da completare una volta',
+            features: [
+                { icon: '+', label: 'Crea un nuovo task', arrow: '↗️' },
+                { icon: '🎒', label: 'Zaino Tossico per cattive abitudini', arrow: '↗️' },
+                { icon: '←→', label: 'Swipe per modificare/eliminare', arrow: '' },
+                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
+                { icon: '○', label: 'Tocca per completare', arrow: '' }
+            ]
+        },
+        quests: {
+            icon: '🎯',
+            title: 'Quest',
+            subtitle: 'Grandi obiettivi con sotto-obiettivi',
+            features: [
+                { icon: '+', label: 'Crea una nuova quest', arrow: '↗️' },
+                { icon: '👆', label: 'Tocca una quest per i dettagli', arrow: '' },
+                { icon: '←→', label: 'Swipe per modificare/eliminare', arrow: '' },
+                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
+                { icon: '▓░', label: 'Completa i sotto-obiettivi per progresso', arrow: '' }
+            ]
+        }
+    };
+
+    const guide = guides[tabType];
+    if (!guide) return '';
+
+    return `
+        <div class="onboarding-guide">
+            <div class="onboarding-header">
+                <div class="onboarding-icon">${guide.icon}</div>
+                <h3 class="onboarding-title">${guide.title}</h3>
+                <p class="onboarding-subtitle">${guide.subtitle}</p>
+            </div>
+            <div class="onboarding-features">
+                ${guide.features.map(f => `
+                    <div class="onboarding-feature ${f.arrow ? 'has-arrow' : ''}">
+                        <span class="feature-icon">${f.icon}</span>
+                        <span class="feature-label">${f.label}</span>
+                        ${f.arrow ? `<span class="feature-arrow">${f.arrow}</span>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}

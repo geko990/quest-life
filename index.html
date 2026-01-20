@@ -18,7 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.41">
+    <link rel="stylesheet" href="styles.css?v=2.7.43">
 
 </head>
 
@@ -434,7 +434,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.41</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.43</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -742,7 +742,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.7.41')
+            navigator.serviceWorker.register('./sw.js?v=2.7.43')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
@@ -793,6 +793,26 @@
         </div>
     </div>
 
+    <!-- Initial Setup Wizard -->
+    <div class="modal-overlay hidden" id="setupWizardOverlay"></div>
+    <div class="profile-popup popup-center hidden" id="setupWizardModal" style="max-width: 380px;">
+        <div class="popup-header-info" style="flex-direction: column; align-items: center; margin-bottom: 15px;">
+            <div class="popup-emoji" style="font-size: 48px; margin-bottom: 10px;">⚔️</div>
+            <h3 style="margin: 0; text-align: center;">Benvenuto, Avventuriero!</h3>
+            <p style="color: var(--text-secondary); text-align: center; font-size: 13px; margin-top: 8px;">
+                Configura i tuoi attributi iniziali.<br>Potrai modificarli in seguito.
+            </p>
+        </div>
+        <div id="setupStatsList" style="max-height: 40vh; overflow-y: auto;">
+            <!-- Dynamically populated -->
+        </div>
+        <button class="settings-btn" onclick="completeSetupWizard()"
+            style="margin-top: 15px; width: 100%; justify-content: center; background: var(--accent-gradient); color: white; border: none;">
+            Inizia l'Avventura! 🚀
+        </button>
+    </div>
+
 </body>
+
 
 </html>
