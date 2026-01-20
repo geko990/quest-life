@@ -1115,9 +1115,10 @@ body {
     flex-direction: column;
 }
 
-/* Il wrapper delle abitudini occupa almeno tutta l'altezza visibile */
+/* Il wrapper delle abitudini occupa almeno tutta l'altezza visibile + altezza calendario */
 #section-habits .habits-wrapper {
-    min-height: calc(100vh - var(--header-height) - var(--nav-height) - 32px);
+    /* Extra 100px to ensure enough scroll space to hide calendar */
+    min-height: calc(100vh - var(--header-height) - var(--nav-height) - 32px + 100px);
     background: var(--bg-secondary);
 }
 
