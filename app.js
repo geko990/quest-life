@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.44";
+const APP_VERSION = "2.7.45";
 
 // ============================================
 // DATA STRUCTURES
@@ -996,14 +996,19 @@ function switchSection(sectionName) {
 
         renderCalendar();
 
-        // Use requestAnimationFrame to scroll after the section is rendered
+        // Use double requestAnimationFrame + setTimeout to ensure scroll happens after full render
         requestAnimationFrame(() => {
-            if (container && calendar) {
-                const calendarHeight = calendar.offsetHeight || 80;
-                container.scrollTop = calendarHeight - 7;
-                // Show calendar after scroll is set
-                calendar.style.visibility = 'visible';
-            }
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (container && calendar) {
+                        // Use fixed value since offsetHeight may not be available yet
+                        // Calendar height is approximately 68px + padding
+                        container.scrollTop = 75;
+                        // Show calendar after scroll is set
+                        calendar.style.visibility = 'visible';
+                    }
+                }, 50);
+            });
         });
     } else {
         // Reset scroll per tutte le altre sezioni
