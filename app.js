@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.43";
+const APP_VERSION = "2.7.44";
 
 // ============================================
 // DATA STRUCTURES
@@ -987,21 +987,24 @@ function switchSection(sectionName) {
     // Gestione scroll per sezione
     const container = document.querySelector('.content-area');
     if (sectionName === 'habits') {
-        renderCalendar();
-        // Scroll per nascondere il calendario - delay per garantire render completo
-        setTimeout(() => {
-            const calendar = document.getElementById('calendarContainer');
-            const habitsWrapper = document.querySelector('.habits-wrapper');
+        const calendar = document.getElementById('calendarContainer');
 
-            if (container && calendar && habitsWrapper) {
-                // Calcola la distanza esatta usando getBoundingClientRect
-                // Sottrai 7px per allineare l'header con le altre sezioni
-                const calendarRect = calendar.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const scrollAmount = calendarRect.bottom - containerRect.top + container.scrollTop - 7;
-                container.scrollTop = scrollAmount;
+        // Hide calendar temporarily to prevent flash
+        if (calendar) {
+            calendar.style.visibility = 'hidden';
+        }
+
+        renderCalendar();
+
+        // Use requestAnimationFrame to scroll after the section is rendered
+        requestAnimationFrame(() => {
+            if (container && calendar) {
+                const calendarHeight = calendar.offsetHeight || 80;
+                container.scrollTop = calendarHeight - 7;
+                // Show calendar after scroll is set
+                calendar.style.visibility = 'visible';
             }
-        }, 150);
+        });
     } else {
         // Reset scroll per tutte le altre sezioni
         if (container) {
@@ -3048,17 +3051,19 @@ function openModal(type, editData = null) {
                     <label>Nome</label>
                     <input type="text" id="inputName" value="${editData?.name || ''}" placeholder="es. Creatività">
                 </div>
-                <div class="form-group">
-                    <label>Emoji</label>
-                    <input type="text" id="inputIcon" value="${editData?.icon || ''}" placeholder="🎨" maxlength="2">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Emoji</label>
+                        <input type="text" id="inputIcon" value="${editData?.icon || ''}" placeholder="🎨" maxlength="2" style="text-align: center; font-size: 20px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Liv. Iniziale</label>
+                        <input type="number" id="inputLevel" value="${editData?.level || 1}" min="1" max="50" placeholder="1">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Descrizione</label>
                     <textarea id="inputDesc" placeholder="Descrizione dell'attributo...">${editData?.description || ''}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Livello Iniziale</label>
-                    <input type="number" id="inputLevel" value="${editData?.level || 1}" min="1" max="50" placeholder="1">
                 </div>
                 <div class="form-actions">
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
