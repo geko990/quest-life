@@ -554,6 +554,8 @@ body {
     top: 70px;
     z-index: 3000;
     width: 280px;
+    /* Solid fallback for in-app browsers that don't support backdrop-filter */
+    background: var(--bg-secondary);
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
@@ -2191,7 +2193,9 @@ input#settingName {
 .recap-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    /* Solid dark background for in-app browsers that don't support backdrop-filter */
+    background: #121212;
+    background: rgba(0, 0, 0, 0.92);
     z-index: 2000;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -2206,6 +2210,8 @@ input#settingName {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    /* Solid fallback for in-app browsers that don't support backdrop-filter */
+    background: var(--bg-secondary);
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -2813,7 +2819,9 @@ input#settingName {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    /* Solid dark background for in-app browsers that don't support backdrop-filter */
+    background: #121212;
+    background: rgba(0, 0, 0, 0.92);
     display: none;
     justify-content: center;
     align-items: flex-end;

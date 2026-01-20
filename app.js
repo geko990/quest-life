@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.46";
+const APP_VERSION = "2.7.47";
 
 // ============================================
 // DATA STRUCTURES
@@ -4131,6 +4131,14 @@ function completePomodoro() {
 function checkDailyPlan() {
     // Check if disabled in settings
     if (state.settings.enableDailyPlanner === false) return;
+
+    // Skip if first-time setup wizard is visible (avoid overlapping popups)
+    const setupWizardOverlay = document.getElementById('setupWizardOverlay');
+    if (setupWizardOverlay && !setupWizardOverlay.classList.contains('hidden')) return;
+
+    // Also skip if setup was never completed (first launch)
+    const hasCompletedSetup = localStorage.getItem('questlife_setup_completed');
+    if (!hasCompletedSetup) return;
 
     const now = new Date();
     const today = getGameDateString();
