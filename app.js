@@ -767,7 +767,7 @@ function showMedalCelebration(medal) {
     // We can create a dedicated 'Medal Popup' dynamically
     const overlay = document.createElement('div');
     overlay.className = 'medal-celebration-overlay';
-    overlay.onclick = function(e) {
+    overlay.onclick = function (e) {
         if (e.target === this) this.remove();
     };
     overlay.innerHTML = `
@@ -4128,12 +4128,47 @@ function completePomodoro() {
 }
 
 // ============================================
+// POPUP MANAGER (Prevent Overlaps)
+// ============================================
+
+function isAnyModalOpen() {
+    // Check all major overlays
+    const overlays = [
+        'setupWizardOverlay',
+        'dailyPlannerOverlay',
+        'weeklyRecapOverlay',
+        'streakCelebration',
+        'quest-popup-overlay',
+        'archiveModal',
+        'avatarModal'
+    ];
+
+    for (const id of overlays) {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('hidden') && (el.classList.contains('active') || el.style.display !== 'none')) {
+            return true;
+        }
+    }
+
+    // Check profile popup specifically (it might not have an overlay ID in the same way, or uses class)
+    const profilePopup = document.querySelector('.profile-popup');
+    if (profilePopup && !profilePopup.classList.contains('hidden')) {
+        return true;
+    }
+
+    return false;
+}
+
+// ============================================
 // DAILY D&D PLANNER
 // ============================================
 
 function checkDailyPlan() {
     // Check if disabled in settings
     if (state.settings.enableDailyPlanner === false) return;
+
+    // Safety check for other open modals
+    if (isAnyModalOpen()) return;
 
     // Skip if first-time setup wizard is visible (avoid overlapping popups)
     const setupWizardOverlay = document.getElementById('setupWizardOverlay');
@@ -4161,7 +4196,7 @@ function showDailyPlanner() {
     const selects = document.querySelectorAll('.slot-stat');
     selects.forEach(select => {
         select.innerHTML = state.stats.map(stat =>
-            `<option value= "${stat.id}" > ${stat.icon} ${stat.name}</option> `
+            `<option value="${stat.id}">${stat.icon} ${stat.name}</option>`
         ).join('');
     });
 
@@ -4368,6 +4403,9 @@ function checkWeeklyRecap() {
 
     // Only show on Sunday
     if (dayOfWeek !== 0) return;
+
+    // Improved safety check
+    if (isAnyModalOpen()) return;
 
     // Check if already shown this week
     const currentWeek = getWeekIdentifier(getGameDateString());
