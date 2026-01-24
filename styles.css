@@ -3481,7 +3481,7 @@ textarea {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
-    z-index: 2100;
+    z-index: 100000;
     display: flex;
     align-items: center;
     justify-content: center;
