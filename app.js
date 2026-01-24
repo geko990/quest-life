@@ -767,6 +767,9 @@ function showMedalCelebration(medal) {
     // We can create a dedicated 'Medal Popup' dynamically
     const overlay = document.createElement('div');
     overlay.className = 'medal-celebration-overlay';
+    overlay.onclick = function(e) {
+        if (e.target === this) this.remove();
+    };
     overlay.innerHTML = `
         <div class="medal-celebration-content">
             <div class="medal-glow"></div>
