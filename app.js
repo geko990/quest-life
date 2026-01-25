@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.55";
+const APP_VERSION = "2.7.56";
 
 // ============================================
 // DATA STRUCTURES
@@ -85,6 +85,7 @@ let state = {
         lastPlanDate: null  // Date when last daily plan was shown
     },
     lastRecapWeek: null, // Week ID when last recap was shown
+    recapHistory: [], // Array of past weekly recaps: [{weekId, weekLabel, totalXp, topStat, bestHabit, pomodoroCount}]
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
 };
 
@@ -4479,8 +4480,43 @@ function closeWeeklyRecap() {
     document.getElementById('weeklyRecapModal')?.classList.add('hidden');
     document.getElementById('weeklyRecapOverlay')?.classList.add('hidden');
 
+    // Calculate and save recap to history
+    const weekId = getWeekIdentifier(getGameDateString());
+    const recap = calculateWeeklyRecap();
+
+    // Get week label
+    const today = getGameDateObj();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - 6);
+    const weekLabel = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${today.getDate()}/${today.getMonth() + 1}`;
+
+    // Check if this week already exists in history
+    if (!state.recapHistory) state.recapHistory = [];
+    const existingIndex = state.recapHistory.findIndex(r => r.weekId === weekId);
+
+    const recapEntry = {
+        weekId: weekId,
+        weekLabel: weekLabel,
+        totalXp: recap.totalXp,
+        topStatName: recap.topStat?.name || '-',
+        topStatIcon: recap.topStat?.icon || '🏆',
+        bestHabitName: recap.bestHabit?.name || '-',
+        pomodoroCount: recap.pomodoroCount,
+        savedAt: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) {
+        state.recapHistory[existingIndex] = recapEntry;
+    } else {
+        state.recapHistory.unshift(recapEntry);
+        // Keep only last 12 weeks (3 months)
+        if (state.recapHistory.length > 12) {
+            state.recapHistory = state.recapHistory.slice(0, 12);
+        }
+    }
+
     // Mark as shown for this week
-    state.lastRecapWeek = getWeekIdentifier(getGameDateString());
+    state.lastRecapWeek = weekId;
     console.log('Marking weekly recap as seen for:', state.lastRecapWeek);
     saveState();
 }
@@ -4532,7 +4568,43 @@ window.rollD10AndSave = rollD10AndSave;
 
 // Expose Weekly Recap functions
 window.closeWeeklyRecap = closeWeeklyRecap;
-window.showWeeklyRecap = showWeeklyRecap; // TEST: Remove after testing
+window.showWeeklyRecap = showWeeklyRecap;
+
+// Recap History Feature
+function showRecapHistory() {
+    const modal = document.getElementById('recapHistoryModal');
+    const overlay = document.getElementById('recapHistoryOverlay');
+    const list = document.getElementById('recapHistoryList');
+
+    if (!modal || !overlay || !list) return;
+
+    if (!state.recapHistory || state.recapHistory.length === 0) {
+        list.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">Nessun recap salvato ancora. I recap vengono salvati quando chiudi la finestra del Recap Settimanale.</div>';
+    } else {
+        list.innerHTML = state.recapHistory.map(r => `
+            <div class="recap-history-item">
+                <div class="recap-history-week">📅 ${r.weekLabel}</div>
+                <div class="recap-history-stats">
+                    <span>⚡ ${r.totalXp} XP</span>
+                    <span>${r.topStatIcon} ${r.topStatName}</span>
+                    <span>✅ ${r.bestHabitName}</span>
+                    <span>🍅 ${r.pomodoroCount}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    modal.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+}
+
+function closeRecapHistory() {
+    document.getElementById('recapHistoryModal')?.classList.add('hidden');
+    document.getElementById('recapHistoryOverlay')?.classList.add('hidden');
+}
+
+window.showRecapHistory = showRecapHistory;
+window.closeRecapHistory = closeRecapHistory;
 
 // Expose Pomodoro functions to window
 window.openPomodoroTimer = openPomodoroTimer;
