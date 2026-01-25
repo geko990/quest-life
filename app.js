@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.59";
+const APP_VERSION = "2.7.60";
 
 // ============================================
 // DATA STRUCTURES
@@ -4316,19 +4316,26 @@ function showDailyPlanner() {
     // Clear previous inputs
     document.querySelectorAll('.slot-name').forEach(input => input.value = '');
 
-    // Initialize star selectors
-    document.querySelectorAll('.star-selector').forEach(selector => {
-        const stars = parseInt(selector.dataset.stars) || 3;
-        updateStarDisplay(selector, stars);
+    // Initialize star selectors (only in Daily Planner modal)
+    const plannerModal = document.getElementById('dailyPlannerModal');
+    if (plannerModal) {
+        plannerModal.querySelectorAll('.star-selector').forEach(selector => {
+            const stars = parseInt(selector.dataset.stars) || 3;
+            updateStarDisplay(selector, stars);
 
-        selector.querySelectorAll('.star').forEach(star => {
-            star.onclick = () => {
-                const value = parseInt(star.dataset.value);
-                selector.dataset.stars = value;
-                updateStarDisplay(selector, value);
-            };
+            selector.querySelectorAll('.star').forEach(star => {
+                // Remove old listeners and add new ones
+                star.style.cursor = 'pointer';
+                star.style.pointerEvents = 'auto';
+                star.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const value = parseInt(this.dataset.value);
+                    selector.dataset.stars = value;
+                    updateStarDisplay(selector, value);
+                });
+            });
         });
-    });
+    }
 
     document.getElementById('dailyPlannerModal')?.classList.remove('hidden');
     document.getElementById('dailyPlannerOverlay')?.classList.remove('hidden');
