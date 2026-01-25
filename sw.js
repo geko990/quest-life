@@ -1,55 +1,33 @@
-const CACHE_NAME = 'quest-life-v2.7.53';
-const ASSETS = [
-    './',
-    './index.html',
-    './styles.css',
-    './app.js',
-    './icon.png',
-    './chart.min.js'
-];
+// KILL SWITCH SERVICE WORKER v2.7.54
+// This worker is designed to PURGE everything and force a fresh start.
 
-// Install Event
+const CACHE_NAME = 'quest-life-v2.7.54-KILL';
+
 self.addEventListener('install', (e) => {
-    e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS);
-        })
-    );
+    // Force immediate activation
     self.skipWaiting();
 });
 
-// Activate Event
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then((keys) => {
-            return Promise.all(
-                keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-            );
+            // Delete ALL caches indiscriminately
+            return Promise.all(keys.map((key) => caches.delete(key)));
+        }).then(() => {
+            // Take control of all pages immediately
+            return self.clients.claim();
         })
     );
-    self.clients.claim();
 });
 
-// Fetch Event
 self.addEventListener('fetch', (e) => {
-    // Navigation requests (HTML pages) - Network First, fall back to cache
-    if (e.request.mode === 'navigate') {
-        e.respondWith(
-            fetch(e.request)
-                .then(response => {
-                    return response;
-                })
-                .catch(() => {
-                    return caches.match(e.request);
-                })
-        );
-        return;
-    }
-
-    // Asset requests (CSS, JS, Images) - Cache First, fall back to network
+    // Network Only - bypass cache entirely
     e.respondWith(
-        caches.match(e.request).then((response) => {
-            return response || fetch(e.request);
+        fetch(e.request).catch(() => {
+            // If offline and no cache (because we deleted it), show simple message
+            return new Response("Update in progress. Please refresh page when online.", {
+                headers: { 'Content-Type': 'text/plain' }
+            });
         })
     );
 });
