@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.57";
+const APP_VERSION = "2.7.58";
 
 // ============================================
 // DATA STRUCTURES
@@ -747,12 +747,66 @@ function unlockMonthlyMedal() {
     const monthName = monthNames[monthIndex];
     const year = monthId.split('-')[0];
 
+    // Calculate top stat for this month from xpLog
+    const monthXpEntries = state.xpLog.filter(entry => {
+        if (!entry.date) return false;
+        const entryMonth = entry.date.substring(0, 7); // "2026-01"
+        return entryMonth === monthId && entry.amount > 0;
+    });
+
+    const statXp = {};
+    monthXpEntries.forEach(entry => {
+        statXp[entry.statId] = (statXp[entry.statId] || 0) + entry.amount;
+    });
+
+    const topStatId = Object.entries(statXp).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const topStat = state.stats.find(s => s.id === topStatId);
+
+    // Collect completed oneshots/quests this month
+    const completedTasks = [];
+
+    // Get all dates in this month from completionLog
+    const monthDates = Object.keys(state.completionLog).filter(d => d.startsWith(monthId));
+
+    monthDates.forEach(date => {
+        const completedIds = state.completionLog[date] || [];
+        completedIds.forEach(id => {
+            // Check if it's a oneshot
+            const oneshot = state.oneshots.find(o => o.id === id);
+            if (oneshot) {
+                completedTasks.push({
+                    name: oneshot.name,
+                    stars: oneshot.stars || 1,
+                    type: 'oneshot',
+                    date: date
+                });
+            }
+            // Check if it's a quest
+            const quest = state.quests.find(q => q.id === id);
+            if (quest) {
+                completedTasks.push({
+                    name: quest.name,
+                    stars: quest.stars || 1,
+                    type: 'quest',
+                    date: date
+                });
+            }
+        });
+    });
+
+    // Sort by stars (highest first) and take top 10
+    const topTasks = [...completedTasks].sort((a, b) => b.stars - a.stars).slice(0, 10);
+
     const medal = {
         id: monthId,
         name: `${monthName} ${year}`,
         description: "Obiettivo mensile completato!",
-        icon: "🏅", // Could vary by month or seasons?
-        earnedDate: getGameDate()
+        icon: topStat?.icon || "🏅",
+        topStatName: topStat?.name || "Varie",
+        topStatIcon: topStat?.icon || "🏆",
+        earnedDate: getGameDate(),
+        topTasks: topTasks,
+        totalCompleted: completedTasks.length
     };
 
     state.player.monthlyChallenge.medals.push(medal);
@@ -1388,8 +1442,10 @@ function renderProfilePopup() {
             // Show only last 5 reversed
             const recentMedals = [...state.player.monthlyChallenge.medals].reverse().slice(0, 5);
             mGrid.innerHTML = recentMedals.map(m => `
-                <div class="medal-item" onclick="alert('${m.name}\\nOttenuta il: ${m.earnedDate}')">
-                    <div class="medal-emoji">${m.icon}</div>
+                <div class="medal-item" onclick="showMedalDetail('${m.id}')">
+                    <div class="medal-golden-circle">
+                        <span class="medal-stat-icon">${m.icon}</span>
+                    </div>
                 </div>
             `).join('');
         }
@@ -4606,7 +4662,69 @@ function closeRecapHistory() {
 window.showRecapHistory = showRecapHistory;
 window.closeRecapHistory = closeRecapHistory;
 
-// Expose Pomodoro functions to window
+// Medal Detail Popup
+function showMedalDetail(medalId) {
+    const medal = state.player.monthlyChallenge?.medals.find(m => m.id === medalId);
+    if (!medal) return;
+
+    const modal = document.getElementById('medalDetailModal');
+    const overlay = document.getElementById('medalDetailOverlay');
+    if (!modal || !overlay) return;
+
+    // Build top tasks HTML
+    let topTasksHtml = '';
+    if (medal.topTasks && medal.topTasks.length > 0) {
+        topTasksHtml = medal.topTasks.map(t => `
+            <div class="medal-task-item">
+                <span class="medal-task-type">${t.type === 'quest' ? '🏆' : '💥'}</span>
+                <span class="medal-task-name">${t.name}</span>
+                <span class="medal-task-stars">${'⭐'.repeat(t.stars)}</span>
+            </div>
+        `).join('');
+    } else {
+        topTasksHtml = '<div style="text-align:center; color:var(--text-muted); padding:10px;">Nessun dato disponibile per questa medaglia.</div>';
+    }
+
+    modal.innerHTML = `
+        <div class="medal-detail-header">
+            <div class="medal-detail-golden-circle">
+                <span class="medal-detail-icon">${medal.icon}</span>
+            </div>
+            <h2 class="medal-detail-title">${medal.name}</h2>
+            <p class="medal-detail-sub">Ottenuta il ${medal.earnedDate}</p>
+        </div>
+        <div class="medal-detail-stats">
+            <div class="medal-stat-card">
+                <div class="medal-stat-value">${medal.topStatIcon || '🏆'}</div>
+                <div class="medal-stat-label">Stat Dominante</div>
+                <div class="medal-stat-name">${medal.topStatName || 'Varie'}</div>
+            </div>
+            <div class="medal-stat-card">
+                <div class="medal-stat-value">${medal.totalCompleted || 0}</div>
+                <div class="medal-stat-label">Task Completati</div>
+            </div>
+        </div>
+        <div class="medal-detail-section">
+            <h3>🌟 Top Imprese</h3>
+            <div class="medal-tasks-list">
+                ${topTasksHtml}
+            </div>
+        </div>
+        <button class="recap-close-btn" onclick="closeMedalDetail()">Chiudi</button>
+    `;
+
+    modal.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+}
+
+function closeMedalDetail() {
+    document.getElementById('medalDetailModal')?.classList.add('hidden');
+    document.getElementById('medalDetailOverlay')?.classList.add('hidden');
+}
+
+window.showMedalDetail = showMedalDetail;
+window.closeMedalDetail = closeMedalDetail;
+
 window.openPomodoroTimer = openPomodoroTimer;
 window.closePomodoroTimer = closePomodoroTimer;
 window.togglePomodoro = togglePomodoro;

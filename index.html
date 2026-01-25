@@ -21,7 +21,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.57">
+    <link rel="stylesheet" href="styles.css?v=2.7.58">
 
 </head>
 
@@ -446,7 +446,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.57</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.58</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -724,6 +724,12 @@
         <button class="recap-close-btn" onclick="closeRecapHistory()">Chiudi</button>
     </div>
 
+    <!-- Medal Detail Modal -->
+    <div class="recap-overlay hidden" id="medalDetailOverlay" onclick="closeMedalDetail()"></div>
+    <div class="medal-detail-modal hidden" id="medalDetailModal">
+        <!-- Dynamically populated by showMedalDetail() -->
+    </div>
+
     <!-- Motto Edit Modal -->
     <div class="modal-overlay" id="mottoEditModal">
         <div class="modal motto-modal">
@@ -768,7 +774,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.7.57')
+            navigator.serviceWorker.register('./sw.js?v=2.7.58')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
