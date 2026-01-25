@@ -4133,27 +4133,40 @@ function completePomodoro() {
 
 function isAnyModalOpen() {
     // Check all major overlays
+    // Updated IDs to match index.html
     const overlays = [
         'setupWizardOverlay',
         'dailyPlannerOverlay',
         'weeklyRecapOverlay',
         'streakCelebration',
-        'quest-popup-overlay',
+        'questDetailModal',
         'archiveModal',
-        'avatarModal'
+        'avatarModalOverlay',
+        'mottoEditModal',
+        'toxicInventoryModal',
+        'pomodoroModal',
+        'installOverlay'
     ];
 
     for (const id of overlays) {
         const el = document.getElementById(id);
-        if (el && !el.classList.contains('hidden') && (el.classList.contains('active') || el.style.display !== 'none')) {
-            return true;
+        if (el) {
+            // Robust visibility check using computed style
+            // This handles both .hidden class and CSS-based display:none logic
+            const style = window.getComputedStyle(el);
+            if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+                return true;
+            }
         }
     }
 
-    // Check profile popup specifically (it might not have an overlay ID in the same way, or uses class)
-    const profilePopup = document.querySelector('.profile-popup');
-    if (profilePopup && !profilePopup.classList.contains('hidden')) {
-        return true;
+    // Check profile popups specifically (iterate all of them)
+    const profilePopups = document.querySelectorAll('.profile-popup');
+    for (const popup of profilePopups) {
+        if (!popup.classList.contains('hidden')) {
+            const style = window.getComputedStyle(popup);
+            if (style.display !== 'none' && style.visibility !== 'hidden') return true;
+        }
     }
 
     return false;
