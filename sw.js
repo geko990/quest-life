@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quest-life-v2.7.52';
+const CACHE_NAME = 'quest-life-v2.7.53';
 const ASSETS = [
     './',
     './index.html',
@@ -32,6 +32,21 @@ self.addEventListener('activate', (e) => {
 
 // Fetch Event
 self.addEventListener('fetch', (e) => {
+    // Navigation requests (HTML pages) - Network First, fall back to cache
+    if (e.request.mode === 'navigate') {
+        e.respondWith(
+            fetch(e.request)
+                .then(response => {
+                    return response;
+                })
+                .catch(() => {
+                    return caches.match(e.request);
+                })
+        );
+        return;
+    }
+
+    // Asset requests (CSS, JS, Images) - Cache First, fall back to network
     e.respondWith(
         caches.match(e.request).then((response) => {
             return response || fetch(e.request);
