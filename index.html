@@ -21,7 +21,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.56">
+    <link rel="stylesheet" href="styles.css?v=2.7.57">
 
 </head>
 
@@ -250,6 +250,14 @@
                             <input type="text" id="settingName" placeholder="Il tuo nome"
                                 onchange="updatePlayerName(this.value)">
                         </div>
+                        <div class="recap-history-card" onclick="showRecapHistory()">
+                            <div class="recap-history-card-icon">📜</div>
+                            <div class="recap-history-card-text">
+                                <div class="recap-history-card-title">Storico Imprese</div>
+                                <div class="recap-history-card-sub">Visualizza i tuoi recap settimanali</div>
+                            </div>
+                            <div class="recap-history-card-arrow">›</div>
+                        </div>
                         <div class="settings-row">
                             <label>Inizio nuovo giorno</label>
                             <select id="dayStartTime" onchange="updateDayStartTime(this.value)">
@@ -354,12 +362,6 @@
                                     onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
                             </div>
                         </div>
-                        <div class="settings-row" style="justify-content: flex-end;">
-                            <button class="settings-btn" onclick="showRecapHistory()" style="flex: 0;">
-                                <span class="settings-btn-icon">📊</span>
-                                <span>Storico Recap</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -444,7 +446,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.56</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.57</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -710,7 +712,7 @@
 
     <!-- Recap History Modal -->
     <div class="recap-overlay hidden" id="recapHistoryOverlay" onclick="closeRecapHistory()"></div>
-    <div class="recap-popup hidden" id="recapHistoryModal" style="max-height: 80vh; overflow-y: auto;">
+    <div class="recap-popup hidden" id="recapHistoryModal" style="max-height: 80vh; overflow-y: auto; z-index: 10001;">
         <div class="recap-header">
             <h2>📜 Storico Imprese</h2>
             <button class="modal-close" onclick="closeRecapHistory()"
@@ -766,7 +768,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.7.56')
+            navigator.serviceWorker.register('./sw.js?v=2.7.57')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
