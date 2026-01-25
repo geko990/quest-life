@@ -4679,3 +4679,33 @@ textarea {
 .recap-close-btn:active {
     transform: scale(0.98);
 }
+
+/* Recap History Items */
+.recap-history-item {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--glass-border);
+}
+
+.recap-history-week {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.recap-history-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.recap-history-stats span {
+    background: var(--bg-primary);
+    padding: 4px 8px;
+    border-radius: 6px;
+}

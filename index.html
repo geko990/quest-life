@@ -21,7 +21,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.55">
+    <link rel="stylesheet" href="styles.css?v=2.7.56">
 
 </head>
 
@@ -219,6 +219,7 @@
                 <div class="section-header">
                     <h2>💥 One Shot</h2>
                     <div class="header-actions" style="display: flex; gap: 8px;">
+                        <button class="add-btn-circle" onclick="showDailyPlanner()" title="È il tuo turno!">🎲</button>
                         <button class="add-btn-circle" onclick="openToxicInventory()" title="Zaino Tossico">🎒</button>
                         <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
                     </div>
@@ -353,6 +354,12 @@
                                     onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
                             </div>
                         </div>
+                        <div class="settings-row" style="justify-content: flex-end;">
+                            <button class="settings-btn" onclick="showRecapHistory()" style="flex: 0;">
+                                <span class="settings-btn-icon">📊</span>
+                                <span>Storico Recap</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -437,7 +444,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.55</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.56</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -701,6 +708,20 @@
         <button class="recap-close-btn" onclick="closeWeeklyRecap()">Continua 🚀</button>
     </div>
 
+    <!-- Recap History Modal -->
+    <div class="recap-overlay hidden" id="recapHistoryOverlay" onclick="closeRecapHistory()"></div>
+    <div class="recap-popup hidden" id="recapHistoryModal" style="max-height: 80vh; overflow-y: auto;">
+        <div class="recap-header">
+            <h2>📜 Storico Imprese</h2>
+            <button class="modal-close" onclick="closeRecapHistory()"
+                style="position:absolute; right:15px; top:15px; background:transparent; border:none; font-size:24px; color:var(--text-muted); cursor:pointer;">&times;</button>
+        </div>
+        <div id="recapHistoryList" style="margin: 15px 0;">
+            <!-- Dynamically populated -->
+        </div>
+        <button class="recap-close-btn" onclick="closeRecapHistory()">Chiudi</button>
+    </div>
+
     <!-- Motto Edit Modal -->
     <div class="modal-overlay" id="mottoEditModal">
         <div class="modal motto-modal">
@@ -745,7 +766,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.7.55')
+            navigator.serviceWorker.register('./sw.js?v=2.7.56')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
