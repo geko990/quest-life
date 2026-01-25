@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.47";
+const APP_VERSION = "2.7.54";
 
 // ============================================
 // DATA STRUCTURES
