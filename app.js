@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.58";
+const APP_VERSION = "2.7.59";
 
 // ============================================
 // DATA STRUCTURES
@@ -182,6 +182,40 @@ function shiftProgressiveHabits() {
 
     if (changed) {
         saveState();
+    }
+}
+
+// Check habit streaks and reset if yesterday was missed
+function checkHabitStreaks() {
+    const today = getGameDate();
+    const yesterday = getGameDateObj();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = formatISO(yesterday);
+
+    let changed = false;
+
+    state.habits.forEach(habit => {
+        if (habit.locked) return;
+        if (!habit.streak || habit.streak === 0) return;
+
+        // Check if habit was completed yesterday
+        const completedYesterday = state.completionLog[yesterdayStr]?.includes(habit.id);
+        const completedToday = state.completionLog[today]?.includes(habit.id);
+
+        // If not completed yesterday AND not completed today yet, reset streak
+        if (!completedYesterday && !completedToday) {
+            // Only reset if lastCompleted is older than yesterday
+            if (habit.lastCompleted && habit.lastCompleted !== today) {
+                console.log(`Resetting streak for habit: ${habit.name} (was ${habit.streak})`);
+                habit.streak = 0;
+                changed = true;
+            }
+        }
+    });
+
+    if (changed) {
+        saveState();
+        renderAll();
     }
 }
 
@@ -411,6 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check for daily D&D planner (after 6 AM)
     setTimeout(() => checkDailyPlan(), 1500);
+
+    // Check and reset habit streaks for missed days
+    setTimeout(() => checkHabitStreaks(), 2000);
 
     // Initialize File System (Database File)
     loadFileHandleOnStart();
