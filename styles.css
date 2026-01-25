@@ -4647,10 +4647,8 @@ textarea {
 }
 
 .star-selector .star.dim {
-    color: #555;
-    /* Dimmed Grey */
-    opacity: 1;
-    /* Explicit opacity */
+    opacity: 0.25;
+    filter: grayscale(100%);
 }
 
 /* Stat Selector High Contrast */
