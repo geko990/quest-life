@@ -4059,14 +4059,16 @@ textarea {
 }
 
 .medal-item {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #ffd700, #ffa500);
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    min-height: 45px;
+    flex-shrink: 0;
+    background: transparent;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     transition: transform 0.2s;
 }
@@ -4641,6 +4643,7 @@ textarea {
     /* Gold */
     cursor: pointer;
     opacity: 1;
+    pointer-events: auto;
 }
 
 .star-selector .star.dim {
