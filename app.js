@@ -3760,9 +3760,15 @@ function updateApp() {
             for (let registration of registrations) {
                 registration.unregister();
             }
-            setTimeout(() => {
+        });
+    }
+
+    // Force clear all caches
+    if ('caches' in window) {
+        caches.keys().then(names => {
+            Promise.all(names.map(name => caches.delete(name))).then(() => {
                 window.location.reload(true);
-            }, 500);
+            });
         });
     } else {
         window.location.reload(true);
@@ -4475,6 +4481,7 @@ function closeWeeklyRecap() {
 
     // Mark as shown for this week
     state.lastRecapWeek = getWeekIdentifier(getGameDateString());
+    console.log('Marking weekly recap as seen for:', state.lastRecapWeek);
     saveState();
 }
 
