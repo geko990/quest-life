@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUEST LIFE - FORCE RESET</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: sans-serif;
+            text-align: center;
+            padding: 40px;
+        }
+
+        button {
+            background: #f00;
+            color: #fff;
+            padding: 20px 40px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>STRUMENTO DI RIPRISTINO D'EMERGENZA</h1>
+    <p>Questo strumento distruggerà la vecchia versione salvata nel telefono e scaricherà quella nuova.</p>
+    <p id="status">In attesa...</p>
+
+    <button onclick="nukeIt()">💣 DISTRUGGI E AGGIORNA</button>
+
+    <script>
+        async function nukeIt() {
+            const status = document.getElementById('status');
+            status.textContent = "Attendere... Rimozione Service Worker...";
+
+            // 1. Unregister all SWs
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    console.log('SW Unregistered');
+                }
+            }
+
+            status.textContent = "Rimozione Cache...";
+            // 2. Clear Caches
+            if ('caches' in window) {
+                const keys = await caches.keys();
+                for (let key of keys) {
+                    await caches.delete(key);
+                    console.log('Cache Deleted:', key);
+                }
+            }
+
+            status.textContent = "Pulizia completata! Reindirizzamento...";
+
+            setTimeout(() => {
+                // 3. Redirect to main page with random query param to bypass network cache
+                window.location.href = "index.html?t=" + Date.now();
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
