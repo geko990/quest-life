@@ -4180,8 +4180,8 @@ function checkDailyPlan() {
     // Check if disabled in settings
     if (state.settings.enableDailyPlanner === false) return;
 
-    // Safety check for other open modals
-    if (isAnyModalOpen()) return;
+    // Safety check for other open modals - DISABLED to ensure it appears
+    // if (isAnyModalOpen()) return;
 
     // Skip if first-time setup wizard is visible (avoid overlapping popups)
     const setupWizardOverlay = document.getElementById('setupWizardOverlay');
@@ -4417,8 +4417,8 @@ function checkWeeklyRecap() {
     // Only show on Sunday
     if (dayOfWeek !== 0) return;
 
-    // Improved safety check
-    if (isAnyModalOpen()) return;
+    // Improved safety check - DISABLED
+    // if (isAnyModalOpen()) return;
 
     // Check if already shown this week
     const currentWeek = getWeekIdentifier(getGameDateString());
