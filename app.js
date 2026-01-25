@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.56";
+const APP_VERSION = "2.7.57";
 
 // ============================================
 // DATA STRUCTURES
@@ -1273,7 +1273,7 @@ function renderHeader() {
             headerImg.src = state.player.avatarImage;
 
             // Also update Nav Avatar
-            if (navAvatar) navAvatar.innerHTML = `< img class="nav-avatar-img" src = "${state.player.avatarImage}" alt = "" > `;
+            if (navAvatar) navAvatar.innerHTML = `<img class="nav-avatar-img" src="${state.player.avatarImage}" alt="">`;
         } else {
             headerEmoji.classList.remove('hidden');
             headerImg.classList.add('hidden');
