@@ -13,12 +13,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f0f1a">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2.7.51">
+    <link rel="stylesheet" href="styles.css?v=2.7.52">
 
 </head>
 
@@ -434,7 +437,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.51</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.52</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -742,7 +745,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.7.51')
+            navigator.serviceWorker.register('./sw.js?v=2.7.52')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
