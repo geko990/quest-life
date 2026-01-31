@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.61";
+const APP_VERSION = "2.7.64";
 
 // ============================================
 // DATA STRUCTURES
@@ -40,6 +40,148 @@ const TITLES = [
 ];
 
 const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+
+// ============================================
+// CHALLENGE TEMPLATES (Preset Quests)
+// ============================================
+
+const CHALLENGE_TEMPLATES = [
+    {
+        id: 'no_smoke_30',
+        name: '🚭 Detox Sigarette',
+        description: '30 giorni senza fumare. Ogni giorno è una vittoria verso una vita più sana.',
+        duration: 30,
+        icon: '🚭',
+        category: 'health',
+        stars: 5,
+        primaryStatId: 'con',
+        color: '#10b981',
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1} senza sigarette`,
+            completed: false
+        }))
+    },
+    {
+        id: 'nofap_30',
+        name: '🚫 NoFap Challenge',
+        description: '30 giorni di astinenza. Riprendi il controllo della tua energia e focus.',
+        duration: 30,
+        icon: '🚫',
+        category: 'discipline',
+        stars: 5,
+        primaryStatId: 'wis',
+        color: '#8b5cf6',
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1} completato`,
+            completed: false
+        }))
+    },
+    {
+        id: 'pushup_30',
+        name: '💪 Push-up Challenge',
+        description: 'Programma progressivo di flessioni: da 10 a 50 al giorno in 30 giorni.',
+        duration: 30,
+        icon: '💪',
+        category: 'fitness',
+        stars: 4,
+        primaryStatId: 'str',
+        color: '#ef4444',
+        generateSubquests: () => {
+            const progression = [];
+            for (let i = 1; i <= 30; i++) {
+                const reps = Math.min(50, 10 + Math.floor((i - 1) * 1.4));
+                progression.push({
+                    id: `day_${i}`,
+                    name: `Giorno ${i}: ${reps} flessioni`,
+                    completed: false
+                });
+            }
+            return progression;
+        }
+    },
+    {
+        id: 'no_junk_30',
+        name: '🥗 No Junk Food',
+        description: '30 giorni senza cibo spazzatura. Nutri il tuo corpo con cibo vero.',
+        duration: 30,
+        icon: '🥗',
+        category: 'health',
+        stars: 4,
+        primaryStatId: 'con',
+        color: '#22c55e',
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1} senza junk food`,
+            completed: false
+        }))
+    },
+    {
+        id: 'reading_30',
+        name: '📚 Reading Challenge',
+        description: 'Leggi almeno 20 pagine al giorno per 30 giorni. Espandi la tua mente.',
+        duration: 30,
+        icon: '📚',
+        category: 'growth',
+        stars: 3,
+        primaryStatId: 'int',
+        color: '#3b82f6',
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: 20+ pagine lette`,
+            completed: false
+        }))
+    },
+    {
+        id: 'meditation_21',
+        name: '🧘 21 Days Meditation',
+        description: '21 giorni di meditazione quotidiana. Costruisci una mente calma e presente.',
+        duration: 21,
+        icon: '🧘',
+        category: 'mindfulness',
+        stars: 3,
+        primaryStatId: 'wis',
+        color: '#06b6d4',
+        generateSubquests: () => Array.from({ length: 21 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: Sessione meditazione`,
+            completed: false
+        }))
+    },
+    {
+        id: 'cold_shower_30',
+        name: '🧊 Cold Shower Challenge',
+        description: '30 giorni di docce fredde. Costruisci disciplina mentale e resilienza.',
+        duration: 30,
+        icon: '🧊',
+        category: 'discipline',
+        stars: 4,
+        primaryStatId: 'str',
+        color: '#0ea5e9',
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: Doccia fredda ✓`,
+            completed: false
+        }))
+    },
+    {
+        id: 'digital_detox_7',
+        name: '📱 Digital Detox',
+        description: '7 giorni con uso limitato dello smartphone. Riconquista il tuo tempo.',
+        duration: 7,
+        icon: '📱',
+        category: 'mindfulness',
+        stars: 4,
+        primaryStatId: 'wis',
+        color: '#f59e0b',
+        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: Max 1h schermo`,
+            completed: false
+        }))
+    }
+];
 
 // ============================================
 // APP STATE
@@ -86,6 +228,8 @@ let state = {
     },
     lastRecapWeek: null, // Week ID when last recap was shown
     recapHistory: [], // Array of past weekly recaps: [{weekId, weekLabel, totalXp, topStat, bestHabit, pomodoroCount}]
+    penaltyLog: {}, // Log of penalties applied: {dateStr: [{habitId, habitName, xpLost, statId}]}
+    lastPenaltyCheck: null, // Last date+time penalties were checked
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
 };
 
@@ -216,6 +360,202 @@ function checkHabitStreaks() {
     if (changed) {
         saveState();
         renderAll();
+    }
+}
+
+// ============================================
+// XP PENALTY SYSTEM
+// ============================================
+// Grace period: Complete yesterday's habits until noon today
+// After noon: Double XP penalty for uncompleted habits
+
+function checkPenalties() {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const today = getGameDate();
+
+    // Only check after noon (12:00)
+    if (currentHour < 12) return;
+
+    // Get yesterday's date
+    const yesterday = new Date(getGameDateObj());
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = formatISO(yesterday);
+
+    // Create a unique check identifier for today's noon check
+    const todayNoonCheck = `${today}-noon`;
+
+    // If we already ran the penalty check today after noon, skip
+    if (state.lastPenaltyCheck === todayNoonCheck) return;
+
+    // Calculate penalties for yesterday's uncompleted daily habits
+    const penalties = [];
+
+    state.habits.forEach(habit => {
+        if (habit.locked) return;
+
+        // Handle DAILY habits
+        if (!habit.frequency || habit.frequency === 'daily') {
+            // Check if habit existed yesterday
+            if (habit.createdAt) {
+                const createdDate = formatISO(new Date(habit.createdAt));
+                if (createdDate > yesterdayStr) return; // Habit didn't exist yesterday
+            }
+
+            // Check if completed yesterday
+            const completedYesterday = state.completionLog[yesterdayStr]?.habits?.includes(habit.id);
+
+            if (!completedYesterday) {
+                const baseXp = calculateXp(habit.stars);
+                const penaltyXp = baseXp * 2; // Double the penalty
+
+                penalties.push({
+                    habitId: habit.id,
+                    habitName: habit.name,
+                    xpLost: penaltyXp,
+                    statId: habit.primaryStatId,
+                    baseXp: baseXp
+                });
+            }
+        }
+    });
+
+    // Check for periodic habits at end of period
+    checkPeriodicPenalties(penalties);
+
+    // Apply penalties
+    if (penalties.length > 0) {
+        applyPenalties(penalties, today);
+    }
+
+    // Mark check as done for today
+    state.lastPenaltyCheck = todayNoonCheck;
+    saveState();
+}
+
+function checkPeriodicPenalties(penalties) {
+    const today = getGameDate();
+    const currentWeekId = getWeekIdentifier(today);
+    const currentMonthId = getMonthIdentifier(today);
+
+    // Get previous week/month identifiers
+    const yesterday = new Date(getGameDateObj());
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = formatISO(yesterday);
+    const yesterdayWeekId = getWeekIdentifier(yesterdayStr);
+    const yesterdayMonthId = getMonthIdentifier(yesterdayStr);
+
+    state.habits.forEach(habit => {
+        if (habit.locked) return;
+
+        // WEEKLY habits (times_week) - check if week changed
+        if (habit.frequency === 'times_week' && currentWeekId !== yesterdayWeekId) {
+            const targetCompletions = habit.freqTimes || 1;
+            const actualCompletions = countCompletionsInPeriod(habit.id, habit.frequency, yesterdayWeekId);
+            const missedCompletions = Math.max(0, targetCompletions - actualCompletions);
+
+            if (missedCompletions > 0) {
+                const baseXp = calculateXp(habit.stars);
+                const penaltyXp = baseXp * 2 * missedCompletions;
+
+                penalties.push({
+                    habitId: habit.id,
+                    habitName: `${habit.name} (${missedCompletions}x mancate)`,
+                    xpLost: penaltyXp,
+                    statId: habit.primaryStatId,
+                    baseXp: baseXp * missedCompletions,
+                    isPeriodic: true
+                });
+            }
+        }
+
+        // MONTHLY habits (times_month) - check if month changed
+        if (habit.frequency === 'times_month' && currentMonthId !== yesterdayMonthId) {
+            const targetCompletions = habit.freqTimes || 1;
+            const actualCompletions = countCompletionsInPeriod(habit.id, habit.frequency, yesterdayMonthId);
+            const missedCompletions = Math.max(0, targetCompletions - actualCompletions);
+
+            if (missedCompletions > 0) {
+                const baseXp = calculateXp(habit.stars);
+                const penaltyXp = baseXp * 2 * missedCompletions;
+
+                penalties.push({
+                    habitId: habit.id,
+                    habitName: `${habit.name} (${missedCompletions}x mancate)`,
+                    xpLost: penaltyXp,
+                    statId: habit.primaryStatId,
+                    baseXp: baseXp * missedCompletions,
+                    isPeriodic: true
+                });
+            }
+        }
+    });
+}
+
+function applyPenalties(penalties, dateStr) {
+    let totalXpLost = 0;
+
+    penalties.forEach(penalty => {
+        // Subtract XP from the stat
+        addXp(-penalty.xpLost, penalty.statId, `Penalità: ${penalty.habitName}`);
+        totalXpLost += penalty.xpLost;
+    });
+
+    // Log the penalties
+    if (!state.penaltyLog[dateStr]) {
+        state.penaltyLog[dateStr] = [];
+    }
+    state.penaltyLog[dateStr].push(...penalties);
+
+    // Show penalty popup to user
+    showPenaltyPopup(penalties, totalXpLost);
+
+    saveState();
+}
+
+function showPenaltyPopup(penalties, totalXpLost) {
+    // Create overlay if it doesn't exist
+    let overlay = document.getElementById('penaltyOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'penaltyOverlay';
+        overlay.className = 'modal-overlay penalty-overlay';
+        overlay.innerHTML = `
+            <div class="penalty-popup">
+                <div class="penalty-icon">⚠️</div>
+                <h2 class="penalty-title">Penalità XP</h2>
+                <p class="penalty-subtitle">Non hai completato alcune abitudini</p>
+                <div class="penalty-list" id="penaltyList"></div>
+                <div class="penalty-total">
+                    <span>Totale perso:</span>
+                    <span class="penalty-total-xp" id="penaltyTotalXp">-0 XP</span>
+                </div>
+                <button class="settings-btn primary" onclick="closePenaltyPopup()">Ho capito</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    // Populate penalty list
+    const listEl = document.getElementById('penaltyList');
+    listEl.innerHTML = penalties.map(p => `
+        <div class="penalty-item">
+            <span class="penalty-name">${p.habitName}</span>
+            <span class="penalty-xp">-${p.xpLost} XP</span>
+        </div>
+    `).join('');
+
+    // Update total
+    document.getElementById('penaltyTotalXp').textContent = `-${totalXpLost} XP`;
+
+    // Show overlay
+    overlay.classList.remove('hidden');
+}
+
+function closePenaltyPopup() {
+    const overlay = document.getElementById('penaltyOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
     }
 }
 
@@ -449,6 +789,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check and reset habit streaks for missed days
     setTimeout(() => checkHabitStreaks(), 2000);
 
+    // Check for XP penalties (uncompleted habits after grace period)
+    setTimeout(() => checkPenalties(), 2500);
+
     // Initialize File System (Database File)
     loadFileHandleOnStart();
 
@@ -575,6 +918,10 @@ function loadState() {
                     entry.date = `${year}-${month}-${day}`;
                 }
             });
+
+            // Load penalty system data
+            state.penaltyLog = parsed.penaltyLog || {};
+            state.lastPenaltyCheck = parsed.lastPenaltyCheck || null;
 
             state.settings = { ...state.settings, ...parsed.settings };
             if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
@@ -1885,6 +2232,8 @@ function getHabitsForDate(dateStr) {
 
             // For TODAY: show if shiftedToDate is today or earlier (or not set)
             if (isToday) {
+                // ALWAYS show if completed TODAY (even if shifted to tomorrow)
+                if (state.completionLog[dateStr]?.habits?.includes(h.id)) return true;
                 if (h.shiftedToDate && h.shiftedToDate > dateStr) return false;
                 return true;
             }
@@ -2128,8 +2477,21 @@ function toggleHabit(habitId, targetDate = null) {
     if (!habit || habit.locked) return;
 
     const today = getGameDateObj().toDateString();
-    const dateStr = targetDate || getGameDate();
-    const isTargetingToday = !targetDate || targetDate === getGameDate();
+    const todayISO = getGameDate();
+    const dateStr = targetDate || todayISO;
+
+    // GRACE PERIOD LOGIC: Allow completing yesterday's habits until noon with full rewards
+    const now = new Date();
+    const currentHour = now.getHours();
+    const yesterday = new Date(getGameDateObj());
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayISO = formatISO(yesterday);
+
+    // Check if we're in grace period: targeting yesterday AND it's before noon
+    const isYesterdayGracePeriod = dateStr === yesterdayISO && currentHour < 12;
+
+    // Treat as "today" for XP/streak purposes if targeting today OR in grace period
+    const isTargetingToday = (!targetDate || targetDate === todayISO) || isYesterdayGracePeriod;
 
     if (isHabitCompletedOnDate(habit, dateStr)) {
         // Un-complete
@@ -2303,6 +2665,161 @@ function completeOneshot(oneshotId) {
 // QUESTS
 // ============================================
 
+// ============================================
+// CHALLENGE CATALOG (Preset Quest Templates)
+// ============================================
+
+function showChallengeCatalog() {
+    // Create or reuse overlay
+    let overlay = document.getElementById('challengeCatalogOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'challengeCatalogOverlay';
+        overlay.className = 'modal-overlay challenge-catalog-overlay';
+        overlay.innerHTML = `
+            <div class="challenge-catalog-modal">
+                <div class="challenge-catalog-header">
+                    <h2>🏆 Sfide Disponibili</h2>
+                    <p class="challenge-catalog-subtitle">Scegli una sfida da iniziare</p>
+                </div>
+                <div class="challenge-catalog-grid" id="challengeGrid"></div>
+                <button class="settings-btn" onclick="closeChallengeCatalog()">Chiudi</button>
+            </div>
+        `;
+        overlay.onclick = (e) => {
+            if (e.target === overlay) closeChallengeCatalog();
+        };
+        document.body.appendChild(overlay);
+    }
+
+    // Populate grid
+    const grid = document.getElementById('challengeGrid');
+    grid.innerHTML = CHALLENGE_TEMPLATES.map(template => `
+        <div class="challenge-card" onclick="showChallengePreview('${template.id}')" style="--card-color: ${template.color}">
+            <div class="challenge-card-icon">${template.icon}</div>
+            <div class="challenge-card-info">
+                <div class="challenge-card-name">${template.name.replace(/^.*? /, '')}</div>
+                <div class="challenge-card-duration">${template.duration} giorni</div>
+            </div>
+            <div class="challenge-card-stars">${'⭐'.repeat(template.stars)}</div>
+        </div>
+    `).join('');
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('active');
+}
+
+function closeChallengeCatalog() {
+    const overlay = document.getElementById('challengeCatalogOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('active');
+    }
+}
+
+function showChallengePreview(templateId) {
+    const template = CHALLENGE_TEMPLATES.find(t => t.id === templateId);
+    if (!template) return;
+
+    const stat = state.stats.find(s => s.id === template.primaryStatId);
+
+    // Create preview modal
+    let preview = document.getElementById('challengePreviewOverlay');
+    if (!preview) {
+        preview = document.createElement('div');
+        preview.id = 'challengePreviewOverlay';
+        preview.className = 'modal-overlay challenge-preview-overlay';
+        document.body.appendChild(preview);
+    }
+
+    preview.innerHTML = `
+        <div class="challenge-preview-modal" style="--preview-color: ${template.color}">
+            <div class="challenge-preview-header">
+                <div class="challenge-preview-icon">${template.icon}</div>
+                <h2>${template.name}</h2>
+            </div>
+            <p class="challenge-preview-desc">${template.description}</p>
+            <div class="challenge-preview-stats">
+                <div class="challenge-preview-stat">
+                    <span class="stat-label">Durata</span>
+                    <span class="stat-value">${template.duration} giorni</span>
+                </div>
+                <div class="challenge-preview-stat">
+                    <span class="stat-label">Difficoltà</span>
+                    <span class="stat-value">${'⭐'.repeat(template.stars)}</span>
+                </div>
+                <div class="challenge-preview-stat">
+                    <span class="stat-label">Stat</span>
+                    <span class="stat-value">${stat ? stat.icon + ' ' + stat.name : 'N/A'}</span>
+                </div>
+            </div>
+            <div class="challenge-preview-actions">
+                <button class="settings-btn" onclick="closeChallengePreview()">Indietro</button>
+                <button class="settings-btn primary" onclick="importChallenge('${template.id}')">🚀 Inizia Sfida</button>
+            </div>
+        </div>
+    `;
+
+    preview.onclick = (e) => {
+        if (e.target === preview) closeChallengePreview();
+    };
+
+    preview.classList.remove('hidden');
+    preview.classList.add('active');
+}
+
+function closeChallengePreview() {
+    const preview = document.getElementById('challengePreviewOverlay');
+    if (preview) {
+        preview.classList.add('hidden');
+        preview.classList.remove('active');
+    }
+}
+
+function importChallenge(templateId) {
+    const template = CHALLENGE_TEMPLATES.find(t => t.id === templateId);
+    if (!template) return;
+
+    // Generate subquests from template
+    const subquests = template.generateSubquests();
+
+    // Create the quest
+    const quest = {
+        id: 'quest_' + Date.now(),
+        name: template.name,
+        description: template.description,
+        stars: template.stars,
+        primaryStatId: template.primaryStatId,
+        secondaryStatId: null,
+        subquests: subquests,
+        customReward: `Sfida ${template.duration} giorni completata!`,
+        dueDate: null,
+        completed: false,
+        locked: false,
+        createdAt: new Date().toISOString(),
+        isChallengeTemplate: true,
+        templateId: template.id
+    };
+
+    // Add to state
+    state.quests.push(quest);
+    saveState();
+
+    // Close modals
+    closeChallengePreview();
+    closeChallengeCatalog();
+
+    // Show success feedback
+    playSound('success');
+
+    // Navigate to quest tab and render
+    showSection('quests');
+    renderQuests();
+
+    // Open the new quest detail
+    setTimeout(() => openQuestDetail(quest.id), 300);
+}
+
 function renderQuests() {
     const container = document.getElementById('questList');
     const active = state.quests.filter(q => !q.completed);
@@ -2372,7 +2889,20 @@ function openQuestDetail(questId) {
     currentOpenedQuestId = questId;
 
     const content = document.querySelector('#questDetailModal .quest-detail-content');
-    content.innerHTML = `
+
+    // Check if this is a challenge quest
+    if (quest.isChallengeTemplate) {
+        renderChallengeView(quest, content);
+    } else {
+        renderNormalQuestView(quest, content);
+    }
+
+    document.getElementById('questDetailModal').classList.add('active');
+}
+
+// Normal quest view with subtask list
+function renderNormalQuestView(quest, container) {
+    container.innerHTML = `
             <div class="modal-header" style = "border:none; padding-bottom:0; flex-shrink: 0;" >
                 <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
         </div>
@@ -2403,8 +2933,6 @@ function openQuestDetail(questId) {
             </div>
         `;
 
-    document.getElementById('questDetailModal').classList.add('active');
-
     // Re-initialize Sortable for this specific list
     const subtaskList = document.getElementById('questDetailSubtasks');
     if (subtaskList) {
@@ -2418,10 +2946,108 @@ function openQuestDetail(questId) {
             touchStartThreshold: 3,
             onEnd: function (evt) {
                 if (evt.oldIndex !== evt.newIndex) {
-                    reorderSubtasks(questId, evt.oldIndex, evt.newIndex);
+                    reorderSubtasks(quest.id, evt.oldIndex, evt.newIndex);
                 }
             }
         });
+    }
+}
+
+// Challenge quest view with tally marks
+function renderChallengeView(quest, container) {
+    const subquests = quest.subquests || [];
+    const completedCount = subquests.filter(s => s.completed).length;
+    const totalDays = subquests.length;
+    const nextDayIndex = completedCount; // 0-indexed
+    const canComplete = nextDayIndex < totalDays;
+
+    // Generate tally marks HTML grouped by weeks
+    let tallyHtml = '';
+    let weekHtml = '';
+
+    for (let i = 0; i < totalDays; i++) {
+        const isCompleted = subquests[i]?.completed;
+        const isNextDay = i === nextDayIndex;
+        const dayInWeek = i % 7;
+
+        // Start new week
+        if (dayInWeek === 0 && i > 0) {
+            tallyHtml += `<div class="tally-week">${weekHtml}</div>`;
+            weekHtml = '';
+        }
+
+        // Each tally mark - 5th mark is diagonal crossing the previous 4
+        const markClass = isCompleted ? 'completed' : (isNextDay ? 'next' : 'pending');
+        const isFifth = (dayInWeek + 1) % 5 === 0 && dayInWeek > 0;
+
+        if (isFifth) {
+            weekHtml += `<span class="tally-mark tally-strike ${markClass}" title="Giorno ${i + 1}">╱</span>`;
+        } else {
+            weekHtml += `<span class="tally-mark ${markClass}" title="Giorno ${i + 1}">│</span>`;
+        }
+    }
+    // Add remaining week
+    if (weekHtml) {
+        tallyHtml += `<div class="tally-week">${weekHtml}</div>`;
+    }
+
+    container.innerHTML = `
+        <div class="modal-header" style="border:none; padding-bottom:0; flex-shrink: 0;">
+            <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
+        </div>
+
+        <div class="quest-scroll-area challenge-view">
+            <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
+                ${quest.description || 'Una sfida da completare!'}
+            </div>
+
+            <div class="challenge-progress-text">
+                <span class="challenge-day-count">${completedCount}</span>
+                <span class="challenge-day-label">/ ${totalDays} giorni</span>
+            </div>
+
+            <div class="tally-container">
+                ${tallyHtml}
+            </div>
+
+            ${canComplete ? `
+            <button class="challenge-highfive-btn" onclick="completeChallengeDayAndRefresh('${quest.id}')">
+                <span class="highfive-emoji">🙌</span>
+                <span class="highfive-text">Giorno ${nextDayIndex + 1} completato!</span>
+            </button>
+            ` : `
+            <div class="challenge-complete-banner">
+                <span>🏆</span>
+                <span>Sfida Completata!</span>
+            </div>
+            `}
+
+            <div class="quest-reward-area" style="margin-top:24px;">
+                <div style="display:flex; justify-content:center; gap:12px; font-size:14px; color:var(--text-muted);">
+                    <span>${'⭐'.repeat(quest.stars)}</span>
+                    <span>✨ ${calculateXp(quest.stars) * 2} XP</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Complete the next day in a challenge and refresh the view
+function completeChallengeDayAndRefresh(questId) {
+    const quest = state.quests.find(q => q.id === questId);
+    if (!quest || !quest.subquests) return;
+
+    // Find the next incomplete subquest
+    const nextSub = quest.subquests.find(s => !s.completed);
+    if (!nextSub) return;
+
+    // Toggle it
+    toggleSubquest(questId, nextSub.id);
+
+    // Refresh the view
+    const content = document.querySelector('#questDetailModal .quest-detail-content');
+    if (content) {
+        renderChallengeView(quest, content);
     }
 }
 
@@ -3457,11 +4083,41 @@ function initSwipe() {
         }
     });
 
+    // Handle pointer cancel (e.g., scroll started on mobile)
+    document.addEventListener('pointercancel', () => {
+        if (currentSwipeCard) {
+            const taskCard = currentSwipeCard.closest('.task-card');
+            if (taskCard) {
+                taskCard.classList.remove('swiping', 'swipe-edit-hint', 'swipe-delete-hint');
+            }
+            currentSwipeCard.style.transition = 'transform 0.3s ease';
+            currentSwipeCard.style.transform = 'translateX(0)';
+            currentSwipeCard = null;
+        }
+        isSwiping = false;
+    });
+
+    // Reset all swiped cards when scrolling
+    document.querySelectorAll('.habits-list, .oneshot-list, .quest-list').forEach(container => {
+        container.addEventListener('scroll', resetAllSwipeCards);
+    });
+
     window.checkSwipeTrigger = () => {
         const was = swipeWasTriggered;
         swipeWasTriggered = false;
         return was;
     };
+}
+
+// Reset all cards that might be stuck in swiped position
+function resetAllSwipeCards() {
+    document.querySelectorAll('.swipe-content').forEach(content => {
+        content.style.transition = 'transform 0.2s ease';
+        content.style.transform = 'translateX(0)';
+    });
+    document.querySelectorAll('.task-card').forEach(card => {
+        card.classList.remove('swiping', 'swipe-edit-hint', 'swipe-delete-hint');
+    });
 }
 
 // Delete confirmation modal
