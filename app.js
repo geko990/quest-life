@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.67";
+const APP_VERSION = "2.7.68";
 
 // ============================================
 // DATA STRUCTURES
@@ -2886,6 +2886,35 @@ function showChallengePreview(templateId) {
         document.body.appendChild(preview);
     }
 
+    // Check if template supports tracking modes
+    let trackingOptionsHtml = '';
+    if (template.trackingMode) {
+        trackingOptionsHtml = `
+            <div class="tracking-mode-selector">
+                <p class="tracking-mode-label">Modalità di Tracciamento:</p>
+                <div class="tracking-toggle-container">
+                    <input type="radio" id="mode_simple" name="tracking_mode" value="checkbox" checked>
+                    <label for="mode_simple" class="tracking-option">
+                        <span class="option-icon">✅</span>
+                        <div class="option-text">
+                            <span class="option-title">Semplice</span>
+                            <span class="option-desc">Checkbox giornaliera</span>
+                        </div>
+                    </label>
+                    
+                    <input type="radio" id="mode_detailed" name="tracking_mode" value="detailed">
+                    <label for="mode_detailed" class="tracking-option">
+                        <span class="option-icon">📊</span>
+                        <div class="option-text">
+                            <span class="option-title">Dettagliato</span>
+                            <span class="option-desc">Inserisci dati (kcal, ecc)</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        `;
+    }
+
     preview.innerHTML = `
         <div class="challenge-preview-modal" style="--preview-color: ${template.color}">
             <div class="challenge-preview-header">
@@ -2907,6 +2936,9 @@ function showChallengePreview(templateId) {
                     <span class="stat-value">${stat ? stat.icon + ' ' + stat.name : 'N/A'}</span>
                 </div>
             </div>
+            
+            ${trackingOptionsHtml}
+
             <div class="challenge-preview-actions">
                 <button class="settings-btn" onclick="closeChallengePreview()">Indietro</button>
                 <button class="settings-btn primary" onclick="importChallenge('${template.id}')">🚀 Inizia Sfida</button>
@@ -2930,32 +2962,41 @@ function closeChallengePreview() {
     }
 }
 
+// Import a challenge template as a new quest
 function importChallenge(templateId) {
     const template = CHALLENGE_TEMPLATES.find(t => t.id === templateId);
     if (!template) return;
 
-    // Generate subquests from template
+    // Check for tracking mode selection
+    let selectedMode = template.trackingMode; // Default to template default
+    const modeInput = document.querySelector('input[name="tracking_mode"]:checked');
+    if (modeInput) {
+        selectedMode = modeInput.value;
+    }
+
+    // Generate subquests (daily tasks) for the challenge
     const subquests = template.generateSubquests();
 
-    // Create the quest
+    // Create the quest object
     const quest = {
         id: 'quest_' + Date.now(),
         name: template.name,
         description: template.description,
+        icon: template.icon,
+        category: template.category,
         stars: template.stars,
         primaryStatId: template.primaryStatId,
-        secondaryStatId: null,
+        color: template.color || '#ff9800',
+        createdAt: getGameDateString(),
+        dueDate: null, // Open-ended or managed by subquests
         subquests: subquests,
-        customReward: `Sfida ${template.duration} giorni completata!`,
-        dueDate: null,
-        completed: false,
-        locked: false,
-        createdAt: new Date().toISOString(),
         isChallengeTemplate: true,
-        templateId: template.id
+        templateId: template.id,
+        trackingMode: selectedMode, // Save the selected tracking mode
+        level: template.level // Save level
     };
 
-    // Add to state
+    // Add to quests list
     state.quests.push(quest);
     saveState();
 
@@ -2963,10 +3004,11 @@ function importChallenge(templateId) {
     closeChallengePreview();
     closeChallengeCatalog();
 
-    // Show success feedback
-    playSound('success');
+    // Play sound and show notification
+    playSound('questComplete'); // Reuse complete sound or add new one
+    showToast(`Sfida "${template.name}" iniziata!`, 'success');
 
-    // Navigate to quest tab and render
+    // Switch to quests tab and refresh
     switchSection('quest');
     renderQuests();
 
@@ -3164,6 +3206,56 @@ function renderChallengeView(quest, container) {
         // Marks 1-3 (positions 1,2,3) are handled when the group is completed at position 4
     }
 
+    // Generate daily tracking UI for the current active day
+    let trackingHtml = '';
+    const currentSubquest = subquests[nextDayIndex];
+
+    if (canComplete && currentSubquest) {
+        if (quest.trackingMode === 'checkbox' && currentSubquest.goals) {
+            trackingHtml = `
+                <div class="daily-goals-container">
+                    <p class="daily-goals-title">🎯 Obiettivi di oggi:</p>
+                    <div class="daily-goals-list">
+                        ${currentSubquest.goals.map((goal, idx) => `
+                            <div class="goal-item" onclick="toggleGoalCheckbox(this)">
+                                <div class="custom-checkbox"></div>
+                                <span class="goal-text">${goal}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else if (quest.trackingMode === 'detailed') {
+            trackingHtml = `
+                <div class="daily-tracking-container">
+                    <p class="daily-goals-title">📊 Diario Nutrizionale:</p>
+                    <div class="tracking-inputs-row">
+                        <div class="tracking-input-group">
+                            <label>Calorie (kcal)</label>
+                            <input type="number" id="daily_kcal" class="tracking-input" placeholder="0">
+                        </div>
+                        <div class="tracking-input-group">
+                            <label>Proteine (g)</label>
+                            <input type="number" id="daily_protein" class="tracking-input" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="tracking-input-group">
+                        <label>Note (opzionale)</label>
+                        <input type="text" id="daily_notes" class="tracking-input" placeholder="Come è andata?">
+                    </div>
+                </div>
+            `;
+        } else if (currentSubquest.targetReps) {
+            // For push-ups or other rep-based challenges
+            trackingHtml = `
+                <div class="daily-target-display">
+                    <span class="target-icon">🎯</span>
+                    <span class="target-text">Obiettivo: <strong>${currentSubquest.targetReps}</strong> ripetizioni</span>
+                </div>
+            `;
+        }
+    }
+
     container.innerHTML = `
         <div class="modal-header" style="border:none; padding-bottom:0; flex-shrink: 0;">
             <h3 class="modal-title" style="font-family:'Cinzel', serif; font-size: 24px; width:100%; text-align:center; color:var(--accent-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${quest.name}</h3>
@@ -3182,6 +3274,8 @@ function renderChallengeView(quest, container) {
             <div class="tally-container">
                 ${tallyHtml}
             </div>
+
+            ${trackingHtml}
 
             ${canComplete ? `
             <button class="challenge-highfive-btn" onclick="completeChallengeDayAndRefresh('${quest.id}')">
@@ -3205,6 +3299,11 @@ function renderChallengeView(quest, container) {
     `;
 }
 
+// Helper to toggle custom checkbox
+function toggleGoalCheckbox(element) {
+    element.classList.toggle('checked');
+}
+
 // Complete the next day in a challenge and refresh the view
 function completeChallengeDayAndRefresh(questId) {
     const quest = state.quests.find(q => q.id === questId);
@@ -3214,13 +3313,45 @@ function completeChallengeDayAndRefresh(questId) {
     const nextSub = quest.subquests.find(s => !s.completed);
     if (!nextSub) return;
 
+    // Capture tracking data if detailed mode
+    if (quest.trackingMode === 'detailed') {
+        const kcal = document.getElementById('daily_kcal')?.value;
+        const protein = document.getElementById('daily_protein')?.value;
+        const notes = document.getElementById('daily_notes')?.value;
+
+        if (kcal || protein || notes) {
+            nextSub.data = {
+                kcal: kcal || 0,
+                protein: protein || 0,
+                notes: notes || ''
+            };
+        }
+    } else if (quest.trackingMode === 'checkbox') {
+        // Check if all checkboxes are checked (strict mode) or just complete anyway?
+        // Let's just complete it for now, user manually clicks the button
+    }
+
     // Toggle it
     toggleSubquest(questId, nextSub.id);
 
-    // Refresh the view
-    const content = document.querySelector('#questDetailModal .quest-detail-content');
-    if (content) {
-        renderChallengeView(quest, content);
+    // Refresh view
+    const modalContent = document.querySelector('.quest-detail-modal'); // Or find correct container
+    // Actually, toggleSubquest calls saveState() and we might need to re-render.
+    // Ideally we re-render specifically this view or close/reopen.
+    // Existing logic likely handled re-render. 
+    // Wait, openQuestDetail re-renders. 
+    // Let's call openQuestDetail to refresh ONLY if the modal is still open? 
+    // Actually, toggleSubquest triggers UI updates usually? No, it just updates state.
+    // We should re-render the view.
+
+    // Simple hack: re-call openQuestDetail to refresh the modal content
+    const overlay = document.querySelector('.quest-detail-overlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+        // Re-render the specific view
+        const contentContainer = overlay.querySelector('.quest-detail-modal');
+        if (contentContainer) {
+            renderChallengeView(quest, contentContainer);
+        }
     }
 }
 
