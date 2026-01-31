@@ -5255,6 +5255,67 @@ textarea {
     color: #fff;
 }
 
+/* Tracking Mode Selector in Preview */
+.tracking-mode-selector {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.tracking-mode-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.tracking-toggle-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.tracking-toggle-container input[type="radio"] {
+    display: none;
+}
+
+.tracking-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tracking-toggle-container input[type="radio"]:checked+.tracking-option {
+    background: rgba(var(--preview-color), 0.15);
+    border-color: rgba(var(--preview-color), 0.6);
+}
+
+.tracking-option .option-icon {
+    font-size: 20px;
+}
+
+.tracking-option .option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tracking-option .option-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tracking-option .option-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
 .challenge-preview-actions {
     display: flex;
     gap: 10px;
@@ -5381,6 +5442,115 @@ textarea {
     50% {
         opacity: 0.7;
     }
+}
+
+/* Daily Tracking UI */
+.daily-goals-container,
+.daily-tracking-container {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.daily-goals-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: 12px;
+}
+
+.daily-goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.goal-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.goal-item:active {
+    transform: scale(0.98);
+}
+
+.goal-item.checked {
+    background: rgba(255, 255, 255, 0.1);
+    /* Fallback */
+    background: color-mix(in srgb, var(--accent-primary), transparent 90%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.goal-item.checked .custom-checkbox {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.goal-item.checked .custom-checkbox::after {
+    content: '✓';
+    position: absolute;
+    color: #000;
+    font-size: 14px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.tracking-inputs-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.tracking-input-group {
+    flex: 1;
+}
+
+.tracking-input-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.tracking-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.daily-target-display {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--accent-primary);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .challenge-highfive-btn {
