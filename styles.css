@@ -5160,6 +5160,36 @@ textarea {
     font-size: 10px;
 }
 
+/* Locked challenges */
+.challenge-card.locked {
+    opacity: 0.5;
+    filter: grayscale(70%);
+    cursor: not-allowed;
+    position: relative;
+}
+
+.challenge-card.locked:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.challenge-card .lock-icon {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 14px;
+}
+
+.challenge-card .level-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 9px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
 /* Challenge Preview Modal */
 .challenge-preview-modal {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -5264,52 +5294,81 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 16px;
-    padding: 10px;
+    padding: 12px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 12px;
 }
 
-.tally-week {
-    display: flex;
-    gap: 1px;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Group of 5 tally marks with strikethrough */
+.tally-group-5 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
 }
 
-.tally-mark {
-    font-size: 18px;
+.tally-bars {
+    display: flex;
+    gap: 2px;
+}
+
+.tally-bar {
+    font-size: 20px;
     font-weight: 300;
     line-height: 1;
     transition: all 0.2s ease;
-    cursor: default;
 }
 
-.tally-mark.pending {
+.tally-bar.pending {
     color: rgba(255, 255, 255, 0.15);
 }
 
-.tally-mark.next {
+.tally-bar.next {
     color: var(--accent-primary);
     opacity: 0.5;
     animation: tallyPulse 1.5s ease-in-out infinite;
 }
 
-.tally-mark.completed {
+.tally-bar.completed {
     color: var(--accent-primary);
-    text-shadow: 0 0 8px var(--accent-primary);
+    text-shadow: 0 0 6px var(--accent-primary);
 }
 
-.tally-strike {
-    margin-left: -5px;
-    font-weight: 400;
+/* Single bars (for incomplete final group) */
+.tally-bar.single {
+    padding: 0 1px;
 }
 
-.tally-strike.completed {
-    color: #ffd700;
+/* Horizontal strikethrough line */
+.tally-strike-line {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 50%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-50%);
+    border-radius: 1px;
+}
+
+.tally-strike-line.completed {
+    background: var(--accent-primary);
+    box-shadow: 0 0 8px var(--accent-primary);
+}
+
+.tally-strike-line.next {
+    background: var(--accent-primary);
+    opacity: 0.5;
+}
+
+/* Group completed state */
+.tally-group-5.completed {
+    background: rgba(255, 215, 0, 0.08);
 }
 
 @keyframes tallyPulse {
