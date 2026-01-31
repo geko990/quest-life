@@ -231,7 +231,10 @@
             <section id="section-quest" class="section">
                 <div class="section-header">
                     <h2>🏆 Quest</h2>
-                    <button class="add-btn-circle" onclick="openModal('quest')">+</button>
+                    <div class="header-actions" style="display: flex; gap: 8px;">
+                        <button class="add-btn-circle" onclick="showChallengeCatalog()" title="Sfide Preset">⚔️</button>
+                        <button class="add-btn-circle" onclick="openModal('quest')">+</button>
+                    </div>
                 </div>
                 <div class="quest-list" id="questList"></div>
             </section>
