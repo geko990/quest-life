@@ -5243,11 +5243,11 @@ textarea {
 }
 
 .challenge-progress-text {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .challenge-day-count {
-    font-size: 56px;
+    font-size: 40px;
     font-weight: 800;
     color: var(--accent-primary);
     font-family: 'Cinzel', serif;
@@ -5255,7 +5255,7 @@ textarea {
 }
 
 .challenge-day-label {
-    font-size: 20px;
+    font-size: 16px;
     color: var(--text-muted);
     font-weight: 400;
 }
@@ -5264,24 +5264,24 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 16px;
-    margin-bottom: 32px;
-    padding: 16px;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px;
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 16px;
+    border-radius: 12px;
 }
 
 .tally-week {
     display: flex;
-    gap: 2px;
-    padding: 8px 12px;
+    gap: 1px;
+    padding: 4px 8px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tally-mark {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 300;
     line-height: 1;
     transition: all 0.2s ease;
@@ -5304,7 +5304,7 @@ textarea {
 }
 
 .tally-strike {
-    margin-left: -8px;
+    margin-left: -5px;
     font-weight: 400;
 }
 
@@ -5329,12 +5329,12 @@ textarea {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 4px;
     width: 100%;
-    padding: 20px;
+    padding: 14px;
     background: linear-gradient(135deg, var(--accent-primary), #ff9800);
     border: none;
-    border-radius: 16px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 4px 20px rgba(255, 152, 0, 0.3);
@@ -5350,7 +5350,7 @@ textarea {
 }
 
 .highfive-emoji {
-    font-size: 48px;
+    font-size: 32px;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     animation: highfiveWave 2s ease-in-out infinite;
 }
@@ -5368,7 +5368,7 @@ textarea {
 }
 
 .highfive-text {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
