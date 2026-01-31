@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.66";
+const APP_VERSION = "2.7.67";
 
 // ============================================
 // DATA STRUCTURES
@@ -46,6 +46,153 @@ const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 // ============================================
 
 const CHALLENGE_TEMPLATES = [
+    // ================== PUSH-UP CHALLENGES (3 Levels) ==================
+    {
+        id: 'pushup_lv1',
+        name: '💪 Flessioni Liv.1',
+        description: 'Programma principianti: da 5 a 30 flessioni in 30 giorni. Costruisci le basi della forza.',
+        duration: 30,
+        icon: '💪',
+        category: 'fitness',
+        stars: 3,
+        level: 1,
+        primaryStatId: 'str',
+        color: '#22c55e',
+        unlockRequirement: null, // Always available
+        generateSubquests: () => {
+            // Based on research: Week 1 foundation (5-15), Week 2 (18-28), Week 3 (30-42), Week 4 (45-60)
+            const daily = [
+                5, 7, 9, 'R', 10, 12, 'R', // Week 1
+                15, 17, 19, 'R', 21, 23, 'R', // Week 2
+                25, 27, 28, 'R', 30, 32, 'R', // Week 3
+                35, 38, 40, 'R', 45, 50, 'R', 55, 60 // Week 4
+            ].filter(v => v !== 'R');
+            return daily.map((reps, i) => ({
+                id: `day_${i + 1}`,
+                name: `Giorno ${i + 1}: ${reps} flessioni`,
+                targetReps: reps,
+                completed: false
+            }));
+        }
+    },
+    {
+        id: 'pushup_lv2',
+        name: '💪 Flessioni Liv.2',
+        description: 'Programma intermedio: da 40 a 80 flessioni in 30 giorni. Aumenta volume e resistenza.',
+        duration: 30,
+        icon: '💪',
+        category: 'fitness',
+        stars: 4,
+        level: 2,
+        primaryStatId: 'str',
+        color: '#f59e0b',
+        unlockRequirement: 'pushup_lv1',
+        generateSubquests: () => {
+            const daily = [
+                40, 42, 45, 'R', 48, 50, 'R', // Week 1
+                52, 55, 57, 'R', 60, 62, 'R', // Week 2
+                65, 67, 70, 'R', 72, 75, 'R', // Week 3
+                78, 80, 82, 'R', 85, 90, 'R', 95, 100 // Week 4
+            ].filter(v => v !== 'R');
+            return daily.map((reps, i) => ({
+                id: `day_${i + 1}`,
+                name: `Giorno ${i + 1}: ${reps} flessioni`,
+                targetReps: reps,
+                completed: false
+            }));
+        }
+    },
+    {
+        id: 'pushup_lv3',
+        name: '💪 Flessioni Liv.3',
+        description: 'Programma avanzato: da 80 a 150+ flessioni in 30 giorni. Raggiungi il massimo potenziale.',
+        duration: 30,
+        icon: '💪',
+        category: 'fitness',
+        stars: 5,
+        level: 3,
+        primaryStatId: 'str',
+        color: '#ef4444',
+        unlockRequirement: 'pushup_lv2',
+        generateSubquests: () => {
+            const daily = [
+                80, 85, 90, 'R', 95, 100, 'R', // Week 1
+                105, 110, 115, 'R', 120, 125, 'R', // Week 2
+                130, 135, 140, 'R', 145, 150, 'R', // Week 3
+                155, 160, 165, 'R', 170, 175, 'R', 180, 200 // Week 4
+            ].filter(v => v !== 'R');
+            return daily.map((reps, i) => ({
+                id: `day_${i + 1}`,
+                name: `Giorno ${i + 1}: ${reps} flessioni (+ varianti)`,
+                targetReps: reps,
+                completed: false
+            }));
+        }
+    },
+
+    // ================== NUTRITION CHALLENGES (3 Types) ==================
+    {
+        id: 'nutrition_maintain',
+        name: '🥗 Nutrizione Mantenimento',
+        description: '30 giorni di alimentazione equilibrata. Proteine 1g/kg, 8 bicchieri acqua, pasti regolari.',
+        duration: 30,
+        icon: '🥗',
+        category: 'health',
+        stars: 3,
+        level: 1,
+        primaryStatId: 'con',
+        color: '#22c55e',
+        trackingMode: 'checkbox', // can be 'checkbox' or 'detailed'
+        unlockRequirement: null,
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: Pasti equilibrati ✓`,
+            goals: ['Proteine OK', '8 bicchieri acqua', 'No junk food', 'Pasti regolari'],
+            completed: false
+        }))
+    },
+    {
+        id: 'nutrition_cut',
+        name: '🔥 Nutrizione Dimagrimento',
+        description: '30 giorni in deficit calorico (-500kcal). Proteine alte, 10k passi, niente alcol.',
+        duration: 30,
+        icon: '🔥',
+        category: 'health',
+        stars: 4,
+        level: 1,
+        primaryStatId: 'con',
+        color: '#f59e0b',
+        trackingMode: 'checkbox',
+        unlockRequirement: null,
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: Deficit mantenuto`,
+            goals: ['Deficit -500kcal', 'Proteine 1.2g/kg', '10k passi', 'No alcol'],
+            completed: false
+        }))
+    },
+    {
+        id: 'nutrition_bulk',
+        name: '🏋️ Nutrizione Massa',
+        description: '30 giorni in surplus calorico (+300kcal). Proteine 1.5g/kg, allenamento forza, pasto post-workout.',
+        duration: 30,
+        icon: '🏋️',
+        category: 'health',
+        stars: 4,
+        level: 1,
+        primaryStatId: 'str',
+        color: '#ef4444',
+        trackingMode: 'checkbox',
+        unlockRequirement: null,
+        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+            id: `day_${i + 1}`,
+            name: `Giorno ${i + 1}: Surplus + Forza`,
+            goals: ['Surplus +300kcal', 'Proteine 1.5g/kg', 'Allenamento forza', 'Pasto post-workout'],
+            completed: false
+        }))
+    },
+
+    // ================== OTHER CHALLENGES ==================
     {
         id: 'no_smoke_30',
         name: '🚭 Detox Sigarette',
@@ -56,6 +203,7 @@ const CHALLENGE_TEMPLATES = [
         stars: 5,
         primaryStatId: 'con',
         color: '#10b981',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1} senza sigarette`,
@@ -72,6 +220,7 @@ const CHALLENGE_TEMPLATES = [
         stars: 5,
         primaryStatId: 'wis',
         color: '#8b5cf6',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1} completato`,
@@ -79,38 +228,16 @@ const CHALLENGE_TEMPLATES = [
         }))
     },
     {
-        id: 'pushup_30',
-        name: '💪 Push-up Challenge',
-        description: 'Programma progressivo di flessioni: da 10 a 50 al giorno in 30 giorni.',
-        duration: 30,
-        icon: '💪',
-        category: 'fitness',
-        stars: 4,
-        primaryStatId: 'str',
-        color: '#ef4444',
-        generateSubquests: () => {
-            const progression = [];
-            for (let i = 1; i <= 30; i++) {
-                const reps = Math.min(50, 10 + Math.floor((i - 1) * 1.4));
-                progression.push({
-                    id: `day_${i}`,
-                    name: `Giorno ${i}: ${reps} flessioni`,
-                    completed: false
-                });
-            }
-            return progression;
-        }
-    },
-    {
         id: 'no_junk_30',
-        name: '🥗 No Junk Food',
+        name: '🍎 No Junk Food',
         description: '30 giorni senza cibo spazzatura. Nutri il tuo corpo con cibo vero.',
         duration: 30,
-        icon: '🥗',
+        icon: '🍎',
         category: 'health',
         stars: 4,
         primaryStatId: 'con',
         color: '#22c55e',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1} senza junk food`,
@@ -127,6 +254,7 @@ const CHALLENGE_TEMPLATES = [
         stars: 3,
         primaryStatId: 'int',
         color: '#3b82f6',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1}: 20+ pagine lette`,
@@ -143,6 +271,7 @@ const CHALLENGE_TEMPLATES = [
         stars: 3,
         primaryStatId: 'wis',
         color: '#06b6d4',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 21 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1}: Sessione meditazione`,
@@ -159,6 +288,7 @@ const CHALLENGE_TEMPLATES = [
         stars: 4,
         primaryStatId: 'str',
         color: '#0ea5e9',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1}: Doccia fredda ✓`,
@@ -175,6 +305,7 @@ const CHALLENGE_TEMPLATES = [
         stars: 4,
         primaryStatId: 'wis',
         color: '#f59e0b',
+        unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1}: Max 1h schermo`,
@@ -2691,21 +2822,45 @@ function showChallengeCatalog() {
         document.body.appendChild(overlay);
     }
 
-    // Populate grid
+    // Populate grid with unlock logic
     const grid = document.getElementById('challengeGrid');
-    grid.innerHTML = CHALLENGE_TEMPLATES.map(template => `
-        <div class="challenge-card" onclick="showChallengePreview('${template.id}')" style="--card-color: ${template.color}">
-            <div class="challenge-card-icon">${template.icon}</div>
-            <div class="challenge-card-info">
-                <div class="challenge-card-name">${template.name.replace(/^.*? /, '')}</div>
-                <div class="challenge-card-duration">${template.duration} giorni</div>
+    grid.innerHTML = CHALLENGE_TEMPLATES.map(template => {
+        const isUnlocked = isChallengeUnlocked(template.id);
+        const lockedClass = isUnlocked ? '' : 'locked';
+        const lockIcon = isUnlocked ? '' : '<span class="lock-icon">🔒</span>';
+        const levelBadge = template.level ? `<span class="level-badge">Liv.${template.level}</span>` : '';
+
+        return `
+            <div class="challenge-card ${lockedClass}" 
+                 onclick="${isUnlocked ? `showChallengePreview('${template.id}')` : 'void(0)'}" 
+                 style="--card-color: ${template.color}"
+                 title="${isUnlocked ? '' : 'Completa il livello precedente per sbloccare'}">
+                ${lockIcon}
+                <div class="challenge-card-icon">${template.icon}</div>
+                <div class="challenge-card-info">
+                    <div class="challenge-card-name">${template.name.replace(/^.*? /, '')} ${levelBadge}</div>
+                    <div class="challenge-card-duration">${template.duration} giorni</div>
+                </div>
+                <div class="challenge-card-stars">${'⭐'.repeat(template.stars)}</div>
             </div>
-            <div class="challenge-card-stars">${'⭐'.repeat(template.stars)}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     overlay.classList.remove('hidden');
     overlay.classList.add('active');
+}
+
+// Check if a challenge is unlocked (parent completed or no requirement)
+function isChallengeUnlocked(templateId) {
+    const template = CHALLENGE_TEMPLATES.find(t => t.id === templateId);
+    if (!template || !template.unlockRequirement) return true;
+
+    // Check if the required parent challenge was completed
+    return state.quests.some(q =>
+        q.templateId === template.unlockRequirement &&
+        q.subquests &&
+        q.subquests.every(s => s.completed)
+    );
 }
 
 function closeChallengeCatalog() {
@@ -2960,34 +3115,53 @@ function renderChallengeView(quest, container) {
     const nextDayIndex = completedCount; // 0-indexed
     const canComplete = nextDayIndex < totalDays;
 
-    // Generate tally marks HTML grouped by weeks
+    // Generate tally marks HTML - groups of 5 with strikethrough
+    // Every 5th mark shows as a horizontal line crossing the previous 4
     let tallyHtml = '';
-    let weekHtml = '';
 
     for (let i = 0; i < totalDays; i++) {
         const isCompleted = subquests[i]?.completed;
         const isNextDay = i === nextDayIndex;
-        const dayInWeek = i % 7;
+        const positionInGroup = i % 5; // 0-4
+        const groupStart = Math.floor(i / 5) * 5;
 
-        // Start new week
-        if (dayInWeek === 0 && i > 0) {
-            tallyHtml += `<div class="tally-week">${weekHtml}</div>`;
-            weekHtml = '';
+        // Determine status class
+        const statusClass = isCompleted ? 'completed' : (isNextDay ? 'next' : 'pending');
+
+        // Check if this is the 5th mark (index 4 in group = position 4)
+        if (positionInGroup === 4) {
+            // This is the 5th mark - it's the strikethrough bar
+            // Create a complete group of 5 with the horizontal line
+            let groupMarks = '';
+            for (let j = 0; j < 4; j++) {
+                const markIdx = groupStart + j;
+                const markCompleted = subquests[markIdx]?.completed;
+                const markNext = markIdx === nextDayIndex;
+                const markClass = markCompleted ? 'completed' : (markNext ? 'next' : 'pending');
+                groupMarks += `<span class="tally-bar ${markClass}">│</span>`;
+            }
+            // Add the strikethrough line overlaid
+            tallyHtml += `<div class="tally-group-5 ${statusClass}" title="Giorni ${groupStart + 1}-${groupStart + 5}">
+                <div class="tally-bars">${groupMarks}</div>
+                <div class="tally-strike-line ${statusClass}"></div>
+            </div>`;
+        } else if (positionInGroup === 0) {
+            // First of a potential new group
+            // Check if this group will be incomplete (less than 5 remaining)
+            const remainingInGroup = Math.min(5, totalDays - groupStart);
+            if (remainingInGroup < 5) {
+                // Incomplete final group - just show individual bars
+                for (let k = groupStart; k < totalDays; k++) {
+                    const markCompleted = subquests[k]?.completed;
+                    const markNext = k === nextDayIndex;
+                    const markClass = markCompleted ? 'completed' : (markNext ? 'next' : 'pending');
+                    tallyHtml += `<span class="tally-bar single ${markClass}" title="Giorno ${k + 1}">│</span>`;
+                }
+                break; // Exit the loop as we handled remaining marks
+            }
+            // Otherwise continue - the group will be completed at i % 5 === 4
         }
-
-        // Each tally mark - 5th mark is diagonal crossing the previous 4
-        const markClass = isCompleted ? 'completed' : (isNextDay ? 'next' : 'pending');
-        const isFifth = (dayInWeek + 1) % 5 === 0 && dayInWeek > 0;
-
-        if (isFifth) {
-            weekHtml += `<span class="tally-mark tally-strike ${markClass}" title="Giorno ${i + 1}">╱</span>`;
-        } else {
-            weekHtml += `<span class="tally-mark ${markClass}" title="Giorno ${i + 1}">│</span>`;
-        }
-    }
-    // Add remaining week
-    if (weekHtml) {
-        tallyHtml += `<div class="tally-week">${weekHtml}</div>`;
+        // Marks 1-3 (positions 1,2,3) are handled when the group is completed at position 4
     }
 
     container.innerHTML = `
@@ -2996,7 +3170,7 @@ function renderChallengeView(quest, container) {
         </div>
 
         <div class="quest-scroll-area challenge-view">
-            <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:24px; font-size:15px; font-style:italic;">
+            <div class="quest-description" style="text-align:center; color:var(--text-secondary); margin-bottom:16px; font-size:14px; font-style:italic;">
                 ${quest.description || 'Una sfida da completare!'}
             </div>
 
@@ -3021,7 +3195,7 @@ function renderChallengeView(quest, container) {
             </div>
             `}
 
-            <div class="quest-reward-area" style="margin-top:24px;">
+            <div class="quest-reward-area" style="margin-top:16px;">
                 <div style="display:flex; justify-content:center; gap:12px; font-size:14px; color:var(--text-muted);">
                     <span>${'⭐'.repeat(quest.stars)}</span>
                     <span>✨ ${calculateXp(quest.stars) * 2} XP</span>
