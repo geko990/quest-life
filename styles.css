@@ -1265,10 +1265,9 @@ input#settingName {
     align-items: center;
     justify-content: center;
     padding: 0;
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 500;
-    line-height: 0;
-    padding-bottom: 3px;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.2s;
     flex-shrink: 0;

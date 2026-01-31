@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.64";
+const APP_VERSION = "2.7.65";
 
 // ============================================
 // DATA STRUCTURES
@@ -2677,13 +2677,12 @@ function showChallengeCatalog() {
         overlay.id = 'challengeCatalogOverlay';
         overlay.className = 'modal-overlay challenge-catalog-overlay';
         overlay.innerHTML = `
-            <div class="challenge-catalog-modal">
+            <div class="challenge-catalog-modal" onclick="event.stopPropagation()">
                 <div class="challenge-catalog-header">
-                    <h2>🏆 Sfide Disponibili</h2>
+                    <h2>⚔️ Sfide Disponibili</h2>
                     <p class="challenge-catalog-subtitle">Scegli una sfida da iniziare</p>
                 </div>
                 <div class="challenge-catalog-grid" id="challengeGrid"></div>
-                <button class="settings-btn" onclick="closeChallengeCatalog()">Chiudi</button>
             </div>
         `;
         overlay.onclick = (e) => {
@@ -2813,7 +2812,7 @@ function importChallenge(templateId) {
     playSound('success');
 
     // Navigate to quest tab and render
-    showSection('quests');
+    switchSection('quest');
     renderQuests();
 
     // Open the new quest detail
