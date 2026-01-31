@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.65";
+const APP_VERSION = "2.7.66";
 
 // ============================================
 // DATA STRUCTURES
@@ -3367,6 +3367,8 @@ function initSettings() {
     syncPopupToggleButtons('enableDailyPlanner', 'dailyPlannerOn', 'dailyPlannerOff');
     syncPopupToggleButtons('enableWeeklyRecap', 'weeklyRecapOn', 'weeklyRecapOff');
     syncPopupToggleButtons('soundEnabled', 'soundOn', 'soundOff');
+    syncPopupToggleButtons('showDiceButton', 'diceButtonOn', 'diceButtonOff');
+    updateDiceButtonVisibility();
 
     // Sync week start buttons
     const weekStart = state.settings.weekStart || 'sunday';
@@ -3409,6 +3411,7 @@ function setPopupSetting(setting, value) {
     if (setting === 'enableDailyPlanner') { onBtnId = 'dailyPlannerOn'; offBtnId = 'dailyPlannerOff'; }
     else if (setting === 'enableWeeklyRecap') { onBtnId = 'weeklyRecapOn'; offBtnId = 'weeklyRecapOff'; }
     else if (setting === 'animatedBackground') { onBtnId = 'animBgOn'; offBtnId = 'animBgOff'; }
+    else if (setting === 'showDiceButton') { onBtnId = 'diceButtonOn'; offBtnId = 'diceButtonOff'; }
     else { onBtnId = 'soundOn'; offBtnId = 'soundOff'; } // Sound
 
     syncPopupToggleButtons(setting, onBtnId, offBtnId);
@@ -3417,6 +3420,10 @@ function setPopupSetting(setting, value) {
 
     if (setting === 'animatedBackground') {
         updateImmersiveBackground(state.settings.theme);
+    }
+
+    if (setting === 'showDiceButton') {
+        updateDiceButtonVisibility();
     }
 }
 
@@ -3435,6 +3442,14 @@ function setWeekStart(value) {
     renderCalendar();
 }
 
+// Show/hide dice button based on setting
+function updateDiceButtonVisibility() {
+    const diceBtn = document.getElementById('diceButtonTrigger');
+    if (diceBtn) {
+        const showDice = state.settings.showDiceButton !== false; // Default true
+        diceBtn.style.display = showDice ? '' : 'none';
+    }
+}
 
 
 function initColorPicker() {

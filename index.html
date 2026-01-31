@@ -219,7 +219,8 @@
                 <div class="section-header">
                     <h2>💥 One Shot</h2>
                     <div class="header-actions" style="display: flex; gap: 8px;">
-                        <button class="add-btn-circle" onclick="showDailyPlanner()" title="È il tuo turno!">🎲</button>
+                        <button class="add-btn-circle" id="diceButtonTrigger" onclick="showDailyPlanner()"
+                            title="È il tuo turno!">🎲</button>
                         <button class="add-btn-circle" onclick="openToxicInventory()" title="Zaino Tossico">🎒</button>
                         <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
                     </div>
@@ -364,6 +365,20 @@
                                 <button class="theme-btn" id="weeklyRecapOff"
                                     onclick="setPopupSetting('enableWeeklyRecap', false)">OFF</button>
                             </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>🎲 Bottone Dado</label>
+                            <div class="theme-switcher" style="min-width:120px;">
+                                <button class="theme-btn active" id="diceButtonOn"
+                                    onclick="setPopupSetting('showDiceButton', true)">ON</button>
+                                <button class="theme-btn" id="diceButtonOff"
+                                    onclick="setPopupSetting('showDiceButton', false)">OFF</button>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label>Apri Turno Manuale</label>
+                            <button class="settings-btn" onclick="showDailyPlanner()" style="flex:1;">🎲 È il tuo
+                                Turno!</button>
                         </div>
                     </div>
                 </div>
