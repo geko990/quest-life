@@ -2997,7 +2997,8 @@ function importChallenge(templateId) {
     };
 
     // Add to quests list
-    state.quests.push(quest);
+    // Add to quests list (unshift to show at top)
+    state.quests.unshift(quest);
     saveState();
 
     // Close modals
@@ -3010,10 +3011,13 @@ function importChallenge(templateId) {
 
     // Switch to quests tab and refresh
     switchSection('quest');
-    renderQuests();
 
-    // Open the new quest detail
-    setTimeout(() => openQuestDetail(quest.id), 300);
+    // Force a slight delay to ensure DOM is ready if switching sections
+    setTimeout(() => {
+        renderQuests();
+        // Open the new quest detail
+        openQuestDetail(quest.id);
+    }, 100);
 }
 
 function renderQuests() {
@@ -4518,11 +4522,7 @@ function editTask(type, id) {
     if (item) openModal(type, item);
 }
 
-// Quest Detail Helpers
-function closeQuestDetailModal() {
-    document.getElementById('questDetailModal').classList.remove('active');
-    currentOpenedQuestId = null;
-}
+
 
 function deleteCurrentQuestInModal() {
     if (currentOpenedQuestId) {
