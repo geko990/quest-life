@@ -3,7 +3,7 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.68";
+const APP_VERSION = "2.7.70";
 
 // ============================================
 // DATA STRUCTURES
@@ -2005,20 +2005,20 @@ function getPlayerTitle() {
     return title;
 }
 
-function getMonthlyXpByStats() {
+function getRollingXpByStats(days = 30) {
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(now.getDate() - days);
 
-    // Filtra i log del mese corrente
-    const monthlyLogs = state.xpLog.filter(log => {
+    // Filtra i log degli ultimi 'days' giorni
+    const recentLogs = state.xpLog.filter(log => {
         const logDate = new Date(log.date);
-        return logDate.getMonth() === currentMonth && logDate.getFullYear() === currentYear;
+        return logDate >= cutoffDate && logDate <= now;
     });
 
     // Aggrega XP per statId
     const xpByStats = {};
-    monthlyLogs.forEach(log => {
+    recentLogs.forEach(log => {
         if (!xpByStats[log.statId]) {
             xpByStats[log.statId] = 0;
         }
@@ -2036,16 +2036,16 @@ function renderRadarChart() {
     const visibleStats = state.stats.filter(s => s.visible);
     if (visibleStats.length === 0) return;
 
-    // Calcola XP mensile per stat
-    const monthlyXp = getMonthlyXpByStats();
-    const monthlyData = visibleStats.map(s => monthlyXp[s.id] || 0);
-    const maxMonthlyXp = Math.max(50, ...monthlyData); // Minimo 50 per scala visibile
+    // Calcola XP ultimi 30 giorni per stat
+    const rollingXp = getRollingXpByStats(30);
+    const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
+    const maxRollingXp = Math.max(50, ...rollingData); // Minimo 50 per scala visibile
 
     const data = {
         labels: visibleStats.map(s => s.icon), // Emojis only for cleaner look
         datasets: [{
-            label: 'XP Mensile',
-            data: monthlyData,
+            label: 'XP 30 Giorni',
+            data: rollingData,
             backgroundColor: 'rgba(124, 58, 237, 0.2)',
             borderColor: 'rgba(124, 58, 237, 1)',
             borderWidth: 2,
@@ -2062,7 +2062,7 @@ function renderRadarChart() {
             r: {
                 beginAtZero: true,
                 min: 0,
-                max: maxMonthlyXp + Math.round(maxMonthlyXp * 0.2), // Buffer
+                max: maxRollingXp + Math.round(maxRollingXp * 0.2), // Buffer
                 ticks: { display: false }, // Hide numbers
                 grid: { color: 'rgba(128, 128, 128, 0.15)' },
                 angleLines: { color: 'rgba(128, 128, 128, 0.15)' },
@@ -2077,7 +2077,7 @@ function renderRadarChart() {
             tooltip: {
                 callbacks: {
                     label: function (context) {
-                        return `${context.parsed.r} XP questo mese`;
+                        return `${context.parsed.r} XP ultimi 30gg`;
                     }
                 }
             }
@@ -2104,17 +2104,17 @@ function showProgressPopup(gainedStatId = null, gainedAmount = 0) {
     const visibleStats = state.stats.filter(s => s.visible);
     if (visibleStats.length === 0) return;
 
-    const monthlyXp = getMonthlyXpByStats();
+    const rollingXp = getRollingXpByStats(30);
 
     // Calculate "Old" data by subtracting the gained amount from the relevant stat
-    const currentData = visibleStats.map(s => monthlyXp[s.id] || 0);
+    const currentData = visibleStats.map(s => rollingXp[s.id] || 0);
     const oldData = visibleStats.map(s => {
-        let val = monthlyXp[s.id] || 0;
+        let val = rollingXp[s.id] || 0;
         if (s.id === gainedStatId) val = Math.max(0, val - gainedAmount);
         return val;
     });
 
-    const maxMonthlyXp = Math.max(50, ...currentData);
+    const maxRollingXp = Math.max(50, ...currentData);
 
     const data = {
         labels: visibleStats.map(s => s.icon),
@@ -2150,7 +2150,7 @@ function showProgressPopup(gainedStatId = null, gainedAmount = 0) {
             r: {
                 beginAtZero: true,
                 min: 0,
-                max: maxMonthlyXp + Math.round(maxMonthlyXp * 0.2), // Dynamic scaling
+                max: maxRollingXp + Math.round(maxRollingXp * 0.2), // Dynamic scaling
                 ticks: { display: false },
                 pointLabels: { font: { size: 10, weight: '600' } }
             }
