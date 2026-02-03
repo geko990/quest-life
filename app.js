@@ -62,12 +62,21 @@ function shiftProgressiveHabits() {
     }
 }
 
-// Check habit streaks and reset if yesterday was missed
+// Check habit streaks and reset if yesterday was missed (after grace period)
 function checkHabitStreaks() {
+    const now = new Date();
+    const currentHour = now.getHours();
     const today = getGameDate();
     const yesterday = getGameDateObj();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = formatISO(yesterday);
+
+    // GRACE PERIOD: Don't reset streaks until after noon
+    // This gives users time to mark yesterday's habits before losing the streak
+    if (currentHour < 12) {
+        console.log('Streak check: Still in grace period (before noon), skipping reset');
+        return;
+    }
 
     let changed = false;
 
@@ -77,7 +86,6 @@ function checkHabitStreaks() {
 
         // ONLY check DAILY habits - periodic habits have their own logic
         if (habit.frequency && habit.frequency !== 'daily') {
-            // For times_week and times_month, don't reset based on single day
             return;
         }
 
@@ -91,14 +99,11 @@ function checkHabitStreaks() {
         const logYesterday = state.completionLog[yesterdayStr];
         const completedYesterday = Array.isArray(logYesterday) && logYesterday.includes(habit.id);
 
-        // Only reset if NOT completed yesterday and lastCompleted is clearly in the past
+        // Reset if NOT completed yesterday (and we're past noon grace period)
         if (!completedYesterday) {
-            // Double-check: if lastCompleted was before yesterday, reset
-            if (habit.lastCompleted && habit.lastCompleted < yesterdayStr) {
-                console.log(`Resetting streak for daily habit: ${habit.name} (was ${habit.streak})`);
-                habit.streak = 0;
-                changed = true;
-            }
+            console.log(`Resetting streak for daily habit: ${habit.name} (was ${habit.streak}) - past noon grace period`);
+            habit.streak = 0;
+            changed = true;
         }
     });
 
@@ -169,6 +174,18 @@ function rebuildStreaksFromLog() {
 }
 
 window.rebuildStreaksFromLog = rebuildStreaksFromLog;
+
+// UI wrapper for rebuildStreaksFromLog with user feedback
+function rebuildStreaksUI() {
+    const fixed = rebuildStreaksFromLog();
+    if (fixed > 0) {
+        alert(`✅ Riparate ${fixed} streak!\n\nLe streak sono state ricalcolate basandosi sullo storico dei completamenti.`);
+    } else {
+        alert('✅ Tutte le streak sono già corrette!\n\nNessuna modifica necessaria.');
+    }
+}
+
+window.rebuildStreaksUI = rebuildStreaksUI;
 
 // ============================================
 // XP PENALTY SYSTEM
@@ -1977,13 +1994,52 @@ function toggleHabit(habitId, targetDate = null) {
             const xpGained = calculateXp(habit.stars);
             showProgressPopup(habit.primaryStatId, xpGained);
         } else {
-            // RETROACTIVE COMPLETION: Update lastCompleted even for past dates
+            // RETROACTIVE COMPLETION: Completing a past date
             // IMPORTANT: Parse YYYY-MM-DD to local date safely. 
             // We use noon (12:00) to avoid timezone rollover issues when converting to string.
             if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
                 const [y, m, d] = dateStr.split('-').map(Number);
                 const targetDateObj = new Date(y, m - 1, d, 12, 0, 0);
                 habit.lastCompleted = targetDateObj.toDateString();
+
+                // STREAK RESTORATION: If marking yesterday before noon, rebuild streak
+                const now = new Date();
+                const yesterday = getGameDateObj();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = formatISO(yesterday);
+
+                if (dateStr === yesterdayStr && now.getHours() < 12) {
+                    // User is completing yesterday's habit during grace period
+                    // Rebuild the streak from completion log
+                    const allDates = Object.keys(state.completionLog)
+                        .filter(dt => {
+                            const log = state.completionLog[dt];
+                            return Array.isArray(log) && log.includes(habit.id);
+                        })
+                        .sort((a, b) => b.localeCompare(a)); // Most recent first
+
+                    // Count consecutive days starting from yesterday
+                    let streak = 0;
+                    let checkDate = new Date(yesterday);
+
+                    while (true) {
+                        const checkStr = formatISO(checkDate);
+                        const log = state.completionLog[checkStr];
+                        // Include today's completion we're about to add
+                        if ((Array.isArray(log) && log.includes(habit.id)) || checkStr === dateStr) {
+                            streak++;
+                            checkDate.setDate(checkDate.getDate() - 1);
+                        } else {
+                            break;
+                        }
+                        if (streak > 365) break;
+                    }
+
+                    if (streak > habit.streak) {
+                        console.log(`Restoring streak for ${habit.name}: ${habit.streak} -> ${streak} (grace period completion)`);
+                        habit.streak = streak;
+                    }
+                }
             } else {
                 habit.lastCompleted = new Date().toDateString(); // Fallback
             }
