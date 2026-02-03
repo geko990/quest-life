@@ -3,427 +3,29 @@
    Complete Application Logic
    ============================================ */
 
-const APP_VERSION = "2.7.70";
+import { APP_VERSION, DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js';
+import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate } from './js/modules/utils.js';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveStateToFile } from './js/modules/storage.js';
 
-// ============================================
-// DATA STRUCTURES
-// ============================================
+// Expose globals for HTML event handlers and legacy code
+window.state = state;
+window.saveState = saveState;
+window.resetAll = resetAll;
+window.APP_VERSION = APP_VERSION;
+window.DEFAULT_ATTRIBUTES = DEFAULT_ATTRIBUTES;
+window.DEFAULT_ABILITIES = DEFAULT_ABILITIES;
+window.AVATAR_EMOJIS = AVATAR_EMOJIS;
+window.ACCENT_COLORS = ACCENT_COLORS;
+window.XP_CONFIG = XP_CONFIG;
+window.TITLES = TITLES;
+window.DAY_NAMES = DAY_NAMES;
+window.CHALLENGE_TEMPLATES = CHALLENGE_TEMPLATES;
 
-const DEFAULT_ATTRIBUTES = [
-    { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
-    { id: 'dex', name: 'Destrezza', icon: '⚡', description: 'Agilità e velocità. Produttività, adattamento e rapidità decisionale. Multitasking efficiente.', type: 'attribute', visible: true, level: 1, xp: 0 },
-    { id: 'con', name: 'Costituzione', icon: '🛡️', description: 'Salute e resistenza. Alimentazione, sonno, gestione stress e cura del corpo.', type: 'attribute', visible: true, level: 1, xp: 0 },
-    { id: 'int', name: 'Intelligenza', icon: '🧠', description: 'Apprendimento e problem solving. Studio, lettura, pensiero critico. Include l\'empatia cognitiva.', type: 'attribute', visible: true, level: 1, xp: 0 },
-    { id: 'wis', name: 'Saggezza', icon: '✨', description: 'Intuizione e consapevolezza. Mindfulness, riflessione, decisioni allineate ai tuoi valori.', type: 'attribute', visible: true, level: 1, xp: 0 },
-    { id: 'cha', name: 'Carisma', icon: '👑', description: 'Presenza e comunicazione. Leadership, networking, public speaking e capacità di ispirare.', type: 'attribute', visible: true, level: 1, xp: 0 }
-];
-
-const DEFAULT_ABILITIES = [
-    { id: 'cre', name: 'Creatività', icon: '🎨', description: 'Immaginazione e creazione. Arte, musica, scrittura, design e innovazione.', type: 'ability', visible: false, level: 1, xp: 0 }
-];
-
-const AVATAR_EMOJIS = ['⚔️', '🗡️', '🏹', '🛡️', '👑', '🧙', '🧝', '🧚', '🦸', '🦹', '🥷', '🧑‍🚀', '👤', '🐉', '🦅', '🐺', '🦁', '🐻', '🌟', '💎', '🔥', '❄️', '⚡', '🌙'];
-
-const ACCENT_COLORS = ['violet', 'blue', 'indigo', 'cyan', 'teal', 'emerald', 'gold', 'orange', 'rose', 'pink', 'red', 'green', 'yellow', 'lime', 'sky'];
-
-const XP_CONFIG = {
-    baseXpPerLevel: 100,
-    levelMultiplier: 1.5,
-    starsMultiplier: { 1: 0.5, 2: 0.75, 3: 1, 4: 1.5, 5: 2 },
-    secondaryRatio: 0.33
+// Wrapper for linkDatabaseFile to pass state
+window.linkDatabaseFile = async function () {
+    await linkDBInit(state);
 };
-
-const TITLES = [
-    { level: 1, title: 'Novizio' }, { level: 5, title: 'Apprendista' }, { level: 10, title: 'Avventuriero' },
-    { level: 15, title: 'Veterano' }, { level: 20, title: 'Esperto' }, { level: 25, title: 'Maestro' },
-    { level: 30, title: 'Campione' }, { level: 40, title: 'Leggenda' }, { level: 50, title: 'Eroe' }
-];
-
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
-
-// ============================================
-// CHALLENGE TEMPLATES (Preset Quests)
-// ============================================
-
-const CHALLENGE_TEMPLATES = [
-    // ================== PUSH-UP CHALLENGES (3 Levels) ==================
-    {
-        id: 'pushup_lv1',
-        name: '💪 Flessioni Liv.1',
-        description: 'Programma principianti: da 5 a 30 flessioni in 30 giorni. Costruisci le basi della forza.',
-        duration: 30,
-        icon: '💪',
-        category: 'fitness',
-        stars: 3,
-        level: 1,
-        primaryStatId: 'str',
-        color: '#22c55e',
-        unlockRequirement: null, // Always available
-        generateSubquests: () => {
-            // Based on research: Week 1 foundation (5-15), Week 2 (18-28), Week 3 (30-42), Week 4 (45-60)
-            const daily = [
-                5, 7, 9, 'R', 10, 12, 'R', // Week 1
-                15, 17, 19, 'R', 21, 23, 'R', // Week 2
-                25, 27, 28, 'R', 30, 32, 'R', // Week 3
-                35, 38, 40, 'R', 45, 50, 'R', 55, 60 // Week 4
-            ].filter(v => v !== 'R');
-            return daily.map((reps, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${reps} flessioni`,
-                targetReps: reps,
-                completed: false
-            }));
-        }
-    },
-    {
-        id: 'pushup_lv2',
-        name: '💪 Flessioni Liv.2',
-        description: 'Programma intermedio: da 40 a 80 flessioni in 30 giorni. Aumenta volume e resistenza.',
-        duration: 30,
-        icon: '💪',
-        category: 'fitness',
-        stars: 4,
-        level: 2,
-        primaryStatId: 'str',
-        color: '#f59e0b',
-        unlockRequirement: 'pushup_lv1',
-        generateSubquests: () => {
-            const daily = [
-                40, 42, 45, 'R', 48, 50, 'R', // Week 1
-                52, 55, 57, 'R', 60, 62, 'R', // Week 2
-                65, 67, 70, 'R', 72, 75, 'R', // Week 3
-                78, 80, 82, 'R', 85, 90, 'R', 95, 100 // Week 4
-            ].filter(v => v !== 'R');
-            return daily.map((reps, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${reps} flessioni`,
-                targetReps: reps,
-                completed: false
-            }));
-        }
-    },
-    {
-        id: 'pushup_lv3',
-        name: '💪 Flessioni Liv.3',
-        description: 'Programma avanzato: da 80 a 150+ flessioni in 30 giorni. Raggiungi il massimo potenziale.',
-        duration: 30,
-        icon: '💪',
-        category: 'fitness',
-        stars: 5,
-        level: 3,
-        primaryStatId: 'str',
-        color: '#ef4444',
-        unlockRequirement: 'pushup_lv2',
-        generateSubquests: () => {
-            const daily = [
-                80, 85, 90, 'R', 95, 100, 'R', // Week 1
-                105, 110, 115, 'R', 120, 125, 'R', // Week 2
-                130, 135, 140, 'R', 145, 150, 'R', // Week 3
-                155, 160, 165, 'R', 170, 175, 'R', 180, 200 // Week 4
-            ].filter(v => v !== 'R');
-            return daily.map((reps, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${reps} flessioni (+ varianti)`,
-                targetReps: reps,
-                completed: false
-            }));
-        }
-    },
-
-    // ================== NUTRITION CHALLENGES (3 Types) ==================
-    {
-        id: 'nutrition_maintain',
-        name: '🥗 Nutrizione Mantenimento',
-        description: '30 giorni di alimentazione equilibrata. Proteine 1g/kg, 8 bicchieri acqua, pasti regolari.',
-        duration: 30,
-        icon: '🥗',
-        category: 'health',
-        stars: 3,
-        level: 1,
-        primaryStatId: 'con',
-        color: '#22c55e',
-        trackingMode: 'checkbox', // can be 'checkbox' or 'detailed'
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: Pasti equilibrati ✓`,
-            goals: ['Proteine OK', '8 bicchieri acqua', 'No junk food', 'Pasti regolari'],
-            completed: false
-        }))
-    },
-    {
-        id: 'nutrition_cut',
-        name: '🔥 Nutrizione Dimagrimento',
-        description: '30 giorni in deficit calorico (-500kcal). Proteine alte, 10k passi, niente alcol.',
-        duration: 30,
-        icon: '🔥',
-        category: 'health',
-        stars: 4,
-        level: 1,
-        primaryStatId: 'con',
-        color: '#f59e0b',
-        trackingMode: 'checkbox',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: Deficit mantenuto`,
-            goals: ['Deficit -500kcal', 'Proteine 1.2g/kg', '10k passi', 'No alcol'],
-            completed: false
-        }))
-    },
-    {
-        id: 'nutrition_bulk',
-        name: '🏋️ Nutrizione Massa',
-        description: '30 giorni in surplus calorico (+300kcal). Proteine 1.5g/kg, allenamento forza, pasto post-workout.',
-        duration: 30,
-        icon: '🏋️',
-        category: 'health',
-        stars: 4,
-        level: 1,
-        primaryStatId: 'str',
-        color: '#ef4444',
-        trackingMode: 'checkbox',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: Surplus + Forza`,
-            goals: ['Surplus +300kcal', 'Proteine 1.5g/kg', 'Allenamento forza', 'Pasto post-workout'],
-            completed: false
-        }))
-    },
-
-    // ================== OTHER CHALLENGES ==================
-    {
-        id: 'no_smoke_30',
-        name: '🚭 Detox Sigarette',
-        description: '30 giorni senza fumare. Ogni giorno è una vittoria verso una vita più sana.',
-        duration: 30,
-        icon: '🚭',
-        category: 'health',
-        stars: 5,
-        primaryStatId: 'con',
-        color: '#10b981',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1} senza sigarette`,
-            completed: false
-        }))
-    },
-    {
-        id: 'nofap_30',
-        name: '🚫 NoFap Challenge',
-        description: '30 giorni di astinenza. Riprendi il controllo della tua energia e focus.',
-        duration: 30,
-        icon: '🚫',
-        category: 'discipline',
-        stars: 5,
-        primaryStatId: 'wis',
-        color: '#8b5cf6',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1} completato`,
-            completed: false
-        }))
-    },
-    {
-        id: 'no_junk_30',
-        name: '🍎 No Junk Food',
-        description: '30 giorni senza cibo spazzatura. Nutri il tuo corpo con cibo vero.',
-        duration: 30,
-        icon: '🍎',
-        category: 'health',
-        stars: 4,
-        primaryStatId: 'con',
-        color: '#22c55e',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1} senza junk food`,
-            completed: false
-        }))
-    },
-    {
-        id: 'reading_30',
-        name: '📚 Reading Challenge',
-        description: 'Leggi almeno 20 pagine al giorno per 30 giorni. Espandi la tua mente.',
-        duration: 30,
-        icon: '📚',
-        category: 'growth',
-        stars: 3,
-        primaryStatId: 'int',
-        color: '#3b82f6',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: 20+ pagine lette`,
-            completed: false
-        }))
-    },
-    {
-        id: 'meditation_21',
-        name: '🧘 21 Days Meditation',
-        description: '21 giorni di meditazione quotidiana. Costruisci una mente calma e presente.',
-        duration: 21,
-        icon: '🧘',
-        category: 'mindfulness',
-        stars: 3,
-        primaryStatId: 'wis',
-        color: '#06b6d4',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 21 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: Sessione meditazione`,
-            completed: false
-        }))
-    },
-    {
-        id: 'cold_shower_30',
-        name: '🧊 Cold Shower Challenge',
-        description: '30 giorni di docce fredde. Costruisci disciplina mentale e resilienza.',
-        duration: 30,
-        icon: '🧊',
-        category: 'discipline',
-        stars: 4,
-        primaryStatId: 'str',
-        color: '#0ea5e9',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: Doccia fredda ✓`,
-            completed: false
-        }))
-    },
-    {
-        id: 'digital_detox_7',
-        name: '📱 Digital Detox',
-        description: '7 giorni con uso limitato dello smartphone. Riconquista il tuo tempo.',
-        duration: 7,
-        icon: '📱',
-        category: 'mindfulness',
-        stars: 4,
-        primaryStatId: 'wis',
-        color: '#f59e0b',
-        unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
-            id: `day_${i + 1}`,
-            name: `Giorno ${i + 1}: Max 1h schermo`,
-            completed: false
-        }))
-    }
-];
-
-// ============================================
-// APP STATE
-// ============================================
-
-let state = {
-    player: {
-        name: 'Avventuriero',
-        motto: '', // New motto field
-        level: 1,
-        totalXp: 0,
-        globalStreak: 0,
-        lastAccessDate: null,
-        lastActionDate: null, // Last task completion date
-        streakFreezes: 2, // Default freezes
-        lastFreezeReset: null, // Date of last freezes reset
-        lastBackupDate: null, // Last manual export date
-        avatarType: 'emoji',
-        avatarEmoji: '⚔️',
-        avatarImage: null,
-        monthlyChallenge: {
-            currentMonth: null, // Will be set on init e.g. '2026-01'
-            points: 0,
-            target: 50,
-            medals: [] // Array of {id, name, icon, earnedDate}
-        }
-    },
-    stats: [...DEFAULT_ATTRIBUTES.map(a => ({ ...a })), ...DEFAULT_ABILITIES.map(a => ({ ...a }))],
-    habits: [],
-    oneshots: [],
-    quests: [],
-    toxicItems: [],
-    completionLog: {},
-    xpLog: [], // Log di XP guadagnato: [{date, statId, amount}]
-    pomodoro: {
-        workDuration: 25,
-        targetStatId: 'int',
-        xpPerSession: 20,
-        sessionsToday: 0,
-        lastSessionDate: null
-    },
-    dailyPlan: {
-        lastPlanDate: null  // Date when last daily plan was shown
-    },
-    lastRecapWeek: null, // Week ID when last recap was shown
-    recapHistory: [], // Array of past weekly recaps: [{weekId, weekLabel, totalXp, topStat, bestHabit, pomodoroCount}]
-    penaltyLog: {}, // Log of penalties applied: {dateStr: [{habitId, habitName, xpLost, statId}]}
-    lastPenaltyCheck: null, // Last date+time penalties were checked
-    settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
-};
-
-function getGameDateObj() {
-    const now = new Date();
-    const startHour = state && state.settings ? (parseInt(state.settings.dayStartTime) || 0) : 0;
-    return new Date(now.getTime() - startHour * 60 * 60 * 1000);
-}
-
-function formatISO(date) {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function getGameDate() {
-    return formatISO(getGameDateObj());
-}
-
-function getGameDateString() {
-    return getGameDateObj().toDateString();
-}
-
-// Helpers for periodic habits
-function getWeekIdentifier(dateStr) {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-
-    // Get week start preference (default: Sunday = 0)
-    const weekStartMonday = state?.settings?.weekStart === 'monday';
-
-    // Adjust day number based on week start
-    let dayNum = d.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    if (weekStartMonday) {
-        // For Monday start: shift so Monday=1, Sunday=7
-        dayNum = dayNum === 0 ? 7 : dayNum;
-    } else {
-        // For Sunday start: shift so Sunday=1, Saturday=7
-        dayNum = dayNum + 1;
-    }
-
-    // Calculate week number (ISO-like but respecting week start)
-    const startOfYear = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const dayOfYear = Math.floor((d - startOfYear) / 86400000) + 1;
-    const weekNo = Math.ceil((dayOfYear + (weekStartMonday ? 0 : 1)) / 7);
-
-    return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
-}
-
-function getMonthIdentifier(dateStr) {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-}
-
-function getYearIdentifier(dateStr) {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}`;
-}
 
 // Shift progressive habits that weren't completed yesterday to today
 function shiftProgressiveHabits() {
@@ -710,173 +312,15 @@ let pomodoroRunning = false;
 // FILE SYSTEM ACCESS (Database File)
 // ============================================
 
-let fileHandle = null;
-const DB_NAME = 'QuestLifeDB';
-const DB_VERSION = 1;
-const DB_STORE = 'handles';
-
-// IndexedDB Helper to store/retrieve FileHandle
-async function getDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(DB_STORE)) {
-                db.createObjectStore(DB_STORE);
-            }
-        };
-        request.onsuccess = (event) => resolve(event.target.result);
-        request.onerror = (event) => reject(event.target.error);
-    });
-}
-
-async function saveFileHandle(handle) {
-    const db = await getDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(DB_STORE, 'readwrite');
-        const store = tx.objectStore(DB_STORE);
-        store.put(handle, 'dbFileHandle');
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
-}
-
-async function getFileHandle() {
-    const db = await getDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(DB_STORE, 'readonly');
-        const store = tx.objectStore(DB_STORE);
-        const request = store.get('dbFileHandle');
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-// Initialize File System Sync (User Action)
-async function linkDatabaseFile() {
-    try {
-        // Options for the file picker
-        const options = {
-            types: [{
-                description: 'Quest Life Database (JSON)',
-                accept: { 'application/json': ['.json'] },
-            }],
-            suggestedName: 'quest-life-db.json',
-        };
-
-        // Show file picker
-        fileHandle = await window.showSaveFilePicker(options);
-
-        // Save handle to IndexedDB
-        await saveFileHandle(fileHandle);
-
-        // Update UI
-        updateDbStatusUI(true, fileHandle.name);
-
-        // Initial save to establish connection and content
-        await saveStateToFile();
-
-        alert(`Database collegato con successo: ${fileHandle.name}`);
-    } catch (err) {
-        console.error('Errore nel collegamento database:', err);
-        // Ignore abort error
-        if (err.name !== 'AbortError') {
-            alert('Impossibile collegare il database. Il tuo browser potrebbe non supportare questa funzione.');
-        }
-    }
-}
-
-async function verifyPermission(handle, withWrite) {
-    const options = {};
-    if (withWrite) {
-        options.mode = 'readwrite';
-    }
-    // Check if permission was already granted
-    if ((await handle.queryPermission(options)) === 'granted') {
-        return true;
-    }
-    // Request permission
-    if ((await handle.requestPermission(options)) === 'granted') {
-        return true;
-    }
-    return false;
-}
-
-async function loadFileHandleOnStart() {
-    try {
-        const handle = await getFileHandle();
-        if (handle) {
-            fileHandle = handle;
-            // Note: We can't automatically ask for permission on load (requires user gesture usually),
-            // but we can update UI to show we have a handle pending.
-            // Or try to verify read permission if possible.
-            updateDbStatusUI(true, handle.name, true);
-        } else {
-            updateDbStatusUI(false);
-        }
-    } catch (e) {
-        console.error("Error loading file handle:", e);
-    }
-}
-
-function updateDbStatusUI(connected, filename = '', pendingPermission = false) {
-    const statusEl = document.getElementById('dbStatus');
-    const actionBtn = document.getElementById('dbActionBtn');
-
-    if (!statusEl || !actionBtn) return;
-
-    if (connected) {
-        if (pendingPermission) {
-            statusEl.innerHTML = `<span style="color:orange">🟠 Riconnetti: ${filename}</span>`;
-            actionBtn.textContent = 'Riconnetti 🔌';
-            actionBtn.onclick = async () => {
-                if (fileHandle && await verifyPermission(fileHandle, true)) {
-                    updateDbStatusUI(true, filename, false);
-                    saveStateToFile(); // Sync immediately
-                }
-            };
-        } else {
-            statusEl.innerHTML = `<span style="color:var(--accent-primary)">🟢 Collegato: ${filename}</span>`;
-            actionBtn.textContent = 'Modifica 📁';
-            actionBtn.onclick = linkDatabaseFile; // Allow changing file
-        }
-    } else {
-        statusEl.innerHTML = `<span style="color:var(--text-muted)">Nessun file collegato</span>`;
-        actionBtn.textContent = 'Collega Database 🔗';
-        actionBtn.onclick = linkDatabaseFile;
-    }
-}
-
-async function saveStateToFile() {
-    if (!fileHandle) return;
-
-    // Check/Request permission before writing
-    // Note: If this is called in background (e.g. auto-save), requestPermission might fail/block?
-    // User needs to activate it first.
-    // We check queryPermission first.
-
-    try {
-        const perm = await fileHandle.queryPermission({ mode: 'readwrite' });
-        if (perm === 'granted') {
-            const writable = await fileHandle.createWritable();
-            await writable.write(JSON.stringify(state, null, 2));
-            await writable.close();
-        } else {
-            // Permission lost or not granted. 
-            // Update UI to ask for reconnection
-            updateDbStatusUI(true, fileHandle.name, true);
-        }
-    } catch (err) {
-        console.error('Error saving to file:', err);
-    }
-}
-
 // ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
+    loadSettingsGroupsState();
+    applyTheme();
+
     shiftProgressiveHabits(); // Shift any habits that weren't completed yesterday
     checkFrozenStreak();
     initNavigation();
@@ -969,165 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Immersive Effects
     setTimeout(initImmersiveEffects, 500);
 });
-
-function loadState() {
-    // Try to load from new key first
-    let saved = localStorage.getItem('questlife_state_v2');
-
-    // If not found, try to migrate from old key
-    if (!saved) {
-        const oldSaved = localStorage.getItem('questlife_state');
-        if (oldSaved) {
-            saved = oldSaved;
-            localStorage.setItem('questlife_state_v2', oldSaved);
-            localStorage.removeItem('questlife_state');
-        }
-    }
-
-    if (saved) {
-        try {
-            const parsed = JSON.parse(saved);
-
-            // Merge parsed data, but keep defaults for missing properties
-            state.player = { ...state.player, ...parsed.player };
-            // Ensure motto exists if not present in saved data
-            if (state.player.motto === undefined) state.player.motto = '';
-            // Ensure new fields exist
-            if (state.player.streakFreezes === undefined) state.player.streakFreezes = 2;
-            if (state.player.lastActionDate === undefined) state.player.lastActionDate = null;
-            if (state.player.lastFreezeReset === undefined) state.player.lastFreezeReset = null;
-
-            // Initialization for Monthly Challenge
-            if (!state.player.monthlyChallenge) {
-                state.player.monthlyChallenge = {
-                    currentMonth: getMonthIdentifier(getGameDate()),
-                    points: 0,
-                    target: 50,
-                    medals: []
-                };
-            }
-
-            state.habits = parsed.habits || [];
-            state.oneshots = parsed.oneshots || [];
-            state.quests = parsed.quests || [];
-            state.toxicItems = parsed.toxicItems || [];
-
-            // Migration: Add createdAt to habits that don't have it
-            const migrationDate = new Date().toISOString();
-            state.habits.forEach(h => {
-                if (!h.createdAt) h.createdAt = migrationDate;
-            });
-            state.oneshots.forEach(o => {
-                if (!o.createdAt) o.createdAt = migrationDate;
-            });
-            state.quests.forEach(q => {
-                if (!q.createdAt) q.createdAt = migrationDate;
-            });
-            state.toxicItems.forEach(t => {
-                if (!t.createdAt) t.createdAt = migrationDate;
-            });
-
-            // Deduplicate IDs just in case
-            ensureUniqueIds(state.habits, 'habit');
-            ensureUniqueIds(state.oneshots, 'oneshot');
-            ensureUniqueIds(state.quests, 'quest');
-
-            state.completionLog = parsed.completionLog || {};
-            state.completionLog = parsed.completionLog || {};
-            state.xpLog = parsed.xpLog || [];
-
-            // Migration: Backfill missing dates in xpLog
-            state.xpLog.forEach(entry => {
-                if (!entry.date && entry.timestamp) {
-                    // Approximate date from timestamp
-                    // Note: This uses current timezone, might be slightly off if user moved
-                    // but better than nothing.
-                    const d = new Date(entry.timestamp);
-                    const year = d.getFullYear();
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    entry.date = `${year}-${month}-${day}`;
-                }
-            });
-
-            // Load penalty system data
-            state.penaltyLog = parsed.penaltyLog || {};
-            state.lastPenaltyCheck = parsed.lastPenaltyCheck || null;
-
-            state.settings = { ...state.settings, ...parsed.settings };
-            if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
-
-            // Migrate pomodoro settings
-            if (parsed.pomodoro) {
-                state.pomodoro = { ...state.pomodoro, ...parsed.pomodoro };
-            }
-            // Reset session counter if new day
-            const today = getGameDateString();
-            if (state.pomodoro.lastSessionDate !== today) {
-                state.pomodoro.sessionsToday = 0;
-            }
-
-            // Ensure dayStartTime exists
-            if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
-
-            // Migrate dailyPlan
-            if (parsed.dailyPlan) {
-                state.dailyPlan = { ...state.dailyPlan, ...parsed.dailyPlan };
-            }
-
-            // Update viewedDate based on loaded settings
-            viewedDate = getGameDate();
-
-            // Handle stats specially - only use saved if it exists and has items
-            if (parsed.stats && Array.isArray(parsed.stats) && parsed.stats.length > 0) {
-                // Ensure all stats have the 'type' property
-                state.stats = parsed.stats.map(stat => {
-                    if (!stat.type) {
-                        return { ...stat, type: 'attribute' };
-                    }
-                    return stat;
-                });
-            }
-            // If no saved stats, keep the initialized defaults
-
-        } catch (e) {
-            console.error('Errore nel caricamento dati:', e);
-            // Keep default state
-        }
-    }
-
-    // Always ensure all default attributes exist
-    DEFAULT_ATTRIBUTES.forEach(defaultStat => {
-        if (!state.stats.find(s => s.id === defaultStat.id)) {
-            state.stats.push({ ...defaultStat });
-        }
-        // Load saved collapsed/open state
-        loadSettingsGroupsState();
-    });
-
-    // Apply theme
-    applyTheme();
-
-    // Migration v2.1.0: Recalculate level to fix negative XP bug
-    const CorrectLevel = calculateLevelFromXp(state.player.totalXp);
-    if (state.player.level !== CorrectLevel) {
-        // Only downgrade if current level is impossible with current XP (to fix the bug)
-        // Or upgrade if they have too much XP? 
-        // Actually, just trust the math now.
-        if (state.player.level > CorrectLevel) {
-            state.player.level = CorrectLevel;
-        }
-    }
-
-    // Save to ensure clean state
-    saveState();
-}
-
-function saveState() {
-    localStorage.setItem('questlife_state_v2', JSON.stringify(state));
-    // Also save to file if connected
-    saveStateToFile();
-}
 
 function checkFrozenStreak() {
     const today = getGameDateObj();
@@ -3441,22 +2726,6 @@ function closeStatDetailModal() {
     document.getElementById('statDetailModal').classList.add('hidden');
 }
 
-function deleteCurrentQuestInModal() {
-    if (currentOpenedQuestId) {
-        deleteTask('quest', currentOpenedQuestId);
-        closeQuestDetailModal();
-    }
-}
-
-function editCurrentQuestInModal() {
-    if (currentOpenedQuestId) {
-        const quest = state.quests.find(q => q.id === currentOpenedQuestId);
-        if (quest) {
-            closeQuestDetailModal();
-            openModal('quest', quest);
-        }
-    }
-}
 
 
 function toggleSubquest(questId, subquestId) {
@@ -3528,32 +2797,6 @@ function completeQuest(questId) {
 // ============================================
 // XP SYSTEM
 // ============================================
-
-function calculateXp(stars) {
-    const baseXp = 20;
-    return Math.round(baseXp * XP_CONFIG.starsMultiplier[stars]);
-}
-
-function getXpForLevel(level) {
-    const rawXp = XP_CONFIG.baseXpPerLevel * Math.pow(XP_CONFIG.levelMultiplier, level - 1);
-    return Math.round(rawXp / 50) * 50; // Round to nearest 50
-}
-
-function calculateLevelFromXp(totalXp) {
-    let level = 1;
-    while (totalXp >= getCumulativeXpForLevel(level + 1)) {
-        level++;
-    }
-    return level;
-}
-
-function getCumulativeXpForLevel(targetLevel) {
-    let total = 0;
-    for (let i = 1; i < targetLevel; i++) {
-        total += getXpForLevel(i + 1);
-    }
-    return total;
-}
 
 function addXp(amount, statId, sourceName = null) {
     state.player.totalXp += amount;
@@ -4676,26 +3919,6 @@ function showStatTooltip(statId, event) {
 // UTILITIES
 // ============================================
 
-function ensureUniqueIds(list, prefix) {
-    if (!list) return;
-    const seen = new Set();
-    list.forEach(item => {
-        if (seen.has(item.id)) {
-            // Generate new ID
-            const newId = prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            console.warn(`Duplicate ID found: ${item.id} -> replaced with ${newId} `);
-            item.id = newId;
-        }
-        seen.add(item.id);
-    });
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
-}
-
 // Demo data
 function loadDemoData() {
     state.habits.push(
@@ -5493,17 +4716,21 @@ function checkWeeklyRecap() {
     // Check if disabled in settings
     if (state.settings.enableWeeklyRecap === false) return;
 
-    const today = getGameDateObj();
-    const dayOfWeek = today.getDay(); // 0 = Sunday
-
-    // Only show on Sunday
-    if (dayOfWeek !== 0) return;
-
-    // Improved safety check
+    // Safety check
     if (isAnyModalOpen()) return;
 
-    // Check if already shown this week
     const currentWeek = getWeekIdentifier(getGameDateString());
+
+    // Initialization check: determine if this is a first run or migration
+    if (!state.lastRecapWeek) {
+        // If it's a new installation, we assume we shouldn't show a recap immediately.
+        // We set the current week as "seen" so it will trigger next week.
+        state.lastRecapWeek = currentWeek;
+        saveState();
+        return;
+    }
+
+    // Only show if we are in a NEW week compared to the last recap
     if (state.lastRecapWeek === currentWeek) return;
 
     // Show recap
@@ -5515,10 +4742,26 @@ function showWeeklyRecap() {
 
     const weekLabel = document.getElementById('recapWeekLabel');
     if (weekLabel) {
+        // Use the end date from calculations or derive it
+        // The recap object doesn't carry dates currently, but we know it's "Last Week"
+        // Let's rely on what calculateWeeklyRecap used implicitly or recalc dates for label
+
+        // Improve label logic: show range of *previous* week
         const today = getGameDateObj();
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - 6);
-        weekLabel.textContent = `${weekStart.getDate()} /${weekStart.getMonth() + 1} - ${today.getDate()}/${today.getMonth() + 1} `;
+        let targetEndDate = new Date(today);
+        const currentWeekId = getWeekIdentifier(getGameDateString());
+
+        // Seek back to finding previous week's end
+        let lookback = 0;
+        while (getWeekIdentifier(formatISO(targetEndDate)) === currentWeekId && lookback < 10) {
+            targetEndDate.setDate(targetEndDate.getDate() - 1);
+            lookback++;
+        }
+
+        const weekStart = new Date(targetEndDate);
+        weekStart.setDate(targetEndDate.getDate() - 6);
+
+        weekLabel.textContent = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${targetEndDate.getDate()}/${targetEndDate.getMonth() + 1}`;
     }
 
     const cardsEl = document.getElementById('recapCards');
@@ -5597,11 +4840,23 @@ function closeWeeklyRecap() {
 }
 
 function calculateWeeklyRecap() {
+    // Determine the relevant review period (Previous Week)
     const today = getGameDateObj();
+    const currentWeekId = getWeekIdentifier(getGameDateString());
+    let targetEndDate = new Date(today);
+
+    // If we are calculating recap, we usually mean for the *previous* week relative to now.
+    // Shift back until we leave the current week ID.
+    let lookback = 0;
+    while (getWeekIdentifier(formatISO(targetEndDate)) === currentWeekId && lookback < 14) {
+        targetEndDate.setDate(targetEndDate.getDate() - 1);
+        lookback++;
+    }
+
     const weekDates = [];
     for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
+        const d = new Date(targetEndDate);
+        d.setDate(targetEndDate.getDate() - i);
         weekDates.push(formatISO(d));
     }
 
