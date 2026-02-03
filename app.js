@@ -76,8 +76,10 @@ function checkHabitStreaks() {
         if (!habit.streak || habit.streak === 0) return;
 
         // Check if habit was completed yesterday
-        const completedYesterday = state.completionLog[yesterdayStr]?.includes(habit.id);
-        const completedToday = state.completionLog[today]?.includes(habit.id);
+        const logYesterday = state.completionLog[yesterdayStr];
+        const logToday = state.completionLog[today];
+        const completedYesterday = Array.isArray(logYesterday) && logYesterday.includes(habit.id);
+        const completedToday = Array.isArray(logToday) && logToday.includes(habit.id);
 
         // If not completed yesterday AND not completed today yet, reset streak
         if (!completedYesterday && !completedToday) {
@@ -5051,6 +5053,13 @@ window.closeStatDetailModal = closeStatDetailModal;
 window.toggleSubquest = toggleSubquest;
 window.editCurrentQuestInModal = editCurrentQuestInModal;
 window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
+
+// Theme and Settings exports
+window.toggleThemeDropdown = toggleThemeDropdown;
+window.setTheme = setTheme;
+window.setMode = setMode;
+window.showChallengeCatalog = showChallengeCatalog;
+window.closeArchive = closeArchive;
 
 function showStreakCelebration(streak) {
     const overlay = document.getElementById('streakCelebration');
