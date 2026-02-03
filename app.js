@@ -1389,86 +1389,31 @@ function renderRadarChart() {
 let progressChart = null;
 
 function showProgressPopup(gainedStatId = null, gainedAmount = 0) {
-    const popup = document.getElementById('progressPopup');
-    const ctx = document.getElementById('popupRadarCanvas');
-    if (!popup || !ctx) return;
+    const toast = document.getElementById('xpToast');
+    const toastText = document.getElementById('xpToastText');
+    if (!toast || !toastText) return;
 
-    // Reuse Radar Logic but on popup canvas
-    const visibleStats = state.stats.filter(s => s.visible);
-    if (visibleStats.length === 0) return;
+    // Find the stat info
+    const stat = state.stats.find(s => s.id === gainedStatId);
+    const statIcon = stat?.icon || '⚡';
+    const statName = stat?.name || '';
 
-    const rollingXp = getRollingXpByStats(30);
-
-    // Calculate "Old" data by subtracting the gained amount from the relevant stat
-    const currentData = visibleStats.map(s => rollingXp[s.id] || 0);
-    const oldData = visibleStats.map(s => {
-        let val = rollingXp[s.id] || 0;
-        if (s.id === gainedStatId) val = Math.max(0, val - gainedAmount);
-        return val;
-    });
-
-    const maxRollingXp = Math.max(50, ...currentData);
-
-    const data = {
-        labels: visibleStats.map(s => s.icon),
-        datasets: [
-            {
-                label: 'Precedente',
-                data: oldData,
-                backgroundColor: 'transparent',
-                borderColor: 'rgba(150, 150, 150, 0.5)', // Ghost Grey
-                borderWidth: 2,
-                borderDash: [5, 5],
-                pointBackgroundColor: 'transparent',
-                pointBorderColor: 'transparent',
-                pointRadius: 0
-            },
-            {
-                label: 'Attuale',
-                data: currentData,
-                backgroundColor: 'rgba(124, 58, 237, 0.4)',
-                borderColor: 'rgba(124, 58, 237, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(124, 58, 237, 1)',
-                pointBorderColor: '#fff',
-                pointRadius: 4
-            }
-        ]
-    };
-
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            r: {
-                beginAtZero: true,
-                min: 0,
-                max: maxRollingXp + Math.round(maxRollingXp * 0.2), // Dynamic scaling
-                ticks: { display: false },
-                pointLabels: { font: { size: 10, weight: '600' } }
-            }
-        },
-        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        animation: { duration: 1500, easing: 'easeOutQuart' } // Slow nice animation
-    };
-
-    if (progressChart) {
-        progressChart.data = data;
-        progressChart.options = options;
-        progressChart.update();
-        progressChart.reset(); // Reset animation
-        progressChart.update();
+    // Update toast content
+    if (statName) {
+        toastText.innerHTML = `+${gainedAmount} XP<span class="xp-toast-stat">${statIcon} ${statName}</span>`;
     } else {
-        progressChart = new Chart(ctx, { type: 'radar', data, options });
+        toastText.textContent = `+${gainedAmount} XP`;
     }
 
-    // Show Popup
-    popup.classList.remove('hidden');
+    // Show toast with animation
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('visible'), 10);
 
-    // Auto hide
+    // Auto hide after 2 seconds
     setTimeout(() => {
-        popup.classList.add('hidden');
-    }, 3500); // 3.5s duration
+        toast.classList.remove('visible');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+    }, 2000);
 }
 
 function renderStatsGrid() {

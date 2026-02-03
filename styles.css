@@ -5630,3 +5630,45 @@ textarea {
         box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
     }
 }
+/* XP Toast Notification */
+.xp-toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, #9333ea));
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.xp-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.xp-toast-icon {
+    font-size: 20px;
+}
+
+.xp-toast-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.xp-toast-stat {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
