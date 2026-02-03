@@ -20,6 +20,24 @@
             alert("Errore Async:\n" + event.reason);
         };
     </script>
+    <script>
+        // AGGRESSIVE CACHE CLEARING - v2.7.75
+        // Unregister old service workers and clear caches on first load
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => {
+                    reg.unregister().then(() => console.log('SW unregistered'));
+                });
+            });
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    if (!name.includes('v2.7.75')) {
+                        caches.delete(name).then(() => console.log('Cache deleted:', name));
+                    }
+                });
+            });
+        }
+    </script>
     <title>Quest Life RPG</title>
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
