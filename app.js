@@ -5061,6 +5061,14 @@ window.setMode = setMode;
 window.showChallengeCatalog = showChallengeCatalog;
 window.closeArchive = closeArchive;
 
+// Dynamic HTML handler exports
+window.handleTaskClick = handleTaskClick;
+window.setViewedDate = setViewedDate;
+window.toggleGoalCheckbox = toggleGoalCheckbox;
+window.closeChallengePreview = closeChallengePreview;
+window.completeChallengeDayAndRefresh = completeChallengeDayAndRefresh;
+window.importChallenge = importChallenge;
+
 function showStreakCelebration(streak) {
     const overlay = document.getElementById('streakCelebration');
     const countEl = document.getElementById('celebrationCount');
