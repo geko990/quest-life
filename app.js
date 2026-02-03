@@ -118,20 +118,35 @@ function rebuildStreaksFromLog() {
     const today = getGameDate();
     let fixed = 0;
 
+    // Helper to check if habit was completed on a date (supports both log formats)
+    function wasCompletedOnDate(habitId, dateStr) {
+        const log = state.completionLog[dateStr];
+        if (!log) return false;
+        // New format: { habits: [...], oneshots: [...], quests: [...] }
+        if (log.habits && Array.isArray(log.habits)) {
+            return log.habits.includes(habitId);
+        }
+        // Old format: just an array
+        if (Array.isArray(log)) {
+            return log.includes(habitId);
+        }
+        return false;
+    }
+
     state.habits.forEach(habit => {
         // Only rebuild for daily habits with frequency 'daily' or undefined
         if (habit.frequency && habit.frequency !== 'daily') return;
 
-        // Get all dates from completionLog, sorted descending
+        // Get all dates where this habit was completed
         const allDates = Object.keys(state.completionLog)
-            .filter(date => {
-                const log = state.completionLog[date];
-                return Array.isArray(log) && log.includes(habit.id);
-            })
+            .filter(date => wasCompletedOnDate(habit.id, date))
             .sort((a, b) => b.localeCompare(a)); // Most recent first
 
         if (allDates.length === 0) {
-            habit.streak = 0;
+            if (habit.streak !== 0) {
+                habit.streak = 0;
+                fixed++;
+            }
             return;
         }
 
@@ -140,14 +155,13 @@ function rebuildStreaksFromLog() {
         let checkDate = new Date(getGameDateObj());
 
         // If not completed today, start from yesterday
-        if (!allDates.includes(today)) {
+        if (!wasCompletedOnDate(habit.id, today)) {
             checkDate.setDate(checkDate.getDate() - 1);
         }
 
         while (true) {
             const dateStr = formatISO(checkDate);
-            const log = state.completionLog[dateStr];
-            if (Array.isArray(log) && log.includes(habit.id)) {
+            if (wasCompletedOnDate(habit.id, dateStr)) {
                 streak++;
                 checkDate.setDate(checkDate.getDate() - 1);
             } else {
