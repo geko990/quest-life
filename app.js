@@ -3953,12 +3953,7 @@ function fixData() {
     }
 }
 
-function resetAll() {
-    if (confirm('⚠️ ATTENZIONE: Questo cancellerà TUTTI i tuoi progressi, abitudini e dati. \n\nSei sicuro di voler ricominciare da zero?')) {
-        localStorage.clear(); // Clear EVERYTHING just to be safe
-        window.location.href = window.location.pathname + '?reset=' + Date.now();
-    }
-}
+
 
 // ============================================
 // DATA MANAGEMENT (Export/Import/Backup)
@@ -5005,7 +5000,6 @@ window.editToxicItem = editToxicItem;
 // Expose to console
 window.loadDemoData = loadDemoData;
 window.fixData = fixData;
-window.resetAll = resetAll;
 window.updateApp = updateApp;
 window.exportData = exportData;
 window.importData = importData;
