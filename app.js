@@ -4894,6 +4894,14 @@ function showRecapHistory() {
 
     if (!modal || !overlay || !list) return;
 
+    // Auto-rebuild if no recaps exist
+    if (!state.recapHistory || state.recapHistory.length === 0) {
+        const rebuilt = rebuildRecapHistory();
+        if (rebuilt > 0) {
+            console.log(`Auto-rebuilt ${rebuilt} weekly recaps`);
+        }
+    }
+
     if (!state.recapHistory || state.recapHistory.length === 0) {
         list.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">Nessun recap salvato ancora. I recap vengono salvati quando chiudi la finestra del Recap Settimanale.</div>';
     } else {
@@ -4919,8 +4927,112 @@ function closeRecapHistory() {
     document.getElementById('recapHistoryOverlay')?.classList.add('hidden');
 }
 
+// Rebuild recap history from xpLog data for past weeks
+function rebuildRecapHistory() {
+    if (!state.xpLog || state.xpLog.length === 0) {
+        console.log('No xpLog data to rebuild recaps from');
+        return 0;
+    }
+
+    // Get all unique dates from xpLog
+    const allDates = [...new Set(state.xpLog.map(e => e.date))].sort();
+    if (allDates.length === 0) return 0;
+
+    // Group dates by week
+    const weekGroups = {};
+    allDates.forEach(dateStr => {
+        const weekId = getWeekIdentifier(dateStr);
+        if (!weekGroups[weekId]) weekGroups[weekId] = [];
+        weekGroups[weekId].push(dateStr);
+    });
+
+    // Current week should not be included (it's not complete yet)
+    const currentWeekId = getWeekIdentifier(getGameDateString());
+    delete weekGroups[currentWeekId];
+
+    if (!state.recapHistory) state.recapHistory = [];
+    let addedCount = 0;
+
+    // Process each week
+    Object.entries(weekGroups).forEach(([weekId, dates]) => {
+        // Skip if already in history
+        if (state.recapHistory.find(r => r.weekId === weekId)) return;
+
+        // Calculate recap for this week
+        const weekDates = dates;
+
+        // Total XP this week
+        const weekXpEntries = state.xpLog.filter(entry => weekDates.includes(entry.date) && entry.amount > 0);
+        const totalXp = weekXpEntries.reduce((sum, e) => sum + e.amount, 0);
+
+        // Skip weeks with 0 XP
+        if (totalXp === 0) return;
+
+        // Top stat (most XP gained)
+        const statXp = {};
+        weekXpEntries.forEach(entry => {
+            statXp[entry.statId] = (statXp[entry.statId] || 0) + entry.amount;
+        });
+        const topStatId = Object.entries(statXp).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const topStat = state.stats.find(s => s.id === topStatId);
+
+        // Best habit (most completions)
+        const habitCompletions = {};
+        state.habits.forEach(habit => {
+            let count = 0;
+            weekDates.forEach(date => {
+                const log = state.completionLog[date];
+                if (Array.isArray(log) && log.includes(habit.id)) count++;
+            });
+            habitCompletions[habit.id] = count;
+        });
+        const bestHabitId = Object.entries(habitCompletions).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const bestHabit = state.habits.find(h => h.id === bestHabitId);
+
+        // Pomodoro count
+        const pomodoroCount = weekXpEntries.filter(e => e.sourceName?.includes('Pomodoro')).length;
+
+        // Create week label from actual dates
+        const sortedDates = weekDates.sort();
+        const startDate = new Date(sortedDates[0]);
+        const endDate = new Date(sortedDates[sortedDates.length - 1]);
+        const weekLabel = `${startDate.getDate()}/${startDate.getMonth() + 1} - ${endDate.getDate()}/${endDate.getMonth() + 1}`;
+
+        const recapEntry = {
+            weekId: weekId,
+            weekLabel: weekLabel,
+            totalXp: totalXp,
+            topStatName: topStat?.name || '-',
+            topStatIcon: topStat?.icon || '🏆',
+            bestHabitName: bestHabit?.name || '-',
+            pomodoroCount: pomodoroCount,
+            savedAt: new Date().toISOString(),
+            reconstructed: true // Flag to indicate this was rebuilt
+        };
+
+        state.recapHistory.push(recapEntry);
+        addedCount++;
+    });
+
+    // Sort by weekId (most recent first)
+    state.recapHistory.sort((a, b) => b.weekId.localeCompare(a.weekId));
+
+    // Keep only last 12 weeks
+    if (state.recapHistory.length > 12) {
+        state.recapHistory = state.recapHistory.slice(0, 12);
+    }
+
+    if (addedCount > 0) {
+        saveState();
+        console.log(`Rebuilt ${addedCount} weekly recaps from xpLog data`);
+    }
+
+    return addedCount;
+}
+
 window.showRecapHistory = showRecapHistory;
 window.closeRecapHistory = closeRecapHistory;
+window.rebuildRecapHistory = rebuildRecapHistory;
 
 // Medal Detail Popup
 function showMedalDetail(medalId) {
