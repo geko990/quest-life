@@ -3901,24 +3901,7 @@ function handleAvatarUpload(event) {
 // TOOLTIP
 // ============================================
 
-function showStatTooltip(statId, event) {
-    const stat = state.stats.find(s => s.id === statId);
-    if (!stat) return;
 
-    const tooltip = document.getElementById('tooltip');
-    tooltip.innerHTML = `
-            <div class="tooltip-title" > ${stat.icon} ${stat.name} - LV${stat.level}</div>
-        <div>${stat.description}</div>
-        <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">XP: ${stat.xp}/${getXpForLevel(stat.level + 1)}</div>
-        `;
-    tooltip.classList.add('visible');
-
-    const rect = event.target.getBoundingClientRect();
-    tooltip.style.left = Math.min(rect.left, window.innerWidth - 270) + 'px';
-    tooltip.style.top = (rect.bottom + 10) + 'px';
-
-    setTimeout(() => tooltip.classList.remove('visible'), 3000);
-}
 
 // ============================================
 // UTILITIES
