@@ -317,9 +317,14 @@ let pomodoroRunning = false;
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadState();
-    loadSettingsGroupsState();
-    applyTheme();
+    try {
+        loadState();
+        loadSettingsGroupsState();
+        applyTheme();
+    } catch (err) {
+        console.error("Critical Init Error:", err);
+        alert("Errore di Inizializzazione: " + err.message + "\n\nSe il problema persiste, prova a cancellare la cache.");
+    }
 
     shiftProgressiveHabits(); // Shift any habits that weren't completed yesterday
     checkFrozenStreak();
