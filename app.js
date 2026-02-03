@@ -75,17 +75,27 @@ function checkHabitStreaks() {
         if (habit.locked) return;
         if (!habit.streak || habit.streak === 0) return;
 
+        // ONLY check DAILY habits - periodic habits have their own logic
+        if (habit.frequency && habit.frequency !== 'daily') {
+            // For times_week and times_month, don't reset based on single day
+            return;
+        }
+
+        // Check if habit was created after yesterday (don't reset new habits)
+        if (habit.createdAt) {
+            const createdDate = formatISO(new Date(habit.createdAt));
+            if (createdDate > yesterdayStr) return;
+        }
+
         // Check if habit was completed yesterday
         const logYesterday = state.completionLog[yesterdayStr];
-        const logToday = state.completionLog[today];
         const completedYesterday = Array.isArray(logYesterday) && logYesterday.includes(habit.id);
-        const completedToday = Array.isArray(logToday) && logToday.includes(habit.id);
 
-        // If not completed yesterday AND not completed today yet, reset streak
-        if (!completedYesterday && !completedToday) {
-            // Only reset if lastCompleted is older than yesterday
-            if (habit.lastCompleted && habit.lastCompleted !== today) {
-                console.log(`Resetting streak for habit: ${habit.name} (was ${habit.streak})`);
+        // Only reset if NOT completed yesterday and lastCompleted is clearly in the past
+        if (!completedYesterday) {
+            // Double-check: if lastCompleted was before yesterday, reset
+            if (habit.lastCompleted && habit.lastCompleted < yesterdayStr) {
+                console.log(`Resetting streak for daily habit: ${habit.name} (was ${habit.streak})`);
                 habit.streak = 0;
                 changed = true;
             }
@@ -97,6 +107,68 @@ function checkHabitStreaks() {
         renderAll();
     }
 }
+
+// Rebuild habit streaks from completion log (for data recovery)
+function rebuildStreaksFromLog() {
+    const today = getGameDate();
+    let fixed = 0;
+
+    state.habits.forEach(habit => {
+        // Only rebuild for daily habits with frequency 'daily' or undefined
+        if (habit.frequency && habit.frequency !== 'daily') return;
+
+        // Get all dates from completionLog, sorted descending
+        const allDates = Object.keys(state.completionLog)
+            .filter(date => {
+                const log = state.completionLog[date];
+                return Array.isArray(log) && log.includes(habit.id);
+            })
+            .sort((a, b) => b.localeCompare(a)); // Most recent first
+
+        if (allDates.length === 0) {
+            habit.streak = 0;
+            return;
+        }
+
+        // Count consecutive days starting from today or yesterday
+        let streak = 0;
+        let checkDate = new Date(getGameDateObj());
+
+        // If not completed today, start from yesterday
+        if (!allDates.includes(today)) {
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        while (true) {
+            const dateStr = formatISO(checkDate);
+            const log = state.completionLog[dateStr];
+            if (Array.isArray(log) && log.includes(habit.id)) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+            // Safety limit
+            if (streak > 365) break;
+        }
+
+        if (habit.streak !== streak) {
+            console.log(`Rebuilding streak for ${habit.name}: ${habit.streak} -> ${streak}`);
+            habit.streak = streak;
+            fixed++;
+        }
+    });
+
+    if (fixed > 0) {
+        saveState();
+        renderAll();
+        console.log(`Rebuilt ${fixed} habit streaks`);
+    }
+
+    return fixed;
+}
+
+window.rebuildStreaksFromLog = rebuildStreaksFromLog;
 
 // ============================================
 // XP PENALTY SYSTEM
