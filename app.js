@@ -291,6 +291,7 @@ function closePenaltyPopup() {
         overlay.classList.add('hidden');
     }
 }
+window.closePenaltyPopup = closePenaltyPopup;
 
 let radarChart = null;
 let contextTarget = null;
