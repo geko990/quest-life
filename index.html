@@ -4,7 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Real Playing Game - RPG Habit Tracker</title>
+    <title>Real Playing Game</title>
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            // Ignora errori di resizeObserver loop che sono benigni
+            if (msg.includes('ResizeObserver')) return false;
+
+            alert("Errore Critico:\n" + msg + "\nLine: " + line + "\nURL: " + url);
+            // Tenta di mostrare i dati grezzi se possibile
+            document.body.innerHTML += '<div style="color:red; background:white; padding:20px; z-index:9999; position:fixed; top:0; left:0; width:100%">' + msg + ' at line ' + line + '</div>';
+            return false;
+        };
+        // Catch unhandled promise rejections (async errors)
+        window.onunhandledrejection = function (event) {
+            alert("Errore Async:\n" + event.reason);
+        };
+    </script>
     <title>Quest Life RPG</title>
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">

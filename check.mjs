@@ -317,14 +317,9 @@ let pomodoroRunning = false;
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        loadState();
-        loadSettingsGroupsState();
-        applyTheme();
-    } catch (err) {
-        console.error("Critical Init Error:", err);
-        alert("Errore di Inizializzazione: " + err.message + "\n\nSe il problema persiste, prova a cancellare la cache.");
-    }
+    loadState();
+    loadSettingsGroupsState();
+    applyTheme();
 
     shiftProgressiveHabits(); // Shift any habits that weren't completed yesterday
     checkFrozenStreak();
