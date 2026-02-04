@@ -124,11 +124,19 @@ export function loadState() {
 
             state.completionLog = parsed.completionLog || {};
 
-            // Sanitize completionLog to ensure all values are arrays
+            // Sanitize completionLog to ensure all values are Objects with array properties
+            // Fixes regression where values were forced to Arrays
             if (state.completionLog) {
                 Object.keys(state.completionLog).forEach(key => {
-                    if (!Array.isArray(state.completionLog[key])) {
-                        state.completionLog[key] = [];
+                    const entry = state.completionLog[key];
+                    // If entry is not an object (e.g. array from bad fix) or null/undefined
+                    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+                        state.completionLog[key] = { habits: [], oneshots: [], quests: [] };
+                    } else {
+                        // Ensure properties exist
+                        if (!Array.isArray(entry.habits)) entry.habits = [];
+                        if (!Array.isArray(entry.oneshots)) entry.oneshots = [];
+                        if (!Array.isArray(entry.quests)) entry.quests = [];
                     }
                 });
             }
