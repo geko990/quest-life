@@ -680,12 +680,14 @@ function unlockMonthlyMedal() {
     const monthDates = Object.keys(state.completionLog).filter(d => d.startsWith(monthId));
 
     monthDates.forEach(date => {
-        const completedIds = state.completionLog[date] || [];
-        // Runtime safety check
-        if (!Array.isArray(completedIds)) return;
+        const dayLog = state.completionLog[date];
+        if (!dayLog) return;
 
-        completedIds.forEach(id => {
-            // Check if it's a oneshot
+        // Handle both legacy (array) and new (object) structure safely
+
+        // OneShots
+        const oneshotIds = Array.isArray(dayLog.oneshots) ? dayLog.oneshots : [];
+        oneshotIds.forEach(id => {
             const oneshot = state.oneshots.find(o => o.id === id);
             if (oneshot) {
                 completedTasks.push({
@@ -695,7 +697,11 @@ function unlockMonthlyMedal() {
                     date: date
                 });
             }
-            // Check if it's a quest
+        });
+
+        // Quests
+        const questIds = Array.isArray(dayLog.quests) ? dayLog.quests : [];
+        questIds.forEach(id => {
             const quest = state.quests.find(q => q.id === id);
             if (quest) {
                 completedTasks.push({
