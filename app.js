@@ -681,6 +681,9 @@ function unlockMonthlyMedal() {
 
     monthDates.forEach(date => {
         const completedIds = state.completionLog[date] || [];
+        // Runtime safety check
+        if (!Array.isArray(completedIds)) return;
+
         completedIds.forEach(id => {
             // Check if it's a oneshot
             const oneshot = state.oneshots.find(o => o.id === id);

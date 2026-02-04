@@ -123,6 +123,15 @@ export function loadState() {
             ensureUniqueIds(state.quests, 'quest');
 
             state.completionLog = parsed.completionLog || {};
+
+            // Sanitize completionLog to ensure all values are arrays
+            if (state.completionLog) {
+                Object.keys(state.completionLog).forEach(key => {
+                    if (!Array.isArray(state.completionLog[key])) {
+                        state.completionLog[key] = [];
+                    }
+                });
+            }
             state.xpLog = parsed.xpLog || [];
 
             // Migration: Backfill missing dates in xpLog
