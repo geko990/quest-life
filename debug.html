@@ -4,16 +4,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debug Version</title>
+    <title>Streak Diagnostics</title>
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .success {
+            color: #0f0;
+        }
+
+        .warn {
+            color: #fa0;
+        }
+
+        .error {
+            color: #f44;
+        }
+
+        button {
+            padding: 10px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+    </style>
 </head>
 
-<body style="background: #111; color: #0f0; font-family: monospace; padding: 20px;">
-    <h1>Deployment Debug</h1>
-    <p>Current Version: <strong>2.7.53</strong></p>
-    <p>Timestamp:
-        <script>document.write(new Date().toISOString())</script>
-    </p>
-    <p>If you see this, the server IS UPDATED.</p>
+<body>
+    <h1>Streak Diagnostics</h1>
+    <button onclick="runDiagnostics()">Run Diagnostics</button>
+    <div id="output"></div>
+
+    <script type="module">
+        import { loadState, state } from './js/modules/state.js';
+        
+        // Mock formatISO since we can't easily import utils if it has deps
+        function formatISO(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        window.runDiagnostics = async function() {
+            const out = document.getElementById('output');
+            out.innerHTML = "Loading state...<br>";
+            
+            try {
+                // Manually load from localStorage if basic loadState doesn't work isolated
+                const raw = localStorage.getItem('questlife_state_v2') || localStorage.getItem('questlife_state');
+                if (!raw) {
+                    out.innerHTML += "<span class='error'>No save data found in localStorage!</span>";
+                    return;
+                }
+                
+                const data = JSON.parse(raw);
+                out.innerHTML += `<span class='success'>Data loaded. Player: ${data.player?.name}</span><br>`;
+                out.innerHTML += `Completion Log Keys: ${Object.keys(data.completionLog || {}).length}<br>`;
+                
+                // Check sample keys
+                const keys = Object.keys(data.completionLog || {}).sort();
+                out.innerHTML += `First Log Date: ${keys[0]}<br>`;
+                out.innerHTML += `Last Log Date: ${keys[keys.length-1]}<br>`;
+                
+                // Inspect format
+                const sampleKey = keys[keys.length-1];
+                const sampleEntry = data.completionLog[sampleKey];
+                out.innerHTML += `Sample Entry (${sampleKey}): <pre>${JSON.stringify(sampleEntry, null, 2)}</pre>`;
+                
+                out.innerHTML += "<h3>Habit Streaks Check</h3>";
+                const today = new Date();
+                const todayStr = formatISO(today);
+                
+                data.habits.forEach(h => {
+                    if (h.frequency && h.frequency !== 'daily') return; // Skip non-daily
+                    
+                    let streak = 0;
+                    let checkDate = new Date();
+                    let html = `<div class='log-entry'><b>${h.name}</b> (Current Streak: ${h.streak})<br>`;
+                    
+                    // Logic Simulation
+                    let debugLog = [];
+                    
+                    // Check today
+                    let dStr = formatISO(checkDate);
+                    let doneInit = isDone(data.completionLog, h.id, dStr);
+                    
+                    if (!doneInit) {
+                        checkDate.setDate(checkDate.getDate() - 1);
+                        dStr = formatISO(checkDate);
+                        debugLog.push(`Today (${todayStr}) not done, checking yesterday...`);
+                    }
+                    
+                    for(let i=0; i<30; i++) { // Check last 30 days
+                        const dateStr = formatISO(checkDate);
+                        const done = isDone(data.completionLog, h.id, dateStr);
+                        debugLog.push(`${dateStr}: ${done ? "DONE" : "MISSING"}`);
+                        
+                        if (done) {
+                            streak++;
+                            checkDate.setDate(checkDate.getDate() - 1);
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    html += `Calculated Streak: <b>${streak}</b><br>`;
+                    if (streak !== h.streak) {
+                        html += "<span class='warn'>MISMATCH!</span><br>";
+                    }
+                    html += `<details><summary>Log Trace</summary>${debugLog.join('<br>')}</details>`;
+                    html += "</div>";
+                    out.innerHTML += html;
+                });
+                
+            } catch(e) {
+                out.innerHTML += `<span class='error'>Error: ${e.message}</span>`;
+                console.error(e);
+            }
+        };
+        
+        function isDone(log, habitId, dateStr) {
+            const entry = log[dateStr];
+            if (!entry) return false;
+            if (Array.isArray(entry)) return entry.includes(habitId);
+            if (typeof entry === 'object') return entry.habits && entry.habits.includes(habitId);
+            return false;
+        }
+    </script>
 </body>
 
 </html>
