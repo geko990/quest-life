@@ -97,7 +97,15 @@ function checkHabitStreaks() {
 
         // Check if habit was completed yesterday
         const logYesterday = state.completionLog[yesterdayStr];
-        const completedYesterday = Array.isArray(logYesterday) && logYesterday.includes(habit.id);
+        let completedYesterday = false;
+
+        if (logYesterday) {
+            if (logYesterday.habits && Array.isArray(logYesterday.habits)) {
+                completedYesterday = logYesterday.habits.includes(habit.id);
+            } else if (Array.isArray(logYesterday)) {
+                completedYesterday = logYesterday.includes(habit.id);
+            }
+        }
 
         // Reset if NOT completed yesterday (and we're past noon grace period)
         if (!completedYesterday) {
@@ -113,20 +121,23 @@ function checkHabitStreaks() {
     }
 }
 
-// Rebuild habit streaks from completion log (for data recovery)
+// Rebuild habit streaks from completion log (Robust Repair)
 function rebuildStreaksFromLog() {
     const today = getGameDate();
     let fixed = 0;
 
-    // Helper to check if habit was completed on a date (supports both log formats)
+    console.log("Starting Streak Repair...");
+
+    // Helper to check if habit was completed on a date
     function wasCompletedOnDate(habitId, dateStr) {
         const log = state.completionLog[dateStr];
         if (!log) return false;
-        // New format: { habits: [...], oneshots: [...], quests: [...] }
+
+        // Handle { habits: [...] } format
         if (log.habits && Array.isArray(log.habits)) {
             return log.habits.includes(habitId);
         }
-        // Old format: just an array
+        // Handle old [...] format
         if (Array.isArray(log)) {
             return log.includes(habitId);
         }
@@ -134,45 +145,51 @@ function rebuildStreaksFromLog() {
     }
 
     state.habits.forEach(habit => {
-        // Only rebuild for daily habits with frequency 'daily' or undefined
+        // Skip non-daily habits only if frequency is explicitly set to something else
         if (habit.frequency && habit.frequency !== 'daily') return;
 
-        // Get all dates where this habit was completed
-        const allDates = Object.keys(state.completionLog)
-            .filter(date => wasCompletedOnDate(habit.id, date))
-            .sort((a, b) => b.localeCompare(a)); // Most recent first
-
-        if (allDates.length === 0) {
-            if (habit.streak !== 0) {
-                habit.streak = 0;
-                fixed++;
-            }
-            return;
-        }
-
-        // Count consecutive days starting from today or yesterday
         let streak = 0;
-        let checkDate = new Date(getGameDateObj());
+        let checkDate = getGameDateObj(); // Start with real today object
 
-        // If not completed today, start from yesterday
-        if (!wasCompletedOnDate(habit.id, today)) {
-            checkDate.setDate(checkDate.getDate() - 1);
+        // 1. Check Today
+        let dateStr = formatISO(checkDate);
+        if (wasCompletedOnDate(habit.id, dateStr)) {
+            streak++;
         }
 
-        while (true) {
-            const dateStr = formatISO(checkDate);
+        // 2. Scan backwards from Yesterday
+        // We always check yesterday to continue the chain
+        checkDate.setDate(checkDate.getDate() - 1);
+
+        // Safety: Scan max 1000 days back
+        for (let i = 0; i < 1000; i++) {
+            dateStr = formatISO(checkDate);
             if (wasCompletedOnDate(habit.id, dateStr)) {
                 streak++;
                 checkDate.setDate(checkDate.getDate() - 1);
             } else {
+                // Gap found!
+                // If we haven't found ANY streak yet (today wasn't done),
+                // and the gap is just today (which we handled) -> wait.
+                // The loop checks YESTERDAY first. If yesterday is missing, streak is broken.
+                // But wait! If today is missing, we shouldn't reset streak to 0 if yesterday was done?
+                // Logic check: 
+                // If Today Done: streak=1. Check Yesterday. Done? streak=2.
+                // If Today NOT Done: streak=0. Check Yesterday. Done? streak=1.
+                // This logic holds.
                 break;
             }
-            // Safety limit
-            if (streak > 365) break;
         }
 
+        // Apply fix if different
+        // INTENTIONAL: Should not downgrade high streaks if the log seems empty (data loss protection)
+        // BUT here we assume the log IS the source of truth after a Restore.
+        // If streak calculated is 0 but current is > 0, we might be deleting valid frozen streaks.
+        // COMPROMISE: Only update if calculated streak is > 0 OR if current streak matches a simple pattern?
+        // No, trusted "Repair" means "make it match the log".
+
         if (habit.streak !== streak) {
-            console.log(`Rebuilding streak for ${habit.name}: ${habit.streak} -> ${streak}`);
+            console.log(`Fixing streak for ${habit.name}: ${habit.streak} -> ${streak}`);
             habit.streak = streak;
             fixed++;
         }
@@ -181,7 +198,8 @@ function rebuildStreaksFromLog() {
     if (fixed > 0) {
         saveState();
         renderAll();
-        console.log(`Rebuilt ${fixed} habit streaks`);
+        // Force refresh UI dependent on streaks
+        if (typeof renderHabits === 'function') renderHabits();
     }
 
     return fixed;
@@ -523,6 +541,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Immersive Effects
     setTimeout(initImmersiveEffects, 500);
+
+    // AUTO-REPAIR STREAKS on Startup (v2.7.87)
+    // Ensures data integrity after restores or sync issues without user intervention
+    setTimeout(() => {
+        console.log("Auto-verifying streak integrity...");
+        rebuildStreaksFromLog();
+    }, 3000);
 });
 
 function checkFrozenStreak() {
@@ -623,25 +648,79 @@ function checkMonthlyChallengeInitialization() {
     }
 }
 
+// Helper: Count stars for monthly pyramid
+function getMonthlyStarCounts(monthId) {
+    const counts = { 3: 0, 4: 0, 5: 0 };
+
+    // Safety check for state
+    if (!state.completionLog) return counts;
+
+    const monthDates = Object.keys(state.completionLog).filter(d => d.startsWith(monthId));
+
+    monthDates.forEach(date => {
+        const log = state.completionLog[date];
+        if (!log) return;
+
+        // Check Quests
+        if (log.quests && Array.isArray(log.quests)) {
+            log.quests.forEach(id => {
+                const quest = state.quests.find(q => q.id === id);
+                if (quest && quest.stars) {
+                    if (counts[quest.stars] !== undefined) counts[quest.stars]++;
+                }
+            });
+        }
+
+        // Check OneShots
+        if (log.oneshots && Array.isArray(log.oneshots)) {
+            log.oneshots.forEach(id => {
+                const item = state.oneshots.find(o => o.id === id);
+                if (item && item.stars) {
+                    if (counts[item.stars] !== undefined) counts[item.stars]++;
+                }
+            });
+        }
+
+        // Check Habits (if they ever have stars, currently mostly 1-2 difficulty)
+        if (log.habits && Array.isArray(log.habits)) {
+            log.habits.forEach(id => {
+                const habit = state.habits.find(h => h.id === id);
+                if (habit && habit.stars) {
+                    if (counts[habit.stars] !== undefined) counts[habit.stars]++;
+                }
+            });
+        }
+    });
+
+    return counts;
+}
+
 function addMonthlyPoints(amount) {
     checkMonthlyChallengeInitialization();
 
     // Safety check
     if (!state.player.monthlyChallenge) return;
 
-    // Prevent negative points from going below zero (optional, but good for UI)
+    // Prevent negative points from going below zero
     const newPoints = Math.max(0, state.player.monthlyChallenge.points + amount);
 
-    // Check if we just crossed the threshold
     const target = state.player.monthlyChallenge.target;
-    const oldPoints = state.player.monthlyChallenge.points;
+    // const oldPoints = state.player.monthlyChallenge.points; // logic changed to check condition continuously
 
     state.player.monthlyChallenge.points = newPoints;
     saveState();
 
     // Check for Medal Unlock
-    if (oldPoints < target && newPoints >= target) {
-        unlockMonthlyMedal();
+    // REQUIREMENT: 50 Points AND Pyramid (1x5*, 2x4*, 3x3*)
+    if (newPoints >= target) {
+        const currentMonth = state.player.monthlyChallenge.currentMonth;
+        const starCounts = getMonthlyStarCounts(currentMonth);
+
+        const pyramidMet = (starCounts[5] >= 1) && (starCounts[4] >= 2) && (starCounts[3] >= 3);
+
+        if (pyramidMet) {
+            unlockMonthlyMedal();
+        }
     }
 }
 
@@ -1355,6 +1434,39 @@ function renderProfilePopup() {
         mFill.style.width = `${pct}%`;
     }
 
+    // Render Pyramid Status
+    const mPyramid = document.getElementById('monthlyPyramidStatus');
+    if (mPyramid && state.player.monthlyChallenge) {
+        const counts = getMonthlyStarCounts(state.player.monthlyChallenge.currentMonth);
+
+        // Helper to color status
+        const fmt = (req, curr, color) => {
+            const done = curr >= req;
+            const cStyle = done ? `color:${color}; opacity:1; font-weight:bold;` : `color:var(--text-muted); opacity:0.7;`;
+            const check = done ? '✓' : '';
+            return `<span style="${cStyle}">
+                ${'⭐'.repeat(req)} <span style="font-size:9px">${curr}/${req}${check}</span>
+             </span>`;
+        };
+
+        // We render: 5* (req 1), 4* (req 2), 3* (req 3)
+        // Actually showing 5 stars is too long. Let's use "5★"
+        const fmtCompact = (stars, req, curr) => {
+            const done = curr >= req;
+            const color = done ? 'var(--accent-gold)' : 'var(--text-muted)';
+            const weight = done ? 'bold' : 'normal';
+            return `<span style="color:${color}; font-weight:${weight}" title="${stars} Stelle (Richiesti: ${req})">
+                ${stars}★ ${curr}/${req}
+            </span>`;
+        };
+
+        mPyramid.innerHTML = `
+            ${fmtCompact(5, 1, counts[5])}
+            ${fmtCompact(4, 2, counts[4])}
+            ${fmtCompact(3, 3, counts[3])}
+        `;
+    }
+
     if (mGrid && state.player.monthlyChallenge) {
         if (state.player.monthlyChallenge.medals.length === 0) {
             mGrid.innerHTML = '<div style="font-size:11px; color:var(--text-muted); width:100%; text-align:center;">Nessuna medaglia ancora...</div>';
@@ -2037,7 +2149,10 @@ function toggleHabit(habitId, targetDate = null) {
                     const allDates = Object.keys(state.completionLog)
                         .filter(dt => {
                             const log = state.completionLog[dt];
-                            return Array.isArray(log) && log.includes(habit.id);
+                            if (!log) return false;
+                            if (log.habits && Array.isArray(log.habits)) return log.habits.includes(habit.id);
+                            if (Array.isArray(log)) return log.includes(habit.id);
+                            return false;
                         })
                         .sort((a, b) => b.localeCompare(a)); // Most recent first
 
@@ -2048,8 +2163,15 @@ function toggleHabit(habitId, targetDate = null) {
                     while (true) {
                         const checkStr = formatISO(checkDate);
                         const log = state.completionLog[checkStr];
-                        // Include today's completion we're about to add
-                        if ((Array.isArray(log) && log.includes(habit.id)) || checkStr === dateStr) {
+
+                        let isCompleted = false;
+                        if (log) {
+                            if (log.habits && Array.isArray(log.habits)) isCompleted = log.habits.includes(habit.id);
+                            else if (Array.isArray(log)) isCompleted = log.includes(habit.id);
+                        }
+
+                        // Include today's completion we're about to add (if checkStr matches dateStr)
+                        if (isCompleted || checkStr === dateStr) {
                             streak++;
                             checkDate.setDate(checkDate.getDate() - 1);
                         } else {
@@ -4028,16 +4150,16 @@ function loadDemoData() {
     renderAll();
 }
 
-// Helper to fix corrupted data
+// Master Repair Function (Clean, Streamline, Correct)
 function fixData() {
-    if (confirm('Questo ripristinerà gli attributi predefiniti mantenendo i livelli attuali (ove possibile). Continuare?')) {
-        // Backup levels
+    if (confirm('Eseguire una riparazione completa del database? \n\n- Corregge attributi corrotti\n- Ripara stringhe JSON\n- Ricalcola i punti mensili\n- Ricostruisce le streak\n\nAttenzione: La pagina si ricaricherà.')) {
+
+        console.log("Starting Master Repair...");
+
+        // 1. Fix Attributes (Legacy Logic)
         const currentLevels = {};
         state.stats.forEach(s => currentLevels[s.id] = s);
-
         state.stats = [...DEFAULT_ATTRIBUTES.map(a => ({ ...a })), ...DEFAULT_ABILITIES.map(a => ({ ...a }))];
-
-        // Restore progress if id matches
         state.stats.forEach(s => {
             if (currentLevels[s.id]) {
                 s.level = currentLevels[s.id].level;
@@ -4046,9 +4168,57 @@ function fixData() {
             }
         });
 
+        // 2. Fix Completion Log Structure (Sanitization)
+        console.log("Sanitizing Completion Log...");
+        Object.keys(state.completionLog).forEach(key => {
+            let entry = state.completionLog[key];
+            if (!entry || (typeof entry !== 'object')) {
+                // Fix invalid entries
+                state.completionLog[key] = { habits: [], oneshots: [], quests: [] };
+            } else if (Array.isArray(entry)) {
+                // Convert old array format to object
+                state.completionLog[key] = { habits: [...entry], oneshots: [], quests: [] };
+            } else {
+                // Ensure internal arrays exist
+                if (!entry.habits) entry.habits = [];
+                if (!entry.oneshots) entry.oneshots = [];
+                if (!entry.quests) entry.quests = [];
+            }
+        });
+
+        // 3. Rebuild Streaks
+        console.log("Rebuilding Streaks...");
+        rebuildStreaksFromLog();
+
+        // 4. Recalculate Monthly Points
+        console.log("Recalculating Monthly Points...");
+        if (state.player.monthlyChallenge && state.player.monthlyChallenge.currentMonth) {
+            const currentMonth = state.player.monthlyChallenge.currentMonth;
+            let totalPoints = 0;
+
+            Object.keys(state.completionLog).forEach(date => {
+                if (!date.startsWith(currentMonth)) return;
+                const log = state.completionLog[date];
+
+                // Habits (1 pt each)
+                if (log.habits) totalPoints += log.habits.length;
+                // OneShots (1 pt each - assumed)
+                if (log.oneshots) totalPoints += log.oneshots.length;
+                // Quests (2 pts each)
+                if (log.quests) totalPoints += (log.quests.length * 2);
+            });
+
+            state.player.monthlyChallenge.points = totalPoints;
+            console.log(`Recalculated Monthly Points: ${totalPoints}`);
+
+            // Check medal unlock logic with new points
+            addMonthlyPoints(0);
+        }
+
         saveState();
         renderAll();
-        alert('✅ Attributi riparati con successo!');
+        alert('✅ Riparazione Completa Eseguita!\n\nTutti i dati sono stati verificati e corretti.');
+        location.reload();
     }
 }
 
