@@ -1338,6 +1338,8 @@ function renderHeader() {
     }
 }
 
+
+
 // Profile Popup Logic
 function toggleProfilePopup() {
     const popup = document.getElementById('profilePopup');
@@ -2085,6 +2087,8 @@ function toggleHabit(habitId, targetDate = null) {
 
     // Treat as "today" for XP/streak purposes if targeting today OR in grace period
     const isTargetingToday = (!targetDate || targetDate === todayISO) || isYesterdayGracePeriod;
+
+    console.log(`[ToggleHabit] ID: ${habit.name}, Target: ${dateStr}, RealToday: ${todayISO}, Grace: ${isYesterdayGracePeriod}, IsTargetToday: ${isTargetingToday}`);
 
     if (isHabitCompletedOnDate(habit, dateStr)) {
         // Un-complete
