@@ -1615,6 +1615,7 @@ function renderRadarChart() {
 let progressChart = null;
 
 function showProgressPopup(gainedStatId = null, gainedAmount = 0) {
+    console.log(`[ShowPopup] Stat: ${gainedStatId}, Amount: ${gainedAmount}`);
     const toast = document.getElementById('xpToast');
     const toastText = document.getElementById('xpToastText');
     if (!toast || !toastText) return;
@@ -1917,6 +1918,7 @@ function logCompletion(type, itemId, customDate = null) {
     if (!state.completionLog[dateStr]) {
         state.completionLog[dateStr] = { habits: [], oneshots: [], quests: [] };
     }
+    console.log(`[LogCompletion] Type: ${type}, ID: ${itemId}, Date: ${dateStr}`);
 
     // Always update the total count snapshot for TODAY when modifying
     if (dateStr === getGameDate() && type === 'habits') {
@@ -2085,14 +2087,10 @@ function toggleHabit(habitId, targetDate = null) {
     // Check if we're in grace period: targeting yesterday AND it's before noon
     const isYesterdayGracePeriod = dateStr === yesterdayISO && currentHour < 12;
 
-    // Treat as "today" for XP/streak purposes if:
-    // 1. Targeting Game Today
-    // 2. Targeting Real Today (even if Game Today is yesterday due to dayStartTime)
-    // 3. Grace Period (yesterday morning)
-    const realTodayISO = formatISO(new Date());
-    const isTargetingToday = (!targetDate || targetDate === todayISO || dateStr === realTodayISO) || isYesterdayGracePeriod;
+    // Treat as "today" for XP/streak purposes if targeting today OR in grace period
+    const isTargetingToday = (!targetDate || targetDate === todayISO) || isYesterdayGracePeriod;
 
-    console.log(`[ToggleHabit] ID: ${habit.name}, Target: ${dateStr}, GameToday: ${todayISO}, RealToday: ${realTodayISO}, Grace: ${isYesterdayGracePeriod}, IsTargetToday: ${isTargetingToday}`);
+    console.log(`[ToggleHabit] ID: ${habit.name}, Target: ${dateStr}, GameToday: ${todayISO}, Grace: ${isYesterdayGracePeriod}, IsTargetToday: ${isTargetingToday}`);
 
     if (isHabitCompletedOnDate(habit, dateStr)) {
         // Un-complete
