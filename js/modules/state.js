@@ -211,6 +211,7 @@ export function loadState() {
 }
 
 export function saveState() {
+    console.log(`[State] Saving... LastAccess: ${state.player.lastAccessDate}`);
     localStorage.setItem('questlife_state_v2', JSON.stringify(state));
     saveDataToFile(state);
 }
