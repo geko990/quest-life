@@ -598,34 +598,78 @@ function checkFrozenStreak() {
     saveState();
 }
 
-function recordActivity() {
-    const today = getGameDateString();
+function checkGlobalStreakProgress(dateStr) {
+    // 75% THRESHOLD LOGIC (v2.8.0)
+    // User must complete 75% of daily tasks to increment global streak.
 
-    // If we haven't done anything today yet
-    if (state.player.lastActionDate !== today) {
-        // Updates streak if logic allows
-        const lastDate = state.player.lastActionDate ? new Date(state.player.lastActionDate) : null;
+    // 1. Calculate completion percentage for the specific date
+    const completionPercent = getCompletionForDate(dateStr);
+    const THRESHOLD = 75;
 
-        // Logic for streak increment (checkFrozenStreak handles breaks elsewhere)
-        state.player.globalStreak++;
-        state.player.lastActionDate = today;
+    console.log(`[StreakCheck] Date: ${dateStr}, Completion: ${completionPercent}%`);
 
-        saveState();
-        renderHeader();
+    // 2. Logic
+    if (completionPercent >= THRESHOLD) {
+        // Threshold met!
+        if (state.player.lastActionDate !== dateStr) {
+            // INCREMENT STREAK (First time meeting threshold today)
+            state.player.globalStreak++;
+            state.player.lastActionDate = dateStr;
 
-        // CELEBRATION! 🎉
-        // Only show if streak > 0.
-        if (state.player.globalStreak > 0) {
-            showStreakCelebration(state.player.globalStreak);
+            saveState();
+            renderHeader();
+
+            // CELEBRATION! 🎉
+            if (state.player.globalStreak > 0) {
+                showStreakCelebration(state.player.globalStreak);
+                playSound('streak'); // Play sound here explicitly
+            }
+
+            // Toast
+            const toast = document.getElementById('xpToast');
+            const toastText = document.getElementById('xpToastText');
+            if (toast && toastText) {
+                toastText.innerHTML = `<span style="font-size:14px">🔥 Streak Extended! (${completionPercent}%)</span>`;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('visible'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('visible');
+                    setTimeout(() => toast.classList.add('hidden'), 300);
+                }, 3000);
+            }
         }
-
-        // Also update popup if open
-        const popupCount = document.getElementById('popupStreakCount');
-        if (popupCount) popupCount.textContent = state.player.globalStreak;
     } else {
-        // Even if we have done something today, we might need to force a render if this is a re-check
-        // But toggleHabit now calls renderHeader explicitly.
+        // Threshold NOT met (< 75%)
+        if (state.player.lastActionDate === dateStr) {
+            // DECREMENT STREAK (Rollback: user unchecked a task and dropped below 75%)
+            if (state.player.globalStreak > 0) state.player.globalStreak--;
+
+            // Revert lastActionDate to previous day to allow re-incrementing
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() - 1);
+            state.player.lastActionDate = formatISO(d);
+
+            saveState();
+            renderHeader();
+
+            // Toast Warning
+            const toast = document.getElementById('xpToast');
+            const toastText = document.getElementById('xpToastText');
+            if (toast && toastText) {
+                toastText.innerHTML = `<span style="font-size:12px">📉 Streak persa (< 75%)</span>`;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('visible'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('visible');
+                    setTimeout(() => toast.classList.add('hidden'), 300);
+                }, 2000);
+            }
+        }
     }
+
+    // Always update popup if open
+    const popupCount = document.getElementById('popupStreakCount');
+    if (popupCount) popupCount.textContent = state.player.globalStreak;
 }
 
 
@@ -2105,6 +2149,7 @@ function toggleHabit(habitId, targetDate = null) {
                 addXp(-Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
             addMonthlyPoints(-1); // Remove monthly point
+            checkGlobalStreakProgress(dateStr); // check if we dropped below 75%
         } else {
             // RETROACTIVE UN-COMPLETE
             // If we uncheck a past task, we must clear the lastCompleted date
@@ -2131,11 +2176,27 @@ function toggleHabit(habitId, targetDate = null) {
                 addXp(Math.round(xp * XP_CONFIG.secondaryRatio), habit.secondaryStatId, habit.name);
             }
             addMonthlyPoints(1); // Add monthly point
-            recordActivity();
+            // recordActivity(); // OLD
+            checkGlobalStreakProgress(dateStr); // NEW 75% Logic
             const xpGained = calculateXp(habit.stars);
             showProgressPopup(habit.primaryStatId, xpGained);
         } else {
             // RETROACTIVE COMPLETION: Completing a past date
+            console.log(`[ToggleHabit] Retroactive/Future completion. No XP awarded.`);
+
+            // OPTIONAL: Alert user why no XP
+            const toast = document.getElementById('xpToast');
+            const toastText = document.getElementById('xpToastText');
+            if (toast && toastText) {
+                toastText.innerHTML = `<span style="font-size:12px">📅 Nessun XP per azioni passate</span>`;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('visible'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('visible');
+                    setTimeout(() => toast.classList.add('hidden'), 300);
+                }, 2000);
+            }
+
             // IMPORTANT: Parse YYYY-MM-DD to local date safely. 
             // We use noon (12:00) to avoid timezone rollover issues when converting to string.
             if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {

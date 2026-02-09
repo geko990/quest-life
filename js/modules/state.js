@@ -212,7 +212,12 @@ export function loadState() {
 
 export function saveState() {
     console.log(`[State] Saving... LastAccess: ${state.player.lastAccessDate}`);
-    localStorage.setItem('questlife_state_v2', JSON.stringify(state));
+    try {
+        localStorage.setItem('questlife_state_v2', JSON.stringify(state));
+    } catch (e) {
+        console.error("CRITICAL: LocalStorage Save Failed", e);
+        alert("⚠️ ERRORE SALVATAGGIO: Memoria piena o errore del browser. I tuoi dati potrebbero non essere salvati!");
+    }
     saveDataToFile(state);
 }
 
