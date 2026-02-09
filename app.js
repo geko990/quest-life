@@ -2415,9 +2415,8 @@ function completeOneshot(oneshotId) {
 
 
 
-    // Calculate XP
-    const diffMultiplier = 1 + (['easy', 'medium', 'hard', 'epic'].indexOf(oneshot.difficulty) * 0.5);
-    const popupXp = Math.round(15 * diffMultiplier);
+    // Show the actual XP gained (including bonuses) in the popup
+    const popupXp = xp;
     showProgressPopup(oneshot.primaryStatId, popupXp);
     playCelebration('minor');
 
