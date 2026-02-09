@@ -451,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     shiftProgressiveHabits(); // Shift any habits that weren't completed yesterday
+    sanitizeDailyCompletionLog(viewedDate); // Sanity Check on Boot (Phantom Checks)
     checkFrozenStreak();
     initNavigation();
 
@@ -534,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newDate !== viewedDate) {
                 viewedDate = newDate;
                 shiftProgressiveHabits(); // Shift habits to the new day
+                sanitizeDailyCompletionLog(viewedDate); // Sanity Check on Rollover
                 renderAll();
             }
         }
@@ -549,6 +551,61 @@ document.addEventListener('DOMContentLoaded', () => {
         rebuildStreaksFromLog();
     }, 3000);
 });
+
+// SANITY CHECK (v2.8.01)
+// Fixes "Phantom Checks" where habits appear done for the new day without user interaction.
+function sanitizeDailyCompletionLog(dateStr) {
+    if (!state.completionLog[dateStr]) return;
+
+    let changed = false;
+    const log = state.completionLog[dateStr];
+
+    // Check habits (only 'daily' ones should be strictly tied to lastCompleted mismatch)
+    if (log.habits && Array.isArray(log.habits)) {
+        const validIds = [];
+        log.habits.forEach(id => {
+            const habit = state.habits.find(h => h.id === id);
+            if (!habit) return; // Habit deleted?
+
+            // Only strictly sanitize 'daily' habits
+            if (!habit.frequency || habit.frequency === 'daily') {
+                if (habit.lastCompleted === dateStr) {
+                    // Consistent
+                    validIds.push(id);
+                } else {
+                    // Inconsistent: Log says done today, Habit says done previously (or never)
+                    console.warn(`[Sanity] Removing phantom completion for ${habit.name}. Log: ${dateStr}, LastCompleted: ${habit.lastCompleted}`);
+                    changed = true;
+                }
+            } else {
+                // Progressive habits might be valid due to period logic, keep them
+                validIds.push(id);
+            }
+        });
+
+        if (changed) {
+            log.habits = validIds;
+            log.dailyTotalSnapshot = log.habits.length; // Approximate
+        }
+    }
+
+    if (changed) {
+        saveState();
+        console.log(`[Sanity] Fixed corrupted log for ${dateStr}`);
+        // Optional: Toast
+        const toast = document.getElementById('xpToast');
+        const toastText = document.getElementById('xpToastText');
+        if (toast && toastText) {
+            toastText.innerHTML = `<span style="font-size:12px">🧹 Pulizia automatica errori</span>`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('visible'), 10);
+            setTimeout(() => {
+                toast.classList.remove('visible');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 2000);
+        }
+    }
+}
 
 function checkFrozenStreak() {
     const today = getGameDateObj();
