@@ -574,8 +574,9 @@ function sanitizeDailyCompletionLog(dateStr) {
                     validIds.push(id);
                 } else {
                     // Inconsistent: Log says done today, Habit says done previously (or never)
-                    console.warn(`[Sanity] Removing phantom completion for ${habit.name}. Log: ${dateStr}, LastCompleted: ${habit.lastCompleted}`);
-                    changed = true;
+                    console.warn(`[Sanity] WOULD REMOVE phantom completion for ${habit.name}. Log: ${dateStr}, LastCompleted: ${habit.lastCompleted}`);
+                    // changed = true; // DISABLED for debugging: preventing data loss if logic is too aggressive
+                    validIds.push(id); // Keep it for now
                 }
             } else {
                 // Progressive habits might be valid due to period logic, keep them
@@ -661,7 +662,7 @@ function checkGlobalStreakProgress(dateStr) {
 
     // 1. Calculate completion percentage for the specific date
     const completionPercent = getCompletionForDate(dateStr);
-    const THRESHOLD = 75;
+    const THRESHOLD = 70;
 
     console.log(`[StreakCheck] Date: ${dateStr}, Completion: ${completionPercent}%`);
 
@@ -1404,6 +1405,8 @@ function renderHeader() {
     if (streakIcon) {
         const today = getGameDateString();
         const isActive = state.player.lastActionDate === today;
+
+        console.log(`[RenderHeader] Streak Icon. LastAction: ${state.player.lastActionDate}, Today: ${today}, Active: ${isActive}`);
 
         if (isActive) {
             streakIcon.classList.remove('grayscale');

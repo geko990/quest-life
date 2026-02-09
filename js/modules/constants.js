@@ -3,7 +3,7 @@
    Constants Module
    ============================================ */
 
-export const APP_VERSION = '2.8.05';
+export const APP_VERSION = '2.8.06';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
