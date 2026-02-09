@@ -1403,7 +1403,7 @@ function renderHeader() {
     if (streakEl) streakEl.textContent = state.player.globalStreak;
 
     if (streakIcon) {
-        const today = getGameDateString();
+        const today = getGameDate();
         const isActive = state.player.lastActionDate === today;
 
         console.log(`[RenderHeader] Streak Icon. LastAction: ${state.player.lastActionDate}, Today: ${today}, Active: ${isActive}`);
