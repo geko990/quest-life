@@ -2177,7 +2177,6 @@ function toggleHabit(habitId, targetDate = null) {
     const habit = state.habits.find(h => h.id === habitId);
     if (!habit || habit.locked) return;
 
-    const today = getGameDateObj().toDateString();
     const todayISO = getGameDate();
     const dateStr = targetDate || todayISO;
 
@@ -2229,7 +2228,7 @@ function toggleHabit(habitId, targetDate = null) {
                 habit.streak = Math.max(1, Math.floor(habit.streak * 0.3) + 1);
             }
 
-            habit.lastCompleted = today;
+            habit.lastCompleted = dateStr; // Store in ISO format to match logs
             const xp = calculateXp(habit.stars);
             addXp(xp, habit.primaryStatId, habit.name);
             if (habit.secondaryStatId) {
