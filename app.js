@@ -2411,8 +2411,7 @@ function completeOneshot(oneshotId) {
     addMonthlyPoints(2); // OneShots give 2 points
     logCompletion('oneshots', oneshot.id);
 
-    // Calculate XP
-    const diffMultiplier = 1 + (['easy', 'medium', 'hard', 'epic'].indexOf(oneshot.difficulty) * 0.5);
+
 
     // Calculate XP
     const diffMultiplier = 1 + (['easy', 'medium', 'hard', 'epic'].indexOf(oneshot.difficulty) * 0.5);
