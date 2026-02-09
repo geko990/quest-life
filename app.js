@@ -2410,13 +2410,9 @@ function completeOneshot(oneshotId) {
     }
     addMonthlyPoints(2); // OneShots give 2 points
     logCompletion('oneshots', oneshot.id);
-    checkGlobalStreakProgress(today); // Check if this bumped us over 75% (unlikely if only checking habits, but safe)
-    // actually checkGlobalStreakProgress uses 'getCompletionForDate' which checks visible habits
-    // OneShots don't contribute to 'completionPercent' in current logic?
-    // Let's verify getCompletionForDate logic.
-    // getCompletionForDate ONLY checks habits.
-    // So completing a OneShot won't help streak unless habits are done.
-    // But it's good to check anyway in case we change logic later.
+
+    // Calculate XP
+    const diffMultiplier = 1 + (['easy', 'medium', 'hard', 'epic'].indexOf(oneshot.difficulty) * 0.5);
 
     // Calculate XP
     const diffMultiplier = 1 + (['easy', 'medium', 'hard', 'epic'].indexOf(oneshot.difficulty) * 0.5);
