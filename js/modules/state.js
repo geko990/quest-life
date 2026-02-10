@@ -6,6 +6,8 @@ import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { getMonthIdentifier, getGameDate, ensureUniqueIds, getGameDateString } from './utils.js';
 import { saveDataToFile } from './storage.js';
 
+export const APP_VERSION = '2.8.22';
+
 export let state = {
     player: {
         name: 'Avventuriero',
@@ -91,7 +93,7 @@ export function loadState() {
 
     if (saved) {
         try {
-            const APP_VERSION = '2.8.20';
+            console.log(`QUEST LIFE SYSTEM BOOT - v${APP_VERSION}`);
             const parsed = JSON.parse(saved);
 
             // Merge parsed data, but keep defaults for missing properties

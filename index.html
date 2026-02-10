@@ -21,7 +21,7 @@
         };
     </script>
     <script>
-        // AGGRESSIVE CACHE CLEARING - v2.8.20
+        // AGGRESSIVE CACHE CLEARING - v2.8.22
         // Unregister old service workers and clear caches on first load
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -579,7 +579,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.8.20</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.8.22</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -932,10 +932,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script type="module" src="app.js?v=2.8.20"></script>
+    <script type="module" src="app.js?v=2.8.22"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.8.20')
+            navigator.serviceWorker.register('./sw.js?v=2.8.22')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
