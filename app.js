@@ -4626,6 +4626,15 @@ function closeInventory() {
     }
 }
 
+function openToxicInventory() {
+    switchInventoryTab('toxic');
+    openInventory();
+}
+
+function closeToxicInventory() {
+    closeInventory();
+}
+
 function switchInventoryTab(tab) {
     currentInventoryTab = tab;
     // Update tab styles
@@ -5749,75 +5758,7 @@ function closeMedalDetail() {
     document.getElementById('medalDetailOverlay')?.classList.add('hidden');
 }
 
-window.showMedalDetail = showMedalDetail;
-window.closeMedalDetail = closeMedalDetail;
 
-window.openPomodoroTimer = openPomodoroTimer;
-window.closePomodoroTimer = closePomodoroTimer;
-window.togglePomodoro = togglePomodoro;
-window.resetPomodoro = resetPomodoro;
-window.savePomodoroSettings = savePomodoroSettings;
-window.updateSettingToggle = updateSettingToggle;
-window.setPopupSetting = setPopupSetting;
-window.setWeekStart = setWeekStart;
-
-// Expose functions to window
-window.openToxicInventory = openToxicInventory;
-window.closeToxicInventory = closeToxicInventory;
-window.useToxicItem = useToxicItem;
-window.editToxicItem = editToxicItem;
-
-// Expose all functions called from HTML onclick handlers
-window.toggleAccordion = toggleAccordion;
-window.openModal = openModal;
-window.updatePlayerName = updatePlayerName;
-window.closeModal = closeModal;
-window.submitModal = submitModal;
-window.toggleHabit = toggleHabit;
-window.completeOneshot = completeOneshot;
-window.completeQuest = completeQuest;
-window.toggleSubquest = toggleSubquest;
-window.toggleStatVisibility = toggleStatVisibility;
-window.toggleStatVisibilityFromPopup = toggleStatVisibilityFromPopup;
-window.toggleProfilePopup = toggleProfilePopup;
-window.toggleStreakPopup = toggleStreakPopup;
-window.switchSection = switchSection;
-window.saveMotto = saveMotto;
-window.hideStatTooltip = hideStatTooltip;
-window.openAvatarModal = openAvatarModal;
-window.closeAvatarModal = closeAvatarModal;
-window.switchAvatarTab = switchAvatarTab;
-window.selectEmoji = selectEmoji;
-window.handleAvatarUpload = handleAvatarUpload;
-window.showStreakCelebration = showStreakCelebration;
-window.closeStreakCelebration = closeStreakCelebration;
-window.closeDeleteConfirm = closeDeleteConfirm;
-window.confirmDelete = confirmDelete;
-window.openArchive = openArchive;
-
-// Quest Detail
-window.openQuestDetail = openQuestDetail;
-window.closeQuestDetailModal = closeQuestDetailModal;
-window.openStatDetail = openStatDetail;
-window.closeStatDetailModal = closeStatDetailModal;
-window.toggleSubquest = toggleSubquest;
-window.editCurrentQuestInModal = editCurrentQuestInModal;
-window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
-
-// Theme and Settings exports
-window.toggleThemeDropdown = toggleThemeDropdown;
-window.setTheme = setTheme;
-window.setMode = setMode;
-window.showChallengeCatalog = showChallengeCatalog;
-window.closeArchive = closeArchive;
-
-// Dynamic HTML handler exports
-window.handleTaskClick = handleTaskClick;
-window.setViewedDate = setViewedDate;
-window.toggleGoalCheckbox = toggleGoalCheckbox;
-window.closeChallengePreview = closeChallengePreview;
-window.completeChallengeDayAndRefresh = completeChallengeDayAndRefresh;
-window.importChallenge = importChallenge;
 
 function showStreakCelebration(streak) {
     const overlay = document.getElementById('streakCelebration');
@@ -6824,6 +6765,7 @@ window.switchSection = switchSection;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.submitModal = submitModal;
+window.updatePlayerName = updatePlayerName;
 window.toggleProfilePopup = toggleProfilePopup;
 window.toggleStreakPopup = toggleStreakPopup;
 window.openAvatarModal = openAvatarModal;
