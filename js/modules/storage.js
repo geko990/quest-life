@@ -70,7 +70,7 @@ export async function saveDataToFile(data) {
             await writable.close();
             // Visual feedback could be here
         } else {
-            console.log("Permission not granted for file write");
+            // console.log removed
         }
     } catch (err) {
         console.error("Error saving to file:", err);

@@ -3124,7 +3124,7 @@ function completeQuest(questId) {
     }
     addMonthlyPoints(2); // Quest Completion Points
     logCompletion('quests', quest.id);
-    recordActivity();
+    // recordActivity removed - undefined
     showProgressPopup(quest.primaryStatId, xp);
     playCelebration('major', quest.customReward);
 
@@ -3506,7 +3506,7 @@ function toggleStatVisibility(statId) {
     }
 }
 
-// Stat cleanup handled by unified deleteTask/showDeleteConfirm
+
 
 // ============================================
 // MODAL SYSTEM
@@ -3912,7 +3912,7 @@ function submitModal() {
     closeModal();
 }
 
-// editStat replaced by unified editTask
+
 
 // ============================================
 // SWIPE ACTIONS
@@ -4134,7 +4134,7 @@ window.openStatDetail = openStatDetail;
 window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
 window.editCurrentQuestInModal = editCurrentQuestInModal;
 
-// Obsolete - removed in cleanup
+
 
 function handleTaskClick(e, type, id) {
     if (e.target.closest('.card-checkbox')) return;
@@ -4246,7 +4246,8 @@ function handleAvatarUpload(event) {
 // UTILITIES
 // ============================================
 
-// Demo data
+// Demo data removed
+/*
 function loadDemoData() {
     state.habits.push(
         { id: 'h1', name: 'Meditazione', frequency: 'daily', stars: 3, primaryStatId: 'wis', secondaryStatId: 'con', streak: 5, lastCompleted: null, locked: false, createdAt: new Date().toISOString() },
@@ -4267,12 +4268,11 @@ function loadDemoData() {
     saveState();
     renderAll();
 }
+*/
 
 // Master Repair Function (Clean, Streamline, Correct)
 function fixData() {
     if (confirm('Eseguire una riparazione completa del database? \n\n- Corregge attributi corrotti\n- Ripara stringhe JSON\n- Ricalcola i punti mensili\n- Ricostruisce le streak\n\nAttenzione: La pagina si ricaricherà.')) {
-
-        console.log("Starting Master Repair...");
 
         // 1. Fix Attributes (Legacy Logic)
         const currentLevels = {};
@@ -4287,7 +4287,6 @@ function fixData() {
         });
 
         // 2. Fix Completion Log Structure (Sanitization)
-        console.log("Sanitizing Completion Log...");
         Object.keys(state.completionLog).forEach(key => {
             let entry = state.completionLog[key];
             if (!entry || (typeof entry !== 'object')) {
@@ -4305,11 +4304,9 @@ function fixData() {
         });
 
         // 3. Rebuild Streaks
-        console.log("Rebuilding Streaks...");
         rebuildStreaksFromLog();
 
         // 4. Recalculate Monthly Points
-        console.log("Recalculating Monthly Points...");
         if (state.player.monthlyChallenge && state.player.monthlyChallenge.currentMonth) {
             const currentMonth = state.player.monthlyChallenge.currentMonth;
             let totalPoints = 0;
@@ -4327,7 +4324,6 @@ function fixData() {
             });
 
             state.player.monthlyChallenge.points = totalPoints;
-            console.log(`Recalculated Monthly Points: ${totalPoints}`);
 
             // Check medal unlock logic with new points
             addMonthlyPoints(0);
@@ -5304,7 +5300,6 @@ function closeWeeklyRecap() {
 
     // Mark as shown for this week
     state.lastRecapWeek = weekId;
-    console.log('Marking weekly recap as seen for:', state.lastRecapWeek);
     saveState();
 }
 
@@ -5379,10 +5374,7 @@ function showRecapHistory() {
 
     // Auto-rebuild if no recaps exist
     if (!state.recapHistory || state.recapHistory.length === 0) {
-        const rebuilt = rebuildRecapHistory();
-        if (rebuilt > 0) {
-            console.log(`Auto-rebuilt ${rebuilt} weekly recaps`);
-        }
+        rebuildRecapHistory();
     }
 
     if (!state.recapHistory || state.recapHistory.length === 0) {
@@ -5413,7 +5405,6 @@ function closeRecapHistory() {
 // Rebuild recap history from xpLog data for past weeks
 function rebuildRecapHistory() {
     if (!state.xpLog || state.xpLog.length === 0) {
-        console.log('No xpLog data to rebuild recaps from');
         return 0;
     }
 
@@ -5507,7 +5498,6 @@ function rebuildRecapHistory() {
 
     if (addedCount > 0) {
         saveState();
-        console.log(`Rebuilt ${addedCount} weekly recaps from xpLog data`);
     }
 
     return addedCount;
@@ -5595,14 +5585,6 @@ window.closeToxicInventory = closeToxicInventory;
 window.useToxicItem = useToxicItem;
 window.editToxicItem = editToxicItem;
 
-// Expose to console
-window.loadDemoData = loadDemoData;
-window.fixData = fixData;
-window.updateApp = updateApp;
-window.exportData = exportData;
-window.importData = importData;
-window.updateApp = updateApp;
-
 // Expose all functions called from HTML onclick handlers
 window.toggleAccordion = toggleAccordion;
 window.openModal = openModal;
@@ -5619,16 +5601,7 @@ window.toggleProfilePopup = toggleProfilePopup;
 window.toggleStreakPopup = toggleStreakPopup;
 window.switchSection = switchSection;
 window.saveMotto = saveMotto;
-// window.editStat = editStat; // Removed non-existent function
-// window.deleteStat = deleteStat; // Removed non-existent function
-window.setAccent = setAccent;
-window.toggleColorDropdown = toggleColorDropdown;
-window.openMottoEdit = openMottoEdit;
-window.closeMottoEdit = closeMottoEdit;
-window.confirmMottoEdit = confirmMottoEdit;
-window.showStatTooltip = showStatTooltip;
 window.hideStatTooltip = hideStatTooltip;
-// window.contextAction = contextAction; // Removed non-existent function
 window.openAvatarModal = openAvatarModal;
 window.closeAvatarModal = closeAvatarModal;
 window.switchAvatarTab = switchAvatarTab;
