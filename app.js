@@ -1,4 +1,4 @@
-console.log("APP.JS LOADED - v2.8.22");
+console.log("APP.JS LOADED - v2.8.24");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
    Main Application Script
@@ -1172,6 +1172,28 @@ function switchSection(sectionName) {
                 calendar.style.visibility = 'visible';
             }
         }, 150);
+    } else if (sectionName === 'home') {
+        // Gestione scroll per nascondere Dashboard Salute nella Home
+        const dashboard = document.querySelector('.health-dashboard');
+
+        // Hide dashboard temporarily to prevent flash during scroll
+        if (dashboard) {
+            dashboard.style.visibility = 'hidden';
+        }
+
+        setTimeout(() => {
+            const chartArea = document.querySelector('.stats-chart-container');
+            if (container && dashboard && chartArea) {
+                // Calcola lo scroll per posizionarsi all'inizio del radar chart
+                const dashboardRect = dashboard.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop - 7;
+                container.scrollTop = scrollAmount;
+
+                // Show dashboard after scroll
+                dashboard.style.visibility = 'visible';
+            }
+        }, 150);
     } else {
         // Reset scroll per tutte le altre sezioni
         if (container) {
@@ -1204,6 +1226,26 @@ function renderAll() {
     renderCalendar();
     renderHealthDashboard();
     initSortable(); // Initialize drag and drop after render
+
+    // Auto-scroll to hide health dashboard on initial load if in home section
+    const activeSection = document.querySelector('.section.active');
+    if (activeSection && activeSection.id === 'section-home') {
+        const container = document.querySelector('.content-area');
+        const dashboard = document.querySelector('.health-dashboard');
+        if (container && dashboard) {
+            dashboard.style.visibility = 'hidden';
+            setTimeout(() => {
+                const chartArea = document.querySelector('.stats-chart-container');
+                if (chartArea) {
+                    const dashboardRect = dashboard.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop - 7;
+                    container.scrollTop = scrollAmount;
+                }
+                dashboard.style.visibility = 'visible';
+            }, 300); // Slightly longer delay for initial load
+        }
+    }
 }
 
 // ============================================

@@ -6,7 +6,7 @@ import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { getMonthIdentifier, getGameDate, ensureUniqueIds, getGameDateString } from './utils.js';
 import { saveDataToFile } from './storage.js';
 
-export const APP_VERSION = '2.8.22';
+export const APP_VERSION = '2.8.24';
 
 export let state = {
     player: {
