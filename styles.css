@@ -2035,14 +2035,24 @@ input#settingName {
 }
 
 .toxic-item-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-card);
     border-radius: 12px;
     padding: 12px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid rgba(255, 0, 0, 0.1);
+    border: 1px solid var(--glass-border);
     transition: all 0.2s;
+}
+
+.toxic-item-card.completed {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.toxic-item-card:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-primary);
 }
 
 .toxic-item-card:hover {
@@ -2085,18 +2095,245 @@ input#settingName {
 }
 
 .btn-use-toxic:hover {
-    background: #ff4d4d;
+    background: var(--accent-primary);
     color: white;
 }
 
-/* Toxic Form Refinements */
-.toxic-form-row {
-    display: flex !important;
+/* Nutrition Streak Card */
+.nutrition-streak-card {
+    background: var(--accent-gradient);
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.nutrition-streak-card .card-checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    accent-color: white;
+}
+
+.inventory-tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+.inventory-tab-content.hidden {
+    display: none !important;
+}
+
+/* Health Dashboard (MyFitnessPal Style) */
+.health-dashboard {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--glass-border);
+}
+
+.health-card {
+    background: var(--bg-primary);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.calories-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.card-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.calories-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.ring-container {
+    position: relative;
+    width: 140px;
+    height: 140px;
+}
+
+.ring-bg {
+    stroke: var(--bg-secondary);
+}
+
+.ring-fill {
+    stroke: var(--accent-primary);
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ring-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.remaining-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.remaining-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.calories-stats {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
-.toxic-form-row .icon-group {
-    flex: 0 0 70px;
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.stat-item:active {
+    transform: scale(0.98);
+}
+
+.stat-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.health-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.steps-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.steps-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.steps-icon {
+    font-size: 20px;
+}
+
+.steps-value {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: -4px;
+}
+
+.steps-goal {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #f43f5e;
+    width: 0%;
+    transition: width 0.8s ease;
+}
+
+/* Health Input Modal */
+.health-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.health-input-row {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.health-input-row label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.health-input-row input {
+    width: 80px;
+    text-align: right;
+    background: transparent;
+    border: none;
+    color: var(--accent-primary);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.health-input-row input:focus {
+    outline: none;
 }
 
 .toxic-form-row .name-group {
@@ -4106,7 +4343,7 @@ textarea {
 /* Content Box - reuse shared modal styles via class or direct dup if needed */
 /* We will map .quest-detail-content to .modal styles in the shared block */
 .quest-detail-content {
-    /* Styles handled by shared .modal selector now */
+    display: block;
 }
 
 /* Celebration Overlay */
@@ -5630,6 +5867,7 @@ textarea {
         box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
     }
 }
+
 /* XP Toast Notification */
 .xp-toast {
     position: fixed;
@@ -5671,4 +5909,3 @@ textarea {
     opacity: 0.9;
     font-weight: 500;
 }
-

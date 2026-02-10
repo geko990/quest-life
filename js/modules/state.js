@@ -53,6 +53,17 @@ export let state = {
     recapHistory: [], // Array of past weekly recaps: [{weekId, weekLabel, totalXp, topStat, bestHabit, pomodoroCount}]
     penaltyLog: {}, // Log of penalties applied: {dateStr: [{habitId, habitName, xpLost, statId}]}
     lastPenaltyCheck: null, // Last date+time penalties were checked
+    inventory: {
+        supplies: [], // Array of {id, name, status ('needed'|'in_stock'), type ('healthy'|'neutral')}
+        nutritionStreak: 0,
+        lastNutritionDate: null
+    },
+    health: {
+        calories: { goal: 1600, consumed: 0, burned: 0 },
+        steps: { goal: 10000, current: 0 },
+        weight: { current: 75, target: 70, history: [] },
+        lastUpdate: null
+    },
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
 };
 
@@ -80,6 +91,7 @@ export function loadState() {
 
     if (saved) {
         try {
+            const APP_VERSION = '2.8.18';
             const parsed = JSON.parse(saved);
 
             // Merge parsed data, but keep defaults for missing properties
@@ -161,6 +173,26 @@ export function loadState() {
             state.penaltyLog = parsed.penaltyLog || {};
             state.lastPenaltyCheck = parsed.lastPenaltyCheck || null;
 
+            // Load inventory data
+            if (parsed.inventory) {
+                state.inventory = { ...state.inventory, ...parsed.inventory };
+            }
+
+            // Load health data
+            if (parsed.health) {
+                state.health = { ...state.health, ...parsed.health };
+            }
+
+            // Check for daily reset of health metrics
+            const today = getGameDateString();
+            if (state.health.lastUpdate !== today) {
+                state.health.calories.consumed = 0;
+                state.health.calories.burned = 0;
+                state.health.steps.current = 0;
+                state.health.lastUpdate = today;
+                // No save here, will save on next interaction
+            }
+
             state.settings = { ...state.settings, ...parsed.settings };
             if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
 
@@ -169,7 +201,6 @@ export function loadState() {
                 state.pomodoro = { ...state.pomodoro, ...parsed.pomodoro };
             }
             // Reset session counter if new day
-            const today = getGameDateString();
             if (state.pomodoro.lastSessionDate !== today) {
                 state.pomodoro.sessionsToday = 0;
             }

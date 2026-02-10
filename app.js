@@ -1201,6 +1201,7 @@ function renderAll() {
     renderQuests();
     renderSettingsStats();
     renderCalendar();
+    renderHealthDashboard();
     initSortable(); // Initialize drag and drop after render
 }
 
@@ -3518,10 +3519,10 @@ function openModal(type, editData = null) {
     currentModalType = type;
     editingItem = editData;
 
-    // Layering: If opening toxic form, hide inventory backpack temporarily
-    if (type === 'toxic') {
-        const invModal = document.getElementById('toxicInventoryModal');
-        const invOverlay = document.getElementById('toxicInventoryOverlay');
+    // Layering: If opening inventory-related form, hide inventory modal temporarily
+    if (type === 'toxic' || type === 'supply') {
+        const invModal = document.getElementById('inventoryModal');
+        const invOverlay = document.getElementById('inventoryOverlay');
         if (invModal) invModal.classList.add('hidden');
         if (invOverlay) invOverlay.classList.remove('active');
     }
@@ -3715,7 +3716,7 @@ function openModal(type, editData = null) {
         case 'toxic':
             title.textContent = editData ? 'Modifica Oggetto Tossico' : 'Nuovo Oggetto Tossico';
             body.innerHTML = `
-            <div class="form-row toxic-form-row" >
+                <div class="form-row toxic-form-row">
                     <div class="form-group icon-group">
                         <label>Icona</label>
                         <input type="text" id="inputIcon" value="${editData?.icon || '💀'}" style="text-align:center; font-size: 24px;">
@@ -3739,23 +3740,53 @@ function openModal(type, editData = null) {
                     <button class="btn-secondary" onclick="closeModal()">Annulla</button>
                     <button class="btn-primary" onclick="submitModal()">${editData ? 'Salva' : 'Aggiungi'}</button>
                 </div>
-        `;
+            `;
             if (editData) {
-                document.getElementById('inputPrimaryStat').value = editData.statId;
+                document.getElementById('inputPrimaryStat').value = editData.statId || '';
             }
+            break;
+
+        case 'supply':
+            title.textContent = 'Nuovo Rifornimento';
+            body.innerHTML = `
+                <div class="form-group">
+                    <label>Nome Elemento</label>
+                    <input type="text" id="inputName" placeholder="es. Banane, Latte, Uova">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="inputSupplyType">
+                            <option value="healthy">🥝 Sano (Sostentamento)</option>
+                            <option value="neutral">📦 Neutro / Base</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" onclick="closeModal()">Annulla</button>
+                    <button class="btn-primary" onclick="submitModal()">Aggiungi</button>
+                </div>
+            `;
             break;
     }
 
-    document.getElementById('modalOverlay').classList.add('active');
-    initStarRating();
+    const overlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    overlay.classList.add('active');
+    modal.classList.add('active');
+
+    if (type === 'habit' || type === 'oneshot' || type === 'quest' || type === 'toxic') {
+        initStarRating();
+    }
 }
 
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
+    document.getElementById('modal').classList.remove('active'); // Ensure modal itself is hidden
 
-    // Layering: If we were in toxic form, re-open inventory
-    if (currentModalType === 'toxic') {
-        openToxicInventory();
+    // Layering: If we were in toxic or supply form, re-open inventory
+    if (currentModalType === 'toxic' || currentModalType === 'supply') {
+        openInventory();
     }
 
     currentModalType = null;
@@ -3903,7 +3934,19 @@ function submitModal() {
                     createdAt: getGameDateObj().toISOString()
                 });
             }
-            renderToxicInventory();
+            renderToxicItems();
+            break;
+
+        case 'supply':
+            const supplyType = document.getElementById('inputSupplyType')?.value || 'healthy';
+            state.inventory.supplies.push({
+                id: 'supply_' + Date.now(),
+                name,
+                type: supplyType,
+                status: 'needed',
+                createdAt: getGameDateObj().toISOString()
+            });
+            renderSupplies();
             break;
     }
 
@@ -4558,35 +4601,121 @@ function toggleStatVisibilityFromPopup(statId) {
 // TOXIC INVENTORY
 // ============================================
 
-function openToxicInventory() {
-    document.getElementById('toxicInventoryOverlay').classList.add('active');
-    document.getElementById('toxicInventoryModal').classList.remove('hidden');
-    renderToxicInventory();
+// ============================================
+// INVENTORY & SUPPLIES (ZOINO)
+// ============================================
+
+let currentInventoryTab = 'supplies';
+
+function openInventory() {
+    const overlay = document.getElementById('inventoryOverlay');
+    const modal = document.getElementById('inventoryModal');
+    if (overlay && modal) {
+        overlay.classList.add('active');
+        modal.classList.remove('hidden');
+        renderInventory();
+    }
 }
 
-function closeToxicInventory() {
-    document.getElementById('toxicInventoryOverlay').classList.remove('active');
-    document.getElementById('toxicInventoryModal').classList.add('hidden');
+function closeInventory() {
+    const overlay = document.getElementById('inventoryOverlay');
+    const modal = document.getElementById('inventoryModal');
+    if (overlay && modal) {
+        overlay.classList.remove('active');
+        modal.classList.add('hidden');
+    }
 }
 
-function renderToxicInventory() {
+function switchInventoryTab(tab) {
+    currentInventoryTab = tab;
+    // Update tab styles
+    document.getElementById('tab-supplies').classList.toggle('active', tab === 'supplies');
+    document.getElementById('tab-toxic').classList.toggle('active', tab === 'toxic');
+
+    // Update visibility
+    document.getElementById('suppliesContent').classList.toggle('hidden', tab !== 'supplies');
+    document.getElementById('toxicContent').classList.toggle('hidden', tab !== 'toxic');
+
+    // Update Add button target
+    const addBtn = document.getElementById('inventoryAddBtn');
+    if (addBtn) {
+        addBtn.setAttribute('onclick', tab === 'supplies' ? "openModal('supply')" : "openModal('toxic')");
+    }
+
+    renderInventory();
+}
+
+function renderInventory() {
+    if (currentInventoryTab === 'supplies') {
+        renderSupplies();
+    } else {
+        renderToxicItems();
+    }
+}
+
+function renderSupplies() {
+    const list = document.getElementById('suppliesList');
+    if (!list) return;
+
+    // Update streak counter and checkbox
+    const streakCount = document.getElementById('nutritionStreakCount');
+    const checkbox = document.getElementById('nutritionCheckbox');
+    if (streakCount) streakCount.textContent = state.inventory.nutritionStreak || 0;
+    if (checkbox) checkbox.checked = state.inventory.lastNutritionDate === getGameDate();
+
+    if (!state.inventory.supplies || state.inventory.supplies.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">
+                <div style="font-size: 30px; margin-bottom: 8px; opacity: 0.3;">🍎</div>
+                Lista rifornimenti vuota.<br>Aggiungi cibo sano con il tasto +.
+            </div>
+        `;
+        return;
+    }
+
+    // Sort: needed first
+    const sorted = [...state.inventory.supplies].sort((a, b) => {
+        if (a.status === b.status) return 0;
+        return a.status === 'needed' ? -1 : 1;
+    });
+
+    list.innerHTML = sorted.map(item => `
+        <div class="toxic-item-card ${item.status === 'in_stock' ? 'completed' : ''}" style="opacity: ${item.status === 'in_stock' ? '0.6' : '1'};">
+            <div class="toxic-item-info">
+                <div class="toxic-item-icon">${item.type === 'healthy' ? '🥝' : '📦'}</div>
+                <div class="toxic-item-details">
+                    <h4 style="text-decoration: ${item.status === 'in_stock' ? 'line-through' : 'none'}">${item.name}</h4>
+                    <div class="toxic-item-penalty" style="font-size: 11px;">${item.status === 'needed' ? '🚫 Manca' : '✅ In dispensa'}</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span onclick="deleteSupplyItem('${item.id}')" style="cursor:pointer; opacity: 0.6; font-size: 14px;">🗑️</span>
+                <button class="btn-use-toxic" style="background: ${item.status === 'needed' ? 'var(--accent-primary)' : 'var(--bg-secondary)'};" onclick="toggleSupplyStatus('${item.id}')">
+                    ${item.status === 'needed' ? 'Preso' : 'Finito'}
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderToxicItems() {
     const list = document.getElementById('toxicItemList');
     if (!list) return;
 
-    if (state.toxicItems.length === 0) {
+    if (!state.toxicItems || state.toxicItems.length === 0) {
         list.innerHTML = `
-            <div style = "text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px;" >
+            <div style="text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">
                 <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;">🎒</div>
-                Il tuo zaino è vuoto.<br > Crea oggetti tossici per tracciare le cattive abitudini.
+                Il tuo zaino è vuoto.<br>Crea oggetti tossici per tracciare le cattive abitudini.
             </div>
-            `;
+        `;
         return;
     }
 
     list.innerHTML = state.toxicItems.map(item => {
         const stat = state.stats.find(s => s.id === item.statId);
         return `
-            <div class="toxic-item-card" >
+            <div class="toxic-item-card">
                 <div class="toxic-item-info">
                     <div class="toxic-item-icon">${item.icon}</div>
                     <div class="toxic-item-details">
@@ -4599,8 +4728,52 @@ function renderToxicInventory() {
                     <button class="btn-use-toxic" onclick="useToxicItem('${item.id}')">Usa</button>
                 </div>
             </div>
-            `;
+        `;
     }).join('');
+}
+
+function toggleSupplyStatus(id) {
+    const item = state.inventory.supplies.find(i => i.id === id);
+    if (item) {
+        item.status = item.status === 'needed' ? 'in_stock' : 'needed';
+        saveState();
+        renderSupplies();
+    }
+}
+
+function deleteSupplyItem(id) {
+    if (confirm('Rimuovere questo elemento dalla lista?')) {
+        state.inventory.supplies = state.inventory.supplies.filter(i => i.id !== id);
+        saveState();
+        renderSupplies();
+    }
+}
+
+function toggleHealthyEating(event) {
+    const checked = event.target.checked;
+    const today = getGameDate();
+
+    if (checked) {
+        // Increment streak if not already done today
+        if (state.inventory.lastNutritionDate !== today) {
+            // Check if yesterday was completed to continue streak
+            const yesterday = formatISO(new Date(new Date().setDate(new Date().getDate() - 1)));
+            if (state.inventory.lastNutritionDate === yesterday) {
+                state.inventory.nutritionStreak++;
+            } else {
+                state.inventory.nutritionStreak = 1;
+            }
+            state.inventory.lastNutritionDate = today;
+            playSound('success');
+            showRewardPopup('Serie Alimentazione!', '🔥');
+        }
+    } else {
+        // Just uncheck, don't necessarily reset streak unless they care about strict daily
+        state.inventory.lastNutritionDate = null;
+    }
+
+    saveState();
+    renderSupplies();
 }
 
 function useToxicItem(id) {
@@ -4608,23 +4781,23 @@ function useToxicItem(id) {
     if (!item) return;
 
     playSound('toxic');
-
-    // Deduct XP
     addXp(-item.penalty, item.statId, item.name);
 
-    // Feedback
-    const btn = event.target;
-    const originalText = btn.textContent;
-    btn.textContent = 'Fatto! 💀';
-    btn.style.background = '#ff4d4d';
-    btn.style.color = 'white';
+    if (event && event.target) {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Fatto! 💀';
+        btn.style.background = '#ff4d4d';
+        btn.style.color = 'white';
 
-    setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.background = '';
-        btn.style.color = '';
-        renderAll();
-    }, 1000);
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+            btn.style.color = '';
+            renderAll();
+            renderToxicItems();
+        }, 1000);
+    }
 }
 
 function editToxicItem(id) {
@@ -4633,6 +4806,15 @@ function editToxicItem(id) {
         openModal('toxic', item);
     }
 }
+
+window.openInventory = openInventory;
+window.closeInventory = closeInventory;
+window.switchInventoryTab = switchInventoryTab;
+window.toggleSupplyStatus = toggleSupplyStatus;
+window.deleteSupplyItem = deleteSupplyItem;
+window.toggleHealthyEating = toggleHealthyEating;
+window.editToxicItem = editToxicItem;
+window.useToxicItem = useToxicItem;
 
 // ============================================
 // POMODORO TIMER
@@ -6441,79 +6623,318 @@ window.completeSetupWizard = completeSetupWizard;
 window.closeSetupWizard = closeSetupWizard;
 
 // ============================================
-// ONBOARDING GUIDES
+// HEALTH DASHBOARD LOGIC
 // ============================================
 
-function shouldShowOnboarding(tabType) {
-    // Check if user has ever created a task of this type
-    const onboardingKey = `questlife_onboarding_${tabType}`;
-    return !localStorage.getItem(onboardingKey);
+function renderHealthDashboard() {
+    const health = state.health;
+    if (!health) return;
+
+    // Calorie Calculation
+    const remaining = health.calories.goal - health.calories.consumed + health.calories.burned;
+
+    // Update labels
+    const caloriesRemainingEl = document.getElementById('caloriesRemaining');
+    if (caloriesRemainingEl) {
+        caloriesRemainingEl.textContent = Math.max(0, remaining);
+        caloriesRemainingEl.style.color = remaining < 0 ? '#f43f5e' : 'var(--text-primary)';
+    }
+
+    const goalEl = document.getElementById('calorieGoal');
+    if (goalEl) goalEl.textContent = health.calories.goal;
+
+    const consumedEl = document.getElementById('caloriesConsumed');
+    if (consumedEl) consumedEl.textContent = health.calories.consumed;
+
+    const burnedEl = document.getElementById('caloriesBurned');
+    if (burnedEl) burnedEl.textContent = health.calories.burned;
+
+    // Update Calorie Ring
+    updateCalorieRing(health.calories.consumed, health.calories.goal, health.calories.burned);
+
+    // Update Steps
+    const stepsCurrentEl = document.getElementById('stepsCurrent');
+    if (stepsCurrentEl) stepsCurrentEl.textContent = health.steps.current.toLocaleString();
+
+    const stepsGoalEl = document.getElementById('stepsGoalText');
+    if (stepsGoalEl) stepsGoalEl.textContent = health.steps.goal.toLocaleString();
+
+    const stepsBar = document.getElementById('stepsProgressBar');
+    if (stepsBar) {
+        const percent = Math.min(100, (health.steps.current / health.steps.goal) * 100);
+        stepsBar.style.width = `${percent}%`;
+    }
+
+    // Update Weight
+    const weightCurrentEl = document.getElementById('weightCurrent');
+    if (weightCurrentEl) weightCurrentEl.textContent = health.weight.current;
+
+    const weightTargetEl = document.getElementById('weightTargetText');
+    if (weightTargetEl) weightTargetEl.textContent = health.weight.target;
+
+    const weightBar = document.getElementById('weightProgressBar');
+    if (weightBar) {
+        // Simple visualization: proximity to goal
+        const diff = Math.abs(health.weight.current - health.weight.target);
+        const percent = Math.max(10, Math.min(100, 100 - (diff / 20) * 100)); // Arbitrary scale
+        weightBar.style.width = `${percent}%`;
+    }
 }
 
-function markOnboardingComplete(tabType) {
-    localStorage.setItem(`questlife_onboarding_${tabType}`, 'true');
+function updateCalorieRing(consumed, goal, burned) {
+    const ring = document.getElementById('calorieRing');
+    if (!ring) return;
+
+    const radius = ring.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+
+    // Percent = (consumed - burned) / goal
+    // We want the ring to fill as we eat, but empty as we exercise
+    const net = Math.max(0, consumed - burned);
+    let percent = (net / goal);
+
+    if (percent > 1) percent = 1;
+
+    const offset = circumference - (percent * circumference);
+    ring.style.strokeDasharray = `${circumference} ${circumference}`;
+    ring.style.strokeDashoffset = offset;
+
+    // Change color if over goal
+    if (consumed - burned > goal) {
+        ring.style.stroke = '#f43f5e';
+    } else {
+        ring.style.stroke = 'var(--accent-primary)';
+    }
 }
 
-function getOnboardingHTML(tabType) {
-    const guides = {
-        habits: {
-            icon: '📜',
-            title: 'Abitudini',
-            subtitle: 'Attività ricorrenti che vuoi costruire',
-            features: [
-                { icon: '+', label: 'Crea una nuova abitudine', arrow: '↗️' },
-                { icon: '🍅', label: 'Timer Pomodoro per focus', arrow: '↗️' },
-                { icon: '📅', label: 'Scorri il calendario in alto', arrow: '↑' },
-                { icon: '←→', label: 'Swipe su un task per modificare/eliminare', arrow: '' },
-                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
-                { icon: '○', label: 'Tocca il cerchio per completare', arrow: '' }
-            ]
-        },
-        oneshots: {
-            icon: '💥',
-            title: 'One Shot',
-            subtitle: 'Task singoli da completare una volta',
-            features: [
-                { icon: '+', label: 'Crea un nuovo task', arrow: '↗️' },
-                { icon: '🎒', label: 'Zaino Tossico per cattive abitudini', arrow: '↗️' },
-                { icon: '←→', label: 'Swipe per modificare/eliminare', arrow: '' },
-                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
-                { icon: '○', label: 'Tocca per completare', arrow: '' }
-            ]
-        },
-        quests: {
-            icon: '🎯',
-            title: 'Quest',
-            subtitle: 'Grandi obiettivi con sotto-obiettivi',
-            features: [
-                { icon: '+', label: 'Crea una nuova quest', arrow: '↗️' },
-                { icon: '👆', label: 'Tocca una quest per i dettagli', arrow: '' },
-                { icon: '←→', label: 'Swipe per modificare/eliminare', arrow: '' },
-                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
-                { icon: '▓░', label: 'Completa i sotto-obiettivi per progresso', arrow: '' }
-            ]
-        }
-    };
+let currentHealthEditType = null;
 
-    const guide = guides[tabType];
-    if (!guide) return '';
+function openHealthInput(type) {
+    currentHealthEditType = type;
+    const overlay = document.getElementById('healthInputOverlay');
+    const title = document.getElementById('healthModalTitle');
+    const content = document.getElementById('healthInputContent');
 
-    return `
-        <div class="onboarding-guide">
-            <div class="onboarding-header">
-                <div class="onboarding-icon">${guide.icon}</div>
-                <h3 class="onboarding-title">${guide.title}</h3>
-                <p class="onboarding-subtitle">${guide.subtitle}</p>
-            </div>
-            <div class="onboarding-features">
-                ${guide.features.map(f => `
-                    <div class="onboarding-feature ${f.arrow ? 'has-arrow' : ''}">
-                        <span class="feature-icon">${f.icon}</span>
-                        <span class="feature-label">${f.label}</span>
-                        ${f.arrow ? `<span class="feature-arrow">${f.arrow}</span>` : ''}
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
+    if (!overlay || !title || !content) return;
+
+    let html = '';
+    switch (type) {
+        case 'consumed':
+            title.textContent = 'Aggiorna Calorie (Cibo)';
+            html = `
+                <div class="health-input-row">
+                    <label>Aggiungi Calorie</label>
+                    <input type="number" id="healthInValue" value="0" min="0" onfocus="this.select()">
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); padding: 0 10px;">
+                    Inserisci le calorie consumate adesso. Verranno sommate al totale odierno (${state.health.calories.consumed}).
+                </div>
+            `;
+            break;
+        case 'burned':
+            title.textContent = 'Aggiorna Calorie (Esercizio)';
+            html = `
+                <div class="health-input-row">
+                    <label>Calorie Bruciate</label>
+                    <input type="number" id="healthInValue" value="0" min="0" onfocus="this.select()">
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); padding: 0 10px;">
+                    Inserisci le calorie bruciate durante l'allenamento.
+                </div>
+            `;
+            break;
+        case 'steps':
+            title.textContent = 'Aggiorna Passi';
+            html = `
+                <div class="health-input-row">
+                    <label>Passi Totali Oggi</label>
+                    <input type="number" id="healthInValue" value="${state.health.steps.current}" min="0" onfocus="this.select()">
+                </div>
+                <div class="health-input-row">
+                    <label>Obiettivo Giornaliero</label>
+                    <input type="number" id="healthInGoal" value="${state.health.steps.goal}" min="100" onfocus="this.select()">
+                </div>
+            `;
+            break;
+        case 'weight':
+            title.textContent = 'Aggiorna Peso';
+            html = `
+                <div class="health-input-row">
+                    <label>Peso Attuale (kg)</label>
+                    <input type="number" id="healthInValue" value="${state.health.weight.current}" step="0.1" onfocus="this.select()">
+                </div>
+                <div class="health-input-row">
+                    <label>Obiettivo (kg)</label>
+                    <input type="number" id="healthInGoal" value="${state.health.weight.target}" step="0.1" onfocus="this.select()">
+                </div>
+            `;
+            break;
+    }
+
+    content.innerHTML = html;
+    overlay.classList.remove('hidden');
+    overlay.classList.add('active');
 }
+
+function closeHealthInput() {
+    const overlay = document.getElementById('healthInputOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('active');
+    }
+}
+
+function submitHealthInput() {
+    const valInput = document.getElementById('healthInValue');
+    const goalInput = document.getElementById('healthInGoal');
+
+    const value = parseFloat(valInput ? valInput.value : 0) || 0;
+    const goal = parseFloat(goalInput ? goalInput.value : 0) || 0;
+
+    switch (currentHealthEditType) {
+        case 'consumed':
+            state.health.calories.consumed += value;
+            break;
+        case 'burned':
+            state.health.calories.burned += value;
+            break;
+        case 'steps':
+            state.health.steps.current = value;
+            if (goal > 0) state.health.steps.goal = goal;
+            break;
+        case 'weight':
+            state.health.weight.current = value;
+            if (goal > 0) state.health.weight.target = goal;
+            break;
+    }
+
+    saveState();
+    closeHealthInput();
+    renderHealthDashboard();
+}
+
+// ============================================
+// GLOBAL EXPOSITIONS (for HTML onclick handlers)
+// ============================================
+
+// Navigation & Sections
+window.switchSection = switchSection;
+
+// Modals & Popups
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.submitModal = submitModal;
+window.toggleProfilePopup = toggleProfilePopup;
+window.toggleStreakPopup = toggleStreakPopup;
+window.openAvatarModal = openAvatarModal;
+window.closeAvatarModal = closeAvatarModal;
+window.switchAvatarTab = switchAvatarTab;
+window.selectEmoji = selectEmoji;
+window.handleAvatarUpload = handleAvatarUpload;
+window.openMottoEdit = openMottoEdit;
+window.saveMotto = saveMotto;
+
+// Tasks & Progress
+window.toggleHabit = toggleHabit;
+window.completeOneshot = completeOneshot;
+window.completeQuest = completeQuest;
+window.toggleSubquest = toggleSubquest;
+window.handleTaskClick = handleTaskClick;
+window.editTask = editTask;
+window.confirmDelete = confirmDelete;
+window.closeDeleteConfirm = closeDeleteConfirm;
+window.showStreakCelebration = showStreakCelebration;
+window.closeStreakCelebration = closeStreakCelebration;
+window.hideStatTooltip = hideStatTooltip;
+window.showMomentumTooltip = showMomentumTooltip;
+
+// Detail Modals
+window.openQuestDetail = openQuestDetail;
+window.closeQuestDetailModal = closeQuestDetailModal;
+window.openStatDetail = openStatDetail;
+window.closeStatDetailModal = closeStatDetailModal;
+window.editCurrentQuestInModal = editCurrentQuestInModal;
+window.deleteCurrentQuestInModal = deleteCurrentQuestInModal;
+
+// Stats & Accordions
+window.toggleAccordion = toggleAccordion;
+window.toggleStatVisibility = toggleStatVisibility;
+window.toggleStatVisibilityFromPopup = toggleStatVisibilityFromPopup;
+
+// Inventory & Toxic Items
+window.openInventory = openInventory;
+window.closeInventory = closeInventory;
+window.switchInventoryTab = switchInventoryTab;
+window.toggleSupplyStatus = toggleSupplyStatus;
+window.deleteSupplyItem = deleteSupplyItem;
+window.toggleHealthyEating = toggleHealthyEating;
+window.editToxicItem = editToxicItem;
+window.useToxicItem = useToxicItem;
+window.openToxicInventory = openToxicInventory;
+window.closeToxicInventory = closeToxicInventory;
+
+// Health Dashboard
+window.renderHealthDashboard = renderHealthDashboard;
+window.openHealthInput = openHealthInput;
+window.closeHealthInput = closeHealthInput;
+window.submitHealthInput = submitHealthInput;
+
+// Tools & Utilities
+window.openPomodoroTimer = openPomodoroTimer;
+window.closePomodoroTimer = closePomodoroTimer;
+window.togglePomodoro = togglePomodoro;
+window.resetPomodoro = resetPomodoro;
+window.savePomodoroSettings = savePomodoroSettings;
+window.showDailyPlanner = showDailyPlanner;
+window.closeDailyPlanner = closeDailyPlanner;
+window.rollD10AndSave = rollD10AndSave;
+window.saveDailyPlan = saveDailyPlan;
+window.showChallengeCatalog = showChallengeCatalog;
+window.importChallenge = importChallenge;
+window.closeChallengePreview = closeChallengePreview;
+window.completeChallengeDayAndRefresh = completeChallengeDayAndRefresh;
+window.setViewedDate = setViewedDate;
+window.toggleGoalCheckbox = toggleGoalCheckbox;
+
+// Settings & Themes
+window.toggleThemeDropdown = toggleThemeDropdown;
+window.toggleColorDropdown = toggleColorDropdown;
+window.setTheme = setTheme;
+window.setMode = setMode;
+window.setPopupSetting = setPopupSetting;
+window.updateSettingToggle = updateSettingToggle;
+window.setWeekStart = setWeekStart;
+window.toggleSettingsGroup = toggleSettingsGroup;
+window.loadSettingsGroupsState = loadSettingsGroupsState;
+
+// Data & Archive
+window.openArchive = openArchive;
+window.closeArchive = closeArchive;
+window.showRecapHistory = showRecapHistory;
+window.closeRecapHistory = closeRecapHistory;
+window.rebuildRecapHistory = rebuildRecapHistory;
+window.showMedalDetail = showMedalDetail;
+window.closeMedalDetail = closeMedalDetail;
+window.showWeeklyRecap = showWeeklyRecap;
+window.closeWeeklyRecap = closeWeeklyRecap;
+window.exportData = exportData;
+window.importData = importData;
+window.fixData = fixData;
+window.resetAll = resetAll;
+window.updateApp = updateApp;
+window.linkDatabaseFile = linkDatabaseFile;
+
+// Setup Wizard
+window.checkFirstTimeSetup = checkFirstTimeSetup;
+window.completeSetupWizard = completeSetupWizard;
+window.closeSetupWizard = closeSetupWizard;
+
+// PWA & Onboarding
+window.openInstallModal = openInstallModal;
+window.closeInstallModal = closeInstallModal;
+window.toggleDontShowInstall = toggleDontShowInstall;
+
+// Onboarding functions (private to module unless exposed)
+window.shouldShowOnboarding = shouldShowOnboarding;
+window.markOnboardingComplete = markOnboardingComplete;
+window.getOnboardingHTML = getOnboardingHTML;
