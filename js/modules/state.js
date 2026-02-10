@@ -91,7 +91,7 @@ export function loadState() {
 
     if (saved) {
         try {
-            const APP_VERSION = '2.8.18';
+            const APP_VERSION = '2.8.20';
             const parsed = JSON.parse(saved);
 
             // Merge parsed data, but keep defaults for missing properties
