@@ -3060,7 +3060,7 @@ function completeQuest(questId) {
     quest.completed = true;
     quest.completedAt = new Date().toISOString();
 
-    const xp = calculateXp(quest.stars) * 2;
+    const xp = calculateXp(quest.stars) * 10;
     addXp(xp, quest.primaryStatId, quest.name);
     if (quest.secondaryStatId) {
         addXp(Math.round(xp * XP_CONFIG.secondaryRatio), quest.secondaryStatId, quest.name);
