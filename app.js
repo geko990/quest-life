@@ -2312,12 +2312,12 @@ function toggleHabit(habitId, targetDate = null) {
                     }
                 }
             } else {
-                habit.lastCompleted = new Date().toDateString(); // Fallback
+                habit.lastCompleted = formatISO(new Date()); // Fallback to ISO
             }
         }
 
         logCompletion('habits', habit.id, dateStr);
-        if (habit.streak > 1 && habit.lastCompleted === today) {
+        if (habit.streak > 1 && habit.lastCompleted === todayISO) {
             playSound('streak');
         } else {
             playSound('success');
