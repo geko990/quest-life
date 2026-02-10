@@ -40,7 +40,11 @@ export let state = {
         targetStatId: 'int',
         xpPerSession: 20,
         sessionsToday: 0,
-        lastSessionDate: null
+        lastSessionDate: null,
+        // Persistence
+        status: 'idle', // 'idle', 'running', 'paused'
+        targetTime: null, // ISO string of when timer ends
+        remainingTime: null // Seconds left when paused
     },
     dailyPlan: {
         lastPlanDate: null  // Date when last daily plan was shown

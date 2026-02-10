@@ -4669,7 +4669,31 @@ function openPomodoroTimer() {
     const durationInput = document.getElementById('pomodoroDuration');
     if (durationInput) durationInput.value = state.pomodoro.workDuration;
 
+    // Check current state and resume if needed
+    if (state.pomodoro.status === 'running') {
+        const now = new Date();
+        const target = new Date(state.pomodoro.targetTime);
+        if (target > now) {
+            pomodoroRunning = true;
+            // Resume interval
+            if (pomodoroInterval) clearInterval(pomodoroInterval);
+            pomodoroInterval = setInterval(tickPomodoro, 1000);
+        } else {
+            // Timer finished while away
+            completePomodoro();
+            return;
+        }
+    } else if (state.pomodoro.status === 'paused') {
+        pomodoroRunning = false;
+        pomodoroTimeLeft = state.pomodoro.remainingTime;
+    } else {
+        // Idle
+        pomodoroRunning = false;
+        pomodoroTimeLeft = state.pomodoro.workDuration * 60;
+    }
+
     updatePomodoroDisplay();
+    updatePomodoroControls();
 }
 
 function closePomodoroTimer() {
@@ -4677,6 +4701,10 @@ function closePomodoroTimer() {
     const overlay = document.getElementById('pomodoroOverlay');
     if (modal) modal.classList.add('hidden');
     if (overlay) overlay.classList.remove('active');
+
+    // If running, we keep it running in background (interval might slow down but state is safe)
+    // If we wanted to stop UI updates we could clear interval here, but we need it for tick logic.
+    // The tick logic relies on Date.now() so it's robust against throttling.
 }
 
 function savePomodoroSettings() {
@@ -4685,17 +4713,45 @@ function savePomodoroSettings() {
 
     if (statSelect) state.pomodoro.targetStatId = statSelect.value;
     if (durationInput) {
-        state.pomodoro.workDuration = Math.max(1, Math.min(60, parseInt(durationInput.value) || 25));
-        if (!pomodoroRunning) {
+        const newDuration = Math.max(1, Math.min(60, parseInt(durationInput.value) || 25));
+
+        // Only allow changing duration if IDLE. 
+        // If running or paused, changing duration would reset progress which might be annoying.
+        if (state.pomodoro.status === 'idle') {
+            state.pomodoro.workDuration = newDuration;
             pomodoroTimeLeft = state.pomodoro.workDuration * 60;
             updatePomodoroDisplay();
+        } else {
+            // Just update preference for next time
+            state.pomodoro.workDuration = newDuration;
         }
     }
     saveState();
 }
 
+function updatePomodoroControls() {
+    const btn = document.getElementById('pomodoroStartBtn');
+    const statusEl = document.getElementById('pomodoroStatus');
+
+    if (!btn || !statusEl) return;
+
+    if (state.pomodoro.status === 'running') {
+        btn.textContent = '⏸️ Pausa';
+        btn.classList.add('running');
+        statusEl.textContent = '🔥 Focus in corso...';
+    } else if (state.pomodoro.status === 'paused') {
+        btn.textContent = '▶️ Riprendi';
+        btn.classList.remove('running');
+        statusEl.textContent = '⏸️ In pausa';
+    } else {
+        btn.textContent = '▶️ Avvia';
+        btn.classList.remove('running');
+        statusEl.textContent = 'Pronto';
+    }
+}
+
 function togglePomodoro() {
-    if (pomodoroRunning) {
+    if (state.pomodoro.status === 'running') {
         pausePomodoro();
     } else {
         startPomodoro();
@@ -4704,43 +4760,68 @@ function togglePomodoro() {
 
 function startPomodoro() {
     pomodoroRunning = true;
-    const btn = document.getElementById('pomodoroStartBtn');
-    if (btn) {
-        btn.textContent = '⏸️ Pausa';
-        btn.classList.add('running');
-    }
-    document.getElementById('pomodoroStatus').textContent = 'In corso...';
+    state.pomodoro.status = 'running';
 
+    // Calculate target time
+    const now = new Date();
+    // If resuming from pause, use remainingTime. If new start, use workDuration.
+    const durationSeconds = (state.pomodoro.remainingTime > 0) ? state.pomodoro.remainingTime : (state.pomodoro.workDuration * 60);
+
+    const target = new Date(now.getTime() + durationSeconds * 1000);
+    state.pomodoro.targetTime = target.toISOString();
+    state.pomodoro.remainingTime = null; // Clear remaining since we have a target
+
+    saveState();
+    updatePomodoroControls();
+
+    if (pomodoroInterval) clearInterval(pomodoroInterval);
     pomodoroInterval = setInterval(tickPomodoro, 1000);
+    tickPomodoro(); // Update immediately
 }
 
 function pausePomodoro() {
     pomodoroRunning = false;
-    clearInterval(pomodoroInterval);
-    const btn = document.getElementById('pomodoroStartBtn');
-    if (btn) {
-        btn.textContent = '▶️ Riprendi';
-        btn.classList.remove('running');
-    }
-    document.getElementById('pomodoroStatus').textContent = 'In pausa';
+    state.pomodoro.status = 'paused';
+
+    if (pomodoroInterval) clearInterval(pomodoroInterval);
+
+    // Calculate remaining time
+    const now = new Date();
+    const target = new Date(state.pomodoro.targetTime);
+    const remainingSeconds = Math.max(0, Math.ceil((target - now) / 1000));
+
+    state.pomodoro.remainingTime = remainingSeconds;
+    state.pomodoro.targetTime = null; // Clear target since we are paused
+
+    saveState();
+    updatePomodoroControls();
+    updatePomodoroDisplay(); // Show exact remaining
 }
 
 function resetPomodoro() {
     pomodoroRunning = false;
-    clearInterval(pomodoroInterval);
+    state.pomodoro.status = 'idle';
+    state.pomodoro.targetTime = null;
+    state.pomodoro.remainingTime = null;
+
+    if (pomodoroInterval) clearInterval(pomodoroInterval);
+
     pomodoroTimeLeft = state.pomodoro.workDuration * 60;
+
+    saveState();
+    updatePomodoroControls();
     updatePomodoroDisplay();
-    const btn = document.getElementById('pomodoroStartBtn');
-    if (btn) {
-        btn.textContent = '▶️ Avvia';
-        btn.classList.remove('running');
-    }
-    document.getElementById('pomodoroStatus').textContent = 'Pronto';
 }
 
 function tickPomodoro() {
-    if (pomodoroTimeLeft > 0) {
-        pomodoroTimeLeft--;
+    if (state.pomodoro.status !== 'running') return;
+
+    const now = new Date();
+    const target = new Date(state.pomodoro.targetTime);
+    const diff = Math.ceil((target - now) / 1000);
+
+    if (diff > 0) {
+        pomodoroTimeLeft = diff;
         updatePomodoroDisplay();
     } else {
         completePomodoro();
@@ -4748,12 +4829,30 @@ function tickPomodoro() {
 }
 
 function updatePomodoroDisplay() {
-    const minutes = Math.floor(pomodoroTimeLeft / 60);
-    const seconds = pomodoroTimeLeft % 60;
-    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} `;
+    // If running, timeLeft is updated by tick. 
+    // If paused, use state.remainingTime. 
+    // If idle, use state.workDuration.
+
+    let secondsLeft = 0;
+    if (state.pomodoro.status === 'running') {
+        const now = new Date();
+        const target = new Date(state.pomodoro.targetTime);
+        secondsLeft = Math.max(0, Math.ceil((target - now) / 1000));
+    } else if (state.pomodoro.status === 'paused') {
+        secondsLeft = state.pomodoro.remainingTime || 0;
+    } else {
+        secondsLeft = state.pomodoro.workDuration * 60;
+    }
+
+    const minutes = Math.floor(secondsLeft / 60);
+    const seconds = secondsLeft % 60;
+    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
     const timeEl = document.getElementById('pomodoroTime');
     if (timeEl) timeEl.textContent = timeStr;
+
+    // Update Browser Tab Title safely? Maybe too distraction.
+    // document.title = `${timeStr} - Focus`;
 
     const countEl = document.getElementById('pomodoroCount');
     if (countEl) countEl.textContent = state.pomodoro.sessionsToday;
@@ -4765,6 +4864,9 @@ function updatePomodoroDisplay() {
 function completePomodoro() {
     clearInterval(pomodoroInterval);
     pomodoroRunning = false;
+    state.pomodoro.status = 'idle';
+    state.pomodoro.targetTime = null;
+    state.pomodoro.remainingTime = null;
 
     // Add XP
     const statName = state.stats.find(s => s.id === state.pomodoro.targetStatId)?.name || 'Stat';
@@ -4792,16 +4894,17 @@ function completePomodoro() {
     // Vibrate on mobile
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 
-    // Reset timer
+    // Reset timer display
     pomodoroTimeLeft = state.pomodoro.workDuration * 60;
+    updatePomodoroControls();
     updatePomodoroDisplay();
 
-    const btn = document.getElementById('pomodoroStartBtn');
-    if (btn) {
-        btn.textContent = '▶️ Avvia';
-        btn.classList.remove('running');
-    }
-    document.getElementById('pomodoroStatus').textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName} !`;
+    const statusEl = document.getElementById('pomodoroStatus');
+    if (statusEl) statusEl.textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName} !`;
+    btn.textContent = '▶️ Avvia';
+    btn.classList.remove('running');
+}
+document.getElementById('pomodoroStatus').textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName} !`;
 }
 
 // ============================================
