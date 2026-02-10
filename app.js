@@ -4901,10 +4901,6 @@ function completePomodoro() {
 
     const statusEl = document.getElementById('pomodoroStatus');
     if (statusEl) statusEl.textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName} !`;
-    btn.textContent = '▶️ Avvia';
-    btn.classList.remove('running');
-}
-document.getElementById('pomodoroStatus').textContent = `✅ +${state.pomodoro.xpPerSession} XP ${statName} !`;
 }
 
 // ============================================
