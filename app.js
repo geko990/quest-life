@@ -1,10 +1,11 @@
-console.log("APP.JS LOADED - v2.8.24");
+console.log("APP.JS LOADED - v2.8.25");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
    Main Application Script
    ============================================ */
 
-import { APP_VERSION, DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js';
+const APP_VERSION = '2.8.25';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js';
 import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate } from './js/modules/utils.js';
 import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js';
@@ -1187,7 +1188,7 @@ function switchSection(sectionName) {
                 // Calcola lo scroll per posizionarsi all'inizio del radar chart
                 const dashboardRect = dashboard.getBoundingClientRect();
                 const containerRect = container.getBoundingClientRect();
-                const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop - 7;
+                const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop;
                 container.scrollTop = scrollAmount;
 
                 // Show dashboard after scroll
@@ -1239,7 +1240,7 @@ function renderAll() {
                 if (chartArea) {
                     const dashboardRect = dashboard.getBoundingClientRect();
                     const containerRect = container.getBoundingClientRect();
-                    const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop - 7;
+                    const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop;
                     container.scrollTop = scrollAmount;
                 }
                 dashboard.style.visibility = 'visible';
