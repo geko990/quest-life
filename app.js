@@ -3001,13 +3001,70 @@ function openStatDetail(statId) {
     const content = document.getElementById('statDetailContent');
     const momentum = getWeeklyMomentum(statId);
 
-    // ... (omitting rest of openStatDetail as it is unchanged, using placeholder comment if possible?)
-    // Actually I can't emit unchanged code easily without context.
-    // I will target only the functions I need to change.
-    // toggleSubquest is further down. I'll split this into two replaces.
+    // DYNAMIC SCALE: Scale based on the highest XP in the week, but keep a minimum floor.
+    // If the best day is 30 XP, we scale to 50 XP so it looks substantial but not misleadingly full.
+    // If the best day is 200 XP, we scale to 200 XP so it fits.
+    const maxDayXp = Math.max(...momentum.map(m => m.xp));
+    const maxMomentum = Math.max(maxDayXp, 50);
+
+    // Filter history for "Last Activity"
+    const history = state.xpLog
+        .filter(entry => entry.statId === statId)
+        .reverse();
+    const lastEntry = history[0];
+
+    content.innerHTML = `
+            <div style = "text-align: center; margin-bottom: 5px;" >
+            <div style="font-size: 32px; margin-bottom: 5px;">${stat.icon}</div>
+            <h2 style="font-size: 22px; margin: 0; color: var(--text-primary); text-align: center; width: 100%;">${stat.name}</h2>
+            <div style="font-size: 13px; color: var(--text-secondary); font-style: italic; margin-top: 8px; padding: 0 10px; line-height: 1.4;">
+                ${stat.description || 'Nessuna descrizione.'}
+            </div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--accent-primary); margin-top: 15px;">Livello ${stat.level}</div>
+        </div>
+
+        <div class="popup-xp-bar" style="height: 12px; margin: 15px 0 10px 0;">
+            <div class="popup-xp-fill" style="width: ${progress}%"></div>
+        </div>
+        <div class="xp-needed" style="font-size: 13px; text-align: center; margin-bottom: 20px;">Mancano <b>${xpNeeded} XP</b> al LV ${stat.level + 1}</div>
+
+        <div class="momentum-section" style="padding: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+            <div class="momentum-title" style="font-size: 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <span>Momentum Settimanale</span>
+                <span style="color:var(--accent-primary)">+${momentum.reduce((s, m) => s + m.xp, 0)} XP</span>
+            </div>
+            <div class="momentum-chart" style="height: 80px;">
+                ${momentum.map(m => `
+                    <div class="momentum-bar-container" onclick="showMomentumTooltip(event, '${m.xp}')">
+                        <div class="momentum-bar" data-xp="${m.xp}" style="height: ${Math.min((m.xp / maxMomentum) * 60, 60)}px; opacity: ${m.xp > 0 ? 1 : 0.3}"></div>
+                        <div class="momentum-day" style="font-size: 10px;">${m.day[0]}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <h3 class="subsection-title" style="font-size: 14px; margin: 0 0 10px 0; text-align: center;">Ultima Attività</h3>
+        <div id="statLastActivity">
+            ${lastEntry ? `
+                <div class="last-activity-box" style="padding: 10px 15px;">
+                    <div class="last-activity-info">
+                        <span class="last-activity-name" style="font-size: 13px;">${lastEntry.source || 'Bonus Manuale'}</span>
+                        <span class="last-activity-date" style="font-size: 11px;">${lastEntry.date}</span>
+                    </div>
+                    <div class="last-activity-xp" style="font-size: 13px;">+${lastEntry.amount}</div>
+                </div>
+            ` : `<div class="history-empty" style="font-size:12px; padding:10px; text-align:center;">Nessuna attività registrata.</div>`}
+        </div>
+        `;
+
+    document.getElementById('statDetailOverlay').classList.add('active');
+    document.getElementById('statDetailModal').classList.remove('hidden');
 }
 
-// ...
+function closeStatDetailModal() {
+    document.getElementById('statDetailOverlay').classList.remove('active');
+    document.getElementById('statDetailModal').classList.add('hidden');
+}
 
 function toggleSubquest(questId, subquestId, forceState = null) {
     const quest = state.quests.find(q => q.id === questId);
