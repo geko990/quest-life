@@ -21,7 +21,7 @@
         };
     </script>
     <script>
-        // AGGRESSIVE CACHE CLEARING - v2.7.75
+        // AGGRESSIVE CACHE CLEARING - v2.8.18
         // Unregister old service workers and clear caches on first load
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -187,6 +187,84 @@
             <!-- HOME Section -->
             <section id="section-home" class="section active">
                 <div class="character-sheet">
+                    <!-- Dashboard Salute (MyFitnessPal Style) -->
+                    <div class="health-dashboard">
+                        <!-- Calorie Card -->
+                        <div class="health-card calories-card">
+                            <div class="card-title">Calorie</div>
+                            <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
+
+                            <div class="calories-main">
+                                <div class="ring-container">
+                                    <svg width="140" height="140" viewBox="0 0 140 140">
+                                        <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
+                                            stroke-width="10"></circle>
+                                        <circle id="calorieRing" class="ring-fill" cx="70" cy="70" r="60"
+                                            fill="transparent" stroke-width="10" stroke-dasharray="376.99"
+                                            stroke-dashoffset="376.99" stroke-linecap="round"></circle>
+                                    </svg>
+                                    <div class="ring-content">
+                                        <span id="caloriesRemaining" class="remaining-value">1600</span>
+                                        <span class="remaining-label">Rimanenti</span>
+                                    </div>
+                                </div>
+
+                                <div class="calories-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-icon">🚩</span>
+                                        <div class="stat-info">
+                                            <div class="stat-label">Obiettivo base</div>
+                                            <div id="calorieGoal" class="stat-value">1600</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item" onclick="openHealthInput('consumed')">
+                                        <span class="stat-icon" style="color: #3b82f6;">🍴</span>
+                                        <div class="stat-info">
+                                            <div class="stat-label">Alimenti</div>
+                                            <div id="caloriesConsumed" class="stat-value">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item" onclick="openHealthInput('burned')">
+                                        <span class="stat-icon" style="color: #f97316;">🔥</span>
+                                        <div class="stat-info">
+                                            <div class="stat-label">Esercizi</div>
+                                            <div id="caloriesBurned" class="stat-value">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="health-row">
+                            <!-- Step Card -->
+                            <div class="health-card steps-card" onclick="openHealthInput('steps')">
+                                <div class="card-title">Passi</div>
+                                <div class="steps-main">
+                                    <span class="steps-icon">👟</span>
+                                    <span id="stepsCurrent" class="steps-value">0</span>
+                                </div>
+                                <div class="steps-goal">Obiettivo: <span id="stepsGoalText">10.000</span> passi</div>
+                                <div class="progress-bar-bg">
+                                    <div id="stepsProgressBar" class="progress-bar-fill"></div>
+                                </div>
+                            </div>
+
+                            <!-- Weight Card -->
+                            <div class="health-card steps-card" onclick="openHealthInput('weight')">
+                                <div class="card-title">Peso</div>
+                                <div class="steps-main">
+                                    <span class="steps-icon">⚖️</span>
+                                    <span id="weightCurrent" class="steps-value">75</span>
+                                    <span class="unit">kg</span>
+                                </div>
+                                <div class="steps-goal">Obiettivo: <span id="weightTargetText">70</span> kg</div>
+                                <div class="progress-bar-bg">
+                                    <div id="weightProgressBar" class="progress-bar-fill" style="background: #ec4899;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Stats Radar Chart -->
 
                     <!-- Stats Radar Chart -->
@@ -254,7 +332,7 @@
                     <div class="header-actions" style="display: flex; gap: 8px;">
                         <button class="add-btn-circle" id="diceButtonTrigger" onclick="showDailyPlanner()"
                             title="È il tuo turno!">🎲</button>
-                        <button class="add-btn-circle" onclick="openToxicInventory()" title="Zaino Tossico">🎒</button>
+                        <button class="add-btn-circle" onclick="openInventory()" title="Zaino">🎒</button>
                         <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
                     </div>
                 </div>
@@ -501,7 +579,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.7.61</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.8.18</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -553,22 +631,16 @@
             <div class="modal-header">
                 <h3>Scegli Avatar</h3>
             </div>
-            <div class="modal-body">
-                <div class="avatar-tabs">
-                    <button class="avatar-tab active" onclick="switchAvatarTab('emoji')">😀 Emoji</button>
-                    <button class="avatar-tab" onclick="switchAvatarTab('upload')">📷 Foto</button>
-                </div>
-                <div class="avatar-tab-content" id="emojiTab">
-                    <div class="emoji-grid" id="emojiGrid"></div>
-                </div>
-                <div class="avatar-tab-content hidden" id="uploadTab">
-                    <input type="file" id="avatarUpload" accept="image/*" onchange="handleAvatarUpload(event)">
-                    <label for="avatarUpload" class="upload-label">
-                        📷 Carica una foto
-                    </label>
-                </div>
-            </div>
+            <div class="emoji-grid" id="emojiGrid"></div>
         </div>
+        <div class="avatar-tab-content hidden" id="uploadTab">
+            <input type="file" id="avatarUpload" accept="image/*" onchange="handleAvatarUpload(event)">
+            <label for="avatarUpload" class="upload-label">
+                📷 Carica una foto
+            </label>
+        </div>
+    </div>
+    </div>
     </div>
 
     <!-- Stats Visibility Popup -->
@@ -621,17 +693,51 @@
         </div>
     </div>
 
-    <!-- Toxic Inventory Modal -->
-    <div class="modal-overlay" id="toxicInventoryOverlay" onclick="closeToxicInventory()"></div>
-    <div class="profile-popup popup-center hidden" id="toxicInventoryModal">
+    <!-- Inventory Modal -->
+    <div class="modal-overlay" id="inventoryOverlay" onclick="closeInventory()"></div>
+    <div class="profile-popup popup-center hidden" id="inventoryModal">
         <div class="profile-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin:0; font-size: 20px;">🎒 Zaino Tossico</h2>
-                <button class="add-btn-circle" onclick="openModal('toxic')"
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin:0; font-size: 20px;">🎒 Zaino</h2>
+                <button class="add-btn-circle" id="inventoryAddBtn" onclick="openModal('supply')"
                     style="width: 28px; height: 28px; font-size: 16px;">+</button>
             </div>
-            <div id="toxicItemList" class="toxic-grid">
-                <!-- Dynamically populated -->
+
+            <!-- Tab Switcher -->
+            <div class="avatar-tabs" style="margin-bottom: 15px;">
+                <button class="avatar-tab active" id="tab-supplies" onclick="switchInventoryTab('supplies')">🍎
+                    Sostentamento</button>
+                <button class="avatar-tab" id="tab-toxic" onclick="switchInventoryTab('toxic')">💀 Tossico</button>
+            </div>
+
+            <!-- Supplies Tab Content -->
+            <div id="suppliesContent" class="inventory-tab-content">
+                <!-- Nutrition Streak -->
+                <div class="nutrition-streak-card" id="nutritionStreakCard">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">🥗</span>
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">Mangiato Sano Oggi</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Serie: <span
+                                        id="nutritionStreakCount">0</span> giorni</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" class="card-checkbox" id="nutritionCheckbox"
+                            onclick="toggleHealthyEating(event)">
+                    </div>
+                </div>
+
+                <div id="suppliesList" class="toxic-grid" style="margin-top: 15px;">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Toxic Tab Content -->
+            <div id="toxicContent" class="inventory-tab-content hidden">
+                <div id="toxicItemList" class="toxic-grid">
+                    <!-- Dynamically populated -->
+                </div>
             </div>
         </div>
     </div>
@@ -826,10 +932,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script type="module" src="app.js?v=2.8.16"></script>
+    <script type="module" src="app.js?v=2.8.18"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.8.16')
+            navigator.serviceWorker.register('./sw.js?v=2.8.18')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
@@ -897,6 +1003,24 @@
             style="margin-top: 15px; width: 100%; justify-content: center; background: var(--accent-gradient); color: white; border: none;">
             Inizia l'Avventura! 🚀
         </button>
+    </div>
+
+    <!-- Health Input Modal -->
+    <div class="modal-overlay hidden" id="healthInputOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="healthModalTitle">Aggiorna Parametri</h3>
+            </div>
+            <div class="modal-body">
+                <div id="healthInputContent" class="health-input-group">
+                    <!-- Dinamicamente popolato -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeHealthInput()">Annulla</button>
+                <button class="btn-submit" onclick="submitHealthInput()">Salva</button>
+            </div>
+        </div>
     </div>
 
 </body>
