@@ -1,7 +1,7 @@
-// QUEST LIFE SERVICE WORKER v2.8.20
+// QUEST LIFE SERVICE WORKER v2.8.22
 // Network-First strategy for HTML to prevent stale versions
 
-const CACHE_NAME = 'quest-life-v2.8.20';
+const CACHE_NAME = 'quest-life-v2.8.22';
 const ASSETS = [
     './',
     './index.html',

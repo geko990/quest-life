@@ -1,6 +1,7 @@
+console.log("APP.JS LOADED - v2.8.22");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
-   Complete Application Logic
+   Main Application Script
    ============================================ */
 
 import { APP_VERSION, DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js';
@@ -6877,6 +6878,81 @@ window.closeInstallModal = closeInstallModal;
 window.toggleDontShowInstall = toggleDontShowInstall;
 
 // Onboarding functions (private to module unless exposed)
+function shouldShowOnboarding(tabType) {
+    // Check if user has ever created a task of this type
+    const onboardingKey = `questlife_onboarding_${tabType}`;
+    return !localStorage.getItem(onboardingKey);
+}
+
+function markOnboardingComplete(tabType) {
+    localStorage.setItem(`questlife_onboarding_${tabType}`, 'true');
+}
+
+function getOnboardingHTML(tabType) {
+    const guides = {
+        habits: {
+            icon: '📜',
+            title: 'Abitudini',
+            subtitle: 'Attività ricorrenti che vuoi costruire',
+            features: [
+                { icon: '+', label: 'Crea una nuova abitudine', arrow: '↗️' },
+                { icon: '🍅', label: 'Timer Pomodoro per focus', arrow: '↗️' },
+                { icon: '📅', label: 'Scorri il calendario in alto', arrow: '↑' },
+                { icon: '←→', label: 'Swipe su un task per modificare/eliminare', arrow: '' },
+                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
+                { icon: '○', label: 'Tocca il cerchio per completare', arrow: '' }
+            ]
+        },
+        oneshots: {
+            icon: '💥',
+            title: 'One Shot',
+            subtitle: 'Task singoli da completare una volta',
+            features: [
+                { icon: '+', label: 'Crea un nuovo task', arrow: '↗️' },
+                { icon: '🎒', label: 'Zaino per cattive abitudini e spesa', arrow: '↗️' },
+                { icon: '←→', label: 'Swipe per modificare/eliminare', arrow: '' },
+                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
+                { icon: '○', label: 'Tocca per completare', arrow: '' }
+            ]
+        },
+        quests: {
+            icon: '🎯',
+            title: 'Quest',
+            subtitle: 'Grandi obiettivi con sotto-obiettivi',
+            features: [
+                { icon: '+', label: 'Crea una nuova quest', arrow: '↗️' },
+                { icon: '👆', label: 'Tocca una quest per i dettagli', arrow: '' },
+                { icon: '←→', label: 'Swipe per modificare/eliminare', arrow: '' },
+                { icon: '☰', label: 'Tieni premuto per riordinare', arrow: '' },
+                { icon: '▓░', label: 'Completa i sotto-obiettivi per progresso', arrow: '' }
+            ]
+        }
+    };
+
+    const guide = guides[tabType];
+    if (!guide) return '';
+
+    return `
+        <div class="onboarding-guide">
+            <div class="onboarding-header">
+                <div class="onboarding-icon">${guide.icon}</div>
+                <h3 class="onboarding-title">${guide.title}</h3>
+                <p class="onboarding-subtitle">${guide.subtitle}</p>
+            </div>
+            <div class="onboarding-features">
+                ${guide.features.map(f => `
+                    <div class="onboarding-feature ${f.arrow ? 'has-arrow' : ''}">
+                        <span class="feature-icon">${f.icon}</span>
+                        <span class="feature-label">${f.label}</span>
+                        ${f.arrow ? `<span class="feature-arrow">${f.arrow}</span>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Exposure to window
 window.shouldShowOnboarding = shouldShowOnboarding;
 window.markOnboardingComplete = markOnboardingComplete;
 window.getOnboardingHTML = getOnboardingHTML;
