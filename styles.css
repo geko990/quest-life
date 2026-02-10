@@ -774,6 +774,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding-bottom: 250px;
+    /* Alti spazio per permettere lo scroll della Dashboard Salute */
 }
 
 .avatar-container {
