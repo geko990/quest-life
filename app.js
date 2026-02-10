@@ -2697,7 +2697,7 @@ function renderQuests() {
                             <div class="card-meta">
                                 <span class="card-stars">${'⭐'.repeat(quest.stars)}</span>
                                 <span>📜 ${completedSubs}/${totalSubs}</span>
-                                <span class="card-xp">+${calculateXp(quest.stars) * 2} XP</span>
+                                <span class="card-xp">+${calculateXp(quest.stars) * 3} XP</span>
                                 ${primaryStat ? `<span class="card-stat">${primaryStat.icon}</span>` : ''}
                                 ${quest.dueDate ? `<span class="card-due">📅 ${formatDate(quest.dueDate)}</span>` : ''}
                             </div>
@@ -2764,7 +2764,7 @@ function renderNormalQuestView(quest, container) {
                     ${quest.customReward ? `<div style="font-size:18px; font-weight:bold; color:var(--accent-primary); margin-bottom:8px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">🎁 ${quest.customReward}</div>` : ''}
                     <div style="display:flex; justify-content:center; gap:12px; font-size:14px; color:var(--text-muted);">
                         <span>${'⭐'.repeat(quest.stars)}</span>
-                        <span>✨ ${calculateXp(quest.stars) * 2} XP</span>
+                        <span>✨ ${calculateXp(quest.stars) * 3} XP</span>
                         ${quest.dueDate ? `<span>📅 ${formatDate(quest.dueDate)}</span>` : ''}
                     </div>
                 </div>
@@ -2934,7 +2934,7 @@ function renderChallengeView(quest, container) {
             <div class="quest-reward-area" style="margin-top:16px;">
                 <div style="display:flex; justify-content:center; gap:12px; font-size:14px; color:var(--text-muted);">
                     <span>${'⭐'.repeat(quest.stars)}</span>
-                    <span>✨ ${calculateXp(quest.stars) * 2} XP</span>
+                    <span>✨ ${calculateXp(quest.stars) * 3} XP</span>
                 </div>
             </div>
         </div>
@@ -3117,7 +3117,7 @@ function completeQuest(questId) {
     quest.completed = true;
     quest.completedAt = new Date().toISOString();
 
-    const xp = calculateXp(quest.stars) * 10;
+    const xp = calculateXp(quest.stars) * 3;
     addXp(xp, quest.primaryStatId, quest.name);
     if (quest.secondaryStatId) {
         addXp(Math.round(xp * XP_CONFIG.secondaryRatio), quest.secondaryStatId, quest.name);
