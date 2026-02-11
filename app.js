@@ -3999,7 +3999,8 @@ function initSwipe() {
         swipeWasTriggered = false;
 
         currentSwipeCard = content;
-        content.closest('.task-card').classList.add('swiping');
+        const taskCard = content.closest('.task-card');
+        if (taskCard) taskCard.classList.add('swiping');
         swipeStartX = e.clientX;
         isSwiping = true;
         content.style.transition = 'none';
