@@ -305,17 +305,15 @@
                                 </div>
                             </div>
 
-                            <!-- Zaino Integration -->
+                            <!-- Spesa Integration (ex Zaino) -->
                             <div class="nutrition-inventory">
                                 <div class="section-header" style="padding: 0 10px; margin-bottom: 10px;">
-                                    <h3 style="font-family: var(--font-header);">🎒 Zaino</h3>
-                                    <button class="add-btn-circle" onclick="openInventory()">⚙️</button>
+                                    <h3 style="font-family: var(--font-header);">🛒 Spesa</h3>
+                                    <button class="add-btn-circle" onclick="openAddItemModal()">+</button>
                                 </div>
                                 <div class="inventory-tabs">
-                                    <button class="inv-tab active" id="nutrition-supplies-btn"
-                                        onclick="switchNutritionTab('supplies')">Sani</button>
-                                    <button class="inv-tab" id="nutrition-toxic-btn"
-                                        onclick="switchNutritionTab('toxic')">Tossici</button>
+                                    <button class="inv-tab active" id="nutrition-food-btn"
+                                        onclick="switchNutritionTab('food')">Cibo</button>
                                     <button class="inv-tab" id="nutrition-home-btn"
                                         onclick="switchNutritionTab('home')">Casa</button>
                                 </div>
@@ -398,7 +396,6 @@
                     <div class="header-actions" style="display: flex; gap: 8px;">
                         <button class="add-btn-circle" id="diceButtonTrigger" onclick="showDailyPlanner()"
                             title="È il tuo turno!">🎲</button>
-                        <button class="add-btn-circle" onclick="openInventory()" title="Zaino">🎒</button>
                         <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
                     </div>
                 </div>
@@ -998,10 +995,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script type="module" src="app.js?v=2.8.25"></script>
+    <script type="module" src="app.js?v=3.1.0"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=2.8.25')
+            navigator.serviceWorker.register('./sw.js?v=3.1.0')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
@@ -1102,6 +1099,8 @@
                 <button class="meal-tab" id="meal-tab-lunch" onclick="switchMealTab('lunch')">Pranzo</button>
                 <button class="meal-tab" id="meal-tab-dinner" onclick="switchMealTab('dinner')">Cena</button>
                 <button class="meal-tab" id="meal-tab-snack" onclick="switchMealTab('snack')">Spuntino</button>
+                <button class="meal-tab" id="meal-tab-cheat" onclick="switchMealTab('cheat')"
+                    style="color: #ef4444;">Sgarri</button>
             </div>
 
             <div class="meals-input-group">
@@ -1165,6 +1164,47 @@
 
             <div class="modal-actions" style="margin-top:10px;">
                 <button class="btn-primary" onclick="saveWeightDetails()" style="width:100%;">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD ITEM MODAL (v3.1.0) -->
+    <div id="addItemModal" class="modal-overlay">
+        <div class="modal-content premium-modal">
+            <div class="modal-header">
+                <h3 id="addItemTitle">Aggiungi Oggetto</h3>
+                <button class="close-btn" onclick="closeAddItemModal()">×</button>
+            </div>
+
+            <div class="add-item-form">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label
+                        style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:5px;">Categoria</label>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="btn-secondary active" id="type-food"
+                            onclick="setAddItemType('food')" style="flex:1;">🍎 Cibo</button>
+                        <button type="button" class="btn-secondary" id="type-home" onclick="setAddItemType('home')"
+                            style="flex:1;">🏠 Casa</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label for="newItemName" style="font-size:12px; color:var(--text-muted);">Nome</label>
+                    <input type="text" id="newItemName" placeholder="Es. Latte, Detersivo..." style="width:100%;">
+                </div>
+
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label for="newItemEmoji" style="font-size:12px; color:var(--text-muted);">Emoji (Opzionale)</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="newItemEmoji" placeholder="🍎" style="width:50px; text-align:center;">
+                        <span style="font-size:11px; color:var(--text-muted); align-self:center;">Lascia vuoto per
+                            default</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-primary" onclick="saveInventoryItem()" style="width:100%;">Salva</button>
+                </div>
             </div>
         </div>
     </div>

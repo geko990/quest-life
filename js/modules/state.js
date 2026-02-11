@@ -56,8 +56,9 @@ export let state = {
     penaltyLog: {}, // Log of penalties applied: {dateStr: [{habitId, habitName, xpLost, statId}]}
     lastPenaltyCheck: null, // Last date+time penalties were checked
     inventory: {
-        supplies: [], // Array of {id, name, status ('needed'|'in_stock'), type ('healthy'|'neutral')}
-        home: [],     // New category for house items
+        supplies: [], // DEPRECATED: Migrated to 'food'
+        food: [],     // Main food inventory
+        home: [],     // House items
         nutritionStreak: 0,
         lastNutritionDate: null
     },
@@ -250,9 +251,35 @@ export function loadState() {
             }
             if (!state.health.history) state.health.history = [];
             if (!state.health.meals) {
-                state.health.meals = { breakfast: [], lunch: [], dinner: [], snack: [] };
+                state.health.meals = { breakfast: [], lunch: [], dinner: [], snack: [], cheat: [] };
+            } else if (!state.health.meals.cheat) {
+                state.health.meals.cheat = [];
             }
+            if (!state.inventory.food) state.inventory.food = [];
             if (!state.inventory.home) state.inventory.home = [];
+
+            // MIGRATION v3.1.0: Supplies -> Food
+            if (state.inventory.supplies && state.inventory.supplies.length > 0 && state.inventory.food.length === 0) {
+                console.log("Migrating supplies to food...");
+                state.inventory.food = [...state.inventory.supplies];
+                state.inventory.supplies = [];
+            }
+
+            // MIGRATION v3.1.0: ToxicItems -> Meals.Cheat
+            if (state.toxicItems && state.toxicItems.length > 0) {
+                console.log("Migrating toxicItems to cheat meals...");
+                state.toxicItems.forEach(item => {
+                    // Convert toxic item to meal preset
+                    const cheatMeal = {
+                        id: item.id || Date.now() + Math.random().toString().slice(2),
+                        name: item.name,
+                        calories: 300, // Default for converted items
+                        type: 'cheat'
+                    };
+                    state.health.meals.cheat.push(cheatMeal);
+                });
+                state.toxicItems = []; // Clear old toxic items
+            }
 
             // Backfill lean/fat mass if missing
             if (state.health.weight && state.health.weight.currentLean === undefined) {
