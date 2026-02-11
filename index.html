@@ -55,7 +55,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
     <script src="js/theme-fix.js"></script>
-    <link rel="stylesheet" href="styles.css?v=3.1.7">
+    <link rel="stylesheet" href="styles.css?v=3.1.8">
 
 </head>
 
@@ -643,7 +643,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">2.8.25</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.8</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -690,8 +690,8 @@
 
 
     <!-- Avatar Modal -->
-    <div class="modal-overlay" id="avatarModalOverlay">
-        <div class="modal avatar-modal">
+    <div class="modal-overlay" id="avatarModalOverlay" onclick="closeAvatarModal()">
+        <div class="modal avatar-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>Scegli Avatar</h3>
             </div>
@@ -751,7 +751,7 @@
 
     <!-- Stat Detail Modal (Glassmorphism Boxless) -->
     <div class="modal-overlay" id="statDetailOverlay" onclick="closeStatDetailModal()"></div>
-    <div class="profile-popup popup-center hidden" id="statDetailModal">
+    <div class="profile-popup popup-center hidden" id="statDetailModal" onclick="event.stopPropagation()">
         <div id="statDetailContent" style="padding: 10px 5px;">
             <!-- Dynamic Boxless Content: Icon Name -> Liv -> Bar -> Momentum -> Activity -->
         </div>
@@ -759,7 +759,7 @@
 
     <!-- Inventory Modal -->
     <div class="modal-overlay" id="inventoryOverlay" onclick="closeInventory()"></div>
-    <div class="profile-popup popup-center hidden" id="inventoryModal">
+    <div class="profile-popup popup-center hidden" id="inventoryModal" onclick="event.stopPropagation()">
         <div class="profile-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="margin:0; font-size: 20px;">🎒 Zaino</h2>
@@ -808,7 +808,7 @@
 
     <!-- Pomodoro Timer Modal -->
     <div class="modal-overlay" id="pomodoroOverlay" onclick="closePomodoroTimer()"></div>
-    <div class="profile-popup popup-center hidden" id="pomodoroModal">
+    <div class="profile-popup popup-center hidden" id="pomodoroModal" onclick="event.stopPropagation()">
         <div class="profile-content" style="text-align: center;">
             <h2 style="margin: 0 0 20px 0; font-size: 20px;">🍅 Pomodoro Timer</h2>
 
@@ -937,11 +937,10 @@
 
     <!-- Recap History Modal -->
     <div class="recap-overlay hidden" id="recapHistoryOverlay" onclick="closeRecapHistory()"></div>
-    <div class="recap-popup hidden" id="recapHistoryModal" style="max-height: 80vh; overflow-y: auto; z-index: 10001;">
+    <div class="recap-popup hidden" id="recapHistoryModal" style="max-height: 80vh; overflow-y: auto; z-index: 10001;"
+        onclick="event.stopPropagation()">
         <div class="recap-header">
             <h2>📜 Storico Imprese</h2>
-            <button class="modal-close" onclick="closeRecapHistory()"
-                style="position:absolute; right:15px; top:15px; background:transparent; border:none; font-size:24px; color:var(--text-muted); cursor:pointer;">&times;</button>
         </div>
         <div id="recapHistoryList" style="margin: 15px 0;">
             <!-- Dynamically populated -->
@@ -956,11 +955,10 @@
     </div>
 
     <!-- Motto Edit Modal -->
-    <div class="modal-overlay" id="mottoEditModal">
-        <div class="modal motto-modal">
+    <div class="modal-overlay" id="mottoEditModal" onclick="closeMottoEdit()">
+        <div class="modal motto-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>Modifica Motto</h3>
-                <button class="modal-close" onclick="closeMottoEdit()">&times;</button>
             </div>
             <div class="modal-body">
                 <textarea id="mottoEditInput" class="motto-textarea" placeholder="Scrivi il tuo motto..." rows="3"
@@ -974,10 +972,9 @@
     </div>
     <!-- Archive Modal -->
     <div class="modal-overlay" id="archiveModal" onclick="closeArchive()">
-        <div class="modal archive-modal">
+        <div class="modal archive-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>📜 Storico Imprese</h3>
-                <button class="modal-close" onclick="closeArchive()">&times;</button>
             </div>
             <div class="modal-body archive-body">
                 <div class="archive-list" id="archiveList">
@@ -1006,7 +1003,8 @@
     </script>
     <!-- PWA Install Instructions Modal -->
     <div class="modal-overlay hidden" id="installOverlay" onclick="closeInstallModal()"></div>
-    <div class="profile-popup popup-center hidden" id="installModal" style="max-width:350px;">
+    <div class="profile-popup popup-center hidden" id="installModal" style="max-width:350px;"
+        onclick="event.stopPropagation()">
         <div class="popup-header-info" style="margin-bottom: 10px; justify-content: center;">
             <div class="popup-avatar-frame" style="width: 50px; height: 50px;">
                 <div class="popup-emoji" style="font-size: 24px;">📲</div>
@@ -1051,8 +1049,9 @@
     </div>
 
     <!-- Initial Setup Wizard -->
-    <div class="modal-overlay hidden" id="setupWizardOverlay"></div>
-    <div class="profile-popup popup-center hidden" id="setupWizardModal" style="max-width: 380px;">
+    <div class="modal-overlay hidden" id="setupWizardOverlay" onclick="closeSetupWizard()"></div>
+    <div class="profile-popup popup-center hidden" id="setupWizardModal" style="max-width: 380px;"
+        onclick="event.stopPropagation()">
         <div class="popup-header-info" style="flex-direction: column; align-items: center; margin-bottom: 15px;">
             <div class="popup-emoji" style="font-size: 48px; margin-bottom: 10px;">⚔️</div>
             <h3 style="margin: 0; text-align: center;">Benvenuto, Avventuriero!</h3>
@@ -1070,8 +1069,8 @@
     </div>
 
     <!-- Health Input Modal -->
-    <div class="modal-overlay hidden" id="healthInputOverlay">
-        <div class="modal">
+    <div class="modal-overlay hidden" id="healthInputOverlay" onclick="closeHealthInput()">
+        <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="healthModalTitle">Aggiorna Parametri</h3>
             </div>
@@ -1087,11 +1086,10 @@
         </div>
     </div>
     <!-- MEALS MODAL (v3.0.0) -->
-    <div id="mealsModal" class="modal-overlay">
-        <div class="modal-content premium-modal">
+    <div id="mealsModal" class="modal-overlay" onclick="closeMealsModal()">
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>🍽️ Pasti</h3>
-                <button class="close-btn" onclick="closeMealsModal()">×</button>
             </div>
 
             <div class="meals-tabs">
@@ -1123,11 +1121,10 @@
     </div>
 
     <!-- WEIGHT MODAL (v3.0.0) -->
-    <div id="weightModal" class="modal-overlay">
-        <div class="modal-content premium-modal">
+    <div id="weightModal" class="modal-overlay" onclick="closeWeightModal()">
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>⚖️ Peso & Composizione</h3>
-                <button class="close-btn" onclick="closeWeightModal()">×</button>
             </div>
 
             <div class="weight-form">

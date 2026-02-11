@@ -4,11 +4,11 @@ console.log("APP.JS LOADED - v3.1.7");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.7';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.7';
-import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.7';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.7';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.7';
+const APP_VERSION = '3.1.8';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.8';
+import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.8';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.8';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.8';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
@@ -447,6 +447,8 @@ let pomodoroRunning = false;
 document.addEventListener('DOMContentLoaded', () => {
     try {
         loadState();
+        // Re-initialize viewedDate after loadState to respect dayStartTime setting
+        viewedDate = getGameDate();
         loadSettingsGroupsState();
         applyTheme();
     } catch (err) {
@@ -6614,6 +6616,7 @@ window.switchAvatarTab = switchAvatarTab;
 window.selectEmoji = selectEmoji;
 window.handleAvatarUpload = handleAvatarUpload;
 window.openMottoEdit = openMottoEdit;
+window.closeMottoEdit = closeMottoEdit;
 window.saveMotto = saveMotto;
 
 // Tasks & Progress
@@ -6720,6 +6723,24 @@ window.closeSetupWizard = closeSetupWizard;
 // ============================================
 // HOME TABS & SOSTENTAMENTO (v2.9.0)
 // ============================================
+
+function openInventory() {
+    const overlay = document.getElementById('inventoryOverlay');
+    const modal = document.getElementById('inventoryModal');
+    if (overlay) overlay.classList.add('active');
+    if (modal) modal.classList.remove('hidden');
+    renderNutritionInventory();
+}
+function closeInventory() {
+    const overlay = document.getElementById('inventoryOverlay');
+    const modal = document.getElementById('inventoryModal');
+    if (overlay) overlay.classList.remove('active');
+    if (modal) modal.classList.add('hidden');
+}
+window.openInventory = openInventory;
+window.closeInventory = closeInventory;
+window.openAddItemModal = openAddItemModal;
+window.closeAddItemModal = closeAddItemModal;
 
 function switchHomeTab(tabId) {
     // Hide all views first
