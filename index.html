@@ -55,7 +55,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
     <script src="js/theme-fix.js"></script>
-    <link rel="stylesheet" href="styles.css?v=3.1.3">
+    <link rel="stylesheet" href="styles.css?v=3.1.4">
 
 </head>
 
@@ -307,7 +307,7 @@
                             </div>
 
                             <!-- Spesa Integration (ex Zaino) -->
-                            <div class="nutrition-inventory">
+                            <div class="nutrition-inventory health-card">
                                 <div class="section-header" style="padding: 0 10px; margin-bottom: 10px;">
                                     <h3 style="font-family: var(--font-header);">🛒 Spesa</h3>
                                     <button class="add-btn-circle" onclick="openAddItemModal()">+</button>
@@ -996,10 +996,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script src="app.js?v=3.1.3" type="module"></script>
+    <script src="app.js?v=3.1.4" type="module"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=3.1.3')
+            navigator.serviceWorker.register('sw.js?v=3.1.4')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
@@ -1170,11 +1170,11 @@
     </div>
 
     <!-- ADD ITEM MODAL (v3.1.0) -->
-    <div id="addItemModal" class="modal-overlay">
-        <div class="modal-content premium-modal">
+    <div id="addItemModal" class="modal-overlay" onclick="closeAddItemModal()">
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="addItemTitle">Aggiungi Oggetto</h3>
-                <button class="close-btn" onclick="closeAddItemModal()">×</button>
+                <!-- Close X Removed -->
             </div>
 
             <div class="add-item-form">
