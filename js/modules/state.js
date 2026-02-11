@@ -6,7 +6,7 @@ import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { getMonthIdentifier, getGameDate, ensureUniqueIds, getGameDateString } from './utils.js';
 import { saveDataToFile } from './storage.js';
 
-export const APP_VERSION = '2.9.0';
+export const APP_VERSION = '3.0.0';
 
 export let state = {
     player: {
@@ -57,14 +57,25 @@ export let state = {
     lastPenaltyCheck: null, // Last date+time penalties were checked
     inventory: {
         supplies: [], // Array of {id, name, status ('needed'|'in_stock'), type ('healthy'|'neutral')}
+        home: [],     // New category for house items
         nutritionStreak: 0,
         lastNutritionDate: null
     },
     health: {
         calories: { goal: 1600, consumed: 0, burned: 0 },
         steps: { goal: 10000, current: 0 },
-        weight: { current: 75, target: 70 },
+        weight: {
+            current: 75, target: 70,
+            currentLean: 0, targetLean: 0,
+            currentFat: 0, targetFat: 0
+        },
         water: { goal: 8, consumed: 0 },
+        meals: {
+            breakfast: [],
+            lunch: [],
+            dinner: [],
+            snack: []
+        },
         presets: [
             { id: 'p1', type: 'consumed', name: 'Riso e Verdure', calories: 400 },
             { id: 'p2', type: 'consumed', name: 'Pollo con Verdure', calories: 350 },
@@ -238,6 +249,18 @@ export function loadState() {
                 ];
             }
             if (!state.health.history) state.health.history = [];
+            if (!state.health.meals) {
+                state.health.meals = { breakfast: [], lunch: [], dinner: [], snack: [] };
+            }
+            if (!state.inventory.home) state.inventory.home = [];
+
+            // Backfill lean/fat mass if missing
+            if (state.health.weight && state.health.weight.currentLean === undefined) {
+                state.health.weight.currentLean = 0;
+                state.health.weight.targetLean = 0;
+                state.health.weight.currentFat = 0;
+                state.health.weight.targetFat = 0;
+            }
 
             state.settings = { ...state.settings, ...parsed.settings };
             if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;

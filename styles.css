@@ -5974,6 +5974,7 @@ textarea {
 
 .nutrition-drawer {
     /* Il drawer è semplicemente la parte superiore che viene nascosta dallo scroll iniziale */
+    background: transparent;
 }
 
 /* Water Tracker */
@@ -6080,4 +6081,150 @@ textarea {
     align-items: center;
     text-align: center;
     cursor: pointer;
+}
+
+/* Nutrition Switcher Icons */
+.switcher-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.switcher-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.switcher-icon:active {
+    transform: scale(0.95);
+}
+
+/* Premium Modals (v3.0.0) */
+.premium-modal {
+    max-width: 440px !important;
+    border-radius: 24px !important;
+    background: var(--bg-primary) !important;
+    padding: 20px !important;
+}
+
+.meals-tabs,
+.weight-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.meals-tabs {
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.meal-tab {
+    flex: 1;
+    padding: 10px 5px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.meal-tab.active {
+    background: var(--bg-primary);
+    color: var(--accent-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.meals-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.meals-input-group input {
+    border-radius: 12px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    width: 100%;
+}
+
+#mealNameInput {
+    flex: 2;
+}
+
+#mealCaloriesInput {
+    flex: 1;
+    text-align: center;
+}
+
+.meals-list {
+    max-height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.meal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.meal-item:active {
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: var(--accent-color);
+}
+
+.weight-details-mini {
+    display: flex;
+    justify-content: space-around;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.weight-details-mini b {
+    color: var(--text-primary);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.form-group input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 700;
 }
