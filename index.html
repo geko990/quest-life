@@ -188,16 +188,6 @@
             <section id="section-home" class="section active">
                 <!-- NUTRIZIONE DRAWER (Hidden above scroll) -->
                 <div class="nutrition-drawer" id="homeNutritionDrawer">
-                    <div class="home-tabs-container">
-                        <div class="home-tabs">
-                            <button class="home-tab active" id="tab-home-status" onclick="switchHomeTab('status')">
-                                <span class="tab-icon">👤</span> Eroe
-                            </button>
-                            <button class="home-tab" id="tab-home-nutrition" onclick="switchHomeTab('nutrition')">
-                                <span class="tab-icon">🍎</span> Nutrizione
-                            </button>
-                        </div>
-                    </div>
 
                     <!-- VIEW: NUTRITION (Health + Food + Inventory) -->
                     <div id="view-home-nutrition" class="home-view">
@@ -206,10 +196,14 @@
                             <div class="health-dashboard" style="margin-top:0;">
                                 <!-- Calorie Card -->
                                 <div class="health-card calories-card">
-                                    <div class="card-title">Calorie</div>
+                                    <div class="card-title">
+                                        Calorie
+                                        <button class="btn-icon switcher-icon" onclick="switchHomeTab('status')"
+                                            title="Torna a Eroe">👤</button>
+                                    </div>
                                     <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
 
-                                    <div class="calories-main">
+                                    <div class="calories-main" onclick="openMealsModal()">
                                         <div class="ring-container">
                                             <svg width="140" height="140" viewBox="0 0 140 140">
                                                 <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
@@ -282,15 +276,18 @@
 
                                 <div class="health-row">
                                     <!-- Weight Card -->
-                                    <div class="health-card weight-card" onclick="openHealthInput('weight')">
+                                    <div class="health-card weight-card" onclick="openWeightModal()">
                                         <div class="card-title">Peso</div>
                                         <div class="steps-main">
                                             <span class="steps-icon">⚖️</span>
                                             <span id="weightCurrent" class="steps-value">75</span>
                                             <span class="unit">kg</span>
                                         </div>
-                                        <div class="steps-goal">Obiettivo: <span id="weightTargetText">70</span></div>
-                                        <div class="progress-bar-bg">
+                                        <div class="weight-details-mini" id="weightDetailsMini">
+                                            <span>Magra: <b id="leanCurrent">--</b></span>
+                                            <span>Grassa: <b id="fatCurrent">--</b></span>
+                                        </div>
+                                        <div class="progress-bar-bg" style="margin-top:5px;">
                                             <div id="weightProgressBar" class="progress-bar-fill"
                                                 style="background: #ec4899;"></div>
                                         </div>
@@ -319,6 +316,8 @@
                                         onclick="switchNutritionTab('supplies')">Sani</button>
                                     <button class="inv-tab" id="nutrition-toxic-btn"
                                         onclick="switchNutritionTab('toxic')">Tossici</button>
+                                    <button class="inv-tab" id="nutrition-home-btn"
+                                        onclick="switchNutritionTab('home')">Casa</button>
                                 </div>
                                 <div id="nutritionList" class="stats-grid" style="padding: 10px;">
                                     <!-- Popolato dinamicamente -->
@@ -333,6 +332,8 @@
                     <div class="character-sheet">
                         <!-- Stats Radar Chart -->
                         <div class="stats-chart-container">
+                            <button class="btn-icon switcher-icon top-right" onclick="switchHomeTab('nutrition')"
+                                title="Nutrizione">🍎</button>
                             <canvas id="statsRadar"></canvas>
                         </div>
 
@@ -1084,6 +1085,86 @@
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeHealthInput()">Annulla</button>
                 <button class="btn-submit" onclick="submitHealthInput()">Salva</button>
+            </div>
+        </div>
+    </div>
+    <!-- MEALS MODAL (v3.0.0) -->
+    <div id="mealsModal" class="modal-overlay">
+        <div class="modal-content premium-modal">
+            <div class="modal-header">
+                <h3>🍽️ Pasti</h3>
+                <button class="close-btn" onclick="closeMealsModal()">×</button>
+            </div>
+
+            <div class="meals-tabs">
+                <button class="meal-tab active" id="meal-tab-breakfast"
+                    onclick="switchMealTab('breakfast')">Colazione</button>
+                <button class="meal-tab" id="meal-tab-lunch" onclick="switchMealTab('lunch')">Pranzo</button>
+                <button class="meal-tab" id="meal-tab-dinner" onclick="switchMealTab('dinner')">Cena</button>
+                <button class="meal-tab" id="meal-tab-snack" onclick="switchMealTab('snack')">Spuntino</button>
+            </div>
+
+            <div class="meals-input-group">
+                <input type="text" id="mealNameInput" placeholder="Cosa hai mangiato?">
+                <input type="number" id="mealCaloriesInput" placeholder="Calorie">
+                <button class="btn-primary" onclick="addCurrentMeal()" style="padding:10px;">➕</button>
+            </div>
+
+            <div id="mealsList" class="meals-list">
+                <!-- Popolato dinamicamente -->
+            </div>
+
+            <div class="modal-actions"
+                style="margin-top:10px; border-top:1px solid var(--border-color); padding-top:10px;">
+                <button class="btn-secondary" onclick="openHealthInput('burned')" style="width:100%; font-size:12px;">🔥
+                    Log Esercizio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WEIGHT MODAL (v3.0.0) -->
+    <div id="weightModal" class="modal-overlay">
+        <div class="modal-content premium-modal">
+            <div class="modal-header">
+                <h3>⚖️ Peso & Composizione</h3>
+                <button class="close-btn" onclick="closeWeightModal()">×</button>
+            </div>
+
+            <div class="weight-form">
+                <div class="form-row" style="display:flex; gap:10px; margin-bottom:15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label style="font-size:11px; color:var(--text-muted);">Attuale (kg)</label>
+                        <input type="number" id="weightInputVal" step="0.1" style="width:100%;">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label style="font-size:11px; color:var(--text-muted);">Target (kg)</label>
+                        <input type="number" id="weightTargetInputVal" step="0.1" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-row" style="display:flex; gap:10px; margin-bottom:15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label style="font-size:11px; color:var(--text-muted);">Massa Magra (kg)</label>
+                        <input type="number" id="leanInputVal" step="0.1" style="width:100%;">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label style="font-size:11px; color:var(--text-muted);">Target Magra (kg)</label>
+                        <input type="number" id="leanTargetInputVal" step="0.1" style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-row" style="display:flex; gap:10px; margin-bottom:10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label style="font-size:11px; color:var(--text-muted);">Massa Grassa (%)</label>
+                        <input type="number" id="fatInputVal" step="0.1" style="width:100%;">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label style="font-size:11px; color:var(--text-muted);">Target Grassa (%)</label>
+                        <input type="number" id="fatTargetInputVal" step="0.1" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:10px;">
+                <button class="btn-primary" onclick="saveWeightDetails()" style="width:100%;">Salva</button>
             </div>
         </div>
     </div>

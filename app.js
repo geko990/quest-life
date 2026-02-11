@@ -4,10 +4,10 @@ console.log("APP.JS LOADED - v2.8.25");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '2.8.25';
+const APP_VERSION = '3.0.0';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js';
 import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate } from './js/modules/utils.js';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js';
 import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js';
 
 // Expose globals for HTML event handlers and legacy code
@@ -428,6 +428,8 @@ let currentSwipeCard = null;
 let editingItem = null;
 let viewedDate = getGameDate();
 let profilePopupTimer = null; // reused or new logic for toggle
+let currentNutritionInvTab = 'supplies';
+let currentMealTab = 'breakfast';
 
 // Pomodoro Timer
 let pomodoroInterval = null;
@@ -6627,9 +6629,6 @@ function renderHealthDashboard() {
     const weightCurrentEl = document.getElementById('weightCurrent');
     if (weightCurrentEl) weightCurrentEl.textContent = health.weight.current;
 
-    const weightTargetEl = document.getElementById('weightTargetText');
-    if (weightTargetEl) weightTargetEl.textContent = health.weight.target;
-
     const weightBar = document.getElementById('weightProgressBar');
     if (weightBar) {
         const diff = Math.abs(health.weight.current - health.weight.target);
@@ -6639,6 +6638,9 @@ function renderHealthDashboard() {
 
     // Render Water
     renderWaterTracker();
+
+    // v3.0.0 Weight Details
+    renderWeightMiniDetails();
 }
 
 function updateCalorieRing(consumed, goal, burned) {
@@ -6856,6 +6858,25 @@ window.addPresetHealth = addPresetHealth;
 window.switchNutritionTab = switchNutritionTab;
 window.toggleNutritionItem = toggleNutritionItem;
 window.showHealthHistory = showHealthHistory;
+window.openMealsModal = openMealsModal;
+window.closeMealsModal = closeMealsModal;
+window.switchMealTab = switchMealTab;
+window.addCurrentMeal = addCurrentMeal;
+window.openWeightModal = openWeightModal;
+window.closeWeightModal = closeWeightModal;
+window.saveWeightDetails = saveWeightDetails;
+window.deleteToxicItem = deleteToxicItem;
+window.useToxicItemDirect = useToxicItemDirect;
+window.setWaterGoal = setWaterGoal;
+window.startLongPress = startLongPress;
+window.stopLongPress = stopLongPress;
+window.switchMealTab = switchMealTab;
+window.addCurrentMeal = addCurrentMeal;
+window.saveWeightDetails = saveWeightDetails;
+window.openMealsModal = openMealsModal;
+window.closeMealsModal = closeMealsModal;
+window.openWeightModal = openWeightModal;
+window.closeWeightModal = closeWeightModal;
 
 // Tools & Utilities
 window.openPomodoroTimer = openPomodoroTimer;
@@ -6912,19 +6933,30 @@ window.closeSetupWizard = closeSetupWizard;
 // ============================================
 
 function switchHomeTab(tabId) {
-    document.querySelectorAll('.home-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.id === `tab-home-${tabId}`);
+    // Hide all views first
+    document.querySelectorAll('.home-view').forEach(view => {
+        view.classList.remove('active');
+        view.style.display = 'none';
     });
 
-    document.querySelectorAll('.home-view').forEach(view => {
-        view.classList.toggle('active', view.id === `view-home-${tabId}`);
-    });
+    const targetView = document.getElementById(`view-home-${tabId}`);
+    if (targetView) {
+        targetView.classList.add('active');
+        targetView.style.display = 'block';
+    }
 
     if (tabId === 'status') {
         renderRadarChart();
     } else if (tabId === 'nutrition') {
         renderHealthDashboard();
         renderNutritionInventory();
+    }
+
+    // After switching, ensure we are scrolled correctly
+    const container = document.querySelector('.content-area');
+    const drawer = document.getElementById('homeNutritionDrawer');
+    if (container && drawer) {
+        container.scrollTop = (tabId === 'status') ? drawer.offsetHeight : 0;
     }
 }
 
@@ -6938,7 +6970,11 @@ function renderWaterTracker() {
     const { consumed, goal } = state.health.water;
 
     if (currentText) currentText.textContent = consumed;
-    if (goalText) goalText.textContent = goal;
+    if (goalText) {
+        goalText.textContent = goal;
+        goalText.style.cursor = 'pointer';
+        goalText.onclick = () => setWaterGoal();
+    }
 
     let html = '';
     const displayCount = Math.max(goal, consumed);
@@ -6947,6 +6983,17 @@ function renderWaterTracker() {
         html += `<div class="water-glass ${isFilled ? 'filled' : ''}">${isFilled ? '💧' : '🥛'}</div>`;
     }
     waterGrid.innerHTML = html;
+}
+
+function setWaterGoal() {
+    const current = state.health.water.goal || 8;
+    const newGoal = parseInt(prompt("Imposta obiettivo acqua giornaliero (bicchieri da 250ml):", current));
+    if (!isNaN(newGoal) && newGoal > 0) {
+        state.health.water.goal = newGoal;
+        saveState();
+        renderWaterTracker();
+        showXpToast(`Obiettivo acqua: ${newGoal} bicchieri`, '💧');
+    }
 }
 
 function addWater(amount) {
@@ -6975,12 +7022,12 @@ function addPresetHealth(presetId) {
     }
 }
 
-let currentNutritionInvTab = 'supplies';
 function switchNutritionTab(tab) {
     currentNutritionInvTab = tab;
     document.querySelectorAll('.inv-tab').forEach(btn => {
         const isTarget = (tab === 'supplies' && btn.id === 'nutrition-supplies-btn') ||
-            (tab === 'toxic' && btn.id === 'nutrition-toxic-btn');
+            (tab === 'toxic' && btn.id === 'nutrition-toxic-btn') ||
+            (tab === 'home' && btn.id === 'nutrition-home-btn');
         btn.classList.toggle('active', isTarget);
     });
     renderNutritionInventory();
@@ -6993,6 +7040,8 @@ function renderNutritionInventory() {
     let items = [];
     if (currentNutritionInvTab === 'supplies') {
         items = state.inventory.supplies || [];
+    } else if (currentNutritionInvTab === 'home') {
+        items = state.inventory.home || [];
     } else {
         items = state.toxicItems || [];
     }
@@ -7003,18 +7052,27 @@ function renderNutritionInventory() {
     }
 
     list.innerHTML = items.map(item => {
+        const isToxic = currentNutritionInvTab === 'toxic';
+        const isHome = currentNutritionInvTab === 'home';
         const isSupply = currentNutritionInvTab === 'supplies';
-        const icon = isSupply ? (item.type === 'healthy' ? '🥗' : '📦') : '👿';
-        const clickAction = isSupply ? `toggleNutritionItem('${item.id}')` : `deleteToxicItem('${item.id}')`;
-        const btnIcon = isSupply ? (item.status === 'needed' ? '🛒' : '✅') : '🗑️';
+
+        let clickAction = '';
+        if (isToxic) clickAction = `useToxicItemDirect('${item.id}')`;
+        else if (isHome) clickAction = `toggleNutritionItem('${item.id}', 'home')`;
+        else clickAction = `toggleNutritionItem('${item.id}', 'supplies')`;
+
+        const btnIcon = isToxic ? '💀' : (item.status === 'needed' ? '🛒' : '✅');
+        const statusText = item.status === 'needed' ? 'Da comprare' : 'In stock';
 
         return `
-            <div class="stat-card" style="padding:10px; display:flex; flex-direction:row; justify-content:space-between; align-items:center;">
+            <div class="stat-card nutrition-item-card" 
+                 onmousedown="startLongPress(event, '${item.id}', '${currentNutritionInvTab}')"
+                 ontouchstart="startLongPress(event, '${item.id}', '${currentNutritionInvTab}')"
+                 style="padding:10px; display:flex; flex-direction:row; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:18px;">${icon}</span>
                     <div style="text-align:left;">
                         <div style="font-size:13px; font-weight:700;">${item.name}</div>
-                        ${item.status ? `<div style="font-size:10px; color:var(--text-muted);">${item.status === 'needed' ? 'Da comprare' : 'In dispensa'}</div>` : ''}
+                        ${!isToxic ? `<div style="font-size:10px; color:var(--text-muted);">${statusText}</div>` : `<div style="font-size:10px; color:#ef4444;">Tossico</div>`}
                     </div>
                 </div>
                 <button class="btn-icon" onclick="${clickAction}" style="font-size:14px; background:var(--bg-secondary); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer;">
@@ -7025,14 +7083,182 @@ function renderNutritionInventory() {
     }).join('');
 }
 
-function toggleNutritionItem(id) {
-    const item = state.inventory.supplies.find(i => i.id === id);
+function toggleNutritionItem(id, listKey = 'supplies') {
+    const list = state.inventory[listKey];
+    if (!list) return;
+    const item = list.find(i => i.id === id);
     if (item) {
         item.status = item.status === 'needed' ? 'in_stock' : 'needed';
         saveState();
         renderNutritionInventory();
     }
 }
+
+function deleteToxicItem(id) {
+    state.toxicItems = state.toxicItems.filter(i => i.id !== id);
+    saveState();
+    renderNutritionInventory();
+}
+
+function useToxicItemDirect(id) {
+    const item = state.toxicItems.find(i => i.id === id);
+    if (item) {
+        // Consuma: aggiunge calorie (default 200 per tossici?) e conferma
+        state.health.calories.consumed += 200;
+        showXpToast("Cibo Tossico! +200 Cal", '👿');
+        saveState();
+        renderHealthDashboard();
+    }
+}
+
+// Longpress Logic
+function startLongPress(event, id, type) {
+    longPressTimer = setTimeout(() => {
+        const action = confirm("Vuoi MODIFICARE (OK) o ELIMINARE (Annulla) questo oggetto?");
+        if (action) {
+            // Modifica
+            const list = type === 'toxic' ? state.toxicItems : state.inventory[type];
+            const item = list.find(i => i.id === id);
+            if (item) {
+                const newName = prompt("Nuovo nome per l'oggetto:", item.name);
+                if (newName) {
+                    item.name = newName;
+                    saveState();
+                    renderNutritionInventory();
+                }
+            }
+        } else {
+            // Elimina (se utente preme cancel, chiediamo conferma eliminazione per sicurezza)
+            if (confirm("Sei sicuro di volerlo eliminare definitivamente?")) {
+                if (type === 'toxic') {
+                    deleteToxicItem(id);
+                } else {
+                    state.inventory[type] = state.inventory[type].filter(i => i.id !== id);
+                    saveState();
+                    renderNutritionInventory();
+                }
+            }
+        }
+    }, 800);
+}
+
+function stopLongPress() {
+    clearTimeout(longPressTimer);
+}
+window.addEventListener('mouseup', stopLongPress);
+window.addEventListener('touchend', stopLongPress);
+
+// MEALS MODAL LOGIC (v3.0.0)
+function openMealsModal() {
+    document.getElementById('mealsModal').classList.add('active');
+    renderMealsList();
+}
+
+function closeMealsModal() {
+    document.getElementById('mealsModal').classList.remove('active');
+}
+
+function switchMealTab(tab) {
+    currentMealTab = tab;
+    document.querySelectorAll('.meal-tab').forEach(t => {
+        t.classList.toggle('active', t.id === `meal-tab-${tab}`);
+    });
+    renderMealsList();
+}
+
+function addCurrentMeal() {
+    const name = document.getElementById('mealNameInput').value;
+    const calories = parseInt(document.getElementById('mealCaloriesInput').value);
+
+    if (!name || isNaN(calories)) {
+        alert("Inserisci nome e calorie!");
+        return;
+    }
+
+    const newMeal = { id: generateId('meal'), name, calories };
+    state.health.meals[currentMealTab].push(newMeal);
+
+    // Logga subito le calorie
+    state.health.calories.consumed += calories;
+
+    document.getElementById('mealNameInput').value = '';
+    document.getElementById('mealCaloriesInput').value = '';
+
+    saveState();
+    renderMealsList();
+    renderHealthDashboard();
+    showXpToast(`Pasto aggiunto! +${calories} Cal`, '🍽️');
+}
+
+function renderMealsList() {
+    const list = document.getElementById('mealsList');
+    if (!list) return;
+
+    const meals = state.health.meals[currentMealTab] || [];
+    if (meals.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Nessun pasto salvato per questa categoria.</div>`;
+        return;
+    }
+
+    list.innerHTML = meals.map(meal => `
+        <div class="meal-item" onclick="logSavedMeal('${meal.id}')">
+            <span>${meal.name}</span>
+            <b style="color:var(--accent-color);">${meal.calories} kcal</b>
+        </div>
+    `).join('');
+}
+
+window.logSavedMeal = function (id) {
+    const meal = state.health.meals[currentMealTab].find(m => m.id === id);
+    if (meal) {
+        state.health.calories.consumed += meal.calories;
+        saveState();
+        renderHealthDashboard();
+        showXpToast(`Pasto loggato: ${meal.name}`, '🍴');
+        closeMealsModal();
+    }
+};
+
+// WEIGHT MODAL LOGIC (v3.0.0)
+function openWeightModal() {
+    document.getElementById('weightModal').classList.add('active');
+
+    const w = state.health.weight;
+    document.getElementById('weightInputVal').value = w.current;
+    document.getElementById('weightTargetInputVal').value = w.target;
+    document.getElementById('leanInputVal').value = w.currentLean;
+    document.getElementById('leanTargetInputVal').value = w.targetLean;
+    document.getElementById('fatInputVal').value = w.currentFat;
+    document.getElementById('fatTargetInputVal').value = w.targetFat;
+}
+
+function closeWeightModal() {
+    document.getElementById('weightModal').classList.remove('active');
+}
+
+function saveWeightDetails() {
+    const w = state.health.weight;
+    w.current = parseFloat(document.getElementById('weightInputVal').value) || 0;
+    w.target = parseFloat(document.getElementById('weightTargetInputVal').value) || 0;
+    w.currentLean = parseFloat(document.getElementById('leanInputVal').value) || 0;
+    w.targetLean = parseFloat(document.getElementById('leanTargetInputVal').value) || 0;
+    w.currentFat = parseFloat(document.getElementById('fatInputVal').value) || 0;
+    w.targetFat = parseFloat(document.getElementById('fatTargetInputVal').value) || 0;
+
+    saveState();
+    renderHealthDashboard();
+    renderWeightMiniDetails();
+    closeWeightModal();
+    showXpToast("Dati peso aggiornati!", '⚖️');
+}
+
+function renderWeightMiniDetails() {
+    const lean = document.getElementById('leanCurrent');
+    const fat = document.getElementById('fatCurrent');
+    if (lean) lean.textContent = state.health.weight.currentLean + ' kg';
+    if (fat) fat.textContent = state.health.weight.currentFat + ' %';
+}
+
 
 function showHealthHistory() {
     alert("Lo storico viene salvato automaticamente a mezzanotte. La visualizzazione grafica sarà disponibile a breve!");
