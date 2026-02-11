@@ -6,7 +6,7 @@ import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { getMonthIdentifier, getGameDate, ensureUniqueIds, getGameDateString } from './utils.js';
 import { saveDataToFile } from './storage.js';
 
-export const APP_VERSION = '3.1.8';
+export const APP_VERSION = '3.1.9';
 
 export let state = {
     player: {
@@ -207,36 +207,7 @@ export function loadState() {
             }
 
             // Check for daily reset of health metrics
-            const today = getGameDateString();
-            if (state.health.lastUpdate && state.health.lastUpdate !== today) {
-                // Save to history before reset
-                const historyEntry = {
-                    date: state.health.lastUpdate,
-                    consumed: state.health.calories.consumed,
-                    burned: state.health.calories.burned,
-                    steps: state.health.steps.current,
-                    weight: state.health.weight.current,
-                    water: state.health.water?.consumed || 0
-                };
-
-                if (!state.health.history) state.health.history = [];
-                state.health.history.push(historyEntry);
-
-                // Keep last 30 days
-                if (state.health.history.length > 30) {
-                    state.health.history = state.health.history.slice(-30);
-                }
-
-                // Reset daily metrics
-                state.health.calories.consumed = 0;
-                state.health.calories.burned = 0;
-                state.health.steps.current = 0;
-                if (state.health.water) state.health.water.consumed = 0;
-
-                state.health.lastUpdate = today;
-            } else if (!state.health.lastUpdate) {
-                state.health.lastUpdate = today;
-            }
+            checkHealthRollover();
 
             // Ensure new structures exist
             if (!state.health.water) state.health.water = { goal: 8, consumed: 0 };
@@ -357,5 +328,43 @@ export function resetAll() {
         localStorage.removeItem('questlife_state_v2');
         localStorage.removeItem('questlife_state');
         location.reload();
+    }
+}
+export function checkHealthRollover() {
+    if (!state.health) return;
+
+    const today = getGameDateString();
+    if (state.health.lastUpdate && state.health.lastUpdate !== today) {
+        console.log(`[HealthRollover] Day changed from ${state.health.lastUpdate} to ${today}. Saving history.`);
+
+        // Save to history before reset
+        const historyEntry = {
+            date: state.health.lastUpdate,
+            consumed: state.health.calories.consumed || 0,
+            burned: state.health.calories.burned || 0,
+            steps: state.health.steps.current || 0,
+            weight: state.health.weight.current || 0,
+            water: state.health.water?.consumed || 0
+        };
+
+        if (!state.health.history) state.health.history = [];
+        state.health.history.push(historyEntry);
+
+        // Keep last 30 days
+        if (state.health.history.length > 30) {
+            state.health.history = state.health.history.slice(-30);
+        }
+
+        // Reset daily metrics
+        state.health.calories.consumed = 0;
+        state.health.calories.burned = 0;
+        state.health.steps.current = 0;
+        if (state.health.water) state.health.water.consumed = 0;
+
+        state.health.lastUpdate = today;
+        saveState();
+    } else if (!state.health.lastUpdate) {
+        state.health.lastUpdate = today;
+        saveState();
     }
 }
