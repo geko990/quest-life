@@ -1,14 +1,14 @@
-console.log("APP.JS LOADED - v3.1.5");
+console.log("APP.JS LOADED - v3.1.6");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.5';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.5';
-import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.5';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.5';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.5';
+const APP_VERSION = '3.1.6';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.6';
+import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.6';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.6';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.6';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
