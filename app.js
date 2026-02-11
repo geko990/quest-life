@@ -1,14 +1,14 @@
-console.log("APP.JS LOADED - v3.1.1");
+console.log("APP.JS LOADED - v3.1.2");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.1';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.1';
-import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.1';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.1';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.1';
+const APP_VERSION = '3.1.2';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.2';
+import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.2';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.2';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.2';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
@@ -4017,7 +4017,10 @@ function initSwipe() {
         currentSwipeCard.style.transform = `translateX(${limitedDiff}px)`;
 
         // Visual feedback
+        // Visual feedback
         const taskCard = currentSwipeCard.closest('.task-card');
+        if (!taskCard) return;
+
         if (limitedDiff > ACTION_THRESHOLD * 0.7) {
             taskCard.classList.add('swipe-edit-hint');
             taskCard.classList.remove('swipe-delete-hint');
@@ -4036,6 +4039,11 @@ function initSwipe() {
         const transform = new WebKitCSSMatrix(window.getComputedStyle(currentSwipeCard).transform);
         const finalX = transform.m41;
         const taskCard = currentSwipeCard.closest('.task-card');
+        if (!taskCard) {
+            isSwiping = false;
+            currentSwipeCard = null;
+            return;
+        }
 
         taskCard.classList.remove('swiping');
         const type = taskCard.dataset.type;
