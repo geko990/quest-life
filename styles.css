@@ -4548,6 +4548,12 @@ textarea {
     align-items: center;
     margin-bottom: 20px;
     position: relative;
+    border-radius: 16px;
+    /* Rounded corners as requested */
+    background: var(--bg-card);
+    /* Ensure background is explicit */
+    padding: 16px;
+    /* Restore padding for better shape */
     border-bottom: 1px solid var(--glass-border);
     padding-bottom: 12px;
 }
