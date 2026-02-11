@@ -1,14 +1,14 @@
-console.log("APP.JS LOADED - v3.1.2");
+console.log("APP.JS LOADED - v3.1.3");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.2';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.2';
-import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.2';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.2';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.2';
+const APP_VERSION = '3.1.3';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.3';
+import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.3';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.3';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.3';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
@@ -6842,25 +6842,25 @@ function renderNutritionInventory() {
         const displayEmoji = item.emoji || (isHome ? '🏠' : '🍎');
 
         return `
-            <div class="stat-card nutrition-item-card swipe-item" 
+            <div class="stat-card nutrition-item-card swipe-item task-card" 
                  data-id="${item.id}"
                  data-type="${currentNutritionInvTab}"
-                 style="padding:0; display:flex; position:relative; overflow:hidden; min-height:60px;">
+                 style="padding:0; display:flex; position:relative; overflow:hidden; min-height:46px; margin-bottom:8px;">
                 
                 <div class="swipe-actions">
                      <div class="swipe-action edit">✏️</div>
                      <div class="swipe-action delete">🗑️</div>
                 </div>
 
-                <div class="swipe-content" style="display:flex; align-items:center; justify-content:space-between; width:100%; height:100%; background:var(--bg-card); z-index:2; padding:10px; transition: transform 0.2s ease;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                         <span style="font-size:20px;">${displayEmoji}</span>
-                        <div style="text-align:left;">
-                            <div style="font-size:14px; font-weight:700;">${item.name}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">${statusText}</div>
+                <div class="swipe-content" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; width:100%; height:100%; background:var(--bg-card); z-index:2; padding:6px 12px; transition: transform 0.2s ease;">
+                    <div style="display:flex; align-items:center; gap:12px; flex:1; overflow:hidden;">
+                         <span style="font-size:18px;">${displayEmoji}</span>
+                        <div style="text-align:left; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+                            <div style="font-size:10px; color:var(--text-muted);">${statusText}</div>
                         </div>
                     </div>
-                    <button class="btn-icon" onclick="${clickAction}" style="font-size:14px; background:var(--bg-secondary); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; z-index:3; position:relative;">
+                    <button class="btn-icon" onclick="${clickAction}" style="font-size:14px; background:transparent; border-radius:50%; width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--glass-border); cursor:pointer; z-index:3; position:relative; margin-left:8px;">
                         ${btnIcon}
                     </button>
                 </div>
