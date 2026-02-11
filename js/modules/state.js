@@ -6,7 +6,7 @@ import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { getMonthIdentifier, getGameDate, ensureUniqueIds, getGameDateString } from './utils.js';
 import { saveDataToFile } from './storage.js';
 
-export const APP_VERSION = '2.8.25';
+export const APP_VERSION = '2.9.0';
 
 export let state = {
     player: {
@@ -63,7 +63,16 @@ export let state = {
     health: {
         calories: { goal: 1600, consumed: 0, burned: 0 },
         steps: { goal: 10000, current: 0 },
-        weight: { current: 75, target: 70, history: [] },
+        weight: { current: 75, target: 70 },
+        water: { goal: 8, consumed: 0 },
+        presets: [
+            { id: 'p1', type: 'consumed', name: 'Riso e Verdure', calories: 400 },
+            { id: 'p2', type: 'consumed', name: 'Pollo con Verdure', calories: 350 },
+            { id: 'p3', type: 'consumed', name: 'Fettina di Pane', calories: 80 },
+            { id: 'e1', type: 'burned', name: 'Camminata 20 min', calories: 100 },
+            { id: 'e2', type: 'burned', name: '3 serie Push Up', calories: 50 }
+        ],
+        history: [], // Array di {date, consumed, burned, steps, weight, water}
         lastUpdate: null
     },
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
@@ -187,13 +196,48 @@ export function loadState() {
 
             // Check for daily reset of health metrics
             const today = getGameDateString();
-            if (state.health.lastUpdate !== today) {
+            if (state.health.lastUpdate && state.health.lastUpdate !== today) {
+                // Save to history before reset
+                const historyEntry = {
+                    date: state.health.lastUpdate,
+                    consumed: state.health.calories.consumed,
+                    burned: state.health.calories.burned,
+                    steps: state.health.steps.current,
+                    weight: state.health.weight.current,
+                    water: state.health.water?.consumed || 0
+                };
+
+                if (!state.health.history) state.health.history = [];
+                state.health.history.push(historyEntry);
+
+                // Keep last 30 days
+                if (state.health.history.length > 30) {
+                    state.health.history = state.health.history.slice(-30);
+                }
+
+                // Reset daily metrics
                 state.health.calories.consumed = 0;
                 state.health.calories.burned = 0;
                 state.health.steps.current = 0;
+                if (state.health.water) state.health.water.consumed = 0;
+
                 state.health.lastUpdate = today;
-                // No save here, will save on next interaction
+            } else if (!state.health.lastUpdate) {
+                state.health.lastUpdate = today;
             }
+
+            // Ensure new structures exist
+            if (!state.health.water) state.health.water = { goal: 8, consumed: 0 };
+            if (!state.health.presets) {
+                state.health.presets = [
+                    { id: 'p1', type: 'consumed', name: 'Riso e Verdure', calories: 400 },
+                    { id: 'p2', type: 'consumed', name: 'Pollo con Verdure', calories: 350 },
+                    { id: 'p3', type: 'consumed', name: 'Fettina di Pane', calories: 80 },
+                    { id: 'e1', type: 'burned', name: 'Camminata 20 min', calories: 100 },
+                    { id: 'e2', type: 'burned', name: '3 serie Push Up', calories: 50 }
+                ];
+            }
+            if (!state.health.history) state.health.history = [];
 
             state.settings = { ...state.settings, ...parsed.settings };
             if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;

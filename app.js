@@ -1143,11 +1143,17 @@ function switchSection(sectionName) {
         section.classList.toggle('active', section.id === `section-${sectionName}`);
     });
 
-    if (sectionName === 'home') setTimeout(() => renderRadarChart(), 100);
-
     // Gestione scroll per sezione
     const container = document.querySelector('.content-area');
-    if (sectionName === 'habits') {
+    if (sectionName === 'home') {
+        setTimeout(() => {
+            renderRadarChart();
+            const drawer = document.getElementById('homeNutritionDrawer');
+            if (drawer && container) {
+                container.scrollTop = drawer.offsetHeight;
+            }
+        }, 150);
+    } else if (sectionName === 'habits') {
         const calendar = document.getElementById('calendarContainer');
 
         // Hide calendar temporarily to prevent flash during scroll
@@ -1174,27 +1180,13 @@ function switchSection(sectionName) {
             }
         }, 150);
     } else if (sectionName === 'home') {
-        // Gestione scroll per nascondere Dashboard Salute nella Home
-        const dashboard = document.querySelector('.health-dashboard');
-
-        // Hide dashboard temporarily to prevent flash during scroll
-        if (dashboard) {
-            dashboard.style.visibility = 'hidden';
+        renderAll();
+        // Garantisce che il tab attivo sia visualizzato correttamente
+        const activeTab = document.querySelector('.home-tab.active');
+        if (activeTab) {
+            const tabId = activeTab.id.replace('tab-home-', '');
+            switchHomeTab(tabId);
         }
-
-        setTimeout(() => {
-            const chartArea = document.querySelector('.stats-chart-container');
-            if (container && dashboard && chartArea) {
-                // Calcola lo scroll per posizionarsi all'inizio del radar chart
-                const dashboardRect = dashboard.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop;
-                container.scrollTop = scrollAmount;
-
-                // Show dashboard after scroll
-                dashboard.style.visibility = 'visible';
-            }
-        }, 150);
     } else {
         // Reset scroll per tutte le altre sezioni
         if (container) {
@@ -1226,27 +1218,8 @@ function renderAll() {
     renderSettingsStats();
     renderCalendar();
     renderHealthDashboard();
+    renderNutritionInventory();
     initSortable(); // Initialize drag and drop after render
-
-    // Auto-scroll to hide health dashboard on initial load if in home section
-    const activeSection = document.querySelector('.section.active');
-    if (activeSection && activeSection.id === 'section-home') {
-        const container = document.querySelector('.content-area');
-        const dashboard = document.querySelector('.health-dashboard');
-        if (container && dashboard) {
-            dashboard.style.visibility = 'hidden';
-            setTimeout(() => {
-                const chartArea = document.querySelector('.stats-chart-container');
-                if (chartArea) {
-                    const dashboardRect = dashboard.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
-                    const scrollAmount = dashboardRect.bottom - containerRect.top + container.scrollTop;
-                    container.scrollTop = scrollAmount;
-                }
-                dashboard.style.visibility = 'visible';
-            }, 300); // Slightly longer delay for initial load
-        }
-    }
 }
 
 // ============================================
@@ -6659,22 +6632,22 @@ function renderHealthDashboard() {
 
     const weightBar = document.getElementById('weightProgressBar');
     if (weightBar) {
-        // Simple visualization: proximity to goal
         const diff = Math.abs(health.weight.current - health.weight.target);
-        const percent = Math.max(10, Math.min(100, 100 - (diff / 20) * 100)); // Arbitrary scale
+        const percent = Math.max(10, Math.min(100, 100 - (diff / 20) * 100));
         weightBar.style.width = `${percent}%`;
     }
+
+    // Render Water
+    renderWaterTracker();
 }
 
 function updateCalorieRing(consumed, goal, burned) {
     const ring = document.getElementById('calorieRing');
     if (!ring) return;
 
-    const radius = ring.r.baseVal.value;
+    const radius = 60; // Fixed radius for SVG
     const circumference = 2 * Math.PI * radius;
 
-    // Percent = (consumed - burned) / goal
-    // We want the ring to fill as we eat, but empty as we exercise
     const net = Math.max(0, consumed - burned);
     let percent = (net / goal);
 
@@ -6684,7 +6657,6 @@ function updateCalorieRing(consumed, goal, burned) {
     ring.style.strokeDasharray = `${circumference} ${circumference}`;
     ring.style.strokeDashoffset = offset;
 
-    // Change color if over goal
     if (consumed - burned > goal) {
         ring.style.stroke = '#f43f5e';
     } else {
@@ -6703,28 +6675,42 @@ function openHealthInput(type) {
     if (!overlay || !title || !content) return;
 
     let html = '';
+    const presets = state.health.presets.filter(p => p.type === type);
+    let presetsHtml = '';
+
+    if (presets.length > 0) {
+        presetsHtml = `
+            <div class="preset-title">Scegli dai tuoi preset:</div>
+            <div class="preset-grid">
+                ${presets.map(p => `
+                    <button class="preset-btn" onclick="addPresetHealth('${p.id}')">
+                        <span class="preset-name">${p.name}</span>
+                        <span class="preset-val">${p.calories >= 0 ? '+' : ''}${p.calories}</span>
+                    </button>
+                `).join('')}
+            </div>
+            <div class="divider-text">oppure inserisci manualmente</div>
+        `;
+    }
+
     switch (type) {
         case 'consumed':
-            title.textContent = 'Aggiorna Calorie (Cibo)';
+            title.textContent = 'Aggiungi Alimenti';
             html = `
+                ${presetsHtml}
                 <div class="health-input-row">
-                    <label>Aggiungi Calorie</label>
+                    <label>Calorie Manuali</label>
                     <input type="number" id="healthInValue" value="0" min="0" onfocus="this.select()">
-                </div>
-                <div style="font-size: 11px; color: var(--text-muted); padding: 0 10px;">
-                    Inserisci le calorie consumate adesso. Verranno sommate al totale odierno (${state.health.calories.consumed}).
                 </div>
             `;
             break;
         case 'burned':
-            title.textContent = 'Aggiorna Calorie (Esercizio)';
+            title.textContent = 'Aggiungi Esercizio';
             html = `
+                ${presetsHtml}
                 <div class="health-input-row">
                     <label>Calorie Bruciate</label>
                     <input type="number" id="healthInValue" value="0" min="0" onfocus="this.select()">
-                </div>
-                <div style="font-size: 11px; color: var(--text-muted); padding: 0 10px;">
-                    Inserisci le calorie bruciate durante l'allenamento.
                 </div>
             `;
             break;
@@ -6736,7 +6722,7 @@ function openHealthInput(type) {
                     <input type="number" id="healthInValue" value="${state.health.steps.current}" min="0" onfocus="this.select()">
                 </div>
                 <div class="health-input-row">
-                    <label>Obiettivo Giornaliero</label>
+                    <label>Obiettivo</label>
                     <input type="number" id="healthInGoal" value="${state.health.steps.goal}" min="100" onfocus="this.select()">
                 </div>
             `;
@@ -6864,6 +6850,12 @@ window.renderHealthDashboard = renderHealthDashboard;
 window.openHealthInput = openHealthInput;
 window.closeHealthInput = closeHealthInput;
 window.submitHealthInput = submitHealthInput;
+window.switchHomeTab = switchHomeTab;
+window.addWater = addWater;
+window.addPresetHealth = addPresetHealth;
+window.switchNutritionTab = switchNutritionTab;
+window.toggleNutritionItem = toggleNutritionItem;
+window.showHealthHistory = showHealthHistory;
 
 // Tools & Utilities
 window.openPomodoroTimer = openPomodoroTimer;
@@ -6915,6 +6907,137 @@ window.checkFirstTimeSetup = checkFirstTimeSetup;
 window.completeSetupWizard = completeSetupWizard;
 window.closeSetupWizard = closeSetupWizard;
 
+// ============================================
+// HOME TABS & SOSTENTAMENTO (v2.9.0)
+// ============================================
+
+function switchHomeTab(tabId) {
+    document.querySelectorAll('.home-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.id === `tab-home-${tabId}`);
+    });
+
+    document.querySelectorAll('.home-view').forEach(view => {
+        view.classList.toggle('active', view.id === `view-home-${tabId}`);
+    });
+
+    if (tabId === 'status') {
+        renderRadarChart();
+    } else if (tabId === 'nutrition') {
+        renderHealthDashboard();
+        renderNutritionInventory();
+    }
+}
+
+function renderWaterTracker() {
+    const waterGrid = document.getElementById('waterGrid');
+    const currentText = document.getElementById('waterCurrentText');
+    const goalText = document.getElementById('waterGoalText');
+
+    if (!waterGrid || !state.health.water) return;
+
+    const { consumed, goal } = state.health.water;
+
+    if (currentText) currentText.textContent = consumed;
+    if (goalText) goalText.textContent = goal;
+
+    let html = '';
+    const displayCount = Math.max(goal, consumed);
+    for (let i = 1; i <= displayCount; i++) {
+        const isFilled = i <= consumed;
+        html += `<div class="water-glass ${isFilled ? 'filled' : ''}">${isFilled ? '💧' : '🥛'}</div>`;
+    }
+    waterGrid.innerHTML = html;
+}
+
+function addWater(amount) {
+    if (!state.health.water) state.health.water = { goal: 8, consumed: 0 };
+    state.health.water.consumed = Math.max(0, state.health.water.consumed + amount);
+    saveState();
+    renderWaterTracker();
+}
+
+function addPresetHealth(presetId) {
+    const preset = state.health.presets.find(p => p.id === presetId);
+    if (preset) {
+        if (preset.type === 'consumed') {
+            state.health.calories.consumed += preset.calories;
+        } else {
+            state.health.calories.burned += preset.calories;
+        }
+        saveState();
+        renderHealthDashboard();
+        closeHealthInput();
+
+        // Feedback visivo
+        if (typeof showXpToast === 'function') {
+            showXpToast(`${preset.calories > 0 ? '+' : ''}${preset.calories} Calorie`, '🍎');
+        }
+    }
+}
+
+let currentNutritionInvTab = 'supplies';
+function switchNutritionTab(tab) {
+    currentNutritionInvTab = tab;
+    document.querySelectorAll('.inv-tab').forEach(btn => {
+        const isTarget = (tab === 'supplies' && btn.id === 'nutrition-supplies-btn') ||
+            (tab === 'toxic' && btn.id === 'nutrition-toxic-btn');
+        btn.classList.toggle('active', isTarget);
+    });
+    renderNutritionInventory();
+}
+
+function renderNutritionInventory() {
+    const list = document.getElementById('nutritionList');
+    if (!list) return;
+
+    let items = [];
+    if (currentNutritionInvTab === 'supplies') {
+        items = state.inventory.supplies || [];
+    } else {
+        items = state.toxicItems || [];
+    }
+
+    if (items.length === 0) {
+        list.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Nessun elemento nello zaino.</div>`;
+        return;
+    }
+
+    list.innerHTML = items.map(item => {
+        const isSupply = currentNutritionInvTab === 'supplies';
+        const icon = isSupply ? (item.type === 'healthy' ? '🥗' : '📦') : '👿';
+        const clickAction = isSupply ? `toggleNutritionItem('${item.id}')` : `deleteToxicItem('${item.id}')`;
+        const btnIcon = isSupply ? (item.status === 'needed' ? '🛒' : '✅') : '🗑️';
+
+        return `
+            <div class="stat-card" style="padding:10px; display:flex; flex-direction:row; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">${icon}</span>
+                    <div style="text-align:left;">
+                        <div style="font-size:13px; font-weight:700;">${item.name}</div>
+                        ${item.status ? `<div style="font-size:10px; color:var(--text-muted);">${item.status === 'needed' ? 'Da comprare' : 'In dispensa'}</div>` : ''}
+                    </div>
+                </div>
+                <button class="btn-icon" onclick="${clickAction}" style="font-size:14px; background:var(--bg-secondary); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer;">
+                    ${btnIcon}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleNutritionItem(id) {
+    const item = state.inventory.supplies.find(i => i.id === id);
+    if (item) {
+        item.status = item.status === 'needed' ? 'in_stock' : 'needed';
+        saveState();
+        renderNutritionInventory();
+    }
+}
+
+function showHealthHistory() {
+    alert("Lo storico viene salvato automaticamente a mezzanotte. La visualizzazione grafica sarà disponibile a breve!");
+}
+
 // PWA & Onboarding
 window.openInstallModal = openInstallModal;
 window.closeInstallModal = closeInstallModal;
@@ -6923,12 +7046,12 @@ window.toggleDontShowInstall = toggleDontShowInstall;
 // Onboarding functions (private to module unless exposed)
 function shouldShowOnboarding(tabType) {
     // Check if user has ever created a task of this type
-    const onboardingKey = `questlife_onboarding_${tabType}`;
+    const onboardingKey = `questlife_onboarding_${tabType} `;
     return !localStorage.getItem(onboardingKey);
 }
 
 function markOnboardingComplete(tabType) {
-    localStorage.setItem(`questlife_onboarding_${tabType}`, 'true');
+    localStorage.setItem(`questlife_onboarding_${tabType} `, 'true');
 }
 
 function getOnboardingHTML(tabType) {
