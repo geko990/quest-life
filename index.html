@@ -55,7 +55,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
     <script src="js/theme-fix.js"></script>
-    <link rel="stylesheet" href="styles.css?v=2.8.16">
+    <link rel="stylesheet" href="styles.css?v=3.1.1">
 
 </head>
 
@@ -996,10 +996,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script type="module" src="app.js?v=3.1.0"></script>
+    <script src="app.js?v=3.1.1" type="module"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js?v=3.1.0')
+            navigator.serviceWorker.register('sw.js?v=3.1.1')
                 .then(() => console.log('Service Worker Registered'))
                 .catch((err) => console.log('SW Failed:', err));
         }
