@@ -4,11 +4,11 @@ console.log("APP.JS LOADED - v3.1.7");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.8';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.8';
-import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.8';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.8';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.8';
+const APP_VERSION = '3.1.9';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.9';
+import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.9';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.9';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.9';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
@@ -537,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh when app comes back to foreground (handles day change while app was in background)
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
+            checkHealthRollover(); // Ensure health saves on return
             const newDate = getGameDate();
             if (newDate !== viewedDate) {
                 viewedDate = newDate;
@@ -546,6 +547,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Check for day rollover every minute (foreground only)
+    setInterval(() => {
+        checkHealthRollover();
+        const newDate = getGameDate();
+        if (newDate !== viewedDate) {
+            console.log(`[RolloverCheck] Auto-rolling day while app is open: ${viewedDate} -> ${newDate}`);
+            viewedDate = newDate;
+            shiftProgressiveHabits();
+            sanitizeDailyCompletionLog(viewedDate);
+            renderAll();
+        }
+    }, 60000);
 
     // Initialize Immersive Effects
     setTimeout(initImmersiveEffects, 500);
@@ -7130,7 +7144,7 @@ function renderWeightMiniDetails() {
 
 
 function showHealthHistory() {
-    alert("Lo storico viene salvato automaticamente a mezzanotte. La visualizzazione grafica sarà disponibile a breve!");
+    alert("I dati vengono salvati a fine giornata (in base al tuo orario di inizio giorno). La visualizzazione grafica sarà disponibile a breve!");
 }
 
 // PWA & Onboarding
@@ -7245,3 +7259,22 @@ function showXpToast(message, icon = '✨') {
     }, 2500);
 }
 window.showXpToast = showXpToast;
+window.updateDayStartTime = updateDayStartTime;
+window.toggleSettingsGroup = toggleSettingsGroup;
+window.setWeekStart = setWeekStart;
+window.setTheme = setTheme;
+window.setMode = setMode;
+window.toggleThemeDropdown = toggleThemeDropdown;
+window.toggleColorDropdown = toggleColorDropdown;
+window.setPopupSetting = setPopupSetting;
+window.toggleAccordion = toggleAccordion;
+window.openModal = openModal;
+window.showHealthHistory = showHealthHistory;
+window.addWater = addWater;
+window.switchNutritionTab = switchNutritionTab;
+window.openHealthInput = openHealthInput;
+window.openWeightModal = openWeightModal;
+window.saveWeightDetails = saveWeightDetails;
+window.closeWeightModal = closeWeightModal;
+window.showDailyPlanner = showDailyPlanner;
+window.showChallengeCatalog = showChallengeCatalog;
