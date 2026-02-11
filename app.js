@@ -1,14 +1,14 @@
-console.log("APP.JS LOADED - v3.1.3");
+console.log("APP.JS LOADED - v3.1.4");
 /* ============================================
    QUEST LIFE - RPG Habit Tracker v2
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.3';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.3';
-import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.3';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.3';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.3';
+const APP_VERSION = '3.1.4';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.4';
+import { state, setState, updateState, loadState, saveState, resetAll } from './js/modules/state.js?v=3.1.4';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.4';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.4';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
@@ -4163,11 +4163,14 @@ function confirmDelete(type, id) {
         renderAll();
         return;
     } else if (type === 'food' || type === 'home') {
-        const itemIndex = list.findIndex(i => i.id === id);
-        if (itemIndex > -1) {
-            list.splice(itemIndex, 1);
-            saveState();
-            renderNutritionInventory();
+        const list = state.inventory[type];
+        if (list) {
+            const itemIndex = list.findIndex(i => i.id === id);
+            if (itemIndex > -1) {
+                list.splice(itemIndex, 1);
+                saveState();
+                renderNutritionInventory();
+            }
         }
         return;
     }
@@ -6942,10 +6945,17 @@ function saveInventoryItem() {
         // Remove from both lists first to handle type change
         let oldItem = state.inventory.food.find(i => i.id === editingItemId);
         if (oldItem) {
+            if (currentAddItemType === 'food') {
+                state.inventory.food = state.inventory.food.filter(i => i.id !== editingItemId);
+            }
+            if (currentAddItemType === 'home') {
+                state.inventory.home = state.inventory.home.filter(i => i.id !== editingItemId);
+            }
+            // Also need to handle type switching correctly if item moved from food to home or vice versa
+            // But the simple filter above works if we just filter both or check where it was.
+            // Actually, simplest is to filter both if we don't track origin.
             state.inventory.food = state.inventory.food.filter(i => i.id !== editingItemId);
-        } else {
-            oldItem = state.inventory.home.find(i => i.id === editingItemId);
-            if (oldItem) state.inventory.home = state.inventory.home.filter(i => i.id !== editingItemId);
+            state.inventory.home = state.inventory.home.filter(i => i.id !== editingItemId);
         }
 
         // Create updated item
@@ -6956,11 +6966,13 @@ function saveInventoryItem() {
             status: oldItem ? oldItem.status : 'needed',
             type: currentAddItemType
         };
-        list.push(newItem);
+
+        // Push to the CORRECT (potentially new) list
+        state.inventory[currentAddItemType].push(newItem);
 
     } else {
         // New Item
-        list.push({
+        state.inventory[currentAddItemType].push({
             id: generateId(currentAddItemType),
             name: name,
             emoji: emoji || null,
