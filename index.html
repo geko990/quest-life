@@ -186,119 +186,184 @@
 
             <!-- HOME Section -->
             <section id="section-home" class="section active">
-                <div class="character-sheet">
-                    <!-- Dashboard Salute (MyFitnessPal Style) -->
-                    <div class="health-dashboard">
-                        <!-- Calorie Card -->
-                        <div class="health-card calories-card">
-                            <div class="card-title">Calorie</div>
-                            <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
-
-                            <div class="calories-main">
-                                <div class="ring-container">
-                                    <svg width="140" height="140" viewBox="0 0 140 140">
-                                        <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
-                                            stroke-width="10"></circle>
-                                        <circle id="calorieRing" class="ring-fill" cx="70" cy="70" r="60"
-                                            fill="transparent" stroke-width="10" stroke-dasharray="376.99"
-                                            stroke-dashoffset="376.99" stroke-linecap="round"></circle>
-                                    </svg>
-                                    <div class="ring-content">
-                                        <span id="caloriesRemaining" class="remaining-value">1600</span>
-                                        <span class="remaining-label">Rimanenti</span>
-                                    </div>
-                                </div>
-
-                                <div class="calories-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-icon">🚩</span>
-                                        <div class="stat-info">
-                                            <div class="stat-label">Obiettivo base</div>
-                                            <div id="calorieGoal" class="stat-value">1600</div>
-                                        </div>
-                                    </div>
-                                    <div class="stat-item" onclick="openHealthInput('consumed')">
-                                        <span class="stat-icon" style="color: #3b82f6;">🍴</span>
-                                        <div class="stat-info">
-                                            <div class="stat-label">Alimenti</div>
-                                            <div id="caloriesConsumed" class="stat-value">0</div>
-                                        </div>
-                                    </div>
-                                    <div class="stat-item" onclick="openHealthInput('burned')">
-                                        <span class="stat-icon" style="color: #f97316;">🔥</span>
-                                        <div class="stat-info">
-                                            <div class="stat-label">Esercizi</div>
-                                            <div id="caloriesBurned" class="stat-value">0</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- NUTRIZIONE DRAWER (Hidden above scroll) -->
+                <div class="nutrition-drawer" id="homeNutritionDrawer">
+                    <div class="home-tabs-container">
+                        <div class="home-tabs">
+                            <button class="home-tab active" id="tab-home-status" onclick="switchHomeTab('status')">
+                                <span class="tab-icon">👤</span> Eroe
+                            </button>
+                            <button class="home-tab" id="tab-home-nutrition" onclick="switchHomeTab('nutrition')">
+                                <span class="tab-icon">🍎</span> Nutrizione
+                            </button>
                         </div>
+                    </div>
 
-                        <div class="health-row">
-                            <!-- Step Card -->
-                            <div class="health-card steps-card" onclick="openHealthInput('steps')">
-                                <div class="card-title">Passi</div>
-                                <div class="steps-main">
-                                    <span class="steps-icon">👟</span>
-                                    <span id="stepsCurrent" class="steps-value">0</span>
+                    <!-- VIEW: NUTRITION (Health + Food + Inventory) -->
+                    <div id="view-home-nutrition" class="home-view">
+                        <div class="nutrition-container">
+                            <!-- Dashboard Salute -->
+                            <div class="health-dashboard" style="margin-top:0;">
+                                <!-- Calorie Card -->
+                                <div class="health-card calories-card">
+                                    <div class="card-title">Calorie</div>
+                                    <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
+
+                                    <div class="calories-main">
+                                        <div class="ring-container">
+                                            <svg width="140" height="140" viewBox="0 0 140 140">
+                                                <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
+                                                    stroke-width="10"></circle>
+                                                <circle id="calorieRing" class="ring-fill" cx="70" cy="70" r="60"
+                                                    fill="transparent" stroke-width="10" stroke-dasharray="376.99"
+                                                    stroke-dashoffset="376.99" stroke-linecap="round"></circle>
+                                            </svg>
+                                            <div class="ring-content">
+                                                <span id="caloriesRemaining" class="remaining-value">1600</span>
+                                                <span class="remaining-label">Rimanenti</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="calories-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-icon">🚩</span>
+                                                <div class="stat-info">
+                                                    <div class="stat-label">Obiettivo base</div>
+                                                    <div id="calorieGoal" class="stat-value">1600</div>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item" onclick="openHealthInput('consumed')">
+                                                <span class="stat-icon" style="color: #3b82f6;">🍴</span>
+                                                <div class="stat-info">
+                                                    <div class="stat-label">Alimenti</div>
+                                                    <div id="caloriesConsumed" class="stat-value">0</div>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item" onclick="openHealthInput('burned')">
+                                                <span class="stat-icon" style="color: #f97316;">🔥</span>
+                                                <div class="stat-info">
+                                                    <div class="stat-label">Esercizi</div>
+                                                    <div id="caloriesBurned" class="stat-value">0</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="steps-goal">Obiettivo: <span id="stepsGoalText">10.000</span> passi</div>
-                                <div class="progress-bar-bg">
-                                    <div id="stepsProgressBar" class="progress-bar-fill"></div>
+
+                                <div class="health-row">
+                                    <!-- Step Card -->
+                                    <div class="health-card steps-card" onclick="openHealthInput('steps')">
+                                        <div class="card-title">Passi</div>
+                                        <div class="steps-main">
+                                            <span class="steps-icon">👟</span>
+                                            <span id="stepsCurrent" class="steps-value">0</span>
+                                        </div>
+                                        <div class="steps-goal">Obiettivo: <span id="stepsGoalText">10.000</span></div>
+                                        <div class="progress-bar-bg">
+                                            <div id="stepsProgressBar" class="progress-bar-fill"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Water Card -->
+                                    <div class="health-card water-card">
+                                        <div class="card-title">Acqua</div>
+                                        <div class="water-main">
+                                            <div id="waterGrid" class="water-grid"></div>
+                                            <div class="water-info">
+                                                <span id="waterCurrentText">0</span> / <span id="waterGoalText">8</span>
+                                            </div>
+                                        </div>
+                                        <div class="water-controls">
+                                            <button class="water-btn" onclick="addWater(-1)">-</button>
+                                            <button class="water-btn plus" onclick="addWater(1)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="health-row">
+                                    <!-- Weight Card -->
+                                    <div class="health-card weight-card" onclick="openHealthInput('weight')">
+                                        <div class="card-title">Peso</div>
+                                        <div class="steps-main">
+                                            <span class="steps-icon">⚖️</span>
+                                            <span id="weightCurrent" class="steps-value">75</span>
+                                            <span class="unit">kg</span>
+                                        </div>
+                                        <div class="steps-goal">Obiettivo: <span id="weightTargetText">70</span></div>
+                                        <div class="progress-bar-bg">
+                                            <div id="weightProgressBar" class="progress-bar-fill"
+                                                style="background: #ec4899;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- History/Stats Card -->
+                                    <div class="health-card history-card" onclick="showHealthHistory()">
+                                        <div class="card-title">Andamento</div>
+                                        <div class="history-main">
+                                            <span class="history-icon" style="font-size: 24px;">📊</span>
+                                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+                                                Vedi medie e storico
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Weight Card -->
-                            <div class="health-card steps-card" onclick="openHealthInput('weight')">
-                                <div class="card-title">Peso</div>
-                                <div class="steps-main">
-                                    <span class="steps-icon">⚖️</span>
-                                    <span id="weightCurrent" class="steps-value">75</span>
-                                    <span class="unit">kg</span>
+                            <!-- Zaino Integration -->
+                            <div class="nutrition-inventory">
+                                <div class="section-header" style="padding: 0 10px; margin-bottom: 10px;">
+                                    <h3 style="font-family: var(--font-header);">🎒 Zaino</h3>
+                                    <button class="add-btn-circle" onclick="openInventory()">⚙️</button>
                                 </div>
-                                <div class="steps-goal">Obiettivo: <span id="weightTargetText">70</span> kg</div>
-                                <div class="progress-bar-bg">
-                                    <div id="weightProgressBar" class="progress-bar-fill" style="background: #ec4899;">
-                                    </div>
+                                <div class="inventory-tabs">
+                                    <button class="inv-tab active" id="nutrition-supplies-btn"
+                                        onclick="switchNutritionTab('supplies')">Sani</button>
+                                    <button class="inv-tab" id="nutrition-toxic-btn"
+                                        onclick="switchNutritionTab('toxic')">Tossici</button>
+                                </div>
+                                <div id="nutritionList" class="stats-grid" style="padding: 10px;">
+                                    <!-- Popolato dinamicamente -->
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Stats Radar Chart -->
+                </div>
 
-                    <!-- Stats Radar Chart -->
-                    <div class="stats-chart-container">
-                        <canvas id="statsRadar"></canvas>
-                    </div>
+                <!-- VIEW: STATUS (Hero Info) -->
+                <div id="view-home-status" class="home-view active">
+                    <div class="character-sheet">
+                        <!-- Stats Radar Chart -->
+                        <div class="stats-chart-container">
+                            <canvas id="statsRadar"></canvas>
+                        </div>
 
-                    <!-- Attributes Accordion -->
-                    <div class="accordion">
-                        <div class="accordion-header">
-                            <span onclick="toggleAccordion('attributes')">⚔️ Attributi</span>
-                            <div class="accordion-actions">
-                                <button class="add-btn-circle" onclick="openModal('attribute')">+</button>
-                                <span class="accordion-arrow" id="arrow-attributes"
-                                    onclick="toggleAccordion('attributes')">▼</span>
+                        <!-- Attributes Accordion -->
+                        <div class="accordion">
+                            <div class="accordion-header">
+                                <span onclick="toggleAccordion('attributes')">⚔️ Attributi</span>
+                                <div class="accordion-actions">
+                                    <button class="add-btn-circle" onclick="openModal('attribute')">+</button>
+                                    <span class="accordion-arrow" id="arrow-attributes"
+                                        onclick="toggleAccordion('attributes')">▼</span>
+                                </div>
+                            </div>
+                            <div class="accordion-content expanded" id="content-attributes">
+                                <div class="stats-grid" id="attributesList"></div>
                             </div>
                         </div>
-                        <div class="accordion-content expanded" id="content-attributes">
-                            <div class="stats-grid" id="attributesList"></div>
-                        </div>
-                    </div>
 
-                    <!-- Abilities Accordion -->
-                    <div class="accordion">
-                        <div class="accordion-header">
-                            <span onclick="toggleAccordion('abilities')">✨ Abilità</span>
-                            <div class="accordion-actions">
-                                <button class="add-btn-circle" onclick="openModal('ability')">+</button>
-                                <span class="accordion-arrow" id="arrow-abilities"
-                                    onclick="toggleAccordion('abilities')">▼</span>
+                        <!-- Abilities Accordion -->
+                        <div class="accordion">
+                            <div class="accordion-header">
+                                <span onclick="toggleAccordion('abilities')">✨ Abilità</span>
+                                <div class="accordion-actions">
+                                    <button class="add-btn-circle" onclick="openModal('ability')">+</button>
+                                    <span class="accordion-arrow" id="arrow-abilities"
+                                        onclick="toggleAccordion('abilities')">▼</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="accordion-content expanded" id="content-abilities">
-                            <div class="stats-grid" id="abilitiesList"></div>
+                            <div class="accordion-content expanded" id="content-abilities">
+                                <div class="stats-grid" id="abilitiesList"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
