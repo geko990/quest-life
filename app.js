@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.27';
+const APP_VERSION = '3.1.28';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -5071,11 +5071,16 @@ function openTaskPicker(slotIndex) {
 
     if (!list || !pickerModal) return;
 
+    // Build exclusion list from already selected tasks in the planner
+    const selectedIds = Array.from(document.querySelectorAll('.slot-name'))
+        .map(input => input.dataset.sourceId)
+        .filter(id => id);
+
     let items = [];
     // Active Missions (OneShots)
     if (state.oneshots) {
         state.oneshots.forEach(os => {
-            if (!os.completed) {
+            if (!os.completed && !selectedIds.includes(os.id)) {
                 items.push({ name: os.name, icon: '💥', id: os.id, type: 'oneshot', typeLabel: 'Missione' });
             }
         });
@@ -5084,24 +5089,24 @@ function openTaskPicker(slotIndex) {
     if (state.quests) {
         state.quests.forEach(q => {
             if (!q.completed && q.subquests) {
-                q.subquests.forEach(sub => {
-                    if (!sub.completed) {
-                        items.push({
-                            name: sub.name,
-                            icon: '🏆',
-                            id: sub.id,
-                            type: 'quest',
-                            questId: q.id,
-                            typeLabel: `Campagna: ${q.name}`
-                        });
-                    }
-                });
+                // Find only the FIRST uncompleted subtask (the "current" daily challenge)
+                const nextSub = q.subquests.find(sub => !sub.completed);
+                if (nextSub && !selectedIds.includes(nextSub.id)) {
+                    items.push({
+                        name: nextSub.name,
+                        icon: '🏆',
+                        id: nextSub.id,
+                        type: 'quest',
+                        questId: q.id,
+                        typeLabel: `Campagna: ${q.name}`
+                    });
+                }
             }
         });
     }
 
     if (items.length === 0) {
-        list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Nessuna missione o campagna attiva.</div>';
+        list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">Tutte le missioni disponibili sono già state caricate o non ce ne sono di attive.</div>`;
     } else {
         list.innerHTML = items.map(item => `
             <div class="picker-item" onclick="useQuickPick('${item.name.replace(/'/g, "\\'")}', '${item.id}', '${item.type}', '${item.questId || ''}')">
