@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.20';
+const APP_VERSION = '3.1.21';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -5023,42 +5023,7 @@ function showDailyPlanner() {
     // Clear previous inputs
     document.querySelectorAll('.slot-name').forEach(input => input.value = '');
 
-    // --- QUICK PICK POPULATION ---
-    const quickPickList = document.getElementById('quickPickList');
-    if (quickPickList) {
-        let items = [];
-        // Active OneShots
-        if (state.oneshots) {
-            state.oneshots.forEach(os => {
-                if (!os.completed) {
-                    items.push({ name: os.name, icon: '💥', id: os.id, type: 'oneshot' });
-                }
-            });
-        }
-        // Quest subtasks
-        if (state.quests) {
-            state.quests.forEach(q => {
-                if (!q.completed && q.subquests) {
-                    q.subquests.forEach(sub => {
-                        if (!sub.completed) {
-                            items.push({ name: sub.name, icon: '🎯', id: sub.id, type: 'quest', questId: q.id });
-                        }
-                    });
-                }
-            });
-        }
-
-        if (items.length === 0) {
-            quickPickList.innerHTML = '<span style="font-size:11px; color:var(--text-muted); padding: 4px;">Nessun suggerimento disponibile.</span>';
-        } else {
-            // Take max 12 items
-            quickPickList.innerHTML = items.slice(0, 12).map(item =>
-                `<div class="quick-pick-item" onclick="useQuickPick('${item.name.replace(/'/g, "\\'")}', '${item.id}', '${item.type}', '${item.questId || ''}')">
-                    <span>${item.icon}</span> ${item.name}
-                </div>`
-            ).join('');
-        }
-    }
+    // --- QUICK PICK POPULATION REMOVED (Now using picker buttons) ---
 
     // Initialize star selectors (only in Daily Planner modal)
     const plannerModal = document.getElementById('dailyPlannerModal');
@@ -5096,23 +5061,87 @@ function showDailyPlanner() {
     document.getElementById('dailyPlannerOverlay')?.classList.remove('hidden');
 }
 
+let currentTargetSlot = null;
+
+function openTaskPicker(slotIndex) {
+    currentTargetSlot = slotIndex;
+    const pickerOverlay = document.getElementById('taskPickerOverlay');
+    const pickerModal = document.getElementById('taskPickerModal');
+    const list = document.getElementById('taskPickerList');
+
+    if (!list || !pickerModal) return;
+
+    let items = [];
+    // Active Missions (OneShots)
+    if (state.oneshots) {
+        state.oneshots.forEach(os => {
+            if (!os.completed) {
+                items.push({ name: os.name, icon: '💥', id: os.id, type: 'oneshot', typeLabel: 'Missione' });
+            }
+        });
+    }
+    // Campagne (Quest subtasks)
+    if (state.quests) {
+        state.quests.forEach(q => {
+            if (!q.completed && q.subquests) {
+                q.subquests.forEach(sub => {
+                    if (!sub.completed) {
+                        items.push({
+                            name: sub.name,
+                            icon: '🏆',
+                            id: sub.id,
+                            type: 'quest',
+                            questId: q.id,
+                            typeLabel: `Campagna: ${q.name}`
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    if (items.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Nessuna missione o campagna attiva.</div>';
+    } else {
+        list.innerHTML = items.map(item => `
+            <div class="picker-item" onclick="useQuickPick('${item.name.replace(/'/g, "\\'")}', '${item.id}', '${item.type}', '${item.questId || ''}')">
+                <div class="picker-item-icon">${item.icon}</div>
+                <div class="picker-item-info">
+                    <div class="picker-item-name">${item.name}</div>
+                    <div class="picker-item-type">${item.typeLabel}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    pickerOverlay?.classList.remove('hidden');
+    pickerModal?.classList.remove('hidden');
+    pickerModal.classList.add('active'); // Ensure slide up
+}
+
+function closeTaskPicker() {
+    document.getElementById('taskPickerOverlay')?.classList.add('hidden');
+    document.getElementById('taskPickerModal')?.classList.add('hidden');
+    document.getElementById('taskPickerModal')?.classList.remove('active');
+}
+
 function useQuickPick(name, id, type, questId) {
     const inputs = document.querySelectorAll('.slot-name');
-    for (let input of inputs) {
-        if (!input.value) {
-            input.value = name;
-            input.dataset.sourceName = name; // Store name to verify match
-            input.dataset.sourceId = id;
-            input.dataset.sourceType = type;
-            if (questId) input.dataset.sourceQuestId = questId;
+    const targetInput = inputs[currentTargetSlot];
 
-            input.focus();
-            // Visual feedback
-            input.style.backgroundColor = 'var(--bg-secondary)';
-            setTimeout(() => input.style.backgroundColor = '', 500);
-            break;
-        }
+    if (targetInput) {
+        targetInput.value = name;
+        targetInput.dataset.sourceName = name;
+        targetInput.dataset.sourceId = id;
+        targetInput.dataset.sourceType = type;
+        if (questId) targetInput.dataset.sourceQuestId = questId;
+
+        targetInput.focus();
+        targetInput.style.backgroundColor = 'var(--bg-secondary)';
+        setTimeout(() => targetInput.style.backgroundColor = '', 500);
     }
+
+    closeTaskPicker();
 }
 
 function addNewPlannerSlot() {
@@ -5125,7 +5154,10 @@ function addNewPlannerSlot() {
     newSlot.dataset.slot = 'extra';
     newSlot.innerHTML = `
         <div class="slot-header">⚔️ Slot Extra ${slotCount - 3}</div>
-        <input type="text" class="slot-name" placeholder="Es: Nuova impresa...">
+        <div class="slot-input-wrapper" style="display:flex; gap:8px;">
+            <input type="text" class="slot-name" placeholder="Es: Nuova impresa..." style="flex:1;">
+            <button class="pick-task-btn" onclick="openTaskPicker(${slotCount})" title="Scegli dalle Missioni/Campagne">💥</button>
+        </div>
         <div class="slot-options">
             <div class="star-selector" data-stars="1">
                 <span class="star" data-value="1">⭐</span>

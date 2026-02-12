@@ -4956,8 +4956,68 @@ textarea {
     padding: 10px;
     border-radius: 8px;
     font-size: 14px;
-    margin-bottom: 8px;
     box-sizing: border-box;
+}
+
+.slot-input-wrapper {
+    margin-bottom: 8px;
+}
+
+.pick-task-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 0 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pick-task-btn:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-primary);
+    transform: scale(1.05);
+}
+
+.picker-item {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.picker-item:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-primary);
+    transform: translateX(5px);
+}
+
+.picker-item-icon {
+    font-size: 20px;
+}
+
+.picker-item-info {
+    flex: 1;
+}
+
+.picker-item-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.picker-item-type {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-muted);
 }
 
 .slot-name::placeholder {
