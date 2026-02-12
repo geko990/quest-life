@@ -4,11 +4,11 @@ console.log("APP.JS LOADED - v3.1.7");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.10';
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.10';
-import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.10';
-import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.10';
-import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.10';
+const APP_VERSION = '3.1.11';
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.11';
+import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.11';
+import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.11';
+import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.1.11';
 
 // Expose globals for HTML event handlers and legacy code
 window.state = state;
@@ -197,6 +197,40 @@ function rebuildStreaksFromLog() {
         }
     });
 
+    // --- NEW: Global Streak Repair ---
+    let repairGlobal = 0;
+    let checkDateObj = getGameDateObj();
+    const THRESHOLD = 70;
+    let lastActionDateRepair = null;
+
+    // Scan backwards max 1000 days
+    for (let i = 0; i < 1000; i++) {
+        const dateStr = formatISO(checkDateObj);
+        const completion = getCompletionForDate(dateStr);
+
+        if (completion >= THRESHOLD) {
+            repairGlobal++;
+            if (!lastActionDateRepair) lastActionDateRepair = dateStr;
+            checkDateObj.setDate(checkDateObj.getDate() - 1);
+        } else {
+            // If i=0 (today), the streak is valid as of yesterday.
+            // We just skip today's check and continue.
+            if (i === 0) {
+                checkDateObj.setDate(checkDateObj.getDate() - 1);
+                continue;
+            }
+            // Gap found! Streak stops here.
+            break;
+        }
+    }
+
+    if (state.player.globalStreak !== repairGlobal) {
+        console.log(`[StreakRepair] Global Streak Fixed: ${state.player.globalStreak} -> ${repairGlobal}`);
+        state.player.globalStreak = repairGlobal;
+        if (lastActionDateRepair) state.player.lastActionDate = lastActionDateRepair;
+        fixed++;
+    }
+
     if (fixed > 0) {
         saveState();
         renderAll();
@@ -213,7 +247,7 @@ window.rebuildStreaksFromLog = rebuildStreaksFromLog;
 function rebuildStreaksUI() {
     const fixed = rebuildStreaksFromLog();
     if (fixed > 0) {
-        alert(`✅ Riparate ${fixed} streak!\n\nLe streak sono state ricalcolate basandosi sullo storico dei completamenti.`);
+        alert(`✅ Riparate ${fixed} streak!\n\nLe streak (inclusa quella Generale: ${state.player.globalStreak}) sono state ricalcolate basandosi sullo storico.`);
     } else {
         alert('✅ Tutte le streak sono già corrette!\n\nNessuna modifica necessaria.');
     }
