@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.28';
+export const APP_VERSION = '3.1.30';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -23,6 +23,26 @@ window.XP_CONFIG = XP_CONFIG;
 window.TITLES = TITLES;
 window.DAY_NAMES = DAY_NAMES;
 window.CHALLENGE_TEMPLATES = CHALLENGE_TEMPLATES;
+
+// Navigation & Modals
+window.switchSection = switchSection;
+window.openHealthInput = openHealthInput;
+window.showDailyPlanner = showDailyPlanner;
+window.openMealsModal = openMealsModal;
+window.openExerciseLogModal = openExerciseLogModal;
+window.openExerciseManager = openExerciseManager;
+window.confirmManualIntake = confirmManualIntake;
+window.confirmNewGoal = confirmNewGoal;
+window.confirmManualBurn = confirmManualBurn;
+window.submitHealthInput = submitHealthInput;
+window.closeHealthInput = closeHealthInput;
+window.openHealthInput_WeightDetails = openHealthInput_WeightDetails;
+window.useQuickPick = useQuickPick;
+window.openTaskPicker = openTaskPicker;
+window.closeTaskPicker = closeTaskPicker;
+window.addNewPlannerSlot = addNewPlannerSlot;
+window.finalizeDailyPlan = finalizeDailyPlan;
+window.closeDailyPlanner = closeDailyPlanner;
 
 // Wrapper for linkDatabaseFile to pass state
 window.linkDatabaseFile = async function () {
@@ -1171,6 +1191,7 @@ function updateBubblePosition(navItem) {
 }
 
 function switchSection(sectionName) {
+    if (typeof window.switchSection !== 'function') window.switchSection = switchSection;
     document.querySelectorAll('.nav-item').forEach(item => {
         const isActive = item.dataset.section === sectionName;
         item.classList.toggle('active', isActive);
@@ -6633,6 +6654,25 @@ function renderHealthDashboard() {
         stepsBar.style.width = `${percent}%`;
     }
 
+    // Update Proteins (New v3.1.29)
+    if (!state.health.proteins) state.health.proteins = { goal: 0, consumed: 0 };
+    // Auto-calculate goal if not manually set
+    if (!state.health.proteins.goal || state.health.proteins.goal === 0) {
+        state.health.proteins.goal = Math.round((state.health.weight?.current || 75) * 1.5);
+    }
+
+    const protCurrentValueEl = document.getElementById('proteinsCurrentValue');
+    if (protCurrentValueEl) protCurrentValueEl.textContent = Math.round(state.health.proteins.consumed);
+
+    const protGoalTextEl = document.getElementById('proteinsGoalText');
+    if (protGoalTextEl) protGoalTextEl.textContent = state.health.proteins.goal;
+
+    const protBar = document.getElementById('proteinsProgressBar');
+    if (protBar) {
+        const percent = Math.min(100, (state.health.proteins.consumed / state.health.proteins.goal) * 100);
+        protBar.style.width = `${percent}%`;
+    }
+
     // Update Weight
     const weightCurrentEl = document.getElementById('weightCurrent');
     if (weightCurrentEl) weightCurrentEl.textContent = health.weight.current;
@@ -6644,8 +6684,20 @@ function renderHealthDashboard() {
         weightBar.style.width = `${percent}%`;
     }
 
-    // Render Water
-    renderWaterTracker();
+    // Render Water (Modified v3.1.30 for unified look)
+    if (!state.health.water) state.health.water = { goal: 2, consumed: 0 };
+
+    const waterCurrentEl = document.getElementById('waterCurrentValue');
+    if (waterCurrentEl) waterCurrentEl.textContent = state.health.water.consumed.toFixed(2).replace('.00', '');
+
+    const waterGoalEl = document.getElementById('waterGoalText');
+    if (waterGoalEl) waterGoalEl.textContent = state.health.water.goal;
+
+    const waterBar = document.getElementById('waterProgressBar');
+    if (waterBar) {
+        const percent = Math.min(100, (state.health.water.consumed / state.health.water.goal) * 100);
+        waterBar.style.width = `${percent}%`;
+    }
 
     // v3.0.0 Weight Details
     renderWeightMiniDetails();
@@ -6753,6 +6805,36 @@ function openHealthInput(type) {
                 </div>
             </div>
         `;
+    } else if (type === 'protein_goal') {
+        title.textContent = 'Obiettivo Proteine';
+        const currentGoal = state.health.proteins?.goal || Math.round(state.health.weight.current * 1.5);
+        html = `
+            <div class="meals-input-group" style="flex-direction:column; gap:12px;">
+                <label style="font-size:12px; color:var(--text-muted); text-align:center;">Obiettivo Giornaliero (g):</label>
+                <input type="number" id="newProteinGoal" value="${currentGoal}" style="text-align:center; font-size:20px; font-weight:bold;">
+                <p style="font-size:10px; color:var(--text-muted); text-align:center;">Consigliato: 1.5g per kg di peso (${Math.round(state.health.weight.current * 1.5)}g)</p>
+                
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
+                    <button class="btn-primary" onclick="confirmNewGoal('proteins')" style="flex:2;">Salva</button>
+                </div>
+            </div>
+        `;
+    } else if (type === 'water_goal') {
+        title.textContent = 'Obiettivo Acqua';
+        const currentGoal = state.health.water?.goal || 2;
+        html = `
+            <div class="meals-input-group" style="flex-direction:column; gap:12px;">
+                <label style="font-size:12px; color:var(--text-muted); text-align:center;">Obiettivo Giornaliero (Litri):</label>
+                <input type="number" id="newWaterGoal" step="0.25" value="${currentGoal}" style="text-align:center; font-size:20px; font-weight:bold;">
+                <p style="font-size:10px; color:var(--text-muted); text-align:center;">Consigliato: Almeno 2 litri al giorno</p>
+                
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
+                    <button class="btn-primary" onclick="confirmNewGoal('water')" style="flex:2;">Salva</button>
+                </div>
+            </div>
+        `;
     } else if (type === 'weight') {
         title.textContent = 'Aggiorna Peso';
         html = `
@@ -6827,6 +6909,12 @@ window.confirmNewGoal = function (type) {
     if (type === 'calories') {
         const goal = parseFloat(document.getElementById('newCalorieGoal').value);
         if (!isNaN(goal)) state.health.calories.goal = goal;
+    } else if (type === 'proteins') {
+        const goal = parseFloat(document.getElementById('newProteinGoal').value);
+        if (!isNaN(goal)) {
+            if (!state.health.proteins) state.health.proteins = { goal: 0, consumed: 0 };
+            state.health.proteins.goal = goal;
+        }
     }
     saveState();
     closeHealthInput();
@@ -7126,30 +7214,6 @@ window.closeAddItemModal = closeAddItemModal;
 
 // switchHomeTab logic removed in v3.1.12
 
-function renderWaterTracker() {
-    const waterGrid = document.getElementById('waterGrid');
-    const currentText = document.getElementById('waterCurrentText');
-    const goalText = document.getElementById('waterGoalText');
-
-    if (!waterGrid || !state.health.water) return;
-
-    const { consumed, goal } = state.health.water;
-
-    if (currentText) currentText.textContent = consumed;
-    if (goalText) {
-        goalText.textContent = goal;
-        goalText.style.cursor = 'pointer';
-        goalText.onclick = () => setWaterGoal();
-    }
-
-    let html = '';
-    const displayCount = Math.max(goal, consumed);
-    for (let i = 1; i <= displayCount; i++) {
-        const isFilled = i <= consumed;
-        html += `<div class="water-glass ${isFilled ? 'filled' : ''}">${isFilled ? '💧' : '🥛'}</div>`;
-    }
-    waterGrid.innerHTML = html;
-}
 
 function setWaterGoal() {
     const current = state.health.water.goal || 8;
@@ -7162,11 +7226,12 @@ function setWaterGoal() {
     }
 }
 
-function addWater(amount) {
-    if (!state.health.water) state.health.water = { goal: 8, consumed: 0 };
+function addWater(amount = 0.25) {
+    if (!state.health.water) state.health.water = { goal: 2, consumed: 0 };
     state.health.water.consumed = Math.max(0, state.health.water.consumed + amount);
     saveState();
-    renderWaterTracker();
+    renderHealthDashboard();
+    if (amount > 0) showXpToast(`+${amount}L Acqua!`, '🥛');
 }
 
 function addPresetHealth(presetId) {
@@ -7781,24 +7846,6 @@ function showXpToast(message, icon = '✨') {
         setTimeout(() => toast.remove(), 300);
     }, 2500);
 }
-window.showXpToast = showXpToast;
-window.updateDayStartTime = updateDayStartTime;
-window.toggleSettingsGroup = toggleSettingsGroup;
-window.setWeekStart = setWeekStart;
-window.setTheme = setTheme;
-window.setMode = setMode;
-window.toggleThemeDropdown = toggleThemeDropdown;
-window.toggleColorDropdown = toggleColorDropdown;
-window.setPopupSetting = setPopupSetting;
-window.toggleAccordion = toggleAccordion;
-window.openModal = openModal;
-window.showHealthHistory = showHealthHistory;
-window.addWater = addWater;
-window.switchNutritionTab = switchNutritionTab;
-window.openHealthInput = openHealthInput;
-window.openWeightModal = openWeightModal;
-window.saveWeightDetails = saveWeightDetails;
-window.closeWeightModal = closeWeightModal;
 window.showDailyPlanner = showDailyPlanner;
 window.openTaskPicker = openTaskPicker;
 window.closeTaskPicker = closeTaskPicker;
