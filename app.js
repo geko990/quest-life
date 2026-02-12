@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.18';
+const APP_VERSION = '3.1.19';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -2456,7 +2456,11 @@ function completeOneshot(oneshotId) {
     addMonthlyPoints(2); // OneShots give 2 points
     logCompletion('oneshots', oneshot.id);
 
-
+    // LINKED TASK COMPLETION
+    if (oneshot.sourceTaskId && oneshot.sourceTaskType === 'quest' && oneshot.sourceQuestId) {
+        // Find quest and mark subtask as done
+        toggleSubquest(oneshot.sourceQuestId, oneshot.sourceTaskId, true);
+    }
 
     // Show the actual XP gained (including bonuses) in the popup
     const popupXp = xp;
@@ -2470,6 +2474,7 @@ function completeOneshot(oneshotId) {
 
     saveState();
     renderOneshots();
+    renderQuests(); // Update quest progress if linked
     renderCalendar();
 }
 
@@ -5026,17 +5031,17 @@ function showDailyPlanner() {
         if (state.oneshots) {
             state.oneshots.forEach(os => {
                 if (!os.completed) {
-                    items.push({ name: os.name, icon: '💥' });
+                    items.push({ name: os.name, icon: '💥', id: os.id, type: 'oneshot' });
                 }
             });
         }
         // Quest subtasks
         if (state.quests) {
             state.quests.forEach(q => {
-                if (!q.completed && q.tasks) {
-                    q.tasks.forEach(task => {
-                        if (!task.completed) {
-                            items.push({ name: task.name, icon: '🎯' });
+                if (!q.completed && q.subquests) {
+                    q.subquests.forEach(sub => {
+                        if (!sub.completed) {
+                            items.push({ name: sub.name, icon: '🎯', id: sub.id, type: 'quest', questId: q.id });
                         }
                     });
                 }
@@ -5048,7 +5053,7 @@ function showDailyPlanner() {
         } else {
             // Take max 12 items
             quickPickList.innerHTML = items.slice(0, 12).map(item =>
-                `<div class="quick-pick-item" onclick="useQuickPick('${item.name.replace(/'/g, "\\'")}')">
+                `<div class="quick-pick-item" onclick="useQuickPick('${item.name.replace(/'/g, "\\'")}', '${item.id}', '${item.type}', '${item.questId || ''}')">
                     <span>${item.icon}</span> ${item.name}
                 </div>`
             ).join('');
@@ -5091,11 +5096,16 @@ function showDailyPlanner() {
     document.getElementById('dailyPlannerOverlay')?.classList.remove('hidden');
 }
 
-function useQuickPick(name) {
+function useQuickPick(name, id, type, questId) {
     const inputs = document.querySelectorAll('.slot-name');
     for (let input of inputs) {
         if (!input.value) {
             input.value = name;
+            input.dataset.sourceName = name; // Store name to verify match
+            input.dataset.sourceId = id;
+            input.dataset.sourceType = type;
+            if (questId) input.dataset.sourceQuestId = questId;
+
             input.focus();
             // Visual feedback
             input.style.backgroundColor = 'var(--bg-secondary)';
@@ -5175,13 +5185,35 @@ function saveDailyPlan() {
     };
 
     slots.forEach((slot, index) => {
-        const name = slot.querySelector('.slot-name')?.value.trim();
+        const input = slot.querySelector('.slot-name');
+        const name = input?.value.trim();
         if (!name) return; // Skip empty slots
 
         const slotType = slot.dataset.slot;
         const stars = parseInt(slot.querySelector('.star-selector')?.dataset.stars) || 3;
         const statId = slot.querySelector('.slot-stat')?.value || 'int';
         const icon = slotIcons[slotType] || '⚔️';
+
+        const sourceId = input.dataset.sourceId;
+        const sourceType = input.dataset.sourceType;
+        const sourceQuestId = input.dataset.sourceQuestId;
+        const sourceName = input.dataset.sourceName;
+
+        // Verify that the user haven't changed the text manually after quick-pick
+        const isLinked = sourceId && sourceType && (name === sourceName);
+
+        // If it's an existing OneShot, we don't create a new one, we just mark it as fromDailyPlan
+        if (isLinked && sourceType === 'oneshot') {
+            const existingOs = state.oneshots.find(o => o.id === sourceId);
+            if (existingOs) {
+                existingOs.fromDailyPlan = true;
+                existingOs.dailyPlanDate = today;
+                // Maybe give it the stars from the planner?
+                existingOs.stars = stars;
+                existingOs.primaryStatId = statId;
+                return;
+            }
+        }
 
         // Create One Shot with daily plan flag
         const oneshot = {
@@ -5194,7 +5226,10 @@ function saveDailyPlan() {
             completed: false,
             locked: false,
             fromDailyPlan: true,
-            dailyPlanDate: today
+            dailyPlanDate: today,
+            sourceTaskId: isLinked ? sourceId : null,
+            sourceTaskType: isLinked ? sourceType : null,
+            sourceQuestId: isLinked ? sourceQuestId : null
         };
 
         state.oneshots.unshift(oneshot);
