@@ -6777,7 +6777,6 @@ window.renderHealthDashboard = renderHealthDashboard;
 window.openHealthInput = openHealthInput;
 window.closeHealthInput = closeHealthInput;
 window.submitHealthInput = submitHealthInput;
-window.switchHomeTab = switchHomeTab;
 window.addWater = addWater;
 window.addPresetHealth = addPresetHealth;
 window.switchNutritionTab = switchNutritionTab;
