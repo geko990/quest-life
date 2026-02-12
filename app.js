@@ -6733,6 +6733,7 @@ window.exportData = function () {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
 };
+window.EsportData = window.exportData;
 
 window.fixData = function () {
     ensureUniqueIds(state.habits, 'habit');
@@ -6752,6 +6753,7 @@ window.updateApp = function () {
     }
     location.reload(true);
 };
+window.UpdateApp = window.updateApp;
 
 window.switchSection = switchSection;
 window.switchActivityTab = switchActivityTab;
