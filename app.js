@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.1.32';
+export const APP_VERSION = '3.1.33';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -38,13 +38,13 @@ window.submitHealthInput = submitHealthInput;
 window.closeHealthInput = closeHealthInput;
 window.openWeightModal = openWeightModal;
 window.closeWeightModal = closeWeightModal;
-window.saveWeightDetails = saveWeightDetails;
-window.useQuickPick = useQuickPick;
+window.showDailyPlanner = showDailyPlanner;
 window.openTaskPicker = openTaskPicker;
 window.closeTaskPicker = closeTaskPicker;
 window.addNewPlannerSlot = addNewPlannerSlot;
-window.finalizeDailyPlan = finalizeDailyPlan;
+window.rollD10AndSave = rollD10AndSave;
 window.closeDailyPlanner = closeDailyPlanner;
+window.showChallengeCatalog = showChallengeCatalog;
 
 // Wrapper for linkDatabaseFile to pass state
 window.linkDatabaseFile = async function () {
@@ -7060,6 +7060,8 @@ window.closeAvatarModal = closeAvatarModal;
 window.switchAvatarTab = switchAvatarTab;
 window.selectEmoji = selectEmoji;
 window.handleAvatarUpload = handleAvatarUpload;
+// Toast Logic (Global)
+window.showXpToast = showXpToast;
 window.openMottoEdit = openMottoEdit;
 window.closeMottoEdit = closeMottoEdit;
 window.saveMotto = saveMotto;
@@ -7068,11 +7070,20 @@ window.saveMotto = saveMotto;
 window.openHealthInput = openHealthInput;
 window.closeHealthInput = closeHealthInput;
 window.submitHealthInput = submitHealthInput;
+window.addWater = addWater;
+window.addPresetHealth = addPresetHealth;
+window.switchNutritionTab = switchNutritionTab;
+window.toggleNutritionItem = toggleNutritionItem;
+window.showHealthHistory = showHealthHistory;
 window.openMealsModal = openMealsModal;
 window.closeMealsModal = closeMealsModal;
 window.switchMealTab = switchMealTab;
 window.addCurrentMeal = addCurrentMeal;
 window.deleteMeal = deleteMeal;
+window.openWeightModal = openWeightModal;
+window.closeWeightModal = closeWeightModal;
+window.saveWeightDetails = saveWeightDetails;
+window.setWaterGoal = setWaterGoal;
 
 // Food Manager
 window.openFoodManager = openFoodManager;
@@ -7121,14 +7132,6 @@ window.toggleStatVisibilityFromPopup = toggleStatVisibilityFromPopup;
 
 // Inventory & Toxic Items (Legacy exports removed)
 window.renderHealthDashboard = renderHealthDashboard;
-window.openHealthInput = openHealthInput;
-window.closeHealthInput = closeHealthInput;
-window.submitHealthInput = submitHealthInput;
-window.addWater = addWater;
-window.addPresetHealth = addPresetHealth;
-window.switchNutritionTab = switchNutritionTab;
-window.toggleNutritionItem = toggleNutritionItem;
-window.showHealthHistory = showHealthHistory;
 window.openMealsModal = openMealsModal;
 window.closeMealsModal = closeMealsModal;
 window.switchMealTab = switchMealTab;
