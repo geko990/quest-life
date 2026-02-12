@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.1.30';
+export const APP_VERSION = '3.1.31';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -6887,7 +6887,7 @@ function submitHealthInput() {
 }
 
 // Handlers for manual entry and goal from Nutrition section
-window.confirmManualIntake = function () {
+function confirmManualIntake() {
     const name = document.getElementById('manualMealName').value || 'Pasto Manuale';
     const cals = parseFloat(document.getElementById('manualMealCalories').value);
     const prots = parseFloat(document.getElementById('manualMealProteins').value) || 0;
@@ -6903,9 +6903,9 @@ window.confirmManualIntake = function () {
     renderMealsList();
     renderHealthDashboard();
     showXpToast('Pasto aggiunto!', '🍴');
-};
+}
 
-window.confirmNewGoal = function (type) {
+function confirmNewGoal(type) {
     if (type === 'calories') {
         const goal = parseFloat(document.getElementById('newCalorieGoal').value);
         if (!isNaN(goal)) state.health.calories.goal = goal;
@@ -6919,9 +6919,9 @@ window.confirmNewGoal = function (type) {
     saveState();
     closeHealthInput();
     renderHealthDashboard();
-};
+}
 
-window.confirmManualBurn = function () {
+function confirmManualBurn() {
     const cals = parseFloat(document.getElementById('manualBurnedCalories').value);
     if (!isNaN(cals)) {
         state.health.calories.burned += cals;
@@ -6930,7 +6930,7 @@ window.confirmManualBurn = function () {
         renderHealthDashboard();
         showXpToast(`- ${cals} Calorie!`, '🔥');
     }
-};
+}
 
 // EXERCISE MANAGER LOGIC
 function openExerciseManager() {
@@ -6989,7 +6989,7 @@ function deleteExerciseFromDatabase(id) {
     renderExerciseDatabaseList();
 }
 
-window.openExerciseLogModal = function (id) {
+function openExerciseLogModal(id) {
     const ex = state.health.exerciseDatabase.find(e => e.id === id);
     if (!ex) return;
     const count = prompt(`Quante unità di "${ex.name}" hai fatto ? (Base: ${ex.baseCount})`, ex.baseCount || 10);
