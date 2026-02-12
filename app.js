@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.15';
+const APP_VERSION = '3.1.16';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -7280,8 +7280,8 @@ window.closeAddItemModal = closeAddItemModal;
 window.setAddItemType = setAddItemType;
 window.saveInventoryItem = saveInventoryItem;
 
-// MEALS MODAL LOGIC (v3.1.14)
-selectedFoodForGramInput = null;
+// MEALS MODAL LOGIC (v3.1.16)
+let selectedFoodForGramInput = null;
 
 function openMealsModal() {
     document.getElementById('mealsModal').classList.add('active');
