@@ -2524,7 +2524,7 @@ input#settingName {
     /* Solid dark background for in-app browsers that don't support backdrop-filter */
     background: #121212;
     background: rgba(0, 0, 0, 0.92);
-    z-index: 3000;
+    z-index: 4000;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
@@ -2545,8 +2545,8 @@ input#settingName {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
-    padding: 20px;
-    z-index: 3001;
+    padding: 15px 12px;
+    z-index: 4001;
     width: 90%;
     max-width: 380px;
     text-align: center;
@@ -4931,16 +4931,16 @@ textarea {
     background: #2a2a32;
     /* Lighter than modal bg */
     border-radius: 12px;
-    padding: 8px 10px;
-    margin-bottom: 8px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .slot-header {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--accent-primary);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     display: flex;
     align-items: center;
     gap: 6px;
