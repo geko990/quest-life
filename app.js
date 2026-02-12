@@ -6529,18 +6529,21 @@ function renderHealthDashboard() {
     // Update labels
     const caloriesRemainingEl = document.getElementById('caloriesRemaining');
     if (caloriesRemainingEl) {
-        caloriesRemainingEl.textContent = Math.max(0, remaining);
+        caloriesRemainingEl.textContent = Math.round(Math.max(0, remaining));
         caloriesRemainingEl.style.color = remaining < 0 ? '#f43f5e' : 'var(--text-primary)';
     }
 
     const goalEl = document.getElementById('calorieGoal');
-    if (goalEl) goalEl.textContent = health.calories.goal;
+    if (goalEl) goalEl.textContent = state.health.calories.goal;
 
     const consumedEl = document.getElementById('caloriesConsumed');
-    if (consumedEl) consumedEl.textContent = health.calories.consumed;
+    if (consumedEl) consumedEl.textContent = Math.round(state.health.calories.consumed);
 
     const burnedEl = document.getElementById('caloriesBurned');
-    if (burnedEl) burnedEl.textContent = health.calories.burned;
+    if (burnedEl) burnedEl.textContent = Math.round(state.health.calories.burned);
+
+    const proteinsEl = document.getElementById('proteinsConsumed');
+    if (proteinsEl) proteinsEl.textContent = Math.round(state.health.proteins?.consumed || 0);
 
     // Update Calorie Ring
     updateCalorieRing(health.calories.consumed, health.calories.goal, health.calories.burned);
@@ -6610,71 +6613,77 @@ function openHealthInput(type) {
     if (!overlay || !title || !content) return;
 
     let html = '';
-    const presets = state.health.presets.filter(p => p.type === type);
-    let presetsHtml = '';
 
-    if (presets.length > 0) {
-        presetsHtml = `
-            <div class="preset-title">Scegli dai tuoi preset:</div>
-            <div class="preset-grid">
-                ${presets.map(p => `
-                    <button class="preset-btn" onclick="addPresetHealth('${p.id}')">
-                        <span class="preset-name">${p.name}</span>
-                        <span class="preset-val">${p.calories >= 0 ? '+' : ''}${p.calories}</span>
+    // Manual intake
+    if (type === 'consumed_manual') {
+        title.textContent = 'Inserimento Manuale Calorie';
+        html = `
+            <div class="meals-input-group" style="flex-direction:column; gap:10px;">
+                <input type="text" id="manualMealName" placeholder="Nome (es. Cena Fuori)">
+                <input type="number" id="manualMealCalories" placeholder="Calorie Totali">
+                <input type="number" id="manualMealProteins" placeholder="Proteine (opzionale)">
+                <button class="btn-primary" onclick="confirmManualIntake()" style="width:100%;">Aggiungi</button>
+            </div>
+        `;
+    } else if (type === 'goal') {
+        title.textContent = 'Set Obiettivo Calorie';
+        html = `
+            <div class="meals-input-group" style="flex-direction:column; gap:8px;">
+                <label style="font-size:11px; color:var(--text-muted);">Nuovo Obiettivo Giornaliero:</label>
+                <input type="number" id="newCalorieGoal" value="${state.health.calories.goal}" placeholder="Obiettivo">
+                <button class="btn-primary" onclick="confirmNewGoal('calories')" style="width:100%;">Salva</button>
+            </div>
+        `;
+    } else if (type === 'burned') {
+        title.textContent = 'Log Esercizio/Attività';
+        const db = state.health.exerciseDatabase || [];
+        html = `
+            <div class="preset-title">Esercizi Salvati:</div>
+            <div class="preset-grid" style="margin-bottom:15px; max-height:150px; overflow-y:auto;">
+                ${db.map(ex => `
+                    <button class="preset-btn" onclick="openExerciseLogModal('${ex.id}')">
+                        <span class="preset-name" style="font-size:11px;">${ex.emoji} ${ex.name}</span>
+                        <span class="preset-val" style="font-size:10px;">${ex.baseCalories}c / ${ex.baseCount}u</span>
                     </button>
                 `).join('')}
             </div>
-            <div class="divider-text">oppure inserisci manualmente</div>
+            <button class="btn-secondary" onclick="openExerciseManager()" style="width:100%; margin-bottom:10px; font-size:11px;">📂 Database Esercizi</button>
+            <div class="divider-text">oppure manuale</div>
+            <div class="meals-input-group" style="gap:5px;">
+                <input type="number" id="manualBurnedCalories" placeholder="Calorie bruciate">
+                <button class="btn-primary" onclick="confirmManualBurn()">🔥</button>
+            </div>
         `;
-    }
-
-    switch (type) {
-        case 'consumed':
-            title.textContent = 'Aggiungi Alimenti';
-            html = `
-                ${presetsHtml}
+    } else if (type === 'steps') {
+        title.textContent = 'Aggiorna Passi';
+        html = `
+            <div class="health-input-group" style="flex-direction:column; gap:8px;">
                 <div class="health-input-row">
-                    <label>Calorie Manuali</label>
-                    <input type="number" id="healthInValue" value="0" min="0" onfocus="this.select()">
-                </div>
-            `;
-            break;
-        case 'burned':
-            title.textContent = 'Aggiungi Esercizio';
-            html = `
-                ${presetsHtml}
-                <div class="health-input-row">
-                    <label>Calorie Bruciate</label>
-                    <input type="number" id="healthInValue" value="0" min="0" onfocus="this.select()">
-                </div>
-            `;
-            break;
-        case 'steps':
-            title.textContent = 'Aggiorna Passi';
-            html = `
-                <div class="health-input-row">
-                    <label>Passi Totali Oggi</label>
-                    <input type="number" id="healthInValue" value="${state.health.steps.current}" min="0" onfocus="this.select()">
+                    <label style="font-size:11px; color:var(--text-muted);">Passi Totali Oggi:</label>
+                    <input type="number" id="healthInValue" value="${state.health.steps.current}" onfocus="this.select()">
                 </div>
                 <div class="health-input-row">
-                    <label>Obiettivo</label>
-                    <input type="number" id="healthInGoal" value="${state.health.steps.goal}" min="100" onfocus="this.select()">
+                    <label style="font-size:11px; color:var(--text-muted);">Obiettivo:</label>
+                    <input type="number" id="healthInGoal" value="${state.health.steps.goal}" onfocus="this.select()">
                 </div>
-            `;
-            break;
-        case 'weight':
-            title.textContent = 'Aggiorna Peso';
-            html = `
+                <button class="btn-primary" onclick="submitHealthInput()" style="width:100%;">Aggiorna</button>
+            </div>
+        `;
+    } else if (type === 'weight') {
+        title.textContent = 'Aggiorna Peso';
+        html = `
+            <div class="health-input-group" style="flex-direction:column; gap:8px;">
                 <div class="health-input-row">
-                    <label>Peso Attuale (kg)</label>
+                    <label style="font-size:11px; color:var(--text-muted);">Peso Attuale (kg):</label>
                     <input type="number" id="healthInValue" value="${state.health.weight.current}" step="0.1" onfocus="this.select()">
                 </div>
                 <div class="health-input-row">
-                    <label>Obiettivo (kg)</label>
+                    <label style="font-size:11px; color:var(--text-muted);">Obiettivo:</label>
                     <input type="number" id="healthInGoal" value="${state.health.weight.target}" step="0.1" onfocus="this.select()">
                 </div>
-            `;
-            break;
+                <button class="btn-primary" onclick="submitHealthInput()" style="width:100%;">Aggiorna</button>
+            </div>
+        `;
     }
 
     content.innerHTML = html;
@@ -6693,17 +6702,10 @@ function closeHealthInput() {
 function submitHealthInput() {
     const valInput = document.getElementById('healthInValue');
     const goalInput = document.getElementById('healthInGoal');
-
     const value = parseFloat(valInput ? valInput.value : 0) || 0;
     const goal = parseFloat(goalInput ? goalInput.value : 0) || 0;
 
     switch (currentHealthEditType) {
-        case 'consumed':
-            state.health.calories.consumed += value;
-            break;
-        case 'burned':
-            state.health.calories.burned += value;
-            break;
         case 'steps':
             state.health.steps.current = value;
             if (goal > 0) state.health.steps.goal = goal;
@@ -6717,6 +6719,121 @@ function submitHealthInput() {
     saveState();
     closeHealthInput();
     renderHealthDashboard();
+}
+
+// Handlers for manual entry and goal from Nutrition section
+window.confirmManualIntake = function () {
+    const name = document.getElementById('manualMealName').value || 'Pasto Manuale';
+    const cals = parseFloat(document.getElementById('manualMealCalories').value);
+    const prots = parseFloat(document.getElementById('manualMealProteins').value) || 0;
+    if (isNaN(cals)) return alert("Inserisci calorie!");
+    const newMeal = { id: generateId('meal'), name, calories: cals, proteins: prots };
+    if (!state.health.meals[currentMealTab]) state.health.meals[currentMealTab] = [];
+    state.health.meals[currentMealTab].push(newMeal);
+    state.health.calories.consumed += cals;
+    if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
+    state.health.proteins.consumed += prots;
+    saveState();
+    closeHealthInput();
+    renderMealsList();
+    renderHealthDashboard();
+    showXpToast('Pasto aggiunto!', '🍴');
+};
+
+window.confirmNewGoal = function (type) {
+    if (type === 'calories') {
+        const goal = parseFloat(document.getElementById('newCalorieGoal').value);
+        if (!isNaN(goal)) state.health.calories.goal = goal;
+    }
+    saveState();
+    closeHealthInput();
+    renderHealthDashboard();
+};
+
+window.confirmManualBurn = function () {
+    const cals = parseFloat(document.getElementById('manualBurnedCalories').value);
+    if (!isNaN(cals)) {
+        state.health.calories.burned += cals;
+        saveState();
+        closeHealthInput();
+        renderHealthDashboard();
+        showXpToast(`-${cals} Calorie!`, '🔥');
+    }
+};
+
+// EXERCISE MANAGER LOGIC
+function openExerciseManager() {
+    document.getElementById('exerciseManagerModal').classList.add('active');
+    populateExStatSelector();
+    renderExerciseDatabaseList();
+}
+
+function closeExerciseManager() {
+    document.getElementById('exerciseManagerModal').classList.remove('active');
+}
+
+function populateExStatSelector() {
+    const el = document.getElementById('exStat');
+    if (!el) return;
+    let options = '<option value="">Nessuno Stat</option>';
+    state.player.attributes.forEach(attr => {
+        options += `<option value="${attr.id}">${attr.emoji} ${attr.name}</option>`;
+    });
+    el.innerHTML = options;
+}
+
+function saveExerciseToDatabase() {
+    const emoji = document.getElementById('exEmoji').value || '🏋️';
+    const name = document.getElementById('exName').value;
+    const baseCount = parseFloat(document.getElementById('exBaseCount').value);
+    const baseCalories = parseFloat(document.getElementById('exBaseCalories').value);
+    const xpReward = parseInt(document.getElementById('exXpReward').value) || 0;
+    const statId = document.getElementById('exStat').value;
+    if (!name || isNaN(baseCount) || isNaN(baseCalories)) return alert("Inserisci nome, unità e calorie!");
+    const newEx = { id: generateId('ex'), emoji, name, baseCount, baseCalories, xpReward, statId };
+    if (!state.health.exerciseDatabase) state.health.exerciseDatabase = [];
+    state.health.exerciseDatabase.push(newEx);
+    saveState();
+    renderExerciseDatabaseList();
+    document.getElementById('exName').value = '';
+    document.getElementById('exBaseCount').value = '';
+    document.getElementById('exBaseCalories').value = '';
+}
+
+function renderExerciseDatabaseList() {
+    const listEl = document.getElementById('exerciseDatabaseList');
+    if (!listEl) return;
+    const db = state.health.exerciseDatabase || [];
+    listEl.innerHTML = db.map(ex => `
+        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:5px; font-size:12px;">
+            <span>${ex.emoji} ${ex.name} <small>(${ex.baseCalories}cal/${ex.baseCount}u)</small></span>
+            <button onclick="deleteExerciseFromDatabase('${ex.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
+        </div>
+    `).join('');
+}
+
+function deleteExerciseFromDatabase(id) {
+    state.health.exerciseDatabase = state.health.exerciseDatabase.filter(e => e.id !== id);
+    saveState();
+    renderExerciseDatabaseList();
+}
+
+window.openExerciseLogModal = function (id) {
+    const ex = state.health.exerciseDatabase.find(e => e.id === id);
+    if (!ex) return;
+    const count = prompt(`Quante unità di "${ex.name}" hai fatto? (Base: ${ex.baseCount})`, ex.baseCount || 10);
+    if (count === null) return;
+    const countVal = parseFloat(count);
+    if (isNaN(countVal)) return;
+    const ratio = countVal / (ex.baseCount || 1);
+    const calories = ex.baseCalories * ratio;
+    const xp = Math.round(ex.xpReward * ratio);
+    state.health.calories.burned += calories;
+    if (ex.statId && xp > 0) addXp(xp, ex.statId, `Esercizio: ${ex.name}`);
+    saveState();
+    closeHealthInput();
+    renderHealthDashboard();
+    showXpToast(`Loggato! +${Math.round(calories)} Cal`, '💪');
 }
 
 // ============================================
@@ -6773,6 +6890,38 @@ window.handleAvatarUpload = handleAvatarUpload;
 window.openMottoEdit = openMottoEdit;
 window.closeMottoEdit = closeMottoEdit;
 window.saveMotto = saveMotto;
+
+// Health & Nutrition
+window.openHealthInput = openHealthInput;
+window.closeHealthInput = closeHealthInput;
+window.submitHealthInput = submitHealthInput;
+window.openMealsModal = openMealsModal;
+window.closeMealsModal = closeMealsModal;
+window.switchMealTab = switchMealTab;
+window.addCurrentMeal = addCurrentMeal;
+window.deleteMeal = deleteMeal;
+
+// Food Manager
+window.openFoodManager = openFoodManager;
+window.closeFoodManager = closeFoodManager;
+window.saveFoodToDatabase = saveFoodToDatabase;
+window.deleteFoodFromDatabase = deleteFoodFromDatabase;
+window.openGramInput = openGramInput;
+window.closeGramInput = closeGramInput;
+window.confirmGramInput = confirmGramInput;
+
+// Exercise Manager
+window.openExerciseManager = openExerciseManager;
+window.closeExerciseManager = closeExerciseManager;
+window.saveExerciseToDatabase = saveExerciseToDatabase;
+window.deleteExerciseFromDatabase = deleteExerciseFromDatabase;
+window.openExerciseLogModal = openExerciseLogModal;
+
+// Custom input handlers
+window.confirmManualIntake = confirmManualIntake;
+window.confirmNewGoal = confirmNewGoal;
+window.confirmManualBurn = confirmManualBurn;
+window.confirmHealthSteps = confirmHealthSteps;
 
 // Tasks & Progress
 window.toggleHabit = toggleHabit;
@@ -7137,7 +7286,9 @@ window.closeAddItemModal = closeAddItemModal;
 window.setAddItemType = setAddItemType;
 window.saveInventoryItem = saveInventoryItem;
 
-// MEALS MODAL LOGIC (v3.0.0)
+// MEALS MODAL LOGIC (v3.1.14)
+selectedFoodForGramInput = null;
+
 function openMealsModal() {
     document.getElementById('mealsModal').classList.add('active');
     renderMealsList();
@@ -7155,6 +7306,63 @@ function switchMealTab(tab) {
     renderMealsList();
 }
 
+function renderMealsList() {
+    const listEl = document.getElementById('mealsList');
+    if (!listEl) return;
+
+    const currentMeals = state.health.meals[currentMealTab] || [];
+    let html = `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; padding-left:5px;">Inseriti Oggi</div>`;
+
+    if (currentMeals.length === 0) {
+        html += `<div style="padding:10px; color:var(--text-muted); font-size:12px;">Nessun pasto registrato.</div>`;
+    } else {
+        currentMeals.forEach((meal, idx) => {
+            html += `
+                <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:rgba(0,0,0,0.1); border-radius:8px; margin-bottom:4px;">
+                    <div style="font-size:13px;">${meal.name}</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight:bold; color:var(--accent-primary);">${Math.round(meal.calories)} cal</span>
+                        <button onclick="deleteMeal(${idx})" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    html += `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin:15px 0 8px 0; text-transform:uppercase; padding-left:5px;">Fast Pick (Database)</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">`;
+
+    const db = state.health.foodDatabase || [];
+    if (db.length === 0) {
+        html += `<div style="grid-column: span 2; padding:10px; color:var(--text-muted); font-size:11px;">Database vuoto. Vai su "Gestisci Alimenti" per aggiungere.</div>`;
+    } else {
+        db.forEach(food => {
+            html += `
+                <div class="quick-pick-item" onclick="openGramInput('${food.id}')" style="font-size:12px; padding:6px; cursor:pointer;">
+                    <span>${food.emoji}</span> ${food.name}
+                    <div style="font-size:9px; color:var(--text-muted)">${food.baseCalories} cal / ${food.baseGrams}g</div>
+                </div>
+            `;
+        });
+    }
+
+    html += `</div>`;
+    listEl.innerHTML = html;
+}
+
+function deleteMeal(index) {
+    const meal = state.health.meals[currentMealTab][index];
+    if (meal) {
+        state.health.calories.consumed -= meal.calories;
+        if (meal.proteins) {
+            state.health.proteins.consumed = Math.max(0, state.health.proteins.consumed - meal.proteins);
+        }
+        state.health.meals[currentMealTab].splice(index, 1);
+        saveState();
+        renderMealsList();
+        renderHealthDashboard();
+    }
+}
+
 function addCurrentMeal() {
     const name = document.getElementById('mealNameInput').value;
     const calories = parseInt(document.getElementById('mealCaloriesInput').value);
@@ -7165,11 +7373,10 @@ function addCurrentMeal() {
     }
 
     const newMeal = { id: generateId('meal'), name, calories };
+    if (!state.health.meals[currentMealTab]) state.health.meals[currentMealTab] = [];
     state.health.meals[currentMealTab].push(newMeal);
 
-    // Logga subito le calorie
     state.health.calories.consumed += calories;
-
     document.getElementById('mealNameInput').value = '';
     document.getElementById('mealCaloriesInput').value = '';
 
@@ -7178,45 +7385,167 @@ function addCurrentMeal() {
     renderHealthDashboard();
 
     if (currentMealTab === 'cheat') {
-        showXpToast(`Sgarro aggiunto! +${calories} Cal`, '👿');
+        showXpToast(`Sgarro aggiunto!`, '👿');
     } else {
-        showXpToast(`Pasto aggiunto! +${calories} Cal`, '🍽️');
+        showXpToast(`Pasto aggiunto!`, '🍽️');
     }
 }
 
-function renderMealsList() {
-    const list = document.getElementById('mealsList');
-    if (!list) return;
+// FOOD DATABASE MANAGER
+function openFoodManager() {
+    document.getElementById('foodManagerModal').classList.add('active');
+    populateStatSelectors();
+    renderFoodDatabaseList();
+}
 
-    const meals = state.health.meals[currentMealTab] || [];
-    if (meals.length === 0) {
-        list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Nessun pasto salvato per questa categoria.</div>`;
+function closeFoodManager() {
+    document.getElementById('foodManagerModal').classList.remove('active');
+}
+
+function populateStatSelectors() {
+    const primary = document.getElementById('foodStatPrimary');
+    const secondary = document.getElementById('foodStatSecondary');
+    if (!primary) return;
+
+    let options = '<option value="">Nessuno Stat</option>';
+    state.player.attributes.forEach(attr => {
+        options += `<option value="${attr.id}">${attr.emoji} ${attr.name}</option>`;
+    });
+
+    primary.innerHTML = options;
+    secondary.innerHTML = options;
+}
+
+function saveFoodToDatabase() {
+    const emoji = document.getElementById('foodEmoji').value || '🍎';
+    const name = document.getElementById('foodName').value;
+    const baseGrams = parseFloat(document.getElementById('foodBaseGrams').value);
+    const baseCalories = parseFloat(document.getElementById('foodBaseCalories').value);
+    const baseProteins = parseFloat(document.getElementById('foodBaseProteins').value) || 0;
+    const primaryStatId = document.getElementById('foodStatPrimary').value;
+    const secondaryStatId = document.getElementById('foodStatSecondary').value;
+
+    if (!name || isNaN(baseGrams) || isNaN(baseCalories)) {
+        alert("Inserisci nome, grammi e calorie!");
         return;
     }
 
-    list.innerHTML = meals.map(meal => `
-        <div class="meal-item" onclick="logSavedMeal('${meal.id}')">
-            <span>${meal.name}</span>
-            <b style="color:var(--accent-color);">${meal.calories} kcal</b>
+    const newFood = {
+        id: generateId('food'),
+        emoji, name, baseGrams, baseCalories, baseProteins,
+        primaryStatId, secondaryStatId
+    };
+
+    if (!state.health.foodDatabase) state.health.foodDatabase = [];
+    state.health.foodDatabase.push(newFood);
+
+    saveState();
+    renderFoodDatabaseList();
+    renderMealsList();
+
+    // Reset fields
+    document.getElementById('foodEmoji').value = '';
+    document.getElementById('foodName').value = '';
+    document.getElementById('foodBaseGrams').value = '';
+    document.getElementById('foodBaseCalories').value = '';
+    document.getElementById('foodBaseProteins').value = '';
+}
+
+function deleteFoodFromDatabase(id) {
+    state.health.foodDatabase = state.health.foodDatabase.filter(f => f.id !== id);
+    saveState();
+    renderFoodDatabaseList();
+    renderMealsList();
+}
+
+function renderFoodDatabaseList() {
+    const listEl = document.getElementById('foodDatabaseList');
+    if (!listEl) return;
+
+    const db = state.health.foodDatabase || [];
+    listEl.innerHTML = db.map(food => `
+        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:5px; font-size:12px;">
+            <span>${food.emoji} ${food.name} <small>(${food.baseCalories}cal/${food.baseGrams}g)</small></span>
+            <button onclick="deleteFoodFromDatabase('${food.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
         </div>
     `).join('');
 }
 
-window.logSavedMeal = function (id) {
-    const meal = state.health.meals[currentMealTab].find(m => m.id === id);
-    if (meal) {
-        state.health.calories.consumed += meal.calories;
-        saveState();
-        renderHealthDashboard();
+// GRAM INPUT LOGIC
+function openGramInput(foodId) {
+    selectedFoodForGramInput = state.health.foodDatabase.find(f => f.id === foodId);
+    if (!selectedFoodForGramInput) return;
 
-        if (currentMealTab === 'cheat') {
-            showXpToast(`Sgarro consumato: ${meal.name}`, '👿');
-        } else {
-            showXpToast(`Pasto loggato: ${meal.name}`, '🍴');
-        }
-        closeMealsModal();
+    document.getElementById('gramInputTitle').textContent = `${selectedFoodForGramInput.emoji} ${selectedFoodForGramInput.name}`;
+    document.getElementById('enteredGrams').value = selectedFoodForGramInput.baseGrams;
+    document.getElementById('gramInputModal').classList.add('active');
+    updateGramCalculation();
+}
+
+function closeGramInput() {
+    document.getElementById('gramInputModal').classList.remove('active');
+}
+
+function updateGramCalculation() {
+    const entered = parseFloat(document.getElementById('enteredGrams').value);
+    const display = document.getElementById('gramInputCalculation');
+    if (isNaN(entered) || !selectedFoodForGramInput) {
+        display.textContent = '-';
+        return;
     }
-};
+
+    const ratio = entered / selectedFoodForGramInput.baseGrams;
+    const cals = Math.round(selectedFoodForGramInput.baseCalories * ratio);
+    const prots = Math.round(selectedFoodForGramInput.baseProteins * ratio);
+    display.textContent = `${cals} Cal | ${prots}g Proteine`;
+}
+
+// Update calculation live
+document.addEventListener('input', (e) => {
+    if (e.target.id === 'enteredGrams') updateGramCalculation();
+});
+
+function confirmGramInput() {
+    const grams = parseFloat(document.getElementById('enteredGrams').value);
+    if (isNaN(grams) || !selectedFoodForGramInput) return;
+
+    const ratio = grams / selectedFoodForGramInput.baseGrams;
+    const calories = selectedFoodForGramInput.baseCalories * ratio;
+    const proteins = (selectedFoodForGramInput.baseProteins || 0) * ratio;
+
+    const newMeal = {
+        id: generateId('meal'),
+        name: `${selectedFoodForGramInput.name} (${grams}g)`,
+        calories,
+        proteins
+    };
+
+    if (!state.health.meals[currentMealTab]) state.health.meals[currentMealTab] = [];
+    state.health.meals[currentMealTab].push(newMeal);
+
+    state.health.calories.consumed += calories;
+    if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
+    state.health.proteins.consumed += proteins;
+
+    // XP REWARDS
+    if (currentMealTab !== 'cheat') {
+        const xpAmount = Math.max(1, Math.round(calories / 50));
+        if (selectedFoodForGramInput.primaryStatId) {
+            addXpToAttribute(selectedFoodForGramInput.primaryStatId, xpAmount);
+            showXpToast(`+${xpAmount} XP ${selectedFoodForGramInput.primaryStatId.toUpperCase()}`, '⭐');
+        }
+    } else {
+        // PENALTY for cheat
+        const penalty = Math.max(1, Math.round(calories / 100));
+        state.player.xp = Math.max(0, state.player.xp - penalty);
+        showXpToast(`Sgarro! -${penalty} XP Totali`, '👿');
+    }
+
+    saveState();
+    closeGramInput();
+    renderMealsList();
+    renderHealthDashboard();
+}
 
 // WEIGHT MODAL LOGIC (v3.0.0)
 function openWeightModal() {

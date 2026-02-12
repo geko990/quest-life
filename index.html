@@ -55,7 +55,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"
         rel="stylesheet">
     <script src="js/theme-fix.js"></script>
-    <link rel="stylesheet" href="styles.css?v=3.1.13">
+    <link rel="stylesheet" href="styles.css?v=3.1.14">
 
 </head>
 
@@ -259,8 +259,8 @@
                                 <div class="card-title">Calorie</div>
                                 <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
 
-                                <div class="calories-main" onclick="openMealsModal()">
-                                    <div class="ring-container">
+                                <div class="calories-main">
+                                    <div class="ring-container" onclick="openHealthInput('consumed_manual')">
                                         <svg width="140" height="140" viewBox="0 0 140 140">
                                             <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
                                                 stroke-width="10"></circle>
@@ -275,18 +275,20 @@
                                     </div>
 
                                     <div class="calories-stats">
-                                        <div class="stat-item">
+                                        <div class="stat-item" onclick="openHealthInput('goal')">
                                             <span class="stat-icon">🚩</span>
                                             <div class="stat-info">
                                                 <div class="stat-label">Obiettivo base</div>
                                                 <div id="calorieGoal" class="stat-value">1600</div>
                                             </div>
                                         </div>
-                                        <div class="stat-item" onclick="openHealthInput('consumed')">
+                                        <div class="stat-item" onclick="openMealsModal()">
                                             <span class="stat-icon" style="color: #3b82f6;">🍴</span>
                                             <div class="stat-info">
                                                 <div class="stat-label">Alimenti</div>
                                                 <div id="caloriesConsumed" class="stat-value">0</div>
+                                                <div style="font-size:10px; color:var(--text-muted)">Prot: <span
+                                                        id="proteinsConsumed">0</span>g</div>
                                             </div>
                                         </div>
                                         <div class="stat-item" onclick="openHealthInput('burned')">
@@ -1117,27 +1119,100 @@
             <div class="meals-tabs">
                 <button class="meal-tab active" id="meal-tab-breakfast"
                     onclick="switchMealTab('breakfast')">Colazione</button>
-                <button class="meal-tab" id="meal-tab-lunch" onclick="switchMealTab('lunch')">Pranzo</button>
-                <button class="meal-tab" id="meal-tab-dinner" onclick="switchMealTab('dinner')">Cena</button>
-                <button class="meal-tab" id="meal-tab-snack" onclick="switchMealTab('snack')">Spuntino</button>
+                <button class="meal-tab" id="meal-tab-lunch" onclick="switchMealTab('lunch')">Pasto</button>
+                <button class="meal-tab" id="meal-tab-snack" onclick="switchMealTab('snack')">Merenda</button>
                 <button class="meal-tab" id="meal-tab-cheat" onclick="switchMealTab('cheat')"
                     style="color: #ef4444;">Sgarri</button>
             </div>
 
-            <div class="meals-input-group">
+            <div class="meals-input-group" id="mealManualInput">
                 <input type="text" id="mealNameInput" placeholder="Cosa hai mangiato?">
                 <input type="number" id="mealCaloriesInput" placeholder="Calorie">
                 <button class="btn-primary" onclick="addCurrentMeal()" style="padding:10px;">➕</button>
             </div>
 
             <div id="mealsList" class="meals-list">
-                <!-- Popolato dinamicamente -->
+                <!-- Popolato dinamicamente con preset database -->
             </div>
 
             <div class="modal-actions"
-                style="margin-top:10px; border-top:1px solid var(--border-color); padding-top:10px;">
-                <button class="btn-secondary" onclick="openHealthInput('burned')" style="width:100%; font-size:12px;">🔥
-                    Log Esercizio</button>
+                style="margin-top:10px; border-top:1px solid var(--border-color); padding-top:10px; display: flex; gap: 8px;">
+                <button class="btn-secondary" onclick="openFoodManager()" style="flex:1; font-size:12px;">📂 Gestisci
+                    Alimenti</button>
+                <button class="btn-secondary" onclick="openHealthInput('burned')" style="flex:1; font-size:12px;">🔥 Log
+                    Esercizio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOD MANAGER MODAL -->
+    <div id="foodManagerModal" class="modal-overlay" onclick="closeFoodManager()">
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📂 Database Alimenti</h3>
+            </div>
+            <div class="meals-input-group" style="flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 4px;">
+                    <input type="text" id="foodEmoji" placeholder="Eji" style="width: 40px; text-align: center;">
+                    <input type="text" id="foodName" placeholder="Nome" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    <input type="number" id="foodBaseGrams" placeholder="Grammi Base" style="flex: 1;">
+                    <input type="number" id="foodBaseCalories" placeholder="Calorie" style="flex: 1;">
+                    <input type="number" id="foodBaseProteins" placeholder="Proteine" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    <select id="foodStatPrimary" style="flex: 1; font-size: 11px;"></select>
+                    <select id="foodStatSecondary" style="flex: 1; font-size: 11px;"></select>
+                </div>
+                <button class="btn-primary" onclick="saveFoodToDatabase()" style="width: 100%;">💾 Salva
+                    Alimento</button>
+            </div>
+            <div id="foodDatabaseList" class="meals-list" style="margin-top: 15px; max-height: 200px;"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeFoodManager()" style="width: 100%;">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRAM INPUT MODAL -->
+    <div id="gramInputModal" class="modal-overlay" onclick="closeGramInput()">
+        <div class="modal-content premium-modal" style="max-width: 300px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="gramInputTitle">Inserisci Quantità</h3>
+            </div>
+            <div class="meals-input-group">
+                <input type="number" id="enteredGrams" placeholder="Grammi">
+                <button class="btn-primary" onclick="confirmGramInput()">✅</button>
+            </div>
+            <div id="gramInputCalculation"
+                style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 5px;"></div>
+        </div>
+    </div>
+
+    <!-- EXERCISE MANAGER MODAL -->
+    <div id="exerciseManagerModal" class="modal-overlay" onclick="closeExerciseManager()">
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>🏋️ Database Esercizi</h3>
+            </div>
+            <div class="meals-input-group" style="flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 4px;">
+                    <input type="text" id="exEmoji" placeholder="Eji" style="width: 40px; text-align: center;">
+                    <input type="text" id="exName" placeholder="Nome" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    <input type="number" id="exBaseCount" placeholder="Unità (es. 10)" style="flex: 1;">
+                    <input type="number" id="exBaseCalories" placeholder="Calorie Bruciate" style="flex: 1;">
+                    <input type="number" id="exXpReward" placeholder="XP Reward" style="flex: 1;">
+                </div>
+                <select id="exStat" style="width: 100%; font-size: 11px;"></select>
+                <button class="btn-primary" onclick="saveExerciseToDatabase()" style="width: 100%;">💾 Salva
+                    Esercizio</button>
+            </div>
+            <div id="exerciseDatabaseList" class="meals-list" style="margin-top: 15px; max-height: 200px;"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeExerciseManager()" style="width: 100%;">Chiudi</button>
             </div>
         </div>
     </div>

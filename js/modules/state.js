@@ -64,6 +64,7 @@ export let state = {
     },
     health: {
         calories: { goal: 1600, consumed: 0, burned: 0 },
+        proteins: { goal: 100, consumed: 0 },
         steps: { goal: 10000, current: 0 },
         weight: {
             current: 75, target: 70,
@@ -77,14 +78,9 @@ export let state = {
             dinner: [],
             snack: []
         },
-        presets: [
-            { id: 'p1', type: 'consumed', name: 'Riso e Verdure', calories: 400 },
-            { id: 'p2', type: 'consumed', name: 'Pollo con Verdure', calories: 350 },
-            { id: 'p3', type: 'consumed', name: 'Fettina di Pane', calories: 80 },
-            { id: 'e1', type: 'burned', name: 'Camminata 20 min', calories: 100 },
-            { id: 'e2', type: 'burned', name: '3 serie Push Up', calories: 50 }
-        ],
-        history: [], // Array di {date, consumed, burned, steps, weight, water}
+        history: [], // Array di {date, consumed, burned, steps, weight, water, proteins}
+        foodDatabase: [], // Array di FoodItem: {id, emoji, name, baseGrams, baseCalories, baseProteins, primaryStatId, secondaryStatId}
+        exerciseDatabase: [], // Array di ExerciseItem: {id, emoji, name, baseCount, baseCalories, xpReward, statId}
         lastUpdate: null
     },
     settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
@@ -211,14 +207,18 @@ export function loadState() {
             checkHealthRollover();
 
             // Ensure new structures exist
-            if (!state.health.water) state.health.water = { goal: 8, consumed: 0 };
-            if (!state.health.presets) {
-                state.health.presets = [
-                    { id: 'p1', type: 'consumed', name: 'Riso e Verdure', calories: 400 },
-                    { id: 'p2', type: 'consumed', name: 'Pollo con Verdure', calories: 350 },
-                    { id: 'p3', type: 'consumed', name: 'Fettina di Pane', calories: 80 },
-                    { id: 'e1', type: 'burned', name: 'Camminata 20 min', calories: 100 },
-                    { id: 'e2', type: 'burned', name: '3 serie Push Up', calories: 50 }
+            if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
+            if (!state.health.foodDatabase || state.health.foodDatabase.length === 0) {
+                state.health.foodDatabase = [
+                    { id: 'fd1', emoji: '🍚', name: 'Riso Basmati', baseGrams: 100, baseCalories: 350, baseProteins: 7, primaryStatId: 'str', secondaryStatId: 'vit' },
+                    { id: 'fd2', emoji: '🍗', name: 'Petto di Pollo', baseGrams: 100, baseCalories: 165, baseProteins: 31, primaryStatId: 'str', secondaryStatId: 'vit' },
+                    { id: 'fd3', emoji: '🥦', name: 'Verdure Miste', baseGrams: 100, baseCalories: 50, baseProteins: 3, primaryStatId: 'int', secondaryStatId: 'vit' }
+                ];
+            }
+            if (!state.health.exerciseDatabase || state.health.exerciseDatabase.length === 0) {
+                state.health.exerciseDatabase = [
+                    { id: 'ed1', emoji: '🏃', name: 'Camminata', baseCount: 20, baseCalories: 100, xpReward: 10, statId: 'vit' },
+                    { id: 'ed2', emoji: '💪', name: 'Flessioni', baseCount: 10, baseCalories: 50, xpReward: 15, statId: 'str' }
                 ];
             }
             if (!state.health.history) state.health.history = [];
@@ -343,6 +343,7 @@ export function checkHealthRollover() {
             date: state.health.lastUpdate,
             consumed: state.health.calories.consumed || 0,
             burned: state.health.calories.burned || 0,
+            proteins: state.health.proteins?.consumed || 0,
             steps: state.health.steps.current || 0,
             weight: state.health.weight.current || 0,
             water: state.health.water?.consumed || 0
@@ -359,6 +360,7 @@ export function checkHealthRollover() {
         // Reset daily metrics
         state.health.calories.consumed = 0;
         state.health.calories.burned = 0;
+        if (state.health.proteins) state.health.proteins.consumed = 0;
         state.health.steps.current = 0;
         if (state.health.water) state.health.water.consumed = 0;
 
