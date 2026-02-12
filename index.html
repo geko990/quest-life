@@ -650,7 +650,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.21</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.22</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -942,13 +942,21 @@
             style="width: 100%; margin: 10px 0; border: 1px dashed var(--accent-primary); background: transparent; color: var(--accent-primary); font-size: 13px;">
             <span>+ Aggiungi Slot Extra</span>
         </button>
+
         <div id="diceRollResult" class="dice-result hidden">
             <div class="dice-container">
                 <div class="d10-dice" id="d10Dice">?</div>
             </div>
             <div class="dice-bonus" id="diceBonus"></div>
         </div>
-    </div>
+
+        <div class="daily-planner-actions" style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="recap-close-btn"
+                style="flex:1; background: var(--bg-primary); color: var(--text-primary); padding: 10px;"
+                onclick="closeDailyPlanner()">Salta</button>
+            <button class="recap-close-btn" style="flex:2;" id="rollDiceBtn" onclick="rollD10AndSave()">🎲 Lancia un
+                D10!</button>
+        </div>
     </div>
 
     <!-- Task Picker Modal (Quick Select for Daily Planner) -->

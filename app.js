@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.21';
+const APP_VERSION = '3.1.22';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -5154,7 +5154,7 @@ function addNewPlannerSlot() {
     newSlot.dataset.slot = 'extra';
     newSlot.innerHTML = `
         <div class="slot-header">⚔️ Slot Extra ${slotCount - 3}</div>
-        <div class="slot-input-wrapper" style="display:flex; gap:8px;">
+        <div class="slot-input-wrapper">
             <input type="text" class="slot-name" placeholder="Es: Nuova impresa..." style="flex:1;">
             <button class="pick-task-btn" onclick="openTaskPicker(${slotCount})" title="Scegli dalle Missioni/Campagne">💥</button>
         </div>
