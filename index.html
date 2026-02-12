@@ -316,18 +316,34 @@
                                     </div>
                                 </div>
 
-                                <!-- Water Card -->
-                                <div class="health-card water-card">
-                                    <div class="card-title">Acqua</div>
-                                    <div class="water-main">
-                                        <div id="waterGrid" class="water-grid"></div>
-                                        <div class="water-info">
-                                            <span id="waterCurrentText">0</span> / <span id="waterGoalText">8</span>
-                                        </div>
+                                <!-- Protein Card (New) -->
+                                <div class="health-card protein-card" onclick="openHealthInput('protein_goal')">
+                                    <div class="card-title">Proteine</div>
+                                    <div class="steps-main">
+                                        <span class="steps-icon">🍗</span>
+                                        <span id="proteinsCurrentValue" class="steps-value">0</span><small
+                                            style="font-size:12px; margin-left:2px;">g</small>
                                     </div>
-                                    <div class="water-controls">
-                                        <button class="water-btn" onclick="addWater(-1)">-</button>
-                                        <button class="water-btn plus" onclick="addWater(1)">+</button>
+                                    <div class="steps-goal">Obiettivo: <span id="proteinsGoalText">0</span>g</div>
+                                    <div class="progress-bar-bg">
+                                        <div id="proteinsProgressBar" class="progress-bar-fill"
+                                            style="background: var(--accent-primary);"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Water Card (v3.1.30 Refinement) -->
+                                <div class="health-card water-card" onclick="openHealthInput('water_goal')">
+                                    <div class="card-title">Acqua</div>
+                                    <div class="steps-main">
+                                        <span class="steps-icon" onclick="addWater(0.25); event.stopPropagation();"
+                                            style="cursor:pointer;" title="Aggiungi 250ml">🥛</span>
+                                        <span id="waterCurrentValue" class="steps-value">0</span><small
+                                            style="font-size:12px; margin-left:2px;">l</small>
+                                    </div>
+                                    <div class="steps-goal">Obiettivo: <span id="waterGoalText">2</span>l</div>
+                                    <div class="progress-bar-bg">
+                                        <div id="waterProgressBar" class="progress-bar-fill"
+                                            style="background: #0ea5e9;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -650,7 +666,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.28</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.30</span> •
                             Quest Life PWA
                         </p>
                     </div>
