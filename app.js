@@ -1172,20 +1172,6 @@ function updateBubblePosition(navItem) {
 
 function switchSection(sectionName) {
     document.querySelectorAll('.nav-item').forEach(item => {
-        // Toggle active based on onclick attribute content or manually set active class logic
-        // Easier: remove active from all, then add to the clicked one.
-        // But since we pass sectionName, we need to find the link that calls this section.
-        // Simpler approach: Just manage sections here, and let the click handler manage the nav item style if possible.
-        // Or better: update based on the sectionName passed.
-
-        // This logic is tricky if items don't have data-section anymore.
-        // Let's rely on the fact that we can just update visual state.
-    });
-
-    // Actually, distinct active state for nav items is hard without unique IDs or data-attributes.
-    // Let's re-add data-section to HTML for styling matching, OR just select by href/onclick content? Use data-section in HTML for style mapping.
-
-    document.querySelectorAll('.nav-item').forEach(item => {
         const isActive = item.dataset.section === sectionName;
         item.classList.toggle('active', isActive);
         if (isActive) updateBubblePosition(item);
@@ -1195,65 +1181,50 @@ function switchSection(sectionName) {
         section.classList.toggle('active', section.id === `section-${sectionName}`);
     });
 
-    // Gestione scroll per sezione
     const container = document.querySelector('.content-area');
+    if (container) container.scrollTop = 0;
+
     if (sectionName === 'home') {
-        setTimeout(() => {
-            renderRadarChart();
-            const drawer = document.getElementById('homeNutritionDrawer');
-            if (drawer && container) {
-                container.scrollTop = drawer.offsetHeight;
-            }
-        }, 150);
+        setTimeout(() => renderRadarChart(), 150);
     } else if (sectionName === 'habits') {
         const calendar = document.getElementById('calendarContainer');
-
-        // Hide calendar temporarily to prevent flash during scroll
-        if (calendar) {
-            calendar.style.visibility = 'hidden';
-        }
-
+        if (calendar) calendar.style.visibility = 'hidden';
         renderCalendar();
 
-        // Scroll per nascondere il calendario - delay per garantire render completo
         setTimeout(() => {
             const habitsWrapper = document.querySelector('.habits-wrapper');
-
             if (container && calendar && habitsWrapper) {
-                // Calcola la distanza esatta usando getBoundingClientRect
-                // Sottrai 7px per allineare l'header con le altre sezioni
                 const calendarRect = calendar.getBoundingClientRect();
                 const containerRect = container.getBoundingClientRect();
                 const scrollAmount = calendarRect.bottom - containerRect.top + container.scrollTop - 7;
                 container.scrollTop = scrollAmount;
-
-                // Show calendar after scroll is set
                 calendar.style.visibility = 'visible';
             }
         }, 150);
-    } else if (sectionName === 'home') {
-        renderAll();
-        // Garantisce che il tab attivo sia visualizzato correttamente
-        const activeTab = document.querySelector('.home-tab.active');
-        if (activeTab) {
-            const tabId = activeTab.id.replace('tab-home-', '');
-            switchHomeTab(tabId);
-        }
-    } else {
-        // Reset scroll per tutte le altre sezioni
-        if (container) {
-            // If switching to settings, check if we need to show PWA instructions
-            if (sectionName === 'settings') {
-                const seen = localStorage.getItem('pwa_instructions_seen');
-                if (!seen) {
-                    setTimeout(() => openInstallModal(), 500); // Small delay for effect
-                }
-            }
-
-            // Scroll to top
-            window.scrollTo(0, 0);
+    } else if (sectionName === 'nutrition') {
+        renderHealthDashboard();
+        renderNutritionInventory();
+    } else if (sectionName === 'activities') {
+        renderOneshots();
+        renderQuests();
+    } else if (sectionName === 'settings') {
+        const seen = localStorage.getItem('pwa_instructions_seen');
+        if (!seen) {
+            setTimeout(() => openInstallModal(), 500);
         }
     }
+}
+
+function switchActivityTab(tabId) {
+    document.querySelectorAll('.activity-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.id === `tab-${tabId}`);
+    });
+    document.querySelectorAll('.activity-view').forEach(view => {
+        view.classList.toggle('active', view.id === `view-activities-${tabId}`);
+    });
+
+    if (tabId === 'oneshot') renderOneshots();
+    else renderQuests();
 }
 
 // ============================================
@@ -5047,9 +5018,57 @@ function showDailyPlanner() {
     // Clear previous inputs
     document.querySelectorAll('.slot-name').forEach(input => input.value = '');
 
+    // --- QUICK PICK POPULATION ---
+    const quickPickList = document.getElementById('quickPickList');
+    if (quickPickList) {
+        let items = [];
+        // Active OneShots
+        if (state.oneshots) {
+            state.oneshots.forEach(os => {
+                if (!os.completed) {
+                    items.push({ name: os.name, icon: '💥' });
+                }
+            });
+        }
+        // Quest subtasks
+        if (state.quests) {
+            state.quests.forEach(q => {
+                if (!q.completed && q.tasks) {
+                    q.tasks.forEach(task => {
+                        if (!task.completed) {
+                            items.push({ name: task.name, icon: '🎯' });
+                        }
+                    });
+                }
+            });
+        }
+
+        if (items.length === 0) {
+            quickPickList.innerHTML = '<span style="font-size:11px; color:var(--text-muted); padding: 4px;">Nessun suggerimento disponibile.</span>';
+        } else {
+            // Take max 12 items
+            quickPickList.innerHTML = items.slice(0, 12).map(item =>
+                `<div class="quick-pick-item" onclick="useQuickPick('${item.name.replace(/'/g, "\\'")}')">
+                    <span>${item.icon}</span> ${item.name}
+                </div>`
+            ).join('');
+        }
+    }
+
     // Initialize star selectors (only in Daily Planner modal)
     const plannerModal = document.getElementById('dailyPlannerModal');
     if (plannerModal) {
+        // Reset to standard slots only? No, maybe keep them if user added them? 
+        // Better: reset to default 4 slots if it's a fresh show.
+        const container = document.getElementById('dailyPlannerSlots');
+        const defaultSlots = ['action', 'bonus', 'movement', 'reaction'];
+        const slots = container.querySelectorAll('.daily-slot');
+        slots.forEach(slot => {
+            if (!defaultSlots.includes(slot.dataset.slot)) {
+                slot.remove();
+            }
+        });
+
         plannerModal.querySelectorAll('.star-selector').forEach(selector => {
             const stars = parseInt(selector.dataset.stars) || 3;
             updateStarDisplay(selector, stars);
@@ -5070,6 +5089,61 @@ function showDailyPlanner() {
 
     document.getElementById('dailyPlannerModal')?.classList.remove('hidden');
     document.getElementById('dailyPlannerOverlay')?.classList.remove('hidden');
+}
+
+function useQuickPick(name) {
+    const inputs = document.querySelectorAll('.slot-name');
+    for (let input of inputs) {
+        if (!input.value) {
+            input.value = name;
+            input.focus();
+            // Visual feedback
+            input.style.backgroundColor = 'var(--bg-secondary)';
+            setTimeout(() => input.style.backgroundColor = '', 500);
+            break;
+        }
+    }
+}
+
+function addNewPlannerSlot() {
+    const container = document.getElementById('dailyPlannerSlots');
+    if (!container) return;
+
+    const slotCount = container.querySelectorAll('.daily-slot').length;
+    const newSlot = document.createElement('div');
+    newSlot.className = 'daily-slot';
+    newSlot.dataset.slot = 'extra';
+    newSlot.innerHTML = `
+        <div class="slot-header">⚔️ Slot Extra ${slotCount - 3}</div>
+        <input type="text" class="slot-name" placeholder="Es: Nuova impresa...">
+        <div class="slot-options">
+            <div class="star-selector" data-stars="1">
+                <span class="star" data-value="1">⭐</span>
+                <span class="star dim" data-value="2">⭐</span>
+                <span class="star dim" data-value="3">⭐</span>
+                <span class="star dim" data-value="4">⭐</span>
+                <span class="star dim" data-value="5">⭐</span>
+            </div>
+            <select class="slot-stat">
+                ${state.stats.map(stat => `<option value="${stat.id}">${stat.icon} ${stat.name}</option>`).join('')}
+            </select>
+        </div>
+    `;
+
+    container.appendChild(newSlot);
+
+    // Initialize stars for the new slot
+    const selector = newSlot.querySelector('.star-selector');
+    selector.querySelectorAll('.star').forEach(star => {
+        star.style.cursor = 'pointer';
+        star.style.pointerEvents = 'auto';
+        star.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const value = parseInt(this.dataset.value);
+            selector.dataset.stars = value;
+            updateStarDisplay(selector, value);
+        });
+    });
 }
 
 function updateStarDisplay(selector, activeCount) {
@@ -5100,18 +5174,19 @@ function saveDailyPlan() {
         reaction: '🛡️'
     };
 
-    slots.forEach(slot => {
+    slots.forEach((slot, index) => {
         const name = slot.querySelector('.slot-name')?.value.trim();
         if (!name) return; // Skip empty slots
 
         const slotType = slot.dataset.slot;
         const stars = parseInt(slot.querySelector('.star-selector')?.dataset.stars) || 3;
         const statId = slot.querySelector('.slot-stat')?.value || 'int';
+        const icon = slotIcons[slotType] || '⚔️';
 
         // Create One Shot with daily plan flag
         const oneshot = {
-            id: 'dp-' + Date.now() + '-' + slotType,
-            name: `${slotIcons[slotType]} ${name} `,
+            id: 'dp-' + Date.now() + '-' + index,
+            name: `${icon} ${name} `,
             stars: stars,
             primaryStatId: statId,
             secondaryStatId: null,
@@ -6650,6 +6725,7 @@ function submitHealthInput() {
 
 // Navigation & Sections
 window.switchSection = switchSection;
+window.switchActivityTab = switchActivityTab;
 
 // Modals & Popups
 window.openModal = openModal;
@@ -6677,6 +6753,8 @@ window.editTask = editTask;
 window.confirmDelete = confirmDelete;
 window.closeDeleteConfirm = closeDeleteConfirm;
 window.showStreakCelebration = showStreakCelebration;
+window.useQuickPick = useQuickPick;
+window.addNewPlannerSlot = addNewPlannerSlot;
 window.closeStreakCelebration = closeStreakCelebration;
 window.hideStatTooltip = hideStatTooltip;
 window.showMomentumTooltip = showMomentumTooltip;
@@ -6790,33 +6868,7 @@ window.closeInventory = closeInventory;
 window.openAddItemModal = openAddItemModal;
 window.closeAddItemModal = closeAddItemModal;
 
-function switchHomeTab(tabId) {
-    // Hide all views first
-    document.querySelectorAll('.home-view').forEach(view => {
-        view.classList.remove('active');
-        view.style.display = 'none';
-    });
-
-    const targetView = document.getElementById(`view-home-${tabId}`);
-    if (targetView) {
-        targetView.classList.add('active');
-        targetView.style.display = 'block';
-    }
-
-    if (tabId === 'status') {
-        renderRadarChart();
-    } else if (tabId === 'nutrition') {
-        renderHealthDashboard();
-        renderNutritionInventory();
-    }
-
-    // After switching, ensure we are scrolled correctly
-    const container = document.querySelector('.content-area');
-    const drawer = document.getElementById('homeNutritionDrawer');
-    if (container && drawer) {
-        container.scrollTop = (tabId === 'status') ? drawer.offsetHeight : 0;
-    }
-}
+// switchHomeTab logic removed in v3.1.12
 
 function renderWaterTracker() {
     const waterGrid = document.getElementById('waterGrid');

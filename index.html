@@ -187,152 +187,10 @@
 
             <!-- HOME Section -->
             <section id="section-home" class="section active">
-                <!-- NUTRIZIONE DRAWER (Hidden above scroll) -->
-                <div class="nutrition-drawer" id="homeNutritionDrawer">
-
-                    <!-- VIEW: NUTRITION (Health + Food + Inventory) -->
-                    <div id="view-home-nutrition" class="home-view">
-                        <div class="nutrition-container">
-                            <!-- Dashboard Salute -->
-                            <div class="health-dashboard" style="margin-top:0;">
-                                <!-- Calorie Card -->
-                                <div class="health-card calories-card">
-                                    <div class="card-title">
-                                        Calorie
-                                        <button class="btn-icon switcher-icon" onclick="switchHomeTab('status')"
-                                            title="Torna a Eroe">👤</button>
-                                    </div>
-                                    <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
-
-                                    <div class="calories-main" onclick="openMealsModal()">
-                                        <div class="ring-container">
-                                            <svg width="140" height="140" viewBox="0 0 140 140">
-                                                <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
-                                                    stroke-width="10"></circle>
-                                                <circle id="calorieRing" class="ring-fill" cx="70" cy="70" r="60"
-                                                    fill="transparent" stroke-width="10" stroke-dasharray="376.99"
-                                                    stroke-dashoffset="376.99" stroke-linecap="round"></circle>
-                                            </svg>
-                                            <div class="ring-content">
-                                                <span id="caloriesRemaining" class="remaining-value">1600</span>
-                                                <span class="remaining-label">Rimanenti</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="calories-stats">
-                                            <div class="stat-item">
-                                                <span class="stat-icon">🚩</span>
-                                                <div class="stat-info">
-                                                    <div class="stat-label">Obiettivo base</div>
-                                                    <div id="calorieGoal" class="stat-value">1600</div>
-                                                </div>
-                                            </div>
-                                            <div class="stat-item" onclick="openHealthInput('consumed')">
-                                                <span class="stat-icon" style="color: #3b82f6;">🍴</span>
-                                                <div class="stat-info">
-                                                    <div class="stat-label">Alimenti</div>
-                                                    <div id="caloriesConsumed" class="stat-value">0</div>
-                                                </div>
-                                            </div>
-                                            <div class="stat-item" onclick="openHealthInput('burned')">
-                                                <span class="stat-icon" style="color: #f97316;">🔥</span>
-                                                <div class="stat-info">
-                                                    <div class="stat-label">Esercizi</div>
-                                                    <div id="caloriesBurned" class="stat-value">0</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="health-row">
-                                    <!-- Step Card -->
-                                    <div class="health-card steps-card" onclick="openHealthInput('steps')">
-                                        <div class="card-title">Passi</div>
-                                        <div class="steps-main">
-                                            <span class="steps-icon">👟</span>
-                                            <span id="stepsCurrent" class="steps-value">0</span>
-                                        </div>
-                                        <div class="steps-goal">Obiettivo: <span id="stepsGoalText">10.000</span></div>
-                                        <div class="progress-bar-bg">
-                                            <div id="stepsProgressBar" class="progress-bar-fill"></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Water Card -->
-                                    <div class="health-card water-card">
-                                        <div class="card-title">Acqua</div>
-                                        <div class="water-main">
-                                            <div id="waterGrid" class="water-grid"></div>
-                                            <div class="water-info">
-                                                <span id="waterCurrentText">0</span> / <span id="waterGoalText">8</span>
-                                            </div>
-                                        </div>
-                                        <div class="water-controls">
-                                            <button class="water-btn" onclick="addWater(-1)">-</button>
-                                            <button class="water-btn plus" onclick="addWater(1)">+</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="health-row">
-                                    <!-- Weight Card -->
-                                    <div class="health-card weight-card" onclick="openWeightModal()">
-                                        <div class="card-title">Peso</div>
-                                        <div class="steps-main">
-                                            <span class="steps-icon">⚖️</span>
-                                            <span id="weightCurrent" class="steps-value">75</span>
-                                            <span class="unit">kg</span>
-                                        </div>
-                                        <div class="weight-details-mini" id="weightDetailsMini">
-                                            <span>Magra: <b id="leanCurrent">--</b></span>
-                                            <span>Grassa: <b id="fatCurrent">--</b></span>
-                                        </div>
-                                        <div class="progress-bar-bg" style="margin-top:5px;">
-                                            <div id="weightProgressBar" class="progress-bar-fill"
-                                                style="background: #ec4899;"></div>
-                                        </div>
-                                    </div>
-                                    <!-- History/Stats Card -->
-                                    <div class="health-card history-card" onclick="showHealthHistory()">
-                                        <div class="card-title">Andamento</div>
-                                        <div class="history-main">
-                                            <span class="history-icon" style="font-size: 24px;">📊</span>
-                                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-                                                Vedi medie e storico
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Spesa Integration (ex Zaino) -->
-                            <div class="nutrition-inventory health-card">
-                                <div class="section-header" style="padding: 0 10px; margin-bottom: 10px;">
-                                    <h3 style="font-family: var(--font-header);">🛒 Spesa</h3>
-                                    <button class="add-btn-circle" onclick="openAddItemModal()">+</button>
-                                </div>
-                                <div class="inventory-tabs">
-                                    <button class="inv-tab active" id="nutrition-food-btn"
-                                        onclick="switchNutritionTab('food')">Cibo</button>
-                                    <button class="inv-tab" id="nutrition-home-btn"
-                                        onclick="switchNutritionTab('home')">Casa</button>
-                                </div>
-                                <div id="nutritionList" class="stats-grid" style="padding: 10px;">
-                                    <!-- Popolato dinamicamente -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- VIEW: STATUS (Hero Info) -->
                 <div id="view-home-status" class="home-view active">
                     <div class="character-sheet">
-                        <!-- Stats Radar Chart -->
                         <div class="stats-chart-container">
-                            <button class="btn-icon switcher-icon top-right" onclick="switchHomeTab('nutrition')"
-                                title="Nutrizione">🍎</button>
                             <canvas id="statsRadar"></canvas>
                         </div>
 
@@ -390,29 +248,176 @@
                 </div>
             </section>
 
-            <!-- ONE SHOT Section -->
-            <section id="section-oneshot" class="section">
-                <div class="section-header">
-                    <h2>💥 One Shot</h2>
-                    <div class="header-actions" style="display: flex; gap: 8px;">
-                        <button class="add-btn-circle" id="diceButtonTrigger" onclick="showDailyPlanner()"
-                            title="È il tuo turno!">🎲</button>
-                        <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
+            <!-- NUTRITION Section -->
+            <section id="section-nutrition" class="section">
+                <div class="nutrition-page">
+                    <div class="nutrition-container">
+                        <!-- Dashboard Salute -->
+                        <div class="health-dashboard" style="margin-top:0;">
+                            <!-- Calorie Card -->
+                            <div class="health-card calories-card">
+                                <div class="card-title">Calorie</div>
+                                <div class="card-subtitle">Rimanente = Obiettivo - Cibo + Esercizio</div>
+
+                                <div class="calories-main" onclick="openMealsModal()">
+                                    <div class="ring-container">
+                                        <svg width="140" height="140" viewBox="0 0 140 140">
+                                            <circle class="ring-bg" cx="70" cy="70" r="60" fill="transparent"
+                                                stroke-width="10"></circle>
+                                            <circle id="calorieRing" class="ring-fill" cx="70" cy="70" r="60"
+                                                fill="transparent" stroke-width="10" stroke-dasharray="376.99"
+                                                stroke-dashoffset="376.99" stroke-linecap="round"></circle>
+                                        </svg>
+                                        <div class="ring-content">
+                                            <span id="caloriesRemaining" class="remaining-value">1600</span>
+                                            <span class="remaining-label">Rimanenti</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="calories-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-icon">🚩</span>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Obiettivo base</div>
+                                                <div id="calorieGoal" class="stat-value">1600</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item" onclick="openHealthInput('consumed')">
+                                            <span class="stat-icon" style="color: #3b82f6;">🍴</span>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Alimenti</div>
+                                                <div id="caloriesConsumed" class="stat-value">0</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item" onclick="openHealthInput('burned')">
+                                            <span class="stat-icon" style="color: #f97316;">🔥</span>
+                                            <div class="stat-info">
+                                                <div class="stat-label">Esercizi</div>
+                                                <div id="caloriesBurned" class="stat-value">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="health-row">
+                                <!-- Step Card -->
+                                <div class="health-card steps-card" onclick="openHealthInput('steps')">
+                                    <div class="card-title">Passi</div>
+                                    <div class="steps-main">
+                                        <span class="steps-icon">👟</span>
+                                        <span id="stepsCurrent" class="steps-value">0</span>
+                                    </div>
+                                    <div class="steps-goal">Obiettivo: <span id="stepsGoalText">10.000</span></div>
+                                    <div class="progress-bar-bg">
+                                        <div id="stepsProgressBar" class="progress-bar-fill"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Water Card -->
+                                <div class="health-card water-card">
+                                    <div class="card-title">Acqua</div>
+                                    <div class="water-main">
+                                        <div id="waterGrid" class="water-grid"></div>
+                                        <div class="water-info">
+                                            <span id="waterCurrentText">0</span> / <span id="waterGoalText">8</span>
+                                        </div>
+                                    </div>
+                                    <div class="water-controls">
+                                        <button class="water-btn" onclick="addWater(-1)">-</button>
+                                        <button class="water-btn plus" onclick="addWater(1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="health-row">
+                                <!-- Weight Card -->
+                                <div class="health-card weight-card" onclick="openWeightModal()">
+                                    <div class="card-title">Peso</div>
+                                    <div class="steps-main">
+                                        <span class="steps-icon">⚖️</span>
+                                        <span id="weightCurrent" class="steps-value">75</span>
+                                        <span class="unit">kg</span>
+                                    </div>
+                                    <div class="weight-details-mini" id="weightDetailsMini">
+                                        <span>Magra: <b id="leanCurrent">--</b></span>
+                                        <span>Grassa: <b id="fatCurrent">--</b></span>
+                                    </div>
+                                    <div class="progress-bar-bg" style="margin-top:5px;">
+                                        <div id="weightProgressBar" class="progress-bar-fill"
+                                            style="background: #ec4899;"></div>
+                                    </div>
+                                </div>
+                                <!-- History/Stats Card -->
+                                <div class="health-card history-card" onclick="showHealthHistory()">
+                                    <div class="card-title">Andamento</div>
+                                    <div class="history-main">
+                                        <span class="history-icon" style="font-size: 24px;">📊</span>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+                                            Vedi medie e storico
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spesa Integration -->
+                        <div class="nutrition-inventory health-card" style="margin-top: 20px;">
+                            <div class="section-header" style="padding: 0 10px; margin-bottom: 10px;">
+                                <h3 style="font-family: var(--font-header);">🛒 Spesa</h3>
+                                <button class="add-btn-circle" onclick="openAddItemModal()">+</button>
+                            </div>
+                            <div class="inventory-tabs">
+                                <button class="inv-tab active" id="nutrition-food-btn"
+                                    onclick="switchNutritionTab('food')">Cibo</button>
+                                <button class="inv-tab" id="nutrition-home-btn"
+                                    onclick="switchNutritionTab('home')">Casa</button>
+                            </div>
+                            <div id="nutritionList" class="stats-grid" style="padding: 10px;">
+                                <!-- Popolato dinamicamente -->
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="oneshot-list" id="oneshotList"></div>
             </section>
 
-            <!-- QUESTS Section -->
-            <section id="section-quest" class="section">
-                <div class="section-header">
-                    <h2>🏆 Quest</h2>
-                    <div class="header-actions" style="display: flex; gap: 8px;">
-                        <button class="add-btn-circle" onclick="showChallengeCatalog()" title="Sfide Preset">⚔️</button>
-                        <button class="add-btn-circle" onclick="openModal('quest')">+</button>
-                    </div>
+            <!-- ACTIVITIES Section -->
+            <section id="section-activities" class="section">
+                <!-- Sub-navigation -->
+                <div class="activities-tabs">
+                    <button class="activity-tab active" id="tab-oneshot" onclick="switchActivityTab('oneshot')">
+                        <span>💥</span> One Shot
+                    </button>
+                    <button class="activity-tab" id="tab-quest" onclick="switchActivityTab('quest')">
+                        <span>🏆</span> Quest
+                    </button>
                 </div>
-                <div class="quest-list" id="questList"></div>
+
+                <!-- VIEW: ONE SHOT -->
+                <div id="view-activities-oneshot" class="activity-view active">
+                    <div class="section-header">
+                        <h2>💥 One Shot</h2>
+                        <div class="header-actions" style="display: flex; gap: 8px;">
+                            <button class="add-btn-circle" id="diceButtonTrigger" onclick="showDailyPlanner()"
+                                title="È il tuo turno!">🎲</button>
+                            <button class="add-btn-circle" onclick="openModal('oneshot')">+</button>
+                        </div>
+                    </div>
+                    <div class="oneshot-list" id="oneshotList"></div>
+                </div>
+
+                <!-- VIEW: QUEST -->
+                <div id="view-activities-quest" class="activity-view">
+                    <div class="section-header">
+                        <h2>🏆 Quest</h2>
+                        <div class="header-actions" style="display: flex; gap: 8px;">
+                            <button class="add-btn-circle" onclick="showChallengeCatalog()"
+                                title="Sfide Preset">⚔️</button>
+                            <button class="add-btn-circle" onclick="openModal('quest')">+</button>
+                        </div>
+                    </div>
+                    <div class="quest-list" id="questList"></div>
+                </div>
             </section>
 
             <!-- SETTINGS Section -->
@@ -656,19 +661,18 @@
         <nav class="bottom-nav" id="bottomNav">
             <div class="nav-bubble" id="navBubble"></div>
             <a href="#" class="nav-item" data-section="habits" onclick="switchSection('habits')">
-                <span class="nav-icon">📜</span>
+                <span class="nav-icon">🔁</span>
             </a>
-            <a href="#" class="nav-item" data-section="oneshot" onclick="switchSection('oneshot')">
-                <span class="nav-icon">💥</span>
-                <span class="nav-badge hidden" id="oneshotBadge">0</span>
+            <a href="#" class="nav-item" data-section="nutrition" onclick="switchSection('nutrition')">
+                <span class="nav-icon">🍎</span>
             </a>
             <div class="nav-center-container">
                 <a href="#" class="nav-item nav-home active" data-section="home" onclick="switchSection('home')">
-                    <span class="nav-icon" id="navAvatar">⚔️</span>
+                    <span class="nav-icon" id="navAvatar">👤</span>
                 </a>
             </div>
-            <a href="#" class="nav-item" data-section="quest" onclick="switchSection('quest')">
-                <span class="nav-icon">🎯</span>
+            <a href="#" class="nav-item" data-section="activities" onclick="switchSection('activities')">
+                <span class="nav-icon">⚔️</span>
             </a>
             <a href="#" class="nav-item" data-section="settings" onclick="switchSection('settings')">
                 <span class="nav-icon">⚙️</span>
@@ -849,6 +853,18 @@
         <div class="recap-header">
             <h2>🎲 È il tuo turno!</h2>
         </div>
+
+        <!-- Quick Pick Section -->
+        <div id="quickPickSection"
+            style="margin: 15px 0; padding: 12px; background: var(--bg-card); border-radius: var(--radius-md); border: 1px dashed var(--glass-border);">
+            <h4
+                style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;">
+                🎯 Suggerimenti dalle Imprese</h4>
+            <div id="quickPickList" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <!-- Dinamicamente popolato -->
+            </div>
+        </div>
+
         <div class="daily-planner-slots" id="dailyPlannerSlots">
             <div class="daily-slot" data-slot="action">
                 <div class="slot-header">🎯 Azione Principale</div>
@@ -907,6 +923,12 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add Slot Button -->
+        <button class="settings-btn" onclick="addNewPlannerSlot()"
+            style="width: 100%; margin: 10px 0; border: 1px dashed var(--accent-primary); background: transparent; color: var(--accent-primary); font-size: 13px;">
+            <span>+ Aggiungi Slot Extra</span>
+        </button>
         <div id="diceRollResult" class="dice-result hidden">
             <div class="dice-container">
                 <div class="d10-dice" id="d10Dice">?</div>

@@ -765,6 +765,95 @@ body {
     }
 }
 
+/* Activities & Sub-tabs */
+.activities-tabs {
+    display: flex;
+    background: var(--bg-card);
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    margin: 0 0 20px 0;
+    border: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+    gap: 8px;
+}
+
+.activity-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.activity-tab.active {
+    background: var(--bg-secondary);
+    color: var(--accent-primary);
+    box-shadow: var(--glass-shadow);
+}
+
+.activity-view {
+    display: none;
+    animation: slideIn 0.3s ease-out;
+}
+
+.activity-view.active {
+    display: block;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Nutrition Page Enhancements */
+.nutrition-page {
+    padding-top: 10px;
+}
+
+/* Quick Pick Items */
+.quick-pick-item {
+    background: var(--bg-primary);
+    padding: 6px 12px;
+    border-radius: var(--radius-xl);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.quick-pick-item:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* ============================================
    HOME - CHARACTER SHEET
    ============================================ */
