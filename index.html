@@ -650,7 +650,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.19</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.21</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -863,7 +863,11 @@
                 ⚔️ Slot Azioni Disponibili</h4>
             <div class="daily-slot" data-slot="action">
                 <div class="slot-header">🎯 Azione</div>
-                <input type="text" class="slot-name" placeholder="Es: Completare il report">
+                <div class="slot-input-wrapper" style="display:flex; gap:8px;">
+                    <input type="text" class="slot-name" placeholder="Es: Completare il report" style="flex:1;">
+                    <button class="pick-task-btn" onclick="openTaskPicker(0)"
+                        title="Scegli dalle Missioni/Campagne">💥</button>
+                </div>
                 <div class="slot-options">
                     <div class="star-selector" data-stars="3">
                         <span class="star" data-value="1">⭐</span>
@@ -877,7 +881,11 @@
             </div>
             <div class="daily-slot" data-slot="bonus">
                 <div class="slot-header">⚡ Azione Bonus</div>
-                <input type="text" class="slot-name" placeholder="Es: Chiamare il medico">
+                <div class="slot-input-wrapper" style="display:flex; gap:8px;">
+                    <input type="text" class="slot-name" placeholder="Es: Chiamare il medico" style="flex:1;">
+                    <button class="pick-task-btn" onclick="openTaskPicker(1)"
+                        title="Scegli dalle Missioni/Campagne">💥</button>
+                </div>
                 <div class="slot-options">
                     <div class="star-selector" data-stars="2">
                         <span class="star" data-value="1">⭐</span>
@@ -891,7 +899,11 @@
             </div>
             <div class="daily-slot" data-slot="movement">
                 <div class="slot-header">🚶 Movimento</div>
-                <input type="text" class="slot-name" placeholder="Es: Passeggiata 30min">
+                <div class="slot-input-wrapper" style="display:flex; gap:8px;">
+                    <input type="text" class="slot-name" placeholder="Es: Passeggiata 30min" style="flex:1;">
+                    <button class="pick-task-btn" onclick="openTaskPicker(2)"
+                        title="Scegli dalle Missioni/Campagne">💥</button>
+                </div>
                 <div class="slot-options">
                     <div class="star-selector" data-stars="2">
                         <span class="star" data-value="1">⭐</span>
@@ -905,7 +917,11 @@
             </div>
             <div class="daily-slot" data-slot="reaction">
                 <div class="slot-header">🛡️ Reazione</div>
-                <input type="text" class="slot-name" placeholder="Es: Rispondere a 3 email">
+                <div class="slot-input-wrapper" style="display:flex; gap:8px;">
+                    <input type="text" class="slot-name" placeholder="Es: Rispondere a 3 email" style="flex:1;">
+                    <button class="pick-task-btn" onclick="openTaskPicker(3)"
+                        title="Scegli dalle Missioni/Campagne">💥</button>
+                </div>
                 <div class="slot-options">
                     <div class="star-selector" data-stars="1">
                         <span class="star" data-value="1">⭐</span>
@@ -919,16 +935,7 @@
             </div>
         </div>
 
-        <!-- Quick Pick Section moved below -->
-        <div id="quickPickSection"
-            style="margin: 15px 0; padding: 12px; background: var(--bg-card); border-radius: var(--radius-md); border: 1px dashed var(--glass-border);">
-            <h4
-                style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;">
-                🎯 Suggerimenti dalle Imprese</h4>
-            <div id="quickPickList" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <!-- Dinamicamente popolato -->
-            </div>
-        </div>
+        <!-- Quick Pick Section Removed (Now integrated via 💥 buttons) -->
 
         <!-- Add Slot Button -->
         <button class="settings-btn" onclick="addNewPlannerSlot()"
@@ -941,12 +948,24 @@
             </div>
             <div class="dice-bonus" id="diceBonus"></div>
         </div>
-        <div class="daily-planner-actions" style="display: flex; gap: 8px; margin-top: 10px;">
-            <button class="recap-close-btn"
-                style="flex:1; background: var(--bg-primary); color: var(--text-primary); padding: 10px;"
-                onclick="closeDailyPlanner()">Salta</button>
-            <button class="recap-close-btn" style="flex:2;" id="rollDiceBtn" onclick="rollD10AndSave()">🎲 Lancia un
-                D10!</button>
+    </div>
+    </div>
+
+    <!-- Task Picker Modal (Quick Select for Daily Planner) -->
+    <div class="recap-overlay hidden" id="taskPickerOverlay" onclick="closeTaskPicker()"></div>
+    <div class="recap-popup hidden" id="taskPickerModal"
+        style="max-height: 70vh; overflow-y: hidden; display:flex; flex-direction:column; padding:0; border: 1px solid var(--accent-primary);">
+        <div class="recap-header" style="padding: 15px; border-bottom: 1px solid var(--glass-border);">
+            <h3 style="margin:0; font-size:16px;">🎯 Scegli Missione o Campagna</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin:5px 0 0;">Seleziona un'attività per caricarla
+                nello slot</p>
+        </div>
+        <div id="taskPickerList"
+            style="flex:1; overflow-y:auto; padding: 10px; display:flex; flex-direction:column; gap:8px;">
+            <!-- Dinamicamente popolato -->
+        </div>
+        <div style="padding: 10px; border-top: 1px solid var(--glass-border); background: var(--bg-primary);">
+            <button class="recap-close-btn" style="width:100%;" onclick="closeTaskPicker()">Annulla</button>
         </div>
     </div>
 
