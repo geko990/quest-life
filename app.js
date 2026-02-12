@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.1.31';
+export const APP_VERSION = '3.1.32';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -36,7 +36,9 @@ window.confirmNewGoal = confirmNewGoal;
 window.confirmManualBurn = confirmManualBurn;
 window.submitHealthInput = submitHealthInput;
 window.closeHealthInput = closeHealthInput;
-window.openHealthInput_WeightDetails = openHealthInput_WeightDetails;
+window.openWeightModal = openWeightModal;
+window.closeWeightModal = closeWeightModal;
+window.saveWeightDetails = saveWeightDetails;
 window.useQuickPick = useQuickPick;
 window.openTaskPicker = openTaskPicker;
 window.closeTaskPicker = closeTaskPicker;
