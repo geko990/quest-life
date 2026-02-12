@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.17';
+const APP_VERSION = '3.1.18';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -3837,7 +3837,7 @@ function closeModal() {
 
 function renderStarRating(selected = 3) {
     return Array.from({ length: 5 }, (_, i) =>
-        `<span class="star ${i < selected ? 'active' : ''}" data-value="${i + 1}" >⭐</span> `
+        `<span class="star ${i < selected ? 'active' : ''}" data-value="${i + 1}">⭐</span>`
     ).join('');
 }
 
@@ -4322,7 +4322,7 @@ function switchAvatarTab(tab) {
 
 function renderEmojiGrid() {
     document.getElementById('emojiGrid').innerHTML = AVATAR_EMOJIS.map(emoji =>
-        `<button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick= "selectEmoji('${emoji}')" > ${emoji}</button> `
+        `<button class="emoji-option ${state.player.avatarEmoji === emoji ? 'selected' : ''}" onclick="selectEmoji('${emoji}')">${emoji}</button>`
     ).join('');
 }
 
@@ -4687,7 +4687,7 @@ function openPomodoroTimer() {
     const statSelect = document.getElementById('pomodoroStat');
     if (statSelect) {
         statSelect.innerHTML = state.stats.map(s =>
-            `<option value= "${s.id}" ${s.id === state.pomodoro.targetStatId ? 'selected' : ''}> ${s.icon} ${s.name}</option> `
+            `<option value="${s.id}" ${s.id === state.pomodoro.targetStatId ? 'selected' : ''}>${s.icon} ${s.name}</option>`
         ).join('');
     }
 
@@ -6616,72 +6616,83 @@ function openHealthInput(type) {
 
     // Manual intake
     if (type === 'consumed_manual') {
-        title.textContent = 'Inserimento Manuale Calorie';
+        title.textContent = 'Aggiungi Pasto/Alimento';
         html = `
-            <div class="meals-input-group" style="flex-direction:column; gap:10px;">
+            <div class="meals-input-group" style="flex-direction:column; gap:12px;">
                 <input type="text" id="manualMealName" placeholder="Nome (es. Cena Fuori)">
                 <input type="number" id="manualMealCalories" placeholder="Calorie Totali">
                 <input type="number" id="manualMealProteins" placeholder="Proteine (opzionale)">
-                <button class="btn-primary" onclick="confirmManualIntake()" style="width:100%;">Aggiungi</button>
+                
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
+                    <button class="btn-primary" onclick="confirmManualIntake()" style="flex:2;">Aggiungi</button>
+                </div>
             </div>
         `;
     } else if (type === 'goal') {
-        title.textContent = 'Set Obiettivo Calorie';
+        title.textContent = 'Obiettivo Calorie';
         html = `
-            <div class="meals-input-group" style="flex-direction:column; gap:8px;">
-                <label style="font-size:11px; color:var(--text-muted);">Nuovo Obiettivo Giornaliero:</label>
-                <input type="number" id="newCalorieGoal" value="${state.health.calories.goal}" placeholder="Obiettivo">
-                <button class="btn-primary" onclick="confirmNewGoal('calories')" style="width:100%;">Salva</button>
+            <div class="meals-input-group" style="flex-direction:column; gap:12px;">
+                <label style="font-size:12px; color:var(--text-muted); text-align:center;">Nuovo Obiettivo Giornaliero:</label>
+                <input type="number" id="newCalorieGoal" value="${state.health.calories.goal}" style="text-align:center; font-size:20px; font-weight:bold;">
+                
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
+                    <button class="btn-primary" onclick="confirmNewGoal('calories')" style="flex:2;">Salva</button>
+                </div>
             </div>
         `;
     } else if (type === 'burned') {
         title.textContent = 'Log Esercizio/Attività';
         const db = state.health.exerciseDatabase || [];
         html = `
-            <div class="preset-title">Esercizi Salvati:</div>
-            <div class="preset-grid" style="margin-bottom:15px; max-height:150px; overflow-y:auto;">
+            <div class="preset-title" style="font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--text-muted);">Esercizi Salvati:</div>
+            <div class="preset-grid" style="margin-bottom:20px; max-height:150px; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                 ${db.map(ex => `
-                    <button class="preset-btn" onclick="openExerciseLogModal('${ex.id}')">
-                        <span class="preset-name" style="font-size:11px;">${ex.emoji} ${ex.name}</span>
-                        <span class="preset-val" style="font-size:10px;">${ex.baseCalories}c / ${ex.baseCount}u</span>
+                    <button class="quick-pick-item" onclick="openExerciseLogModal('${ex.id}')" style="font-size:11px; padding:10px;">
+                        <span>${ex.emoji}</span> ${ex.name}
+                        <div style="font-size:9px; opacity:0.7;">${ex.baseCalories}c / ${ex.baseCount}u</div>
                     </button>
                 `).join('')}
             </div>
-            <button class="btn-secondary" onclick="openExerciseManager()" style="width:100%; margin-bottom:10px; font-size:11px;">📂 Database Esercizi</button>
-            <div class="divider-text">oppure manuale</div>
-            <div class="meals-input-group" style="gap:5px;">
-                <input type="number" id="manualBurnedCalories" placeholder="Calorie bruciate">
-                <button class="btn-primary" onclick="confirmManualBurn()">🔥</button>
+            <button class="btn-secondary" onclick="openExerciseManager()" style="width:100%; margin-bottom:15px; font-size:11px; padding:12px;">📂 Database Esercizi</button>
+            <div class="divider-text" style="text-align:center; position:relative; margin-bottom:15px; font-size:10px; color:var(--text-muted);">OPPURE MANUALE</div>
+            <div class="meals-input-group" style="gap:10px;">
+                <input type="number" id="manualBurnedCalories" placeholder="Calorie bruciate" style="flex:2;">
+                <button class="btn-primary" onclick="confirmManualBurn()" style="flex:1;">🔥 Log</button>
             </div>
+            <button class="btn-text" onclick="closeHealthInput()" style="width:100%; margin-top:15px; color:var(--text-muted); border:none; background:none; cursor:pointer;">Annulla</button>
         `;
     } else if (type === 'steps') {
         title.textContent = 'Aggiorna Passi';
         html = `
-            <div class="health-input-group" style="flex-direction:column; gap:8px;">
+            <div class="health-input-group" style="flex-direction:column; gap:15px;">
                 <div class="health-input-row">
-                    <label style="font-size:11px; color:var(--text-muted);">Passi Totali Oggi:</label>
-                    <input type="number" id="healthInValue" value="${state.health.steps.current}" onfocus="this.select()">
+                    <label style="font-size:12px; color:var(--text-muted);">Passi Totali Oggi:</label>
+                    <input type="number" id="healthInValue" value="${state.health.steps.current}" onfocus="this.select()" style="font-size:18px; text-align:center;">
                 </div>
                 <div class="health-input-row">
-                    <label style="font-size:11px; color:var(--text-muted);">Obiettivo:</label>
-                    <input type="number" id="healthInGoal" value="${state.health.steps.goal}" onfocus="this.select()">
+                    <label style="font-size:12px; color:var(--text-muted);">Obiettivo:</label>
+                    <input type="number" id="healthInGoal" value="${state.health.steps.goal}" onfocus="this.select()" style="font-size:18px; text-align:center;">
                 </div>
-                <button class="btn-primary" onclick="submitHealthInput()" style="width:100%;">Aggiorna</button>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
+                    <button class="btn-primary" onclick="submitHealthInput()" style="flex:2;">Aggiorna</button>
+                </div>
             </div>
         `;
     } else if (type === 'weight') {
         title.textContent = 'Aggiorna Peso';
         html = `
-            <div class="health-input-group" style="flex-direction:column; gap:8px;">
+            <div class="health-input-group" style="flex-direction:column; gap:15px;">
                 <div class="health-input-row">
-                    <label style="font-size:11px; color:var(--text-muted);">Peso Attuale (kg):</label>
-                    <input type="number" id="healthInValue" value="${state.health.weight.current}" step="0.1" onfocus="this.select()">
+                    <label style="font-size:12px; color:var(--text-muted);">Peso Attuale (kg):</label>
+                    <input type="number" id="healthInValue" value="${state.health.weight.current}" step="0.1" onfocus="this.select()" style="font-size:18px; text-align:center;">
                 </div>
-                <div class="health-input-row">
-                    <label style="font-size:11px; color:var(--text-muted);">Obiettivo:</label>
-                    <input type="number" id="healthInGoal" value="${state.health.weight.target}" step="0.1" onfocus="this.select()">
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
+                    <button class="btn-primary" onclick="submitHealthInput()" style="flex:2;">Aggiorna</button>
                 </div>
-                <button class="btn-primary" onclick="submitHealthInput()" style="width:100%;">Aggiorna</button>
             </div>
         `;
     }
@@ -6757,7 +6768,7 @@ window.confirmManualBurn = function () {
         saveState();
         closeHealthInput();
         renderHealthDashboard();
-        showXpToast(`-${cals} Calorie!`, '🔥');
+        showXpToast(`- ${cals} Calorie!`, '🔥');
     }
 };
 
@@ -6777,7 +6788,7 @@ function populateExStatSelector() {
     if (!el) return;
     let options = '<option value="">Nessuno Stat</option>';
     state.stats.forEach(attr => {
-        options += `<option value="${attr.id}">${attr.emoji} ${attr.name}</option>`;
+        options += `<option value="${attr.id}">${attr.icon} ${attr.name}</option>`;
     });
     el.innerHTML = options;
 }
@@ -6809,7 +6820,7 @@ function renderExerciseDatabaseList() {
             <span>${ex.emoji} ${ex.name} <small>(${ex.baseCalories}cal/${ex.baseCount}u)</small></span>
             <button onclick="deleteExerciseFromDatabase('${ex.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
         </div>
-    `).join('');
+        `).join('');
 }
 
 function deleteExerciseFromDatabase(id) {
@@ -6821,7 +6832,7 @@ function deleteExerciseFromDatabase(id) {
 window.openExerciseLogModal = function (id) {
     const ex = state.health.exerciseDatabase.find(e => e.id === id);
     if (!ex) return;
-    const count = prompt(`Quante unità di "${ex.name}" hai fatto? (Base: ${ex.baseCount})`, ex.baseCount || 10);
+    const count = prompt(`Quante unità di "${ex.name}" hai fatto ? (Base: ${ex.baseCount})`, ex.baseCount || 10);
     if (count === null) return;
     const countVal = parseFloat(count);
     if (isNaN(countVal)) return;
@@ -6829,11 +6840,11 @@ window.openExerciseLogModal = function (id) {
     const calories = ex.baseCalories * ratio;
     const xp = Math.round(ex.xpReward * ratio);
     state.health.calories.burned += calories;
-    if (ex.statId && xp > 0) addXp(xp, ex.statId, `Esercizio: ${ex.name}`);
+    if (ex.statId && xp > 0) addXp(xp, ex.statId, `Esercizio: ${ex.name} `);
     saveState();
     closeHealthInput();
     renderHealthDashboard();
-    showXpToast(`Loggato! +${Math.round(calories)} Cal`, '💪');
+    showXpToast(`Loggato! + ${Math.round(calories)} Cal`, '💪');
 }
 
 // ============================================
@@ -7139,10 +7150,10 @@ function renderNutritionInventory() {
         const displayEmoji = item.emoji || (isHome ? '🏠' : '🍎');
 
         return `
-            <div class="stat-card nutrition-item-card swipe-item task-card" 
-                 data-id="${item.id}"
-                 data-type="${currentNutritionInvTab}"
-                 style="padding:0; display:flex; position:relative; overflow:hidden; min-height:46px; margin-bottom:8px;">
+        <div class="stat-card nutrition-item-card swipe-item task-card"
+    data-id="${item.id}"
+    data-type="${currentNutritionInvTab}"
+    style="padding:0; display:flex; position:relative; overflow:hidden; min-height:46px; margin-bottom:8px;">
                 
                 <div class="swipe-actions">
                      <div class="swipe-action edit">✏️</div>
@@ -7312,18 +7323,18 @@ function renderMealsList() {
     } else {
         currentMeals.forEach((meal, idx) => {
             html += `
-                <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:rgba(0,0,0,0.1); border-radius:8px; margin-bottom:4px;">
+        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:rgba(0,0,0,0.1); border-radius:8px; margin-bottom:4px;">
                     <div style="font-size:13px;">${meal.name}</div>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span style="font-weight:bold; color:var(--accent-primary);">${Math.round(meal.calories)} cal</span>
                         <button onclick="deleteMeal(${idx})" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
                     </div>
                 </div>
-            `;
+        `;
         });
     }
 
-    html += `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin:15px 0 8px 0; text-transform:uppercase; padding-left:5px;">Fast Pick (Database)</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">`;
+    html += `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin:15px 0 8px 0; text-transform:uppercase; padding-left:5px;">Fast Pick(Database)</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">`;
 
     const db = state.health.foodDatabase || [];
     if (db.length === 0) {
@@ -7403,7 +7414,7 @@ function populateStatSelectors() {
 
     let options = '<option value="">Nessuno Stat</option>';
     state.stats.forEach(attr => {
-        options += `<option value="${attr.id}">${attr.emoji} ${attr.name}</option>`;
+        options += `<option value="${attr.id}">${attr.icon} ${attr.name}</option>`;
     });
 
     primary.innerHTML = options;
@@ -7462,7 +7473,7 @@ function renderFoodDatabaseList() {
             <span>${food.emoji} ${food.name} <small>(${food.baseCalories}cal/${food.baseGrams}g)</small></span>
             <button onclick="deleteFoodFromDatabase('${food.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
         </div>
-    `).join('');
+        `).join('');
 }
 
 // GRAM INPUT LOGIC
@@ -7526,13 +7537,13 @@ function confirmGramInput() {
         const xpAmount = Math.max(1, Math.round(calories / 50));
         if (selectedFoodForGramInput.primaryStatId) {
             addXpToAttribute(selectedFoodForGramInput.primaryStatId, xpAmount);
-            showXpToast(`+${xpAmount} XP ${selectedFoodForGramInput.primaryStatId.toUpperCase()}`, '⭐');
+            showXpToast(`+ ${xpAmount} XP ${selectedFoodForGramInput.primaryStatId.toUpperCase()}`, '⭐');
         }
     } else {
         // PENALTY for cheat
         const penalty = Math.max(1, Math.round(calories / 100));
         state.player.xp = Math.max(0, state.player.xp - penalty);
-        showXpToast(`Sgarro! -${penalty} XP Totali`, '👿');
+        showXpToast(`Sgarro! - ${penalty} XP Totali`, '👿');
     }
 
     saveState();
@@ -7594,12 +7605,12 @@ window.toggleDontShowInstall = toggleDontShowInstall;
 // Onboarding functions (private to module unless exposed)
 function shouldShowOnboarding(tabType) {
     // Check if user has ever created a task of this type
-    const onboardingKey = `questlife_onboarding_${tabType} `;
+    const onboardingKey = `questlife_onboarding_${tabType}`;
     return !localStorage.getItem(onboardingKey);
 }
 
 function markOnboardingComplete(tabType) {
-    localStorage.setItem(`questlife_onboarding_${tabType} `, 'true');
+    localStorage.setItem(`questlife_onboarding_${tabType}`, 'true');
 }
 
 function getOnboardingHTML(tabType) {
@@ -7663,7 +7674,7 @@ function getOnboardingHTML(tabType) {
                 `).join('')}
             </div>
         </div>
-    `;
+        `;
 }
 
 // Exposure to window
@@ -7676,14 +7687,15 @@ window.getOnboardingHTML = getOnboardingHTML;
 function showXpToast(message, icon = '✨') {
     const toast = document.createElement('div');
     toast.style.cssText = `
-        position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-        background: rgba(20,20,30,0.9); color: white; padding: 12px 24px;
-        border-radius: 50px; display: flex; align-items: center; gap: 12px;
-        z-index: 10000; font-size: 14px; backdrop-filter: blur(10px);
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
-        opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: rgba(20, 20, 30, 0.9); color: white; padding: 12px 24px;
+    border-radius: 50px; display: flex; align-items: center; gap: 12px;
+    z-index: 10000; font-size: 14px; backdrop-filter: blur(10px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0; transition: opacity 0.3s, transform 0.3s;
     `;
-    toast.innerHTML = `<span style="font-size:18px;">${icon}</span> <span style="font-weight:500;">${message}</span>`;
+    toast.innerHTML = `<span style="font-size:18px;">${icon}</span>
+ <span style="font-weight:500;">${message}</span>`;
     document.body.appendChild(toast);
 
     requestAnimationFrame(() => {
