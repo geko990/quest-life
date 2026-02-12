@@ -2230,7 +2230,7 @@ input#settingName {
 .health-card {
     background: var(--bg-primary);
     border-radius: 16px;
-    padding: 16px;
+    padding: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
@@ -2346,7 +2346,7 @@ input#settingName {
 .health-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 6px;
 }
 
 .steps-card {}

@@ -559,6 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for XP penalties (uncompleted habits after grace period)
     setTimeout(() => checkPenalties(), 2500);
 
+    // Check Nutrition Rewards (Daily rollover)
+    setTimeout(() => checkNutritionRewards(), 3000);
+
     // Initialize File System (Database File)
     loadFileHandleOnStart();
 
@@ -614,6 +617,8 @@ document.addEventListener('DOMContentLoaded', () => {
             shiftProgressiveHabits();
             sanitizeDailyCompletionLog(viewedDate);
             renderAll();
+            // Trigger nutrition check after rollover
+            setTimeout(() => checkNutritionRewards(), 1000);
         }
     }, 60000);
 
@@ -6609,6 +6614,200 @@ function closeSetupWizard() {
 window.checkFirstTimeSetup = checkFirstTimeSetup;
 window.completeSetupWizard = completeSetupWizard;
 window.closeSetupWizard = closeSetupWizard;
+
+// ============================================
+// NUTRITION GAMIFICATION
+// ============================================
+
+function checkNutritionRewards() {
+    // Check if there is a history entry that needs processing
+    if (!state.health || !state.health.history || state.health.history.length === 0) return;
+
+    // We process the latest entry if it hasn't been processed yet
+    // The history entry is added by state.js checkHealthRollover when day changes
+    const lastEntry = state.health.history[state.health.history.length - 1];
+
+    if (lastEntry.processed) return;
+
+    console.log("[NutritionRewards] Processing entry:", lastEntry);
+
+    // Calculate results
+    const results = calculateNutritionResults(lastEntry);
+
+    // Apply rewards/penalties
+    applyNutritionRewards(results, lastEntry.date);
+
+    // Mark as processed
+    lastEntry.processed = true;
+    saveState();
+}
+
+function calculateNutritionResults(entry) {
+    const goal = state.health.calories.goal || 1600;
+    const waterGoal = state.health.water?.goal || 2;
+    const proteinGoal = state.health.proteins?.goal || 0; // If 0, ignore or default
+
+    const consumed = entry.consumed || 0;
+    const burned = entry.burned || 0;
+    const netCalories = consumed - burned;
+
+    const diff = netCalories - goal;
+    const percentDiff = diff / goal; // +0.10 means 10% over
+
+    // Logic:
+    // Good: +/- 10% of goal
+    // Bad (Excess): > +15% of goal ("Sgarro")
+    // Undereat: < -15% (Warning, no reward?)
+
+    const results = {
+        calories: 'neutral',
+        water: false,
+        protein: false,
+        xpRewards: [],
+        penalties: []
+    };
+
+    // 1. Calories
+    if (percentDiff > 0.15) {
+        results.calories = 'excess';
+        // Penalty logic
+    } else if (percentDiff < -0.15) {
+        results.calories = 'deficit';
+    } else {
+        results.calories = 'perfect';
+    }
+
+    // 2. Water
+    if (entry.water >= waterGoal) {
+        results.water = true;
+    }
+
+    // 3. Protein
+    if (proteinGoal > 0 && entry.proteins >= proteinGoal) {
+        results.protein = true;
+    }
+
+    return results;
+}
+
+function applyNutritionRewards(results, dateStr) {
+    const rewards = [];
+    const penalties = [];
+
+    // Calorie Rewards/Penalties
+    // USER FEEDBACK: Progression slower than regression.
+    // Success: +30 XP (Harder to level up)
+    // Sgarro: -60 XP (Easier to lose level)
+
+    if (results.calories === 'perfect') {
+        const xp = 30;
+        addXp(xp, 'str', 'Nutrizione Equilibrata');
+        rewards.push({ label: 'Calorie Obiettivo', value: `+${xp} XP (Forza)` });
+    } else if (results.calories === 'excess') {
+        const xp = 60;
+        addXp(-xp, 'con', 'Eccesso Calorico');
+        penalties.push({ label: 'Sgarro Calorico', value: `-${xp} XP (Costituzione)` });
+    }
+
+    // Water
+    if (results.water) {
+        const xp = 15; // Reduced from 20
+        addXp(xp, 'con', 'Idratazione');
+        rewards.push({ label: 'Obiettivo Acqua', value: `+${xp} XP (Costituzione)` });
+    }
+
+    // Protein
+    if (results.protein) {
+        const xp = 20; // Reduced from 25
+        addXp(xp, 'str', 'Proteine');
+        rewards.push({ label: 'Obiettivo Proteine', value: `+${xp} XP (Forza)` });
+    }
+
+    // Show Popup/Notification
+    if (rewards.length > 0 || penalties.length > 0) {
+        showNutritionRecapPopup(dateStr, results, rewards, penalties);
+    }
+}
+
+function showNutritionRecapPopup(date, results, rewards, penalties) {
+    // Check if modal exists
+    let modal = document.getElementById('nutritionRecapModal');
+    let overlay = document.getElementById('nutritionRecapOverlay');
+
+    if (!modal) {
+        // Create it dynamically if missing
+        createNutritionRecapModal();
+        modal = document.getElementById('nutritionRecapModal');
+        overlay = document.getElementById('nutritionRecapOverlay');
+    }
+
+    const content = document.getElementById('nutritionRecapContent');
+
+    let html = `<div style="text-align:center; margin-bottom:15px;">Report del ${date}</div>`;
+
+    if (rewards.length > 0) {
+        html += `<h4 style="color:var(--success); margin:10px 0;">🎉 Successi</h4>`;
+        rewards.forEach(r => {
+            html += `<div class="recap-item" style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--glass-border);">
+                <span>${r.label}</span>
+                <span style="font-weight:bold; color:var(--success);">${r.value}</span>
+            </div>`;
+        });
+    }
+
+    if (penalties.length > 0) {
+        html += `<h4 style="color:var(--danger); margin:10px 0;">⚠️ Penalità</h4>`;
+        penalties.forEach(p => {
+            html += `<div class="recap-item" style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--glass-border);">
+                <span>${p.label}</span>
+                <span style="font-weight:bold; color:var(--danger);">${p.value}</span>
+            </div>`;
+        });
+    }
+
+    if (rewards.length === 0 && penalties.length === 0) {
+        html += `<p style="text-align:center; color:var(--text-muted);">Nessun impatto significativo sulle statistiche.</p>`;
+    }
+
+    content.innerHTML = html;
+
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+}
+
+function createNutritionRecapModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'nutritionRecapOverlay';
+    overlay.className = 'modal-overlay hidden';
+    overlay.onclick = closeNutritionRecap;
+
+    const modal = document.createElement('div');
+    modal.id = 'nutritionRecapModal';
+    modal.className = 'modal hidden';
+    modal.style.maxWidth = '350px';
+    modal.onclick = (e) => e.stopPropagation();
+
+    modal.innerHTML = `
+        <div class="modal-header">
+            <h3>🍎 Report Nutrizione</h3>
+        </div>
+        <div class="modal-body" id="nutritionRecapContent"></div>
+        <div class="modal-actions">
+            <button class="btn-primary" onclick="closeNutritionRecap()" style="width:100%">OK</button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+}
+
+function closeNutritionRecap() {
+    document.getElementById('nutritionRecapOverlay')?.classList.add('hidden');
+    document.getElementById('nutritionRecapModal')?.classList.add('hidden');
+}
+
+window.checkNutritionRewards = checkNutritionRewards;
+window.closeNutritionRecap = closeNutritionRecap;
 
 // ============================================
 // HEALTH DASHBOARD LOGIC
