@@ -242,7 +242,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'reading_30',
-        name: '📚 Reading Challenge',
+        name: '📚 Campagna Lettura',
         description: 'Leggi almeno 20 pagine al giorno per 30 giorni. Espandi la tua mente.',
         duration: 30,
         icon: '📚',
@@ -259,7 +259,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'meditation_21',
-        name: '🧘 21 Days Meditation',
+        name: '🧘 Campagna Meditazione (21gg)',
         description: '21 giorni di meditazione quotidiana. Costruisci una mente calma e presente.',
         duration: 21,
         icon: '🧘',
@@ -276,7 +276,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'cold_shower_30',
-        name: '🧊 Cold Shower Challenge',
+        name: '🧊 Campagna Docce Fredde',
         description: '30 giorni di docce fredde. Costruisci disciplina mentale e resilienza.',
         duration: 30,
         icon: '🧊',
@@ -293,7 +293,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'digital_detox_7',
-        name: '📱 Digital Detox',
+        name: '📱 Campagna Digital Detox',
         description: '7 giorni con uso limitato dello smartphone. Riconquista il tuo tempo.',
         duration: 7,
         icon: '📱',

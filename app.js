@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.19';
+const APP_VERSION = '3.1.20';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -2715,7 +2715,7 @@ function renderQuests() {
         if (shouldShowOnboarding('quests')) {
             container.innerHTML = getOnboardingHTML('quests');
         } else {
-            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna quest</div><div class="empty-state-hint">Clicca "+" per iniziare</div></div>`;
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">Nessuna campagna</div><div class="empty-state-hint">Clicca "+" per iniziare</div></div>`;
         }
         return;
     }
@@ -3643,7 +3643,7 @@ function openModal(type, editData = null) {
             break;
 
         case 'oneshot':
-            title.textContent = editData ? 'Modifica One Shot' : 'Nuovo One Shot';
+            title.textContent = editData ? 'Modifica Missione' : 'Nuova Missione';
             body.innerHTML = `
             <div class="form-group" >
                     <label>Nome</label>
@@ -3683,7 +3683,7 @@ function openModal(type, editData = null) {
             break;
 
         case 'quest':
-            title.textContent = editData ? 'Modifica Quest' : 'Nuova Quest';
+            title.textContent = editData ? 'Modifica Campagna' : 'Nuova Campagna';
             body.innerHTML = `
             <div class="form-group" >
                     <label>Nome Quest</label>
@@ -6431,7 +6431,7 @@ function openTaskDetail(type, id) {
                 `}
             </div>
             <div style="font-size: 13px; color: var(--text-muted); text-align: center; width: 100%; margin-top: 5px;">
-                ${'⭐'.repeat(task.stars)} • <span style="color:var(--accent-primary); text-transform:uppercase; font-weight:600;">${type === 'habit' ? 'Abitudine' : 'One Shot'}</span>
+                ${'⭐'.repeat(task.stars)} • <span style="color:var(--accent-primary); text-transform:uppercase; font-weight:600;">${type === 'habit' ? 'Abitudine' : 'Missione'}</span>
             </div>
         `;
 
@@ -7665,7 +7665,7 @@ function getOnboardingHTML(tabType) {
         },
         oneshots: {
             icon: '💥',
-            title: 'One Shot',
+            title: 'Missioni',
             subtitle: 'Task singoli da completare una volta',
             features: [
                 { icon: '+', label: 'Crea un nuovo task', arrow: '↗️' },
@@ -7677,7 +7677,7 @@ function getOnboardingHTML(tabType) {
         },
         quests: {
             icon: '🎯',
-            title: 'Quest',
+            title: 'Campagne',
             subtitle: 'Grandi obiettivi con sotto-obiettivi',
             features: [
                 { icon: '+', label: 'Crea una nuova quest', arrow: '↗️' },
