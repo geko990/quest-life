@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.1.38';
+export const APP_VERSION = '3.1.39';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -6824,12 +6824,15 @@ function openHealthInput(type) {
         `;
     } else if (type === 'water_goal') {
         title.textContent = 'Obiettivo Acqua';
-        const currentGoal = state.health.water?.goal || 2;
+        const weight = state.health.weight?.current || 75;
+        const recommended = (weight * 0.032).toFixed(1);
+        const currentGoal = state.health.water?.goal || recommended;
+
         html = `
             <div class="meals-input-group" style="flex-direction:column; gap:12px;">
                 <label style="font-size:12px; color:var(--text-muted); text-align:center;">Obiettivo Giornaliero (Litri):</label>
                 <input type="number" id="newWaterGoal" step="0.25" value="${currentGoal}" style="text-align:center; font-size:20px; font-weight:bold;">
-                <p style="font-size:10px; color:var(--text-muted); text-align:center;">Consigliato: Almeno 2 litri al giorno</p>
+                <p style="font-size:10px; color:var(--text-muted); text-align:center;">Consigliato: ${recommended}L al giorno (32ml per kg)</p>
                 
                 <div style="display:flex; gap:10px; margin-top:5px;">
                     <button class="btn-secondary" onclick="closeHealthInput()" style="flex:1;">Annulla</button>
