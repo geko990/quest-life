@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-const APP_VERSION = '3.1.16';
+const APP_VERSION = '3.1.17';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -6776,7 +6776,7 @@ function populateExStatSelector() {
     const el = document.getElementById('exStat');
     if (!el) return;
     let options = '<option value="">Nessuno Stat</option>';
-    state.player.attributes.forEach(attr => {
+    state.stats.forEach(attr => {
         options += `<option value="${attr.id}">${attr.emoji} ${attr.name}</option>`;
     });
     el.innerHTML = options;
@@ -7402,7 +7402,7 @@ function populateStatSelectors() {
     if (!primary) return;
 
     let options = '<option value="">Nessuno Stat</option>';
-    state.player.attributes.forEach(attr => {
+    state.stats.forEach(attr => {
         options += `<option value="${attr.id}">${attr.emoji} ${attr.name}</option>`;
     });
 
