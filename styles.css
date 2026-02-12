@@ -2232,6 +2232,10 @@ input#settingName {
     border-radius: 16px;
     padding: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 125px;
+    /* Ensure uniform height across row */
 }
 
 .calories-card {
@@ -2244,6 +2248,7 @@ input#settingName {
     font-size: 16px;
     font-weight: 700;
     color: var(--text-primary);
+    margin-bottom: 8px;
 }
 
 .card-subtitle {
@@ -2344,16 +2349,14 @@ input#settingName {
     gap: 10px;
 }
 
-.steps-card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+.steps-card {}
 
 .steps-main {
     display: flex;
     align-items: center;
     gap: 8px;
+    height: 32px;
+    margin-bottom: 4px;
 }
 
 .steps-icon {
@@ -2374,6 +2377,8 @@ input#settingName {
 .steps-goal {
     font-size: 10px;
     color: var(--text-muted);
+    margin-top: auto;
+    margin-bottom: 4px;
 }
 
 .progress-bar-bg {
@@ -2381,6 +2386,7 @@ input#settingName {
     background: var(--bg-secondary);
     border-radius: 3px;
     overflow: hidden;
+    margin-top: 0;
 }
 
 .progress-bar-fill {
