@@ -6474,3 +6474,10 @@ textarea {
     opacity: 0.8;
     letter-spacing: 0.5px;
 }
+/* Task Picker Hyper-Elevation (iOS Fix v3.1.27) */
+#taskPickerOverlay {
+    z-index: 50000 !important;
+}
+#taskPickerModal {
+    z-index: 50001 !important;
+}
