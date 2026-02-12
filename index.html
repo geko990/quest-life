@@ -388,17 +388,17 @@
                 <!-- Sub-navigation -->
                 <div class="activities-tabs">
                     <button class="activity-tab active" id="tab-oneshot" onclick="switchActivityTab('oneshot')">
-                        <span>💥</span> One Shot
+                        <span>💥</span> Missioni
                     </button>
                     <button class="activity-tab" id="tab-quest" onclick="switchActivityTab('quest')">
-                        <span>🏆</span> Quest
+                        <span>🏆</span> Campagne
                     </button>
                 </div>
 
-                <!-- VIEW: ONE SHOT -->
+                <!-- VIEW: ONE SHOT (MISSIONI) -->
                 <div id="view-activities-oneshot" class="activity-view active">
                     <div class="section-header">
-                        <h2>💥 One Shot</h2>
+                        <h2>💥 Missioni</h2>
                         <div class="header-actions" style="display: flex; gap: 8px;">
                             <button class="add-btn-circle" id="diceButtonTrigger" onclick="showDailyPlanner()"
                                 title="È il tuo turno!">🎲</button>
@@ -408,10 +408,10 @@
                     <div class="oneshot-list" id="oneshotList"></div>
                 </div>
 
-                <!-- VIEW: QUEST -->
+                <!-- VIEW: QUEST (CAMPAGNE) -->
                 <div id="view-activities-quest" class="activity-view">
                     <div class="section-header">
-                        <h2>🏆 Quest</h2>
+                        <h2>🏆 Campagne</h2>
                         <div class="header-actions" style="display: flex; gap: 8px;">
                             <button class="add-btn-circle" onclick="showChallengeCatalog()"
                                 title="Sfide Preset">⚔️</button>
@@ -853,10 +853,14 @@
     <div class="recap-overlay hidden" id="dailyPlannerOverlay"></div>
     <div class="recap-popup hidden" id="dailyPlannerModal" style="max-height: 85vh; overflow-y: auto;">
         <div class="recap-header">
-            <h2>🎲 È il tuo turno!</h2>
+            <h2 style="font-family:'Cinzel', serif; color:var(--accent-primary);">🎲 È il tuo turno!</h2>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:-5px;">Pianifica le tue azioni per oggi</p>
         </div>
 
-        <div class="daily-planner-slots" id="dailyPlannerSlots">
+        <div class="daily-planner-slots" id="dailyPlannerSlots" style="display: block !important;">
+            <h4
+                style="font-size: 11px; text-transform: uppercase; color: var(--accent-primary); margin: 10px 0 15px; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px;">
+                ⚔️ Slot Azioni Disponibili</h4>
             <div class="daily-slot" data-slot="action">
                 <div class="slot-header">🎯 Azione</div>
                 <input type="text" class="slot-name" placeholder="Es: Completare il report">
