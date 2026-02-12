@@ -6723,7 +6723,36 @@ function submitHealthInput() {
 // GLOBAL EXPOSITIONS (for HTML onclick handlers)
 // ============================================
 
-// Navigation & Sections
+// Utility Exports
+window.exportData = function () {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `quest-life-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+};
+
+window.fixData = function () {
+    ensureUniqueIds(state.habits, 'habit');
+    ensureUniqueIds(state.oneshots, 'oneshot');
+    ensureUniqueIds(state.quests, 'quest');
+    saveState();
+    alert('Dati riparati e salvati correttamente.');
+};
+
+window.updateApp = function () {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            for (let registration of registrations) {
+                registration.update();
+            }
+        });
+    }
+    location.reload(true);
+};
+
 window.switchSection = switchSection;
 window.switchActivityTab = switchActivityTab;
 
