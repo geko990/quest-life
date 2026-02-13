@@ -7672,9 +7672,9 @@ function determineMealTabFromTime() {
     const hour = now.getHours();
 
     if (hour >= 5 && hour < 11) return 'breakfast';
-    if (hour >= 11 && hour < 15) return 'lunch';
-    if (hour >= 15 && hour < 19) return 'snack';
-    return 'dinner'; // Late night counts as dinner
+    if (hour >= 11 && hour < 16) return 'meal'; // Combined Lunch
+    if (hour >= 16 && hour < 19) return 'snack';
+    return 'meal'; // Combined Dinner
 }
 
 function openMealsModal() {
@@ -7780,7 +7780,7 @@ function renderMealsList() {
 }
 
 function getDayPartName(code) {
-    const names = { breakfast: 'Colazione', lunch: 'Pranzo', dinner: 'Cena', snack: 'Merenda', cheat: 'Sgarro' };
+    const names = { breakfast: 'Colazione', meal: 'Pasto', lunch: 'Pranzo', dinner: 'Cena', snack: 'Merenda', cheat: 'Sgarro' };
     return names[code] || code;
 }
 
@@ -7962,9 +7962,8 @@ function renderFoodDatabaseList() {
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
                      <select onchange="window.moveFoodCategory('${food.id}', this.value)" style="font-size:10px; padding:2px 6px; border-radius:8px; background:var(--bg-main); border:1px solid var(--glass-border); color:var(--text-secondary);">
-                        <option value="breakfast" ${food.category === 'breakfast' ? 'selected' : ''}>Colazione</option>
-                        <option value="lunch" ${food.category === 'lunch' ? 'selected' : ''}>Pranzo</option>
-                        <option value="dinner" ${food.category === 'dinner' ? 'selected' : ''}>Cena</option>
+                        <option value="breakfast" ${food.category === 'breakfast' ? 'selected' : ''}>Colaz.</option>
+                        <option value="meal" ${['meal', 'lunch', 'dinner'].includes(food.category) ? 'selected' : ''}>Pasto</option>
                         <option value="snack" ${food.category === 'snack' ? 'selected' : ''}>Merenda</option>
                         <option value="cheat" ${food.category === 'cheat' ? 'selected' : ''}>Sgarro</option>
                     </select>
