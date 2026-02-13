@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.1.41';
+export const APP_VERSION = '3.1.42';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -7947,6 +7947,7 @@ function renderWeightMiniDetails() {
 // Nutrition Trends Logic
 let nutritionChartInstance = null;
 let currentChartMetric = 'calories';
+let currentEditingDate = null;
 
 function showHealthHistory() {
     const overlay = document.getElementById('nutritionTrendsOverlay');
@@ -7954,8 +7955,9 @@ function showHealthHistory() {
     if (overlay && modal) {
         overlay.classList.remove('hidden');
         modal.classList.remove('hidden');
-        // Render chart after a small delay to ensure canvas is visible
-        setTimeout(() => renderNutritionChart('calories'), 50);
+
+        // Reset view to chart
+        toggleNutritionHistoryView('chart');
     }
 }
 window.showHealthHistory = showHealthHistory;
@@ -7967,6 +7969,119 @@ function closeNutritionTrends() {
     if (modal) modal.classList.add('hidden');
 }
 window.closeNutritionTrends = closeNutritionTrends;
+
+function toggleNutritionHistoryView(view) {
+    const chartView = document.getElementById('nutrition-chart-view');
+    const listView = document.getElementById('nutrition-list-view');
+    const btnChart = document.getElementById('btn-view-chart');
+    const btnList = document.getElementById('btn-view-list');
+
+    if (view === 'chart') {
+        chartView.classList.remove('hidden');
+        listView.classList.add('hidden');
+        btnChart.classList.add('active');
+        btnList.classList.remove('active');
+        setTimeout(() => renderNutritionChart(currentChartMetric), 50);
+    } else {
+        chartView.classList.add('hidden');
+        listView.classList.remove('hidden');
+        btnChart.classList.remove('active');
+        btnList.classList.add('active');
+        renderNutritionHistoryList();
+    }
+}
+window.toggleNutritionHistoryView = toggleNutritionHistoryView;
+
+
+function renderNutritionHistoryList() {
+    const listEl = document.getElementById('nutritionHistoryList');
+    if (!listEl) return;
+
+    const history = state.health.history || [];
+    // Sort descending (newest first)
+    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    listEl.innerHTML = sortedHistory.map(entry => `
+        <div class="history-item" onclick="openHistoryEditor('${entry.date}')">
+            <div>
+                <div class="history-date">${formatDate(entry.date)}</div>
+                <div class="history-summary">
+                    🔥 ${Math.round(entry.consumed)} / 💧 ${entry.water?.toFixed(1) || 0}L / ⚖️ ${entry.weight}kg
+                </div>
+            </div>
+            <div class="history-edit-icon">✏️</div>
+        </div>
+    `).join('');
+
+    if (sortedHistory.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Nessun dato storico disponibile.</div>';
+    }
+}
+
+function openHistoryEditor(dateStr) {
+    const entry = state.health.history.find(h => h.date === dateStr);
+    if (!entry) return;
+
+    currentEditingDate = dateStr;
+
+    document.getElementById('editHistoryDate').textContent = formatDate(dateStr);
+    document.getElementById('editHistCalories').value = Math.round(entry.consumed || 0);
+    document.getElementById('editHistBurned').value = Math.round(entry.burned || 0);
+    document.getElementById('editHistProteins').value = Math.round(entry.proteins || 0);
+    // Handle protein legacy structure if needed, but history usually stores 'proteins' or 'protein'
+    // check saved structure: usually {consumed, burned, steps, weight, water, proteins}
+
+    document.getElementById('editHistWater').value = entry.water || 0;
+    document.getElementById('editHistSteps').value = entry.steps || 0;
+    document.getElementById('editHistWeight').value = entry.weight || 0;
+
+    const overlay = document.getElementById('editHistoryOverlay');
+    const modal = document.getElementById('editHistoryModal');
+
+    // Z-index handling: ensure it's above the trends modal
+    overlay.style.zIndex = '105';
+    modal.style.zIndex = '106';
+
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+}
+window.openHistoryEditor = openHistoryEditor;
+
+function closeHistoryEditor() {
+    document.getElementById('editHistoryOverlay').classList.add('hidden');
+    document.getElementById('editHistoryModal').classList.add('hidden');
+    currentEditingDate = null;
+}
+window.closeHistoryEditor = closeHistoryEditor;
+
+function saveHistoryEntry() {
+    if (!currentEditingDate) return;
+
+    const entryIndex = state.health.history.findIndex(h => h.date === currentEditingDate);
+    if (entryIndex === -1) return;
+
+    const updatedEntry = { ...state.health.history[entryIndex] };
+
+    updatedEntry.consumed = parseFloat(document.getElementById('editHistCalories').value) || 0;
+    updatedEntry.burned = parseFloat(document.getElementById('editHistBurned').value) || 0;
+    updatedEntry.proteins = parseFloat(document.getElementById('editHistProteins').value) || 0;
+    updatedEntry.water = parseFloat(document.getElementById('editHistWater').value) || 0;
+    updatedEntry.steps = parseInt(document.getElementById('editHistSteps').value) || 0;
+    updatedEntry.weight = parseFloat(document.getElementById('editHistWeight').value) || 0;
+
+    state.health.history[entryIndex] = updatedEntry;
+    saveState();
+
+    closeHistoryEditor();
+
+    // Refresh list
+    renderNutritionHistoryList();
+
+    // Trigger update if we edited something that might be currently viewed? 
+    // History is usually strictly past, but good to keep UI in sync.
+}
+window.saveHistoryEntry = saveHistoryEntry;
+
 
 function switchNutritionChart(metric) {
     currentChartMetric = metric;

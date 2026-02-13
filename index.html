@@ -666,7 +666,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.41</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.42</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -1351,18 +1351,76 @@
             Ultimi 30 giorni
         </p>
 
-        <div class="chart-controls" style="display:flex; justify-content:center; gap:8px; margin-bottom:15px;">
-            <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Calorie</button>
-            <button class="chart-tab" onclick="switchNutritionChart('weight')">⚖️ Peso</button>
-            <button class="chart-tab" onclick="switchNutritionChart('water')">💧 Acqua</button>
+        <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+            <div class="theme-switcher" style="width: 200px;">
+                <button class="theme-btn active" id="btn-view-chart"
+                    onclick="toggleNutritionHistoryView('chart')">Grafico</button>
+                <button class="theme-btn" id="btn-view-list"
+                    onclick="toggleNutritionHistoryView('list')">Elenco</button>
+            </div>
         </div>
 
-        <div class="chart-container" style="position: relative; height: 200px; width:100%;">
-            <canvas id="nutritionTrendChart"></canvas>
+        <!-- Chart View -->
+        <div id="nutrition-chart-view">
+            <div class="chart-controls" style="display:flex; justify-content:center; gap:8px; margin-bottom:15px;">
+                <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Calorie</button>
+                <button class="chart-tab" onclick="switchNutritionChart('weight')">⚖️ Peso</button>
+                <button class="chart-tab" onclick="switchNutritionChart('water')">💧 Acqua</button>
+            </div>
+
+            <div class="chart-container" style="position: relative; height: 200px; width:100%;">
+                <canvas id="nutritionTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- List View (Hidden by default) -->
+        <div id="nutrition-list-view" class="hidden" style="max-height: 250px; overflow-y: auto;">
+            <div id="nutritionHistoryList" class="history-list">
+                <!-- Dynamic Content -->
+            </div>
         </div>
 
         <button class="btn-primary" onclick="closeNutritionTrends()"
             style="width:100%; margin-top:15px;">Chiudi</button>
+    </div>
+
+    <!-- Edit History Entry Modal (v3.1.42) -->
+    <div class="modal-overlay hidden" id="editHistoryOverlay" onclick="closeHistoryEditor()"></div>
+    <div class="profile-popup popup-center hidden" id="editHistoryModal" style="max-width:320px;"
+        onclick="event.stopPropagation()">
+        <h3 id="editHistoryDate" style="text-align: center; margin-bottom: 15px;">Modifica Data</h3>
+
+        <div class="edit-history-form">
+            <div class="form-group-row">
+                <label>🔥 Calorie Consumate</label>
+                <input type="number" id="editHistCalories">
+            </div>
+            <div class="form-group-row">
+                <label>🔥 Calorie Bruciate</label>
+                <input type="number" id="editHistBurned">
+            </div>
+            <div class="form-group-row">
+                <label>🍖 Proteine (g)</label>
+                <input type="number" id="editHistProteins">
+            </div>
+            <div class="form-group-row">
+                <label>💧 Acqua (L)</label>
+                <input type="number" step="0.1" id="editHistWater">
+            </div>
+            <div class="form-group-row">
+                <label>👣 Passi</label>
+                <input type="number" id="editHistSteps">
+            </div>
+            <div class="form-group-row">
+                <label>⚖️ Peso (kg)</label>
+                <input type="number" step="0.1" id="editHistWeight">
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-secondary" onclick="closeHistoryEditor()" style="flex:1;">Annulla</button>
+            <button class="btn-primary" onclick="saveHistoryEntry()" style="flex:1;">Salva</button>
+        </div>
     </div>
 
 </body>

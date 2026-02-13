@@ -2466,10 +2466,85 @@ input#settingName {
     align-items: center;
 }
 
-.chart-tab.active {
-    background: var(--accent-primary);
-    color: white;
+color: white;
+border-color: var(--accent-primary);
+}
+
+/* History List Styles (v3.1.42) */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.history-item:hover {
     border-color: var(--accent-primary);
+    background: var(--bg-primary);
+}
+
+.history-date {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.history-summary {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.history-edit-icon {
+    font-size: 16px;
+    opacity: 0.5;
+}
+
+/* Edit Form Styles */
+.edit-history-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+
+.form-group-row label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.form-group-row input {
+    width: 80px;
+    background: transparent;
+    border: none;
+    text-align: right;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group-row input:focus {
+    outline: none;
+    color: var(--accent-primary);
 }
 
 /* Pomodoro Timer Styles */
