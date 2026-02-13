@@ -216,9 +216,11 @@ export function loadState() {
             if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
             if (!state.health.foodDatabase || state.health.foodDatabase.length === 0) {
                 state.health.foodDatabase = [
-                    { id: 'fd1', emoji: '🍚', name: 'Riso Basmati', baseGrams: 100, baseCalories: 350, baseProteins: 7, primaryStatId: 'str', secondaryStatId: 'vit' },
-                    { id: 'fd2', emoji: '🍗', name: 'Petto di Pollo', baseGrams: 100, baseCalories: 165, baseProteins: 31, primaryStatId: 'str', secondaryStatId: 'vit' },
-                    { id: 'fd3', emoji: '🥦', name: 'Verdure Miste', baseGrams: 100, baseCalories: 50, baseProteins: 3, primaryStatId: 'int', secondaryStatId: 'vit' }
+                    { id: 'fd1', emoji: '🍚', name: 'Riso Basmati', baseGrams: 100, baseCalories: 350, baseProteins: 7, category: 'lunch' },
+                    { id: 'fd2', emoji: '🍗', name: 'Petto di Pollo', baseGrams: 100, baseCalories: 165, baseProteins: 31, category: 'dinner' },
+                    { id: 'fd3', emoji: '🥦', name: 'Verdure Miste', baseGrams: 100, baseCalories: 50, baseProteins: 3, category: 'lunch' },
+                    { id: 'fd4', emoji: '🍌', name: 'Banana', baseGrams: 100, baseCalories: 89, baseProteins: 1, category: 'snack' },
+                    { id: 'fd5', emoji: '☕', name: 'Caffè (Zuccherato)', baseGrams: 100, baseCalories: 40, baseProteins: 0, category: 'breakfast' }
                 ];
             }
             if (!state.health.exerciseDatabase || state.health.exerciseDatabase.length === 0) {
@@ -229,9 +231,13 @@ export function loadState() {
             }
             if (!state.health.history) state.health.history = [];
             if (!state.health.meals) {
+                // Initialize clean structure
                 state.health.meals = { breakfast: [], lunch: [], dinner: [], snack: [], cheat: [] };
-            } else if (!state.health.meals.cheat) {
-                state.health.meals.cheat = [];
+            } else {
+                // Ensure all keys exist
+                ['breakfast', 'lunch', 'dinner', 'snack', 'cheat'].forEach(k => {
+                    if (!state.health.meals[k]) state.health.meals[k] = [];
+                });
             }
             if (!state.inventory.food) state.inventory.food = [];
             if (!state.inventory.home) state.inventory.home = [];
@@ -363,6 +369,9 @@ export function checkHealthRollover() {
         if (state.health.proteins) state.health.proteins.consumed = 0;
         state.health.steps.current = 0;
         if (state.health.water) state.health.water.consumed = 0;
+
+        // Reset Daily Meals (User Request: "ne tenga traccia solo nella memoria di quel giorno")
+        state.health.meals = { breakfast: [], lunch: [], dinner: [], snack: [], cheat: [] };
 
         state.health.lastUpdate = today;
         saveState();

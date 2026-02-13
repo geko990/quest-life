@@ -1148,32 +1148,24 @@
     <div id="mealsModal" class="modal-overlay" onclick="closeMealsModal()">
         <div class="modal-content premium-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>🍽️ Pasti</h3>
+                <h3>🍽️ Gestione Pasti</h3>
             </div>
 
             <div class="meals-tabs">
                 <button class="meal-tab active" id="meal-tab-breakfast"
                     onclick="switchMealTab('breakfast')">Colazione</button>
-                <button class="meal-tab" id="meal-tab-lunch" onclick="switchMealTab('lunch')">Pasto</button>
+                <button class="meal-tab" id="meal-tab-lunch" onclick="switchMealTab('lunch')">Pranzo</button>
                 <button class="meal-tab" id="meal-tab-snack" onclick="switchMealTab('snack')">Merenda</button>
-                <button class="meal-tab" id="meal-tab-cheat" onclick="switchMealTab('cheat')"
-                    style="color: #ef4444;">Sgarri</button>
-            </div>
-
-            <div class="meals-input-group" id="mealManualInput">
-                <input type="text" id="mealNameInput" placeholder="Cosa hai mangiato?">
-                <input type="number" id="mealCaloriesInput" placeholder="Calorie">
-                <button class="btn-primary" onclick="addCurrentMeal()" style="padding:10px;">➕</button>
+                <button class="meal-tab" id="meal-tab-dinner" onclick="switchMealTab('dinner')">Cena</button>
+                <button class="meal-tab tab-cheat" id="meal-tab-cheat" onclick="switchMealTab('cheat')">Sgarro</button>
             </div>
 
             <div id="mealsList" class="meals-list">
-                <!-- Popolato dinamicamente con preset database -->
+                <!-- Popolato dinamicamente -->
             </div>
 
-            <div class="modal-actions"
-                style="margin-top:10px; border-top:1px solid var(--border-color); padding-top:10px; display: flex; gap: 8px;">
-                <button class="btn-secondary" onclick="openFoodManager()" style="flex:1; font-size:12px;">📂 Gestisci
-                    Alimenti</button>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeMealsModal()" style="width: 100%;">Chiudi</button>
             </div>
         </div>
     </div>
@@ -1182,22 +1174,28 @@
     <div id="foodManagerModal" class="modal-overlay" onclick="closeFoodManager()">
         <div class="modal-content premium-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>📂 Database Alimenti</h3>
+                <h3>🍎 Database Alimenti</h3>
             </div>
             <div class="meals-input-group" style="flex-direction: column; gap: 8px;">
+                <input type="hidden" id="foodEditingId">
                 <div style="display: flex; gap: 4px;">
                     <input type="text" id="foodEmoji" placeholder="Eji" style="width: 40px; text-align: center;">
-                    <input type="text" id="foodName" placeholder="Nome" style="flex: 1;">
+                    <input type="text" id="foodName" placeholder="Nome Alimento" style="flex: 1;">
                 </div>
                 <div style="display: flex; gap: 4px;">
-                    <input type="number" id="foodBaseGrams" placeholder="Grammi Base" style="flex: 1;">
-                    <input type="number" id="foodBaseCalories" placeholder="Calorie" style="flex: 1;">
-                    <input type="number" id="foodBaseProteins" placeholder="Proteine" style="flex: 1;">
+                    <input type="number" id="foodCalories" placeholder="Kcal / 100g" style="flex: 1;">
+                    <input type="number" id="foodProteins" placeholder="Prot (g) / 100g" style="flex: 1;">
                 </div>
-                <div style="display: flex; gap: 4px;">
-                    <select id="foodStatPrimary" style="flex: 1; font-size: 11px;"></select>
-                    <select id="foodStatSecondary" style="flex: 1; font-size: 11px;"></select>
-                </div>
+
+                <select id="foodCategory"
+                    style="width: 100%; font-size: 13px; padding: 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--glass-border);">
+                    <option value="breakfast">Colazione</option>
+                    <option value="lunch" selected>Pranzo</option>
+                    <option value="dinner">Cena</option>
+                    <option value="snack">Merenda</option>
+                    <option value="cheat">Sgarro</option>
+                </select>
+
                 <button class="btn-primary" onclick="saveFoodToDatabase()" style="width: 100%;">💾 Salva
                     Alimento</button>
             </div>
