@@ -666,7 +666,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.40</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.1.41</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -1056,7 +1056,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script src="app.js?v=3.1.40" type="module"></script>
+    <script src="app.js?v=3.1.41" type="module"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js?v=3.1.7')
@@ -1335,6 +1335,34 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Nutrition Trends Overlay (v3.1.41) -->
+    <div class="modal-overlay hidden" id="nutritionTrendsOverlay" onclick="closeNutritionTrends()"></div>
+    <div class="profile-popup popup-center hidden" id="nutritionTrendsModal" style="max-width:360px;"
+        onclick="event.stopPropagation()">
+        <div class="popup-header-info" style="margin-bottom: 10px; justify-content: center;">
+            <div class="popup-avatar-frame" style="width: 50px; height: 50px;">
+                <div class="popup-emoji" style="font-size: 24px;">📊</div>
+            </div>
+        </div>
+        <h3 style="text-align: center; margin-bottom: 5px;">Andamento Nutrizione</h3>
+        <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">
+            Ultimi 30 giorni
+        </p>
+
+        <div class="chart-controls" style="display:flex; justify-content:center; gap:8px; margin-bottom:15px;">
+            <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Calorie</button>
+            <button class="chart-tab" onclick="switchNutritionChart('weight')">⚖️ Peso</button>
+            <button class="chart-tab" onclick="switchNutritionChart('water')">💧 Acqua</button>
+        </div>
+
+        <div class="chart-container" style="position: relative; height: 200px; width:100%;">
+            <canvas id="nutritionTrendChart"></canvas>
+        </div>
+
+        <button class="btn-primary" onclick="closeNutritionTrends()"
+            style="width:100%; margin-top:15px;">Chiudi</button>
     </div>
 
 </body>

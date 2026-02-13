@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.1.40';
+export const APP_VERSION = '3.1.41';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -7944,8 +7944,162 @@ function renderWeightMiniDetails() {
 }
 
 
+// Nutrition Trends Logic
+let nutritionChartInstance = null;
+let currentChartMetric = 'calories';
+
 function showHealthHistory() {
-    alert("I dati vengono salvati a fine giornata (in base al tuo orario di inizio giorno). La visualizzazione grafica sarà disponibile a breve!");
+    const overlay = document.getElementById('nutritionTrendsOverlay');
+    const modal = document.getElementById('nutritionTrendsModal');
+    if (overlay && modal) {
+        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
+        // Render chart after a small delay to ensure canvas is visible
+        setTimeout(() => renderNutritionChart('calories'), 50);
+    }
+}
+window.showHealthHistory = showHealthHistory;
+
+function closeNutritionTrends() {
+    const overlay = document.getElementById('nutritionTrendsOverlay');
+    const modal = document.getElementById('nutritionTrendsModal');
+    if (overlay) overlay.classList.add('hidden');
+    if (modal) modal.classList.add('hidden');
+}
+window.closeNutritionTrends = closeNutritionTrends;
+
+function switchNutritionChart(metric) {
+    currentChartMetric = metric;
+    // Update tab styles
+    document.querySelectorAll('.chart-tab').forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(metric === 'calories' ? 'calorie' : (metric === 'weight' ? 'peso' : 'acqua'))) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    renderNutritionChart(metric);
+}
+window.switchNutritionChart = switchNutritionChart;
+
+function renderNutritionChart(metric) {
+    const ctx = document.getElementById('nutritionTrendChart');
+    if (!ctx) return;
+
+    if (nutritionChartInstance) {
+        nutritionChartInstance.destroy();
+    }
+
+    // Prepare data from history
+    const history = state.health.history || [];
+    // Sort by date just in case
+    const sortedHistory = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Take last 7 days for visibility if on mobile, or up to 30
+    const relevantData = sortedHistory.slice(-14);
+
+    const labels = relevantData.map(entry => {
+        const d = new Date(entry.date);
+        return d.getDate() + '/' + (d.getMonth() + 1);
+    });
+
+    let datasets = [];
+    let yAxisLabel = '';
+
+    if (metric === 'calories') {
+        const consumedData = relevantData.map(e => e.consumed);
+        datasets.push({
+            label: 'Consumate',
+            data: consumedData,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.1)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+        });
+        yAxisLabel = 'kcal';
+    } else if (metric === 'weight') {
+        const weightData = relevantData.map(e => e.weight);
+        datasets.push({
+            label: 'Peso (kg)',
+            data: weightData,
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+        });
+        yAxisLabel = 'kg';
+    } else if (metric === 'water') {
+        const waterData = relevantData.map(e => e.water || 0); // Handle missing water data
+        datasets.push({
+            label: 'Acqua (L)',
+            data: waterData,
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+        });
+        yAxisLabel = 'L';
+    }
+
+    nutritionChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(15, 15, 26, 0.9)',
+                    titleColor: '#fff',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 10 }
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 10 }
+                    },
+                    title: {
+                        display: true,
+                        text: yAxisLabel,
+                        color: '#475569',
+                        font: { size: 10 }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
 }
 
 // PWA & Onboarding
