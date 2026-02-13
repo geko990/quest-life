@@ -7740,6 +7740,13 @@ function renderMealsList() {
     const db = state.health.foodDatabase || [];
     const filteredDb = db.filter(f => f.category === currentMealTab || (!f.category && currentMealTab === 'cheat')); // Fallback for old/cheat items
 
+    // Sort: Favorites first
+    filteredDb.sort((a, b) => {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
     if (filteredDb.length === 0) {
         html += `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">
             Nessun alimento salvato per questa categoria.<br>
@@ -7750,9 +7757,11 @@ function renderMealsList() {
         filteredDb.forEach(food => {
             // Calculate per 100g or serving hint
             let subtext = `${food.baseCalories}kcal / 100g`;
+            const star = food.isFavorite ? '⭐' : '';
 
             html += `
-                <button class="quick-pick-item" onclick="selectFoodFromDb('${food.id}')" style="text-align:left; font-size:12px; padding:12px; border-radius:16px; background:var(--bg-card); border:1px solid var(--glass-border); display:flex; flex-direction:column; gap:4px; transition:transform 0.1s;">
+                <button class="quick-pick-item" onclick="selectFoodFromDb('${food.id}')" style="text-align:left; font-size:12px; padding:12px; border-radius:16px; background:var(--bg-card); border:1px solid var(--glass-border); display:flex; flex-direction:column; gap:4px; transition:transform 0.1s; position:relative;">
+                    <div style="position:absolute; top:5px; right:5px; font-size:10px;">${star}</div>
                     <div style="font-size:24px; margin-bottom:4px;">${food.emoji}</div>
                     <div style="font-weight:600; font-size:13px; color:var(--text-primary);">${food.name}</div>
                     <div style="font-size:10px; color:var(--text-muted);">${subtext}</div>
