@@ -6,7 +6,7 @@ import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { getMonthIdentifier, getGameDate, ensureUniqueIds, getGameDateString } from './utils.js';
 import { saveDataToFile } from './storage.js';
 
-export const APP_VERSION = '3.1.39';
+export const APP_VERSION = '3.1.40';
 
 export let state = {
     player: {
@@ -131,6 +131,12 @@ export function loadState() {
                     medals: [] // Array of {id, name, icon, earnedDate}
                 };
             }
+
+            // Load settings first to ensure dayStartTime is available for date calculations
+            state.settings = { ...state.settings, ...parsed.settings };
+            if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
+            // Ensure dayStartTime exists
+            if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
 
             state.habits = parsed.habits || [];
             state.oneshots = parsed.oneshots || [];
@@ -261,9 +267,6 @@ export function loadState() {
                 state.health.weight.targetFat = 0;
             }
 
-            state.settings = { ...state.settings, ...parsed.settings };
-            if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
-
             // Migrate pomodoro settings
             if (parsed.pomodoro) {
                 state.pomodoro = { ...state.pomodoro, ...parsed.pomodoro };
@@ -272,9 +275,6 @@ export function loadState() {
             if (state.pomodoro.lastSessionDate !== today) {
                 state.pomodoro.sessionsToday = 0;
             }
-
-            // Ensure dayStartTime exists
-            if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
 
             // Migrate dailyPlan
             if (parsed.dailyPlan) {
