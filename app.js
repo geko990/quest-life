@@ -88,7 +88,7 @@ function shiftProgressiveHabits() {
 
 // Check habit streaks and reset if yesterday was missed (after grace period)
 function checkHabitStreaks() {
-    const now = new Date();
+    const now = getGameDateObj();
     const currentHour = now.getHours();
     const today = getGameDate();
     const yesterday = getGameDateObj();
@@ -284,7 +284,7 @@ window.rebuildStreaksUI = rebuildStreaksUI;
 // After noon: Double XP penalty for uncompleted habits
 
 function checkPenalties() {
-    const now = new Date();
+    const now = getGameDateObj();
     const currentHour = now.getHours();
     const today = getGameDate();
 
@@ -6702,25 +6702,25 @@ function applyNutritionRewards(results, dateStr) {
     if (results.calories === 'perfect') {
         const xp = 30;
         addXp(xp, 'str', 'Nutrizione Equilibrata');
-        rewards.push({ label: 'Calorie Obiettivo', value: `+${xp} XP (Forza)` });
+        rewards.push({ label: 'Calorie Obiettivo', xp: xp, stat: 'Forza' });
     } else if (results.calories === 'excess') {
         const xp = 60;
         addXp(-xp, 'con', 'Eccesso Calorico');
-        penalties.push({ label: 'Sgarro Calorico', value: `-${xp} XP (Costituzione)` });
+        penalties.push({ label: 'Sgarro Calorico', xp: xp, stat: 'Costituzione' });
     }
 
     // Water
     if (results.water) {
         const xp = 15; // Reduced from 20
         addXp(xp, 'con', 'Idratazione');
-        rewards.push({ label: 'Obiettivo Acqua', value: `+${xp} XP (Costituzione)` });
+        rewards.push({ label: 'Obiettivo Acqua', xp: xp, stat: 'Costituzione' });
     }
 
     // Protein
     if (results.protein) {
         const xp = 20; // Reduced from 25
         addXp(xp, 'str', 'Proteine');
-        rewards.push({ label: 'Obiettivo Proteine', value: `+${xp} XP (Forza)` });
+        rewards.push({ label: 'Obiettivo Proteine', xp: xp, stat: 'Forza' });
     }
 
     // Show Popup/Notification
@@ -6743,48 +6743,65 @@ function showNutritionRecapPopup(date, results, rewards, penalties) {
 
     const content = document.getElementById('nutritionRecapContent');
 
-    let html = `<div style="text-align:center; margin-bottom:15px;">Report del ${date}</div>`;
+    let html = `<div style="text-align:center; margin-bottom:15px; font-size:13px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Report del ${date}</div>`;
 
     if (rewards.length > 0) {
-        html += `<h4 style="color:var(--success); margin:10px 0;">🎉 Successi</h4>`;
+        html += `<h4 style="color:var(--success); margin:15px 0 10px 0; display:flex; align-items:center; gap:8px; font-size:16px;">
+            <span>🎉</span> Successi
+        </h4>`;
         rewards.forEach(r => {
-            html += `<div class="recap-item" style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--glass-border);">
-                <span>${r.label}</span>
-                <span style="font-weight:bold; color:var(--success);">${r.value}</span>
+            html += `<div class="recap-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px; margin-bottom:8px; background:var(--bg-secondary); border-radius:12px; border:1px solid var(--glass-border);">
+                <span style="font-weight:600; font-size:14px; color:var(--text-secondary);">${r.label}</span>
+                <div style="text-align:right;">
+                    <div style="font-weight:800; color:var(--success); font-size:15px;">+${r.xp} XP</div>
+                    <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">${r.stat}</div>
+                </div>
             </div>`;
         });
     }
 
     if (penalties.length > 0) {
-        html += `<h4 style="color:var(--danger); margin:10px 0;">⚠️ Penalità</h4>`;
+        html += `<h4 style="color:var(--danger); margin:15px 0 10px 0; display:flex; align-items:center; gap:8px; font-size:16px;">
+            <span>⚠️</span> Penalità
+        </h4>`;
         penalties.forEach(p => {
-            html += `<div class="recap-item" style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--glass-border);">
-                <span>${p.label}</span>
-                <span style="font-weight:bold; color:var(--danger);">${p.value}</span>
+            html += `<div class="recap-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px; margin-bottom:8px; background:rgba(239, 68, 68, 0.05); border-radius:12px; border:1px solid rgba(239, 68, 68, 0.2);">
+                <span style="font-weight:600; font-size:14px; color:var(--text-secondary);">${p.label}</span>
+                <div style="text-align:right;">
+                    <div style="font-weight:800; color:var(--danger); font-size:15px;">-${p.xp} XP</div>
+                    <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">${p.stat}</div>
+                </div>
             </div>`;
         });
     }
 
     if (rewards.length === 0 && penalties.length === 0) {
-        html += `<p style="text-align:center; color:var(--text-muted);">Nessun impatto significativo sulle statistiche.</p>`;
+        html += `<p style="text-align:center; color:var(--text-muted); padding:20px;">Nessun impatto significativo sulle statistiche.</p>`;
     }
 
     content.innerHTML = html;
 
     overlay.classList.remove('hidden');
-    modal.classList.remove('hidden');
+    // Force reflow/activation class
+    setTimeout(() => {
+        overlay.classList.add('active');
+    }, 10);
 }
 
 function createNutritionRecapModal() {
     const overlay = document.createElement('div');
     overlay.id = 'nutritionRecapOverlay';
     overlay.className = 'modal-overlay hidden';
-    overlay.onclick = closeNutritionRecap;
+
+    // Clicking overlay closes it
+    overlay.onclick = (e) => {
+        if (e.target === overlay) closeNutritionRecap();
+    };
 
     const modal = document.createElement('div');
     modal.id = 'nutritionRecapModal';
-    modal.className = 'modal hidden';
-    modal.style.maxWidth = '350px';
+    modal.className = 'modal'; // Uses standard centered modal class
+    // Modal click stops propagation so it doesn't close overlay
     modal.onclick = (e) => e.stopPropagation();
 
     modal.innerHTML = `
@@ -6792,18 +6809,24 @@ function createNutritionRecapModal() {
             <h3>🍎 Report Nutrizione</h3>
         </div>
         <div class="modal-body" id="nutritionRecapContent"></div>
-        <div class="modal-actions">
-            <button class="btn-primary" onclick="closeNutritionRecap()" style="width:100%">OK</button>
+        <div class="modal-actions" style="margin-top:20px;">
+            <button class="btn-primary" onclick="closeNutritionRecap()" style="width:100%; padding:14px; font-size:16px;">OK</button>
         </div>
     `;
 
+    // Append modal INSIDE overlay for flex centering
+    overlay.appendChild(modal);
     document.body.appendChild(overlay);
-    document.body.appendChild(modal);
 }
 
 function closeNutritionRecap() {
-    document.getElementById('nutritionRecapOverlay')?.classList.add('hidden');
-    document.getElementById('nutritionRecapModal')?.classList.add('hidden');
+    const overlay = document.getElementById('nutritionRecapOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300); // Wait for transition
+    }
 }
 
 window.checkNutritionRewards = checkNutritionRewards;
@@ -6941,7 +6964,8 @@ function openHealthInput(type) {
 
     // Manual intake
     if (type === 'consumed_manual') {
-        title.textContent = 'Aggiungi Pasto/Alimento';
+        currentMealTab = determineMealTabFromTime(); // Auto-select meal based on time
+        title.textContent = `Aggiungi (${getDayPartName(currentMealTab)})`;
         html = `
             <div class="meals-input-group" style="flex-direction:column; gap:12px;">
                 <input type="text" id="manualMealName" placeholder="Nome (es. Cena Fuori)">
@@ -7642,10 +7666,28 @@ window.closeAddItemModal = closeAddItemModal;
 window.setAddItemType = setAddItemType;
 window.saveInventoryItem = saveInventoryItem;
 
-// MEALS MODAL LOGIC (v3.1.16)
+// MEALS MODAL LOGIC
 let selectedFoodForGramInput = null;
 
+function determineMealTabFromTime() {
+    const now = getGameDateObj();
+    const hour = now.getHours();
+
+    if (hour >= 5 && hour < 11) return 'breakfast';
+    if (hour >= 11 && hour < 15) return 'lunch';
+    if (hour >= 15 && hour < 19) return 'snack';
+    return 'dinner'; // Late night counts as dinner
+}
+
 function openMealsModal() {
+    // Smart auto-select tab based on time
+    currentMealTab = determineMealTabFromTime();
+
+    // Update tab UI
+    document.querySelectorAll('.meal-tab').forEach(t => {
+        t.classList.toggle('active', t.id === `meal-tab-${currentMealTab}`);
+    });
+
     document.getElementById('mealsModal').classList.add('active');
     renderMealsList();
 }
@@ -7666,49 +7708,126 @@ function renderMealsList() {
     const listEl = document.getElementById('mealsList');
     if (!listEl) return;
 
+    // 1. Show Today's Log for this category
     const currentMeals = state.health.meals[currentMealTab] || [];
-    let html = `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; padding-left:5px;">Inseriti Oggi</div>`;
+    let html = `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; padding-left:5px;">${getDayPartName(currentMealTab)} di Oggi</div>`;
 
     if (currentMeals.length === 0) {
-        html += `<div style="padding:10px; color:var(--text-muted); font-size:12px;">Nessun pasto registrato.</div>`;
+        html += `<div style="padding:15px; color:var(--text-muted); font-size:13px; text-align:center; background:rgba(0,0,0,0.03); border-radius:12px; margin-bottom:20px;">
+            Nessun alimento inserito.
+        </div>`;
     } else {
+        html += `<div style="margin-bottom:20px;">`;
         currentMeals.forEach((meal, idx) => {
             html += `
-        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:rgba(0,0,0,0.1); border-radius:8px; margin-bottom:4px;">
-                    <div style="font-size:13px;">${meal.name}</div>
+        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-secondary); border-radius:12px; margin-bottom:8px; border:1px solid var(--glass-border);">
+                    <div>
+                        <div style="font-size:14px; font-weight:500;">${meal.name}</div>
+                        <div style="font-size:11px; color:var(--text-muted);">${meal.grams ? meal.grams + 'g' : 'Porzione'}</div>
+                    </div>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-weight:bold; color:var(--accent-primary);">${Math.round(meal.calories)} cal</span>
-                        <button onclick="deleteMeal(${idx})" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
+                        <span style="font-weight:bold; color:var(--accent-primary); font-size:14px;">${Math.round(meal.calories)} cal</span>
+                        <button onclick="deleteMeal(${idx})" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:5px;">✕</button>
                     </div>
                 </div>
         `;
         });
+        html += `</div>`;
     }
 
-    html += `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin:15px 0 8px 0; text-transform:uppercase; padding-left:5px;">Fast Pick(Database)</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">`;
+    // 2. Show Database Items for this category
+    html += `<div style="font-size:11px; font-weight:bold; color:var(--text-muted); margin:0 0 8px 0; text-transform:uppercase; padding-left:5px;">I Miei Alimenti</div>`;
 
+    // Filter DB by current tab category
     const db = state.health.foodDatabase || [];
-    if (db.length === 0) {
-        html += `<div style="grid-column: span 2; padding:10px; color:var(--text-muted); font-size:11px;">Database vuoto. Vai su "Gestisci Alimenti" per aggiungere.</div>`;
+    const filteredDb = db.filter(f => f.category === currentMealTab || (!f.category && currentMealTab === 'cheat')); // Fallback for old/cheat items
+
+    if (filteredDb.length === 0) {
+        html += `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">
+            Nessun alimento salvato per questa categoria.<br>
+            <button onclick="openFoodManager()" style="margin-top:10px; background:var(--accent-primary); color:white; border:none; padding:8px 16px; border-radius:20px; font-size:12px;">Gestisci Alimenti</button>
+         </div>`;
     } else {
-        db.forEach(food => {
+        html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">`;
+        filteredDb.forEach(food => {
+            // Calculate per 100g or serving hint
+            let subtext = `${food.baseCalories}kcal / 100g`;
+
             html += `
-                <div class="quick-pick-item" onclick="openGramInput('${food.id}')" style="font-size:12px; padding:6px; cursor:pointer;">
-                    <span>${food.emoji}</span> ${food.name}
-                    <div style="font-size:9px; color:var(--text-muted)">${food.baseCalories} cal / ${food.baseGrams}g</div>
-                </div>
+                <button class="quick-pick-item" onclick="selectFoodFromDb('${food.id}')" style="text-align:left; font-size:12px; padding:12px; border-radius:16px; background:var(--bg-card); border:1px solid var(--glass-border); display:flex; flex-direction:column; gap:4px; transition:transform 0.1s;">
+                    <div style="font-size:24px; margin-bottom:4px;">${food.emoji}</div>
+                    <div style="font-weight:600; font-size:13px; color:var(--text-primary);">${food.name}</div>
+                    <div style="font-size:10px; color:var(--text-muted);">${subtext}</div>
+                </button>
             `;
         });
+        html += `</div>`;
     }
 
-    html += `</div>`;
+    // Link to Manager
+    html += `<div style="margin-top:20px; text-align:center;">
+        <button onclick="openFoodManager()" style="background:none; border:none; color:var(--accent-primary); font-size:12px; text-decoration:underline; cursor:pointer;">Gestisci Database Alimenti</button>
+    </div>`;
+
     listEl.innerHTML = html;
+}
+
+function getDayPartName(code) {
+    const names = { breakfast: 'Colazione', lunch: 'Pranzo', dinner: 'Cena', snack: 'Merenda', cheat: 'Sgarro' };
+    return names[code] || code;
+}
+
+function selectFoodFromDb(foodId) {
+    const food = state.health.foodDatabase.find(f => f.id === foodId);
+    if (!food) return;
+
+    // Smart Entry: Ask for grams
+    const gramsStr = prompt(`Quanti grammi di "${food.name}" hai mangiato?`, "100");
+    if (gramsStr === null) return; // Cancelled
+
+    const grams = parseFloat(gramsStr);
+    if (isNaN(grams) || grams <= 0) return alert("Inserisci un peso valido!");
+
+    // Calculate proportional values (Assume stored values are per 100g)
+    // Legacy support: if baseGrams exists use that, else assume 100
+    const baseGrams = food.baseGrams || 100;
+    const ratio = grams / baseGrams;
+
+    const calories = Math.round(food.baseCalories * ratio);
+    const proteins = Math.round((food.baseProteins || 0) * ratio);
+
+    const newMeal = {
+        id: generateId('meal'),
+        name: food.name,
+        calories: calories,
+        proteins: proteins,
+        grams: grams,
+        originalFoodId: food.id
+    };
+
+    if (!state.health.meals[currentMealTab]) state.health.meals[currentMealTab] = [];
+    state.health.meals[currentMealTab].push(newMeal);
+
+    // Update Totals
+    state.health.calories.consumed += calories;
+    if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
+    state.health.proteins.consumed += proteins;
+
+    saveState();
+    renderMealsList();
+    renderHealthDashboard();
+
+    if (currentMealTab === 'cheat') {
+        showXpToast(`+${Math.round(calories)} kcal (Sgarro)`, '👿');
+    } else {
+        showXpToast(`+${Math.round(calories)} kcal`, '🍽️');
+    }
 }
 
 function deleteMeal(index) {
     const meal = state.health.meals[currentMealTab][index];
     if (meal) {
-        state.health.calories.consumed -= meal.calories;
+        state.health.calories.consumed = Math.max(0, state.health.calories.consumed - meal.calories);
         if (meal.proteins) {
             state.health.proteins.consumed = Math.max(0, state.health.proteins.consumed - meal.proteins);
         }
@@ -7716,34 +7835,6 @@ function deleteMeal(index) {
         saveState();
         renderMealsList();
         renderHealthDashboard();
-    }
-}
-
-function addCurrentMeal() {
-    const name = document.getElementById('mealNameInput').value;
-    const calories = parseInt(document.getElementById('mealCaloriesInput').value);
-
-    if (!name || isNaN(calories)) {
-        alert("Inserisci nome e calorie!");
-        return;
-    }
-
-    const newMeal = { id: generateId('meal'), name, calories };
-    if (!state.health.meals[currentMealTab]) state.health.meals[currentMealTab] = [];
-    state.health.meals[currentMealTab].push(newMeal);
-
-    state.health.calories.consumed += calories;
-    document.getElementById('mealNameInput').value = '';
-    document.getElementById('mealCaloriesInput').value = '';
-
-    saveState();
-    renderMealsList();
-    renderHealthDashboard();
-
-    if (currentMealTab === 'cheat') {
-        showXpToast(`Sgarro aggiunto!`, '👿');
-    } else {
-        showXpToast(`Pasto aggiunto!`, '🍽️');
     }
 }
 
