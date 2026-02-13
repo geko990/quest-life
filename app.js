@@ -7837,9 +7837,9 @@ function deleteMeal(index) {
 }
 
 // FOOD DATABASE MANAGER
+// FOOD DATABASE MANAGER
 function openFoodManager() {
     document.getElementById('foodManagerModal').classList.add('active');
-    populateStatSelectors();
     renderFoodDatabaseList();
 }
 
@@ -7847,60 +7847,74 @@ function closeFoodManager() {
     document.getElementById('foodManagerModal').classList.remove('active');
 }
 
-function populateStatSelectors() {
-    const primary = document.getElementById('foodStatPrimary');
-    const secondary = document.getElementById('foodStatSecondary');
-    if (!primary) return;
-
-    let options = '<option value="">Nessuno Stat</option>';
-    state.stats.forEach(attr => {
-        options += `<option value="${attr.id}">${attr.icon} ${attr.name}</option>`;
-    });
-
-    primary.innerHTML = options;
-    secondary.innerHTML = options;
+// Helper: Toggle Favorite
+function toggleFoodFavorite(id) {
+    const food = state.health.foodDatabase.find(f => f.id === id);
+    if (food) {
+        food.isFavorite = !food.isFavorite;
+        saveState();
+        renderFoodDatabaseList();
+    }
 }
+window.toggleFoodFavorite = toggleFoodFavorite;
+
+// Helper to switch category (Move)
+function moveFoodCategory(id, newCat) {
+    const food = state.health.foodDatabase.find(f => f.id === id);
+    if (food) {
+        food.category = newCat;
+        saveState();
+        renderFoodDatabaseList();
+    }
+}
+window.moveFoodCategory = moveFoodCategory;
 
 function saveFoodToDatabase() {
     const emoji = document.getElementById('foodEmoji').value || '🍎';
     const name = document.getElementById('foodName').value;
-    const baseGrams = parseFloat(document.getElementById('foodBaseGrams').value);
-    const baseCalories = parseFloat(document.getElementById('foodBaseCalories').value);
-    const baseProteins = parseFloat(document.getElementById('foodBaseProteins').value) || 0;
-    const primaryStatId = document.getElementById('foodStatPrimary').value;
-    const secondaryStatId = document.getElementById('foodStatSecondary').value;
+    const calories = parseFloat(document.getElementById('foodCalories').value);
+    const proteins = parseFloat(document.getElementById('foodProteins').value) || 0;
+    const category = document.getElementById('foodCategory').value;
 
-    if (!name || isNaN(baseGrams) || isNaN(baseCalories)) {
-        alert("Inserisci nome, grammi e calorie!");
-        return;
+    if (!name || isNaN(calories)) return alert("Inserisci almeno nome e calorie!");
+
+    // Check availability
+    if (!state.health.foodDatabase) state.health.foodDatabase = [];
+
+    // Check if editing
+    const editingId = document.getElementById('foodEditingId')?.value;
+
+    if (editingId) {
+        const idx = state.health.foodDatabase.findIndex(f => f.id === editingId);
+        if (idx >= 0) {
+            state.health.foodDatabase[idx] = {
+                ...state.health.foodDatabase[idx],
+                emoji, name, baseCalories: calories, baseProteins: proteins, category,
+                baseGrams: 100 // Enforce 100g standard
+            };
+        }
+    } else {
+        const newFood = {
+            id: generateId('fd'),
+            emoji,
+            name,
+            baseGrams: 100, // Always per 100g now
+            baseCalories: calories,
+            baseProteins: proteins,
+            category,
+            isFavorite: false
+        };
+        state.health.foodDatabase.push(newFood);
     }
 
-    const newFood = {
-        id: generateId('food'),
-        emoji, name, baseGrams, baseCalories, baseProteins,
-        primaryStatId, secondaryStatId
-    };
-
-    if (!state.health.foodDatabase) state.health.foodDatabase = [];
-    state.health.foodDatabase.push(newFood);
-
     saveState();
     renderFoodDatabaseList();
-    renderMealsList();
 
-    // Reset fields
-    document.getElementById('foodEmoji').value = '';
+    // Reset Form
     document.getElementById('foodName').value = '';
-    document.getElementById('foodBaseGrams').value = '';
-    document.getElementById('foodBaseCalories').value = '';
-    document.getElementById('foodBaseProteins').value = '';
-}
-
-function deleteFoodFromDatabase(id) {
-    state.health.foodDatabase = state.health.foodDatabase.filter(f => f.id !== id);
-    saveState();
-    renderFoodDatabaseList();
-    renderMealsList();
+    document.getElementById('foodCalories').value = '';
+    document.getElementById('foodProteins').value = '';
+    if (document.getElementById('foodEditingId')) document.getElementById('foodEditingId').value = '';
 }
 
 function renderFoodDatabaseList() {
@@ -7908,12 +7922,58 @@ function renderFoodDatabaseList() {
     if (!listEl) return;
 
     const db = state.health.foodDatabase || [];
-    listEl.innerHTML = db.map(food => `
-        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:5px; font-size:12px;">
-            <span>${food.emoji} ${food.name} <small>(${food.baseCalories}cal/${food.baseGrams}g)</small></span>
-            <button onclick="deleteFoodFromDatabase('${food.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
-        </div>
-        `).join('');
+
+    // Sort: Favorites first, then alphabetical
+    db.sort((a, b) => {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    let html = '';
+
+    if (db.length === 0) {
+        html = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nessun alimento nel database.</div>`;
+    } else {
+        db.forEach(food => {
+            const catName = getDayPartName(food.category || 'snack');
+            const starColor = food.isFavorite ? '#fbbf24' : 'var(--text-muted)';
+            const starIcon = food.isFavorite ? '⭐' : '☆';
+
+            html += `
+            <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-secondary); border-radius:12px; margin-bottom:8px; border:1px solid var(--glass-border);">
+                <div style="margin-right:10px;">
+                    <button onclick="toggleFoodFavorite('${food.id}')" style="background:none; border:none; cursor:pointer; font-size:18px; color:${starColor};">${starIcon}</button>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:600; font-size:14px;">${food.emoji} ${food.name} <span style="font-size:10px; font-weight:400; color:var(--text-muted); opacity:0.7;">(${catName})</span></div>
+                    <div style="font-size:11px; color:var(--text-muted);">
+                        ${food.baseCalories}kcal • ${food.baseProteins || 0}g prot (per 100g)
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                     <select onchange="window.moveFoodCategory('${food.id}', this.value)" style="font-size:10px; padding:2px 6px; border-radius:8px; background:var(--bg-main); border:1px solid var(--glass-border); color:var(--text-secondary);">
+                        <option value="breakfast" ${food.category === 'breakfast' ? 'selected' : ''}>Colazione</option>
+                        <option value="lunch" ${food.category === 'lunch' ? 'selected' : ''}>Pranzo</option>
+                        <option value="dinner" ${food.category === 'dinner' ? 'selected' : ''}>Cena</option>
+                        <option value="snack" ${food.category === 'snack' ? 'selected' : ''}>Merenda</option>
+                        <option value="cheat" ${food.category === 'cheat' ? 'selected' : ''}>Sgarro</option>
+                    </select>
+                    <button onclick="deleteFoodFromDatabase('${food.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:11px;">Elimina</button>
+                </div>
+            </div>
+            `;
+        });
+    }
+
+    listEl.innerHTML = html;
+}
+
+function deleteFoodFromDatabase(id) {
+    if (!confirm("Sicuro di voler eliminare questo alimento?")) return;
+    state.health.foodDatabase = state.health.foodDatabase.filter(e => e.id !== id);
+    saveState();
+    renderFoodDatabaseList();
 }
 
 // GRAM INPUT LOGIC
