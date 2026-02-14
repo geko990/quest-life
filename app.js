@@ -7989,7 +7989,7 @@ function deleteFoodFromDatabase(id) {
 }
 
 // GRAM INPUT LOGIC
-let selectedFoodForGramInput = null;
+// selectedFoodForGramInput is already declared above
 let currentGramInputType = 'grams'; // 'grams' or 'units'
 
 function openGramInput(foodId) {
