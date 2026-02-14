@@ -2681,7 +2681,7 @@ function showChallengePreview(templateId) {
             <div class="schedule-day-info">
                 <span class="schedule-day-name">${quest.name}</span>
             </div>
-            ${quest.targetReps && quest.targetReps > 1 ? `<span class="schedule-day-badge">${quest.targetReps} reps</span>` : ''}
+            ${quest.displayTarget ? `<span class="schedule-day-badge">${quest.displayTarget}</span>` : (quest.targetReps && quest.targetReps > 1 ? `<span class="schedule-day-badge">${quest.targetReps} reps</span>` : '')}
         </div>
     `).join('');
 
@@ -3053,12 +3053,13 @@ function renderChallengeView(quest, container) {
                     </div>
                 </div>
             `;
-        } else if (currentSubquest.targetReps) {
+        } else if (currentSubquest.targetReps || currentSubquest.displayTarget) {
             // For push-ups or other rep-based challenges
+            const displayValue = currentSubquest.displayTarget || (currentSubquest.targetReps + ' ripetizioni');
             trackingHtml = `
                 <div class="daily-target-display">
                     <span class="target-icon">🎯</span>
-                    <span class="target-text">Obiettivo: <strong>${currentSubquest.targetReps}</strong> ripetizioni</span>
+                    <span class="target-text">Obiettivo: <strong>${displayValue}</strong></span>
                 </div>
             `;
         }
