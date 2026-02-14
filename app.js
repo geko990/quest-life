@@ -7753,7 +7753,7 @@ function renderMealsList() {
             <button onclick="openFoodManager()" style="margin-top:10px; background:var(--accent-primary); color:white; border:none; padding:8px 16px; border-radius:20px; font-size:12px;">Gestisci Alimenti</button>
          </div>`;
     } else {
-        html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">`;
+        html += `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">`;
         filteredDb.forEach(food => {
             // Calculate per 100g or serving hint
             let subtext = `${food.baseCalories}kcal / 100g`;
