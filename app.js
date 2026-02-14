@@ -253,6 +253,26 @@ function rebuildStreaksFromLog() {
         fixed++;
     }
 
+    // --- NEW: Refund Consumed Freezes (v3.2.2) ---
+    // If a freeze was consumed for a specific date, and that date is now valid (>= 70%), refund it.
+    if (state.player.lastFreezeConsumedDate) {
+        const freezeDate = state.player.lastFreezeConsumedDate;
+        const completion = getCompletionForDate(freezeDate);
+        const THRESHOLD = 70;
+
+        if (completion >= THRESHOLD) {
+            console.log(`[StreakRepair] Refunding freeze for ${freezeDate} (Completion: ${completion}%)`);
+            if (state.player.streakFreezes < 2) {
+                state.player.streakFreezes++;
+                state.player.lastFreezeConsumedDate = null; // Clear it, refund done
+                alert(`❄️ Congelamento Rimborsato!\n\nHai completato le attività del giorno saltato (${freezeDate}).\nIl congelamento è stato restituito.`);
+                fixed++;
+            } else {
+                state.player.lastFreezeConsumedDate = null; // Already max, just clear logic
+            }
+        }
+    }
+
     if (fixed > 0) {
         saveState();
         renderAll();
@@ -720,18 +740,23 @@ function checkFrozenStreak() {
         // Missed exactly 1 day (yesterday)
         if (state.player.streakFreezes > 0) {
             state.player.streakFreezes--;
-            // We pretend we did something yesterday to bridge the gap?
-            // Ideally we just don't reset. But we need to update date?
-            // No, getting back on track today will fix the gap.
-            // We just notify user? Or visually indicate freeze usage?
+            // Record that we used a freeze for YESTERDAY's gap
+            // We need the date of the missed day.
+            // If today is T, lastAction was T-2. The missing day is T-1.
+            const missedDate = new Date(today);
+            missedDate.setDate(missedDate.getDate() - 1);
+            state.player.lastFreezeConsumedDate = formatISO(missedDate);
+            console.log(`[StreakFreeze] Consumed freeze for ${state.player.lastFreezeConsumedDate}. Remaining: ${state.player.streakFreezes}`);
         } else {
             state.player.globalStreak = 0;
             state.player.streakFreezes = 2; // Restore freezes on streak loss
+            state.player.lastFreezeConsumedDate = null; // Clear consumed date on reset
         }
     } else {
         // Missed > 1 day: Streak broken regardless of freezes
         state.player.globalStreak = 0;
         state.player.streakFreezes = 2; // Restore freezes on streak loss
+        state.player.lastFreezeConsumedDate = null; // Clear consumed date on reset
     }
 
     saveState();

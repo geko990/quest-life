@@ -18,6 +18,7 @@ export let state = {
         lastAccessDate: null,
         lastActionDate: null, // Last task completion date
         streakFreezes: 2, // Default freezes
+        lastFreezeConsumedDate: null, // Date when a freeze was used
         lastFreezeReset: null, // Date of last freezes reset
         lastBackupDate: null, // Last manual export date
         avatarType: 'emoji',
@@ -121,6 +122,7 @@ export function loadState() {
             if (state.player.streakFreezes === undefined) state.player.streakFreezes = 2;
             if (state.player.lastActionDate === undefined) state.player.lastActionDate = null;
             if (state.player.lastFreezeReset === undefined) state.player.lastFreezeReset = null;
+            if (state.player.lastFreezeConsumedDate === undefined) state.player.lastFreezeConsumedDate = null;
 
             // Initialization for Monthly Challenge
             if (!state.player.monthlyChallenge) {
