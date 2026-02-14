@@ -7824,7 +7824,8 @@ function openFoodForm(editId = null) {
 
     // Reset or Fill
     if (editId) {
-        const food = state.health.foodDatabase.find(f => f.id === editId);
+        // Use String comparison to handle potential numeric/string ID mismatches
+        const food = state.health.foodDatabase.find(f => String(f.id) === String(editId));
         if (food) {
             document.getElementById('foodEditingId').value = food.id;
             document.getElementById('foodEmoji').value = food.emoji;
