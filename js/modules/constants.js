@@ -42,11 +42,11 @@ export const DB_VERSION = 1;
 export const DB_STORE = 'handles';
 
 export const CHALLENGE_TEMPLATES = [
-    // ================== PUSH-UP CHALLENGES (3 Sets of X) ==================
+    // ================== PUSH-UP CHALLENGES (30 Days - Specific Sets) ==================
     {
         id: 'pushup_lv1',
         name: '💪 Flessioni Liv.1',
-        description: 'Programma principianti: da 3x2 a 3x10. Costruisci le basi con 3 serie giornaliere. Recupero 60-90s.',
+        description: 'Programma principianti: 30 giorni per arrivare a 30 flessioni. Recupero tra serie: 60s.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -56,18 +56,21 @@ export const CHALLENGE_TEMPLATES = [
         color: '#22c55e',
         unlockRequirement: null,
         generateSubquests: () => {
-            // Updated to "Sets x Reps" format
-            const plan = [
-                '3x2', '3x3', '3x4', 'R', '3x5', '3x5', 'R', // Week 1
-                '3x6', '3x7', '3x7', 'R', '3x8', '3x8', 'R', // Week 2
-                '3x9', '3x9', '4x8', 'R', '3x10', '3x10', 'R', // Week 3
-                '4x9', '4x10', '3x12', 'R', '3x15', '3x15', 'R', '3x18', 'MAX' // Week 4
-            ].filter(v => v !== 'R');
-
-            return plan.map((target, i) => ({
+            // 30 Days exactly
+            const daily = [
+                '2-2-2', '3-2-2', '3-2-2', 'Recupero', // Days 1-4
+                '3-3-2', '4-3-2', '4-3-3', 'Recupero', // Days 5-8
+                '5-4-3', '5-4-4', '6-5-4', 'Recupero', // Days 9-12
+                '6-5-5', '7-6-5', '7-6-6', 'Recupero', // Days 13-16
+                '8-6-5', '8-7-6', '9-7-6', 'Recupero', // Days 17-20
+                '10-8-6', '10-8-8', '11-9-8', 'Recupero', // Days 21-24
+                '12-10-8', '13-10-9', '14-11-10', 'Recupero', // Days 25-28
+                '15-12-10', 'TEST: 30 Max' // Days 29-30
+            ];
+            return daily.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' flessioni'}`,
-                targetReps: 1, // Boolean check mostly
+                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                targetReps: 1,
                 completed: false
             }));
         }
@@ -75,7 +78,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv2',
         name: '💪 Flessioni Liv.2',
-        description: 'Programma intermedio: da 3x15 a 4x25. Aumenta volume e resistenza.',
+        description: 'Programma intermedio: 30 giorni per arrivare a 60 flessioni. Recupero tra serie: 45-60s.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -85,15 +88,19 @@ export const CHALLENGE_TEMPLATES = [
         color: '#f59e0b',
         unlockRequirement: 'pushup_lv1',
         generateSubquests: () => {
-            const plan = [
-                '3x15', '3x16', '3x18', 'R', '3x20', '3x20', 'R', // Week 1
-                '4x15', '4x16', '4x18', 'R', '3x22', '3x25', 'R', // Week 2
-                '4x20', '4x22', '3x28', 'R', '3x30', '4x25', 'R', // Week 3
-                '5x20', '4x28', '3x35', 'R', '3x40', '4x30', 'R', '3x45', 'MAX' // Week 4
-            ].filter(v => v !== 'R');
-            return plan.map((target, i) => ({
+            const daily = [
+                '10-10-8', '12-10-8', '12-10-10', 'Recupero', // Days 1-4
+                '14-12-10', '14-12-12', '15-13-12', 'Recupero', // Days 5-8
+                '16-14-12', '16-14-14', '18-16-14', 'Recupero', // Days 9-12
+                '18-16-15', '20-18-15', '20-18-16', 'Recupero', // Days 13-16
+                '22-20-15', '22-20-18', '24-22-18', 'Recupero', // Days 17-20
+                '25-22-20', '26-24-20', '28-24-20', 'Recupero', // Days 21-24
+                '30-26-22', '32-28-24', '35-30-25', 'Recupero', // Days 25-28
+                '40-30-25', 'TEST: 60 Max' // Days 29-30
+            ];
+            return daily.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' flessioni'}`,
+                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
                 targetReps: 1,
                 completed: false
             }));
@@ -102,7 +109,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv3',
         name: '💪 Flessioni Liv.3',
-        description: 'Programma avanzato: Multi-set ad alto volume. Spingiti oltre il limite.',
+        description: 'Programma avanzato: 30 giorni per superare i 100. Recupero minimo.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -112,26 +119,30 @@ export const CHALLENGE_TEMPLATES = [
         color: '#ef4444',
         unlockRequirement: 'pushup_lv2',
         generateSubquests: () => {
-            const plan = [
-                '4x25', '4x30', '3x40', 'R', '5x25', '5x30', 'R',
-                '4x35', '3x50', '4x40', 'R', '5x35', '3x60', 'R',
-                '4x50', '5x40', '3x70', 'R', 'PcK (Deck)', '3x80', 'R',
-                '100 in 1 set', '5x50', '4x60', 'R', '3x90', '4x75', 'R', '5x60', 'GOLD MAX'
-            ].filter(v => v !== 'R');
-            return plan.map((target, i) => ({
+            const daily = [
+                '20-15-15-10', '20-20-15-10', '25-20-15-15', 'Recupero',
+                '30-25-20-15', '30-25-20-20', '35-30-20-15', 'Recupero',
+                '35-30-25-20', '40-30-25-20', '40-35-25-20', 'Recupero',
+                '45-35-30-20', '45-40-30-25', '50-40-30-25', 'Recupero',
+                '50-45-35-30', '50-45-40-35', '55-45-40-35', 'Recupero',
+                '55-50-40-35', '60-50-40-40', '60-50-45-45', 'Recupero',
+                '65-55-45-40', '70-55-45-40', '70-60-50-45', 'Recupero',
+                '80-60-50-50', 'TEST: 100 Challenge'
+            ];
+            return daily.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'GOLD MAX' ? 'Test Leggendario' : target + ' flessioni'}`,
+                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
                 targetReps: 1,
                 completed: false
             }));
         }
     },
 
-    // ================== SIT-UP CHALLENGES (3 Levels) ==================
+    // ================== SIT-UP CHALLENGES (30 Days - Specific Sets) ==================
     {
         id: 'situp_lv1',
         name: '🍫 Sit-Ups Liv.1',
-        description: 'Costruisci il tuo core. Da 3x10 a 3x25 addominali. Focus sulla tecnica.',
+        description: 'Core base: 30 giorni per addominali d\'acciaio.',
         duration: 30,
         icon: '🍫',
         category: 'fitness',
@@ -141,15 +152,19 @@ export const CHALLENGE_TEMPLATES = [
         color: '#22c55e',
         unlockRequirement: null,
         generateSubquests: () => {
-            const plan = [
-                '3x10', '3x12', '3x12', 'R', '3x15', '3x15', 'R',
-                '3x18', '3x18', '3x20', 'R', '4x15', '4x15', 'R',
-                '3x22', '3x22', '3x25', 'R', '4x20', '4x20', 'R',
-                '3x28', '3x30', '4x25', 'R', '3x35', '3x40', 'R', '5x20', 'MAX'
-            ].filter(v => v !== 'R');
-            return plan.map((target, i) => ({
+            const daily = [
+                '10-10-8', '12-10-8', '12-10-10', 'Recupero',
+                '14-12-10', '14-12-12', '15-13-12', 'Recupero',
+                '16-14-12', '16-14-14', '18-16-14', 'Recupero',
+                '18-16-15', '20-18-15', '20-18-16', 'Recupero',
+                '22-20-15', '22-20-18', '24-22-18', 'Recupero',
+                '25-22-20', '26-24-20', '28-24-20', 'Recupero',
+                '30-26-22', '32-28-24', '35-30-25', 'Recupero',
+                '40-30-25', 'TEST: Max Sit-Ups'
+            ];
+            return daily.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' sit-ups'}`,
+                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
                 completed: false
             }));
         }
@@ -157,7 +172,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'situp_lv2',
         name: '🍫 Sit-Ups Liv.2',
-        description: 'Forza addominale intermedia. Da 3x30 a 4x40.',
+        description: 'Core avanzato: 30 giorni di fuoco per veri atleti.',
         duration: 30,
         icon: '🍫',
         category: 'fitness',
@@ -167,15 +182,19 @@ export const CHALLENGE_TEMPLATES = [
         color: '#f59e0b',
         unlockRequirement: 'situp_lv1',
         generateSubquests: () => {
-            const plan = [
-                '3x30', '3x32', '3x35', 'R', '4x25', '4x30', 'R',
-                '3x40', '3x42', '3x45', 'R', '5x25', '5x30', 'R',
-                '4x35', '4x40', '3x50', 'R', '3x55', '3x60', 'R',
-                '4x45', '5x40', '100 Tot', 'R', '3x70', '5x50', 'R', '200 Tot', 'MAX'
-            ].filter(v => v !== 'R');
-            return plan.map((target, i) => ({
+            const daily = [
+                '20-15-15', '25-20-15', '25-20-20', 'Recupero',
+                '30-25-20', '35-25-20', '35-30-25', 'Recupero',
+                '40-30-30', '45-35-30', '50-40-30', 'Recupero',
+                '50-45-35', '55-45-40', '60-50-40', 'Recupero',
+                '65-50-45', '70-55-50', '75-60-50', 'Recupero',
+                '80-60-50', '85-65-55', '90-70-60', 'Recupero',
+                '95-75-65', '100-80-70', '110-90-80', 'Recupero',
+                '120-100-80', 'TEST: 200 Sit-Ups'
+            ];
+            return daily.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' sit-ups'}`,
+                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
                 completed: false
             }));
         }
@@ -195,17 +214,20 @@ export const CHALLENGE_TEMPLATES = [
         color: '#0ea5e9',
         unlockRequirement: null,
         generateSubquests: () => {
-            const plan = [
-                '20s', '20s', '30s', '30s', '40s', 'R', '45s',
-                '45s', '60s', '60s', '60s', '90s', 'R', '90s',
-                '90s', '120s', '120s', '150s', 'R', '150s',
-                '150s', '180s', '180s', '210s', 'R', '240s', // 4 min
-                '240s', '270s', 'R', '300s' // 5 min
-            ]; // 30 days exactly
-            return plan.map((target, i) => ({
+            const daily = [
+                '20s', '20s', 'Recupero', '30s',
+                '30s', 'Recupero', '40s', '45s',
+                'Recupero', '50s', '55s', 'Recupero',
+                '60s', '60s', 'Recupero', '90s',
+                '90s', 'Recupero', '120s', '120s',
+                'Recupero', '150s', '180s', 'Recupero',
+                '210s', '240s', 'Recupero', '270s',
+                '300s', 'TEST: Max Plank'
+            ];
+            return daily.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'R' ? 'Riposo Attivo' : target + ' Plank'}`,
-                completed: target === 'R' // Auto-complete rest days? No, user checks off "Rest"
+                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' Plank'}`,
+                completed: false
             }));
         }
     },
