@@ -1813,7 +1813,17 @@ function renderRadarChart() {
         radarChart.options = options;
         radarChart.update();
     } else {
-        radarChart = new Chart(ctx, { type: 'radar', data, options });
+        try {
+            if (typeof Chart !== 'undefined') {
+                radarChart = new Chart(ctx, { type: 'radar', data, options });
+            } else {
+                console.error("Chart.js not loaded");
+                // Optional: Show fallback text in canvas container
+                ctx.canvas.parentNode.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px;">Grafico non disponibile</div>';
+            }
+        } catch (e) {
+            console.error("Error initializing Chart:", e);
+        }
     }
 }
 // Popup Variables
