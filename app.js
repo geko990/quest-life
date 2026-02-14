@@ -5023,6 +5023,86 @@ function updatePomodoroDisplay() {
     if (xpEl) xpEl.textContent = state.pomodoro.xpPerSession;
 }
 
+
+// ============================================
+// BACKGROUND AUDIO / LOCK SCREEN TIMER
+// ============================================
+
+// Silent MP3 (Base64) - 1 second of silence to keep audio session active
+const SILENT_AUDIO = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw//OEAAAAAAAAAAAAAAAAAAAAAAAAMGluZgAAAA8AAAAEAAABIAAAzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0LjEwMAAAAAAAAAAAAAAAAP87AAAAADAAAxAAAAAAAAAAAAAAA//OEAAAAAAABAAAAAP8ZAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAABAAAAAP8ZAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAABAAAAAP8ZAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
+let pomodoroAudio = null;
+
+function initPomodoroAudio() {
+    if (!pomodoroAudio) {
+        pomodoroAudio = new Audio(SILENT_AUDIO);
+        pomodoroAudio.loop = true;
+    }
+}
+
+function updateLockScreenTimer(timeStr, status) {
+    if (!('mediaSession' in navigator)) return;
+
+    // Status mapping
+    let title = 'Pomodoro Timer';
+    let artist = 'Focus';
+    let artwork = './icon.png'; // Use app icon
+
+    if (status === 'running') {
+        title = timeStr;
+        artist = '🔥 Focus in corso';
+    } else if (status === 'paused') {
+        title = timeStr; // Keep showing time even in pause
+        artist = '⏸️ In Pausa';
+    } else if (status === 'idle') {
+        title = 'Pomodoro Pronto';
+        artist = 'Avvia per iniziare';
+    }
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: title,
+        artist: artist,
+        album: 'Quest Life',
+        artwork: [
+            { src: artwork, sizes: '192x192', type: 'image/png' },
+            { src: artwork, sizes: '512x512', type: 'image/png' }
+        ]
+    });
+
+    // Update playback state
+    if (status === 'running') {
+        navigator.mediaSession.playbackState = 'playing';
+    } else if (status === 'paused') {
+        navigator.mediaSession.playbackState = 'paused';
+    } else {
+        navigator.mediaSession.playbackState = 'none';
+        // If idle, stop audio
+        if (pomodoroAudio) {
+            pomodoroAudio.pause();
+            pomodoroAudio.currentTime = 0;
+        }
+    }
+}
+
+// Media Session Action Handlers
+if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => {
+        if (state.pomodoro.status === 'paused' || state.pomodoro.status === 'idle') {
+            startPomodoro();
+        }
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+        if (state.pomodoro.status === 'running') {
+            pausePomodoro();
+        }
+    });
+
+    navigator.mediaSession.setActionHandler('stop', () => {
+        resetPomodoro();
+    });
+}
+
 function completePomodoro() {
     if (pomodoroAudio) {
         pomodoroAudio.pause();
