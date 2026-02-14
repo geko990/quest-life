@@ -3,7 +3,7 @@
    Constants Module
    ============================================ */
 
-export const APP_VERSION = '2.8.16';
+export const APP_VERSION = '3.2.2';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -42,11 +42,11 @@ export const DB_VERSION = 1;
 export const DB_STORE = 'handles';
 
 export const CHALLENGE_TEMPLATES = [
-    // ================== PUSH-UP CHALLENGES (3 Levels) ==================
+    // ================== PUSH-UP CHALLENGES (3 Sets of X) ==================
     {
         id: 'pushup_lv1',
         name: '💪 Flessioni Liv.1',
-        description: 'Programma principianti: da 5 a 30 flessioni in 30 giorni. Costruisci le basi della forza.',
+        description: 'Programma principianti: da 3x2 a 3x10. Costruisci le basi con 3 serie giornaliere. Recupero 60-90s.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -54,19 +54,20 @@ export const CHALLENGE_TEMPLATES = [
         level: 1,
         primaryStatId: 'str',
         color: '#22c55e',
-        unlockRequirement: null, // Always available
+        unlockRequirement: null,
         generateSubquests: () => {
-            // Based on research: Week 1 foundation (5-15), Week 2 (18-28), Week 3 (30-42), Week 4 (45-60)
-            const daily = [
-                5, 7, 9, 'R', 10, 12, 'R', // Week 1
-                15, 17, 19, 'R', 21, 23, 'R', // Week 2
-                25, 27, 28, 'R', 30, 32, 'R', // Week 3
-                35, 38, 40, 'R', 45, 50, 'R', 55, 60 // Week 4
+            // Updated to "Sets x Reps" format
+            const plan = [
+                '3x2', '3x3', '3x4', 'R', '3x5', '3x5', 'R', // Week 1
+                '3x6', '3x7', '3x7', 'R', '3x8', '3x8', 'R', // Week 2
+                '3x9', '3x9', '4x8', 'R', '3x10', '3x10', 'R', // Week 3
+                '4x9', '4x10', '3x12', 'R', '3x15', '3x15', 'R', '3x18', 'MAX' // Week 4
             ].filter(v => v !== 'R');
-            return daily.map((reps, i) => ({
+
+            return plan.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${reps} flessioni`,
-                targetReps: reps,
+                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' flessioni'}`,
+                targetReps: 1, // Boolean check mostly
                 completed: false
             }));
         }
@@ -74,7 +75,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv2',
         name: '💪 Flessioni Liv.2',
-        description: 'Programma intermedio: da 40 a 80 flessioni in 30 giorni. Aumenta volume e resistenza.',
+        description: 'Programma intermedio: da 3x15 a 4x25. Aumenta volume e resistenza.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -84,16 +85,16 @@ export const CHALLENGE_TEMPLATES = [
         color: '#f59e0b',
         unlockRequirement: 'pushup_lv1',
         generateSubquests: () => {
-            const daily = [
-                40, 42, 45, 'R', 48, 50, 'R', // Week 1
-                52, 55, 57, 'R', 60, 62, 'R', // Week 2
-                65, 67, 70, 'R', 72, 75, 'R', // Week 3
-                78, 80, 82, 'R', 85, 90, 'R', 95, 100 // Week 4
+            const plan = [
+                '3x15', '3x16', '3x18', 'R', '3x20', '3x20', 'R', // Week 1
+                '4x15', '4x16', '4x18', 'R', '3x22', '3x25', 'R', // Week 2
+                '4x20', '4x22', '3x28', 'R', '3x30', '4x25', 'R', // Week 3
+                '5x20', '4x28', '3x35', 'R', '3x40', '4x30', 'R', '3x45', 'MAX' // Week 4
             ].filter(v => v !== 'R');
-            return daily.map((reps, i) => ({
+            return plan.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${reps} flessioni`,
-                targetReps: reps,
+                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' flessioni'}`,
+                targetReps: 1,
                 completed: false
             }));
         }
@@ -101,7 +102,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv3',
         name: '💪 Flessioni Liv.3',
-        description: 'Programma avanzato: da 80 a 150+ flessioni in 30 giorni. Raggiungi il massimo potenziale.',
+        description: 'Programma avanzato: Multi-set ad alto volume. Spingiti oltre il limite.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -111,17 +112,100 @@ export const CHALLENGE_TEMPLATES = [
         color: '#ef4444',
         unlockRequirement: 'pushup_lv2',
         generateSubquests: () => {
-            const daily = [
-                80, 85, 90, 'R', 95, 100, 'R', // Week 1
-                105, 110, 115, 'R', 120, 125, 'R', // Week 2
-                130, 135, 140, 'R', 145, 150, 'R', // Week 3
-                155, 160, 165, 'R', 170, 175, 'R', 180, 200 // Week 4
+            const plan = [
+                '4x25', '4x30', '3x40', 'R', '5x25', '5x30', 'R',
+                '4x35', '3x50', '4x40', 'R', '5x35', '3x60', 'R',
+                '4x50', '5x40', '3x70', 'R', 'PcK (Deck)', '3x80', 'R',
+                '100 in 1 set', '5x50', '4x60', 'R', '3x90', '4x75', 'R', '5x60', 'GOLD MAX'
             ].filter(v => v !== 'R');
-            return daily.map((reps, i) => ({
+            return plan.map((target, i) => ({
                 id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${reps} flessioni (+ varianti)`,
-                targetReps: reps,
+                name: `Giorno ${i + 1}: ${target === 'GOLD MAX' ? 'Test Leggendario' : target + ' flessioni'}`,
+                targetReps: 1,
                 completed: false
+            }));
+        }
+    },
+
+    // ================== SIT-UP CHALLENGES (3 Levels) ==================
+    {
+        id: 'situp_lv1',
+        name: '🍫 Sit-Ups Liv.1',
+        description: 'Costruisci il tuo core. Da 3x10 a 3x25 addominali. Focus sulla tecnica.',
+        duration: 30,
+        icon: '🍫',
+        category: 'fitness',
+        stars: 3,
+        level: 1,
+        primaryStatId: 'str',
+        color: '#22c55e',
+        unlockRequirement: null,
+        generateSubquests: () => {
+            const plan = [
+                '3x10', '3x12', '3x12', 'R', '3x15', '3x15', 'R',
+                '3x18', '3x18', '3x20', 'R', '4x15', '4x15', 'R',
+                '3x22', '3x22', '3x25', 'R', '4x20', '4x20', 'R',
+                '3x28', '3x30', '4x25', 'R', '3x35', '3x40', 'R', '5x20', 'MAX'
+            ].filter(v => v !== 'R');
+            return plan.map((target, i) => ({
+                id: `day_${i + 1}`,
+                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' sit-ups'}`,
+                completed: false
+            }));
+        }
+    },
+    {
+        id: 'situp_lv2',
+        name: '🍫 Sit-Ups Liv.2',
+        description: 'Forza addominale intermedia. Da 3x30 a 4x40.',
+        duration: 30,
+        icon: '🍫',
+        category: 'fitness',
+        stars: 4,
+        level: 2,
+        primaryStatId: 'str',
+        color: '#f59e0b',
+        unlockRequirement: 'situp_lv1',
+        generateSubquests: () => {
+            const plan = [
+                '3x30', '3x32', '3x35', 'R', '4x25', '4x30', 'R',
+                '3x40', '3x42', '3x45', 'R', '5x25', '5x30', 'R',
+                '4x35', '4x40', '3x50', 'R', '3x55', '3x60', 'R',
+                '4x45', '5x40', '100 Tot', 'R', '3x70', '5x50', 'R', '200 Tot', 'MAX'
+            ].filter(v => v !== 'R');
+            return plan.map((target, i) => ({
+                id: `day_${i + 1}`,
+                name: `Giorno ${i + 1}: ${target === 'MAX' ? 'Test Massimale' : target + ' sit-ups'}`,
+                completed: false
+            }));
+        }
+    },
+
+    // ================== PLANK CHALLENGE ==================
+    {
+        id: 'plank_30',
+        name: '🪵 Plank Challenge',
+        description: '30 Giorni di acciaio. Da 20s a 5 minuti di plank.',
+        duration: 30,
+        icon: '🪵',
+        category: 'fitness',
+        stars: 4,
+        level: 1,
+        primaryStatId: 'con', // Constitution for endurance
+        color: '#0ea5e9',
+        unlockRequirement: null,
+        generateSubquests: () => {
+            const plan = [
+                '20s', '20s', '30s', '30s', '40s', 'R', '45s',
+                '45s', '60s', '60s', '60s', '90s', 'R', '90s',
+                '90s', '120s', '120s', '150s', 'R', '150s',
+                '150s', '180s', '180s', '210s', 'R', '240s', // 4 min
+                '240s', '270s', 'R', '300s' // 5 min
+            ]; // 30 days exactly
+            return plan.map((target, i) => ({
+                id: `day_${i + 1}`,
+                name: `Giorno ${i + 1}: ${target === 'R' ? 'Riposo Attivo' : target + ' Plank'}`,
+                completed: target === 'R' // Auto-complete rest days? No, user checks off "Rest"
             }));
         }
     },
