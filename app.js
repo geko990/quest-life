@@ -4911,7 +4911,14 @@ function togglePomodoro() {
 function startPomodoro() {
     initPomodoroAudio();
     if (pomodoroAudio) {
-        pomodoroAudio.play().catch(e => console.warn("Audio play failed", e));
+        pomodoroAudio.play().then(() => {
+            console.log("Audio playing");
+            // Force update metadata ensuring playback started
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+        }).catch(e => {
+            console.error("Audio play failed", e);
+            alert("Errore riproduzione audio background: " + e.message);
+        });
     }
     pomodoroRunning = true;
     state.pomodoro.status = 'running';
@@ -5037,6 +5044,9 @@ function initPomodoroAudio() {
     if (!pomodoroAudio) {
         pomodoroAudio = new Audio(SILENT_AUDIO);
         pomodoroAudio.loop = true;
+        pomodoroAudio.preload = 'auto';
+        // iOS Hack: Attach to DOM
+        document.body.appendChild(pomodoroAudio);
     }
 }
 
@@ -5046,7 +5056,7 @@ function updateLockScreenTimer(timeStr, status) {
     // Status mapping
     let title = 'Pomodoro Timer';
     let artist = 'Focus';
-    let artwork = './icon.png'; // Use app icon
+    let artwork = 'icon.png'; // Use absolute path or clean relative
 
     if (status === 'running') {
         title = timeStr;
@@ -5059,28 +5069,27 @@ function updateLockScreenTimer(timeStr, status) {
         artist = 'Avvia per iniziare';
     }
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-        title: title,
-        artist: artist,
-        album: 'Quest Life',
-        artwork: [
-            { src: artwork, sizes: '192x192', type: 'image/png' },
-            { src: artwork, sizes: '512x512', type: 'image/png' }
-        ]
-    });
+    try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: title,
+            artist: artist,
+            album: 'Quest Life',
+            artwork: [
+                { src: 'icon.png', sizes: '192x192', type: 'image/png' },
+                { src: 'icon.png', sizes: '512x512', type: 'image/png' }
+            ]
+        });
 
-    // Update playback state
-    if (status === 'running') {
-        navigator.mediaSession.playbackState = 'playing';
-    } else if (status === 'paused') {
-        navigator.mediaSession.playbackState = 'paused';
-    } else {
-        navigator.mediaSession.playbackState = 'none';
-        // If idle, stop audio
-        if (pomodoroAudio) {
-            pomodoroAudio.pause();
-            pomodoroAudio.currentTime = 0;
+        // Update playback state
+        if (status === 'running') {
+            navigator.mediaSession.playbackState = 'playing';
+        } else if (status === 'paused') {
+            navigator.mediaSession.playbackState = 'paused';
+        } else {
+            navigator.mediaSession.playbackState = 'none';
         }
+    } catch (e) {
+        console.error("Media Session Error:", e);
     }
 }
 
