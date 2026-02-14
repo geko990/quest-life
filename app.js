@@ -4909,6 +4909,10 @@ function togglePomodoro() {
 }
 
 function startPomodoro() {
+    initPomodoroAudio();
+    if (pomodoroAudio) {
+        pomodoroAudio.play().catch(e => console.warn("Audio play failed", e));
+    }
     pomodoroRunning = true;
     state.pomodoro.status = 'running';
 
@@ -4930,6 +4934,7 @@ function startPomodoro() {
 }
 
 function pausePomodoro() {
+    if (pomodoroAudio) pomodoroAudio.pause();
     pomodoroRunning = false;
     state.pomodoro.status = 'paused';
 
@@ -4949,6 +4954,10 @@ function pausePomodoro() {
 }
 
 function resetPomodoro() {
+    if (pomodoroAudio) {
+        pomodoroAudio.pause();
+        pomodoroAudio.currentTime = 0;
+    }
     pomodoroRunning = false;
     state.pomodoro.status = 'idle';
     state.pomodoro.targetTime = null;
@@ -4998,11 +5007,14 @@ function updatePomodoroDisplay() {
     const seconds = secondsLeft % 60;
     const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-    const timeEl = document.getElementById('pomodoroTime');
-    if (timeEl) timeEl.textContent = timeStr;
+    const displayEl = document.getElementById('pomodoroTime');
+    if (displayEl) displayEl.textContent = timeStr;
 
-    // Update Browser Tab Title safely? Maybe too distraction.
-    // document.title = `${timeStr} - Focus`;
+    // Update document title for browser tab
+    document.title = (state.pomodoro.status === 'running') ? `(${timeStr}) Quest Life` : 'Quest Life';
+
+    // Update Media Session (Lock Screen)
+    updateLockScreenTimer(timeStr, state.pomodoro.status);
 
     const countEl = document.getElementById('pomodoroCount');
     if (countEl) countEl.textContent = state.pomodoro.sessionsToday;
@@ -5012,6 +5024,10 @@ function updatePomodoroDisplay() {
 }
 
 function completePomodoro() {
+    if (pomodoroAudio) {
+        pomodoroAudio.pause();
+        pomodoroAudio.currentTime = 0;
+    }
     clearInterval(pomodoroInterval);
     pomodoroRunning = false;
     state.pomodoro.status = 'idle';
