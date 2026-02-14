@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.2.1';
+export const APP_VERSION = '3.2.2';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -5407,9 +5407,42 @@ function saveDailyPlanWithBonus(d10Roll) {
         const name = slot.querySelector('.slot-name')?.value.trim();
         if (!name) return;
 
+        const slotInput = slot.querySelector('.slot-name');
+        const sourceId = slotInput.dataset.sourceId;
+        const sourceType = slotInput.dataset.sourceType;
+
         const slotType = slot.dataset.slot;
         const stars = parseInt(slot.querySelector('.star-selector')?.dataset.stars) || 3;
         const statId = slot.querySelector('.slot-stat')?.value || 'int';
+
+        // CHECK FOR EXISTING MISSION (Fix Duplication)
+        if (sourceId && sourceType === 'oneshot') {
+            const existing = state.oneshots.find(o => o.id === sourceId);
+            if (existing) {
+                console.log(`Updating existing OneShot in Daily Plan: ${existing.name}`);
+                existing.dailyPlanDate = today;
+                existing.d10Roll = d10Roll;
+                existing.fromDailyPlan = true;
+                // Update stats if changed in planner
+                existing.stars = stars;
+                existing.primaryStatId = statId;
+
+                // Move to top for visibility? Optional, but good.
+                state.oneshots = state.oneshots.filter(o => o.id !== sourceId);
+                state.oneshots.unshift(existing);
+
+                createdCount++;
+                return; // START NEXT ITERATION, DO NOT CREATE NEW
+            }
+        }
+
+        // CHECK FOR EXISTING QUEST SUBTASK
+        // Logic: We still create a daily wrapper/proxy for the subtask, 
+        // BUT we should avoid creating multiple if one already exists for today?
+        // For now, the "Update existing OneShot" logic above handles the case where 
+        // the user picks a "OneShot" that was *already* a daily plan item (if that's possible).
+        // If they pick a Quest Subtask, we create a new Daily Task that links to it.
+        // Users usually don't pick the same quest subtask twice in one day.
 
         const oneshot = {
             id: 'dp-' + Date.now() + '-' + slotType,
@@ -5422,7 +5455,9 @@ function saveDailyPlanWithBonus(d10Roll) {
             locked: false,
             fromDailyPlan: true,
             dailyPlanDate: today,
-            d10Roll: d10Roll  // Store the dice roll for bonus calculation
+            d10Roll: d10Roll,  // Store the dice roll for bonus calculation
+            linkedQuestId: slotInput.dataset.sourceQuestId || null,
+            linkedSubtaskId: (sourceType === 'quest') ? sourceId : null
         };
 
         state.oneshots.unshift(oneshot);
