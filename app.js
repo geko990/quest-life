@@ -4,7 +4,7 @@ console.log("APP.JS LOADED - v3.1.14");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.2.0';
+export const APP_VERSION = '3.2.1';
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES } from './js/modules/constants.js?v=3.1.14';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.1.14';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.1.14';
@@ -7989,15 +7989,68 @@ function deleteFoodFromDatabase(id) {
 }
 
 // GRAM INPUT LOGIC
+let selectedFoodForGramInput = null;
+let currentGramInputType = 'grams'; // 'grams' or 'units'
+
 function openGramInput(foodId) {
     selectedFoodForGramInput = state.health.foodDatabase.find(f => f.id === foodId);
     if (!selectedFoodForGramInput) return;
 
     document.getElementById('gramInputTitle').textContent = `${selectedFoodForGramInput.emoji} ${selectedFoodForGramInput.name}`;
-    document.getElementById('enteredGrams').value = selectedFoodForGramInput.baseGrams;
+
+    // Check if unit grams are defined
+    const hasUnit = selectedFoodForGramInput.unitGrams && selectedFoodForGramInput.unitGrams > 0;
+    const toggle = document.getElementById('gramInputTypeToggle');
+
+    if (hasUnit) {
+        toggle.style.display = 'flex';
+        document.getElementById('unitWeightValue').textContent = selectedFoodForGramInput.unitGrams;
+        // Default to units if available? No, stick to grams as primary to avoid confusion, user can switch.
+        setGramInputType('grams');
+    } else {
+        toggle.style.display = 'none';
+        setGramInputType('grams');
+    }
+
+    document.getElementById('enteredGrams').value = ''; // Auto-clear for fresh entry? Or default to 100? Let's clear to encourage typing.
+    // actually default to 100g or 1 unit is better UX
+    if (hasUnit) {
+        document.getElementById('enteredGrams').value = '';
+        document.getElementById('enteredGrams').placeholder = "0";
+    } else {
+        document.getElementById('enteredGrams').value = selectedFoodForGramInput.baseGrams || 100;
+    }
+
     document.getElementById('gramInputModal').classList.add('active');
+    setTimeout(() => document.getElementById('enteredGrams').focus(), 100); // Auto focus
     updateGramCalculation();
 }
+
+function setGramInputType(type) {
+    currentGramInputType = type;
+    const btnGrams = document.getElementById('gramInputType-grams');
+    const btnUnits = document.getElementById('gramInputType-units');
+    const input = document.getElementById('enteredGrams');
+    const helper = document.getElementById('unitWeightHelper');
+
+    if (type === 'grams') {
+        btnGrams.style.background = 'var(--accent-primary)';
+        btnGrams.style.color = 'white';
+        btnUnits.style.background = 'transparent';
+        btnUnits.style.color = 'var(--text-secondary)';
+        input.placeholder = "Grammi";
+        helper.style.display = 'none';
+    } else {
+        btnUnits.style.background = 'var(--accent-primary)';
+        btnUnits.style.color = 'white';
+        btnGrams.style.background = 'transparent';
+        btnGrams.style.color = 'var(--text-secondary)';
+        input.placeholder = "Numero Pezzi";
+        helper.style.display = 'block';
+    }
+    updateGramCalculation();
+}
+window.setGramInputType = setGramInputType;
 
 function closeGramInput() {
     document.getElementById('gramInputModal').classList.remove('active');
@@ -8006,15 +8059,24 @@ function closeGramInput() {
 function updateGramCalculation() {
     const entered = parseFloat(document.getElementById('enteredGrams').value);
     const display = document.getElementById('gramInputCalculation');
+
     if (isNaN(entered) || !selectedFoodForGramInput) {
         display.textContent = '-';
         return;
     }
 
-    const ratio = entered / selectedFoodForGramInput.baseGrams;
+    let grams = entered;
+    if (currentGramInputType === 'units') {
+        grams = entered * (selectedFoodForGramInput.unitGrams || 0);
+    }
+
+    const ratio = grams / selectedFoodForGramInput.baseGrams;
     const cals = Math.round(selectedFoodForGramInput.baseCalories * ratio);
     const prots = Math.round(selectedFoodForGramInput.baseProteins * ratio);
-    display.textContent = `${cals} Cal | ${prots}g Proteine`;
+
+    // Add grams info in display if using units
+    const extraInfo = currentGramInputType === 'units' ? `(${Math.round(grams)}g) ` : '';
+    display.textContent = `${extraInfo}${cals} Cal | ${prots}g Proteine`;
 }
 
 // Update calculation live
@@ -8023,8 +8085,16 @@ document.addEventListener('input', (e) => {
 });
 
 function confirmGramInput() {
-    const grams = parseFloat(document.getElementById('enteredGrams').value);
-    if (isNaN(grams) || !selectedFoodForGramInput) return;
+    const entered = parseFloat(document.getElementById('enteredGrams').value);
+    if (isNaN(entered) || !selectedFoodForGramInput) return;
+
+    let grams = entered;
+    let nameSuffix = `(${grams}g)`;
+
+    if (currentGramInputType === 'units') {
+        grams = entered * (selectedFoodForGramInput.unitGrams || 0);
+        nameSuffix = `(${entered} pz)`;
+    }
 
     const ratio = grams / selectedFoodForGramInput.baseGrams;
     const calories = selectedFoodForGramInput.baseCalories * ratio;
@@ -8032,7 +8102,7 @@ function confirmGramInput() {
 
     const newMeal = {
         id: generateId('meal'),
-        name: `${selectedFoodForGramInput.name} (${grams}g)`,
+        name: `${selectedFoodForGramInput.name} ${nameSuffix}`,
         calories,
         proteins
     };
