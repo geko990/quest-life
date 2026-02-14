@@ -4916,6 +4916,11 @@ function startPomodoro() {
         pomodoroAudio.play().then(() => {
             console.log("Audio playing");
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+
+            // Visual feedback
+            const statusEl = document.getElementById('pomodoroStatus');
+            if (statusEl) statusEl.textContent += " 🔊";
+
         }).catch(e => {
             console.error("Audio play failed", e);
             if (e.name !== 'AbortError') {
@@ -5039,7 +5044,7 @@ function updatePomodoroDisplay() {
 // BACKGROUND AUDIO / LOCK SCREEN TIMER
 // ============================================
 
-// Silent WAV (Base64) - ~0.5s of silence, reliable for iOS
+// Silent WAV (Base64) - ~0.5s of silence
 const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==';
 
 let pomodoroAudio = null;
@@ -5048,10 +5053,21 @@ function initPomodoroAudio() {
     if (!pomodoroAudio) {
         pomodoroAudio = new Audio(SILENT_AUDIO);
         pomodoroAudio.loop = true;
-        pomodoroAudio.preload = 'auto'; // load immediately
-        pomodoroAudio.volume = 0.01; // Non-zero volume sometimes helps
-        // iOS Hack: Attach to DOM
+        pomodoroAudio.preload = 'auto';
+        pomodoroAudio.volume = 0.05; // Slightly higher volume to ensure system detects it
+
+        // Critical for iOS:
+        pomodoroAudio.setAttribute('playsinline', '');
+        pomodoroAudio.setAttribute('webkit-playsinline', '');
+
         document.body.appendChild(pomodoroAudio);
+    }
+
+    // Resume Web Audio Context if available (helper for iOS)
+    if (window.audioCtx && window.audioCtx.state === 'suspended') {
+        window.audioCtx.resume();
+    } else {
+        initAudio(); // Call global initAudio if exists
     }
 }
 
