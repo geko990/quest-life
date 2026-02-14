@@ -1209,6 +1209,47 @@
         </div>
     </div>
 
+    <!-- FOOD FORM MODAL -->
+    <div id="foodFormModal" class="modal-overlay" onclick="closeFoodForm()">
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📝 Modifica Alimento</h3>
+            </div>
+            <div class="meals-input-group" style="flex-direction: column; gap: 12px;">
+                <input type="hidden" id="foodEditingId">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="foodEmoji" placeholder="Emoji" style="width: 50px; text-align: center;">
+                    <input type="text" id="foodName" placeholder="Nome Alimento" style="flex: 1;">
+                </div>
+
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:-5px; padding-left:5px;">Valori
+                    nutrizionali per 100g:</div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="foodCalories" placeholder="Kcal" style="flex: 1;">
+                    <input type="number" id="foodProteins" placeholder="Proteine (g)" style="flex: 1;">
+                </div>
+
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:-5px; padding-left:5px;">Opzionale:
+                </div>
+                <input type="number" id="foodUnitGrams" placeholder="Peso per pezzo (g) es. 150 (per 1 mela)"
+                    style="width: 100%; font-size: 13px;">
+
+                <select id="foodCategory"
+                    style="width: 100%; font-size: 14px; padding: 12px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--glass-border);">
+                    <option value="breakfast">Colazione</option>
+                    <option value="meal" selected>Pasto</option>
+                    <option value="snack">Spuntino</option>
+                    <option value="cheat">Sgarro</option>
+                </select>
+
+                <button class="btn-primary" onclick="saveFoodToDatabase()" style="width: 100%;">💾 Salva</button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeFoodForm()" style="width: 100%;">Annulla</button>
+            </div>
+        </div>
+    </div>
+
     <!-- GRAM INPUT MODAL -->
     <div id="gramInputModal" class="modal-overlay" onclick="closeGramInput()">
         <div class="modal-content premium-modal" style="max-width: 300px;" onclick="event.stopPropagation()">
