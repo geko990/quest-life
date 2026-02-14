@@ -7786,7 +7786,13 @@ function getDayPartName(code) {
 
 // Replaces the old selectFoodFromDb which used prompt
 function selectFoodFromDb(foodId) {
+    if (typeof openGramInput === 'function') {
+        openGramInput(foodId);
+    } else {
+        console.error("openGramInput is not defined");
+    }
 }
+window.selectFoodFromDb = selectFoodFromDb;
 
 function deleteMeal(index) {
     const meal = state.health.meals[currentMealTab][index];
