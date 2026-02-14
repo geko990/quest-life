@@ -1146,7 +1146,8 @@
     </div>
     <!-- MEALS MODAL (v3.0.0) -->
     <div id="mealsModal" class="modal-overlay" onclick="closeMealsModal()">
-        <div class="modal-content premium-modal" onclick="event.stopPropagation()">
+        <div class="modal-content premium-modal" style="height: 65vh; display: flex; flex-direction: column;"
+            onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>🍽️ Gestione Pasti</h3>
             </div>
@@ -1159,7 +1160,7 @@
                 <button class="meal-tab tab-cheat" id="meal-tab-cheat" onclick="switchMealTab('cheat')">Sgarro</button>
             </div>
 
-            <div id="mealsList" class="meals-list">
+            <div id="mealsList" class="meals-list" style="flex: 1; overflow-y: auto;">
                 <!-- Popolato dinamicamente -->
             </div>
 
