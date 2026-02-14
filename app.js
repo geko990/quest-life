@@ -2558,10 +2558,14 @@ function showChallengeCatalog() {
                 <div class="challenge-catalog-grid" id="challengeGrid"></div>
             </div>
         `;
-        overlay.onclick = (e) => {
-            if (e.target === overlay) closeChallengeCatalog();
-        };
         document.body.appendChild(overlay);
+
+        // Add click listener to close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeChallengeCatalog();
+            }
+        });
     }
 
     // Populate grid with unlock logic
