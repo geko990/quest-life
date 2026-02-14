@@ -4653,26 +4653,24 @@ function exportData() {
     downloadAnchorNode.remove();
 }
 
-function updateApp() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
+async function updateApp() {
+    if (confirm("Vuoi forzare l'aggiornamento? Questo ricaricherà l'app.")) {
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
             for (let registration of registrations) {
-                registration.unregister();
+                await registration.unregister();
             }
-        });
-    }
+        }
 
-    // Force clear all caches
-    if ('caches' in window) {
-        caches.keys().then(names => {
-            Promise.all(names.map(name => caches.delete(name))).then(() => {
-                window.location.reload(true);
-            });
-        });
-    } else {
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+        }
+
         window.location.reload(true);
     }
 }
+window.updateApp = updateApp;
 
 function importData(input) {
     const file = input.files[0];
