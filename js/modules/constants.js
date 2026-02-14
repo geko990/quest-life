@@ -3,7 +3,7 @@
    Constants Module
    ============================================ */
 
-export const APP_VERSION = '3.2.3';
+export const APP_VERSION = '3.2.4';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -294,11 +294,15 @@ export const CHALLENGE_TEMPLATES = [
                 '210s', '240s', 'Recupero', '270s',
                 '300s', 'TEST: Max Plank'
             ];
-            return daily.map((target, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' Plank'}`,
-                completed: false
-            }));
+            return daily.map((target, i) => {
+                const isRest = target === 'Recupero';
+                return {
+                    id: `day_${i + 1}`,
+                    name: `Giorno ${i + 1}: ${isRest ? 'Riposo Attivo 🧘' : target + ' Plank'}`,
+                    displayTarget: isRest ? null : target + ' Plank',
+                    completed: false
+                };
+            });
         }
     },
 
