@@ -2020,10 +2020,46 @@ input#settingName {
     color: var(--text-primary);
 }
 
-.history-item-date {
-    font-size: 11px;
-    color: var(--text-muted);
+/* Fantasy Theme Modal Fix */
+[data-theme="fantasy"] .challenge-preview-modal {
+    background: #fdf6e3;
+    /* Light parchment */
+    color: #3e2723;
+    border: 2px solid #8d6e63;
 }
+
+[data-theme="fantasy"][data-mode="dark"] .challenge-preview-modal {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    border: 2px solid #4a4a4a;
+}
+
+[data-theme="fantasy"] .challenge-preview-header {
+    border-bottom: 1px solid rgba(62, 39, 35, 0.1);
+}
+
+[data-theme="fantasy"] .preview-tab.active {
+    background: rgba(62, 39, 35, 0.1);
+    color: #3e2723;
+}
+
+
+.history-item-xp {
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+
+[data-theme="fantasy"][data-mode="light"] .challenge-preview-header h2,
+[data-theme="fantasy"][data-mode="light"] .preview-header h2 {
+    color: #3e2723 !important;
+}
+
+[data-theme="fantasy"][data-mode="light"] .close-btn {
+    color: #3e2723 !important;
+    background: rgba(62, 39, 35, 0.1);
+}
+
 
 .history-item-xp {
     font-weight: 700;
@@ -2466,8 +2502,10 @@ input#settingName {
     align-items: center;
 }
 
-color: white;
-border-color: var(--accent-primary);
+.chart-tab.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
 }
 
 /* History List Styles (v3.1.42) */
@@ -6586,7 +6624,9 @@ textarea {
 
 #taskPickerModal {
     z-index: 50001 !important;
-}/* Toast Notification */
+}
+
+/* Toast Notification */
 .toast {
     position: fixed;
     bottom: 24px;
@@ -6623,7 +6663,9 @@ textarea {
 .toast.error {
     border-color: var(--danger);
     box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
-}/* Challenge Preview Tabs & Schedule */
+}
+
+/* Challenge Preview Tabs & Schedule */
 .preview-tabs {
     display: flex;
     background: rgba(0, 0, 0, 0.2);
@@ -6671,10 +6713,42 @@ textarea {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Fantasy Light Theme Fix */
+[data-theme="fantasy"][data-mode="light"] .preview-schedule-item {
+    background: rgba(62, 39, 35, 0.08);
+    border-color: rgba(62, 39, 35, 0.15);
+    color: #3e2723;
+}
+
+[data-theme="fantasy"][data-mode="light"] .schedule-day-name {
+    color: #3e2723;
+    font-weight: 600;
+}
+
 .preview-schedule-item.rest-day {
     opacity: 0.7;
     background: rgba(0, 0, 0, 0.2);
-    border-style: dashed;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Fantasy Light Header & Rest Day Fix */
+body[data-theme="fantasy"][data-mode="light"] .challenge-preview-header h2,
+body[data-theme="fantasy"][data-mode="light"] .preview-header h2,
+body[data-theme="fantasy"][data-mode="light"] .modal-title,
+body[data-theme="fantasy"][data-mode="light"] h2 {
+    color: #3e2723 !important;
+    text-shadow: none !important;
+}
+
+body[data-theme="fantasy"][data-mode="light"] .close-btn {
+    color: #3e2723 !important;
+    background: rgba(62, 39, 35, 0.1);
+}
+
+[data-theme="fantasy"][data-mode="light"] .preview-schedule-item.rest-day {
+    background: rgba(62, 39, 35, 0.05);
+    border: 1px dashed rgba(62, 39, 35, 0.2);
+    color: #5d4037;
 }
 
 .schedule-day-icon {

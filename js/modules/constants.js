@@ -69,17 +69,23 @@ export const CHALLENGE_TEMPLATES = [
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
+                let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
                     // Sum the numbers in the string (e.g. "2-2-2" -> 6)
+                    displayTarget = target; // Store original string "2-2-2"
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) {
                         totalReps = parts.reduce((a, b) => a + b, 0);
                     }
                 }
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
+                    `${totalReps} flessioni`;
+
                 return {
                     id: `day_${i + 1}`,
-                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                    name: `Giorno ${i + 1}: ${nameText}`,
                     targetReps: totalReps,
+                    displayTarget: displayTarget,
                     completed: false
                 };
             });
@@ -110,14 +116,20 @@ export const CHALLENGE_TEMPLATES = [
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
+                let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
+                    `${totalReps} flessioni`;
+
                 return {
                     id: `day_${i + 1}`,
-                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                    name: `Giorno ${i + 1}: ${nameText}`,
                     targetReps: totalReps,
+                    displayTarget: displayTarget,
                     completed: false
                 };
             });
@@ -148,14 +160,20 @@ export const CHALLENGE_TEMPLATES = [
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
+                let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
+                    `${totalReps} flessioni`;
+
                 return {
                     id: `day_${i + 1}`,
-                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                    name: `Giorno ${i + 1}: ${nameText}`,
                     targetReps: totalReps,
+                    displayTarget: displayTarget,
                     completed: false
                 };
             });
@@ -188,14 +206,20 @@ export const CHALLENGE_TEMPLATES = [
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
+                let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
+                    `${totalReps} sit-ups`;
+
                 return {
                     id: `day_${i + 1}`,
-                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
+                    name: `Giorno ${i + 1}: ${nameText}`,
                     targetReps: totalReps,
+                    displayTarget: displayTarget,
                     completed: false
                 };
             });
@@ -226,14 +250,20 @@ export const CHALLENGE_TEMPLATES = [
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
+                let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
+                    `${totalReps} sit-ups`;
+
                 return {
                     id: `day_${i + 1}`,
-                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
+                    name: `Giorno ${i + 1}: ${nameText}`,
                     targetReps: totalReps,
+                    displayTarget: displayTarget,
                     completed: false
                 };
             });
