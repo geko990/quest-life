@@ -1174,34 +1174,12 @@
     <!-- FOOD MANAGER MODAL -->
     <div id="foodManagerModal" class="modal-overlay" onclick="closeFoodManager()">
         <div class="modal-content premium-modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
+            <div class="modal-header" style="justify-content:space-between;">
                 <h3>🍎 Database Alimenti</h3>
+                <button onclick="openFoodForm()"
+                    style="background:var(--accent-primary); width:32px; height:32px; border-radius:50%; border:none; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.2);">+</button>
             </div>
-            <div class="meals-input-group" style="flex-direction: column; gap: 8px;">
-                <input type="hidden" id="foodEditingId">
-                <div style="display: flex; gap: 4px;">
-                    <input type="text" id="foodEmoji" placeholder="Eji" style="width: 40px; text-align: center;">
-                    <input type="text" id="foodName" placeholder="Nome Alimento" style="flex: 1;">
-                </div>
-                <div style="display: flex; gap: 4px;">
-                    <input type="number" id="foodCalories" placeholder="Kcal / 100g" style="flex: 1;">
-                    <input type="number" id="foodProteins" placeholder="Prot (g) / 100g" style="flex: 1;">
-                </div>
-                <input type="number" id="foodUnitGrams" placeholder="Peso per pezzo (es. 150g per 1 frutto)"
-                    style="width: 100%; font-size: 11px;">
-
-                <select id="foodCategory"
-                    style="width: 100%; font-size: 13px; padding: 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--glass-border);">
-                    <option value="breakfast">Colazione</option>
-                    <option value="lunch" selected>Pranzo</option>
-                    <option value="dinner">Cena</option>
-                    <option value="snack">Merenda</option>
-                    <option value="cheat">Sgarro</option>
-                </select>
-
-                <button class="btn-primary" onclick="saveFoodToDatabase()" style="width: 100%;">💾 Salva
-                    Alimento</button>
-            </div>
+            <!-- Removed inline form, now using foodFormModal -->
             <div id="foodDatabaseList" class="meals-list" style="margin-top: 15px; max-height: 200px;"></div>
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="closeFoodManager()" style="width: 100%;">Chiudi</button>
