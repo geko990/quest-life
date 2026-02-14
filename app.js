@@ -7780,7 +7780,7 @@ function renderMealsList() {
 }
 
 function getDayPartName(code) {
-    const names = { breakfast: 'Colazione', meal: 'Pasto', lunch: 'Pranzo', dinner: 'Cena', snack: 'Merenda', cheat: 'Sgarro' };
+    const names = { breakfast: 'Colazione', meal: 'Pasto', lunch: 'Pranzo', dinner: 'Cena', snack: 'Spuntino', cheat: 'Sgarro' };
     return names[code] || code;
 }
 
@@ -7818,6 +7818,38 @@ function openFoodManager() {
 function closeFoodManager() {
     document.getElementById('foodManagerModal').classList.remove('active');
 }
+
+function openFoodForm(editId = null) {
+    document.getElementById('foodFormModal').classList.add('active');
+
+    // Reset or Fill
+    if (editId) {
+        const food = state.health.foodDatabase.find(f => f.id === editId);
+        if (food) {
+            document.getElementById('foodEditingId').value = food.id;
+            document.getElementById('foodEmoji').value = food.emoji;
+            document.getElementById('foodName').value = food.name;
+            document.getElementById('foodCalories').value = food.baseCalories;
+            document.getElementById('foodProteins').value = food.baseProteins || '';
+            document.getElementById('foodCategory').value = food.category || 'meal';
+            document.getElementById('foodUnitGrams').value = food.unitGrams || '';
+        }
+    } else {
+        document.getElementById('foodEditingId').value = '';
+        document.getElementById('foodEmoji').value = '';
+        document.getElementById('foodName').value = '';
+        document.getElementById('foodCalories').value = '';
+        document.getElementById('foodProteins').value = '';
+        document.getElementById('foodCategory').value = 'meal';
+        document.getElementById('foodUnitGrams').value = '';
+    }
+}
+window.openFoodForm = openFoodForm;
+
+function closeFoodForm() {
+    document.getElementById('foodFormModal').classList.remove('active');
+}
+window.closeFoodForm = closeFoodForm;
 
 // Helper: Toggle Favorite
 function toggleFoodFavorite(id) {
@@ -7862,7 +7894,7 @@ function saveFoodToDatabase() {
         if (idx >= 0) {
             state.health.foodDatabase[idx] = {
                 ...state.health.foodDatabase[idx],
-                emoji, name, baseCalories: calories, baseProteins: proteins, category,
+                emoji, name, baseCalories: calories, baseProteins: proteins, category, unitGrams,
                 baseGrams: 100 // Enforce 100g standard
             };
         }
@@ -7875,6 +7907,7 @@ function saveFoodToDatabase() {
             baseCalories: calories,
             baseProteins: proteins,
             category,
+            unitGrams,
             isFavorite: false
         };
         state.health.foodDatabase.push(newFood);
@@ -7882,13 +7915,7 @@ function saveFoodToDatabase() {
 
     saveState();
     renderFoodDatabaseList();
-
-    // Reset Form
-    document.getElementById('foodName').value = '';
-    document.getElementById('foodCalories').value = '';
-    document.getElementById('foodProteins').value = '';
-    document.getElementById('foodUnitGrams').value = '';
-    if (document.getElementById('foodEditingId')) document.getElementById('foodEditingId').value = '';
+    closeFoodForm();
 }
 
 function renderFoodDatabaseList() {
@@ -7904,40 +7931,52 @@ function renderFoodDatabaseList() {
         return a.name.localeCompare(b.name);
     });
 
+    // Categories to show
+    const categories = [
+        { id: 'breakfast', name: 'Colazione' },
+        { id: 'meal', name: 'Pasto' },
+        { id: 'snack', name: 'Spuntino' },
+        { id: 'cheat', name: 'Sgarro' }
+    ];
+
     let html = '';
 
-    if (db.length === 0) {
-        html = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nessun alimento nel database.</div>`;
-    } else {
-        db.forEach(food => {
-            const catName = getDayPartName(food.category || 'snack');
-            const starColor = food.isFavorite ? '#fbbf24' : 'var(--text-muted)';
-            const starIcon = food.isFavorite ? '⭐' : '☆';
+    categories.forEach(cat => {
+        // Filter items for this category (include lunch/dinner in 'meal')
+        const items = db.filter(f => {
+            if (cat.id === 'meal') return ['meal', 'lunch', 'dinner'].includes(f.category);
+            return f.category === cat.id;
+        });
 
-            html += `
-            <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-secondary); border-radius:12px; margin-bottom:8px; border:1px solid var(--glass-border);">
-                <div style="margin-right:10px;">
-                    <button onclick="toggleFoodFavorite('${food.id}')" style="background:none; border:none; cursor:pointer; font-size:18px; color:${starColor};">${starIcon}</button>
-                </div>
-                <div style="flex:1;">
-                    <div style="font-weight:600; font-size:14px;">${food.emoji} ${food.name} <span style="font-size:10px; font-weight:400; color:var(--text-muted); opacity:0.7;">(${catName})</span></div>
-                    <div style="font-size:11px; color:var(--text-muted);">
-                        ${food.baseCalories}kcal • ${food.baseProteins || 0}g prot (per 100g)
+        // Section Header
+        html += `<div style="margin-top:15px; margin-bottom:5px; font-size:12px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; border-bottom:1px solid var(--glass-border); padding-bottom:2px;">${cat.name}</div>`;
+
+        if (items.length === 0) {
+            html += `<div style="font-size:11px; color:var(--text-muted); padding:5px; font-style:italic;">Nessun alimento.</div>`;
+        } else {
+            items.forEach(food => {
+                const starColor = food.isFavorite ? '#fbbf24' : 'var(--text-muted)';
+                const starIcon = food.isFavorite ? '⭐' : '☆';
+
+                html += `
+                <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-secondary); border-radius:12px; margin-bottom:6px; border:1px solid var(--glass-border);">
+                    <div style="margin-right:8px;">
+                        <button onclick="toggleFoodFavorite('${food.id}')" style="background:none; border:none; cursor:pointer; font-size:16px; color:${starColor}; padding:0;">${starIcon}</button>
+                    </div>
+                    <div style="flex:1; cursor:pointer;" onclick="openFoodForm('${food.id}')">
+                        <div style="font-weight:600; font-size:13px;">${food.emoji} ${food.name}</div>
+                        <div style="font-size:10px; color:var(--text-secondary);">
+                            ${food.baseCalories}kcal • ${food.baseProteins || 0}g prot ${food.unitGrams ? '• ' + food.unitGrams + 'g/pz' : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                         <button onclick="deleteFoodFromDatabase('${food.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; opacity:0.7;">✕</button>
                     </div>
                 </div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
-                     <select onchange="window.moveFoodCategory('${food.id}', this.value)" style="font-size:10px; padding:2px 6px; border-radius:8px; background:var(--bg-main); border:1px solid var(--glass-border); color:var(--text-secondary);">
-                        <option value="breakfast" ${food.category === 'breakfast' ? 'selected' : ''}>Colaz.</option>
-                        <option value="meal" ${['meal', 'lunch', 'dinner'].includes(food.category) ? 'selected' : ''}>Pasto</option>
-                        <option value="snack" ${food.category === 'snack' ? 'selected' : ''}>Merenda</option>
-                        <option value="cheat" ${food.category === 'cheat' ? 'selected' : ''}>Sgarro</option>
-                    </select>
-                    <button onclick="deleteFoodFromDatabase('${food.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:11px;">Elimina</button>
-                </div>
-            </div>
-            `;
-        });
-    }
+                `;
+            });
+        }
+    });
 
     listEl.innerHTML = html;
 }
