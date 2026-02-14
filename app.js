@@ -8638,3 +8638,34 @@ window.openTaskPicker = openTaskPicker;
 window.closeTaskPicker = closeTaskPicker;
 window.addNewPlannerSlot = addNewPlannerSlot;
 window.showChallengeCatalog = showChallengeCatalog;
+
+// Toast Notification
+function showToast(message, type = 'normal') {
+    let toast = document.getElementById('appToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+
+    // Icon based on type
+    let icon = '🔔';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
+
+    toast.innerHTML = `<span style="font-size: 1.2em;">${icon}</span> <span>${message}</span>`;
+    toast.className = `toast ${type}`;
+
+    // Trigger reflow
+    void toast.offsetWidth;
+
+    toast.classList.add('visible');
+
+    // Hide after 3 seconds
+    if (window.toastTimeout) clearTimeout(window.toastTimeout);
+    window.toastTimeout = setTimeout(() => {
+        toast.classList.remove('visible');
+    }, 3000);
+}
