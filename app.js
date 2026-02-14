@@ -7784,13 +7784,8 @@ function getDayPartName(code) {
     return names[code] || code;
 }
 
+// Replaces the old selectFoodFromDb which used prompt
 function selectFoodFromDb(foodId) {
-    const food = state.health.foodDatabase.find(f => f.id === foodId);
-    if (!food) return;
-
-    // Smart Entry: Ask for grams
-    const gramsStr = prompt(`Quanti grammi di "${food.name}" hai mangiato?`, "100");
-    if (gramsStr === null) return; // Cancelled
 
     const grams = parseFloat(gramsStr);
     if (isNaN(grams) || grams <= 0) return alert("Inserisci un peso valido!");
