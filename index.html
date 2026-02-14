@@ -1056,12 +1056,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script src="app.js?v=3.2.10" type="module"></script>
-    if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v=3.2.10')
-    .then(() => console.log('Service Worker Registered'))
-    .catch((err) => console.log('SW Failed:', err));
-    }
+    <script src="app.js?v=3.2.11" type="module"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js?v=3.2.11')
+                .then(() => console.log('Service Worker Registered'))
+                .catch((err) => console.log('SW Failed:', err));
+        }
     </script>
     <!-- PWA Install Instructions Modal -->
     <div class="modal-overlay hidden" id="installOverlay" onclick="closeInstallModal()"></div>
