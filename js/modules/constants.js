@@ -67,12 +67,22 @@ export const CHALLENGE_TEMPLATES = [
                 '12-10-8', '13-10-9', '14-11-10', 'Recupero', // Days 25-28
                 '15-12-10', 'TEST: 30 Max' // Days 29-30
             ];
-            return daily.map((target, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
-                targetReps: 1,
-                completed: false
-            }));
+            return daily.map((target, i) => {
+                let totalReps = 1;
+                if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    // Sum the numbers in the string (e.g. "2-2-2" -> 6)
+                    const parts = target.split('-').map(Number);
+                    if (!parts.some(isNaN)) {
+                        totalReps = parts.reduce((a, b) => a + b, 0);
+                    }
+                }
+                return {
+                    id: `day_${i + 1}`,
+                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                    targetReps: totalReps,
+                    completed: false
+                };
+            });
         }
     },
     {
@@ -98,12 +108,19 @@ export const CHALLENGE_TEMPLATES = [
                 '30-26-22', '32-28-24', '35-30-25', 'Recupero', // Days 25-28
                 '40-30-25', 'TEST: 60 Max' // Days 29-30
             ];
-            return daily.map((target, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
-                targetReps: 1,
-                completed: false
-            }));
+            return daily.map((target, i) => {
+                let totalReps = 1;
+                if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    const parts = target.split('-').map(Number);
+                    if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
+                }
+                return {
+                    id: `day_${i + 1}`,
+                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                    targetReps: totalReps,
+                    completed: false
+                };
+            });
         }
     },
     {
@@ -129,12 +146,19 @@ export const CHALLENGE_TEMPLATES = [
                 '65-55-45-40', '70-55-45-40', '70-60-50-45', 'Recupero',
                 '80-60-50-50', 'TEST: 100 Challenge'
             ];
-            return daily.map((target, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
-                targetReps: 1,
-                completed: false
-            }));
+            return daily.map((target, i) => {
+                let totalReps = 1;
+                if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    const parts = target.split('-').map(Number);
+                    if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
+                }
+                return {
+                    id: `day_${i + 1}`,
+                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' flessioni'}`,
+                    targetReps: totalReps,
+                    completed: false
+                };
+            });
         }
     },
 
@@ -162,11 +186,19 @@ export const CHALLENGE_TEMPLATES = [
                 '30-26-22', '32-28-24', '35-30-25', 'Recupero',
                 '40-30-25', 'TEST: Max Sit-Ups'
             ];
-            return daily.map((target, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
-                completed: false
-            }));
+            return daily.map((target, i) => {
+                let totalReps = 1;
+                if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    const parts = target.split('-').map(Number);
+                    if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
+                }
+                return {
+                    id: `day_${i + 1}`,
+                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
+                    targetReps: totalReps,
+                    completed: false
+                };
+            });
         }
     },
     {
@@ -192,11 +224,19 @@ export const CHALLENGE_TEMPLATES = [
                 '95-75-65', '100-80-70', '110-90-80', 'Recupero',
                 '120-100-80', 'TEST: 200 Sit-Ups'
             ];
-            return daily.map((target, i) => ({
-                id: `day_${i + 1}`,
-                name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
-                completed: false
-            }));
+            return daily.map((target, i) => {
+                let totalReps = 1;
+                if (target !== 'Recupero' && !target.startsWith('TEST')) {
+                    const parts = target.split('-').map(Number);
+                    if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
+                }
+                return {
+                    id: `day_${i + 1}`,
+                    name: `Giorno ${i + 1}: ${target === 'Recupero' ? 'Riposo Attivo 🧘' : target + ' sit-ups'}`,
+                    targetReps: totalReps,
+                    completed: false
+                };
+            });
         }
     },
 
@@ -296,85 +336,85 @@ export const CHALLENGE_TEMPLATES = [
 
     // ================== OTHER CHALLENGES ==================
     {
-        id: 'no_smoke_30',
-        name: '🚭 Detox Sigarette',
-        description: '30 giorni senza fumare. Ogni giorno è una vittoria verso una vita più sana.',
-        duration: 30,
+        id: 'no_smoke_7',
+        name: '🚭 Detox Sigarette (7gg)',
+        description: '7 giorni senza fumare. Una settimana per riprendere il controllo.',
+        duration: 7,
         icon: '🚭',
         category: 'health',
-        stars: 5,
+        stars: 2,
         primaryStatId: 'con',
         color: '#10b981',
         unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1} senza sigarette`,
             completed: false
         }))
     },
     {
-        id: 'nofap_30',
-        name: '🚫 NoFap Challenge',
-        description: '30 giorni di astinenza. Riprendi il controllo della tua energia e focus.',
-        duration: 30,
+        id: 'nofap_7',
+        name: '🚫 NoFap Week',
+        description: '7 giorni di astinenza. Riprendi il controllo della tua energia.',
+        duration: 7,
         icon: '🚫',
         category: 'discipline',
-        stars: 5,
+        stars: 2,
         primaryStatId: 'wis',
         color: '#8b5cf6',
         unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1} completato`,
             completed: false
         }))
     },
     {
-        id: 'no_junk_30',
-        name: '🍎 No Junk Food',
-        description: '30 giorni senza cibo spazzatura. Nutri il tuo corpo con cibo vero.',
-        duration: 30,
+        id: 'no_junk_7',
+        name: '🍎 No Junk Food (7gg)',
+        description: '7 giorni senza cibo spazzatura. Disintossicati dagli zuccheri.',
+        duration: 7,
         icon: '🍎',
         category: 'health',
-        stars: 4,
+        stars: 2,
         primaryStatId: 'con',
         color: '#22c55e',
         unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1} senza junk food`,
             completed: false
         }))
     },
     {
-        id: 'reading_30',
-        name: '📚 Campagna Lettura',
-        description: 'Leggi almeno 20 pagine al giorno per 30 giorni. Espandi la tua mente.',
-        duration: 30,
+        id: 'reading_7',
+        name: '📚 Campagna Lettura (7gg)',
+        description: 'Leggere ogni giorno per una settimana. Bastano 20 pagine.',
+        duration: 7,
         icon: '📚',
         category: 'growth',
-        stars: 3,
+        stars: 2,
         primaryStatId: 'int',
         color: '#3b82f6',
         unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
+        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1}: 20+ pagine lette`,
             completed: false
         }))
     },
     {
-        id: 'meditation_21',
-        name: '🧘 Campagna Meditazione (21gg)',
-        description: '21 giorni di meditazione quotidiana. Costruisci una mente calma e presente.',
-        duration: 21,
+        id: 'meditation_7',
+        name: '🧘 Campagna Meditazione (7gg)',
+        description: '7 giorni di mindfulness. Ritrova la calma interiore.',
+        duration: 7,
         icon: '🧘',
         category: 'mindfulness',
-        stars: 3,
+        stars: 2,
         primaryStatId: 'wis',
         color: '#06b6d4',
         unlockRequirement: null,
-        generateSubquests: () => Array.from({ length: 21 }, (_, i) => ({
+        generateSubquests: () => Array.from({ length: 7 }, (_, i) => ({
             id: `day_${i + 1}`,
             name: `Giorno ${i + 1}: Sessione meditazione`,
             completed: false
