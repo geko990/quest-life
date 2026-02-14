@@ -45,6 +45,9 @@ window.addNewPlannerSlot = addNewPlannerSlot;
 window.rollD10AndSave = rollD10AndSave;
 window.closeDailyPlanner = closeDailyPlanner;
 window.showChallengeCatalog = showChallengeCatalog;
+window.showChallengePreview = showChallengePreview;
+window.closeChallengePreview = closeChallengePreview;
+window.importChallenge = importChallenge;
 
 // Wrapper for linkDatabaseFile to pass state
 window.linkDatabaseFile = async function () {
