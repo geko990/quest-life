@@ -7786,44 +7786,6 @@ function getDayPartName(code) {
 
 // Replaces the old selectFoodFromDb which used prompt
 function selectFoodFromDb(foodId) {
-
-    const grams = parseFloat(gramsStr);
-    if (isNaN(grams) || grams <= 0) return alert("Inserisci un peso valido!");
-
-    // Calculate proportional values (Assume stored values are per 100g)
-    // Legacy support: if baseGrams exists use that, else assume 100
-    const baseGrams = food.baseGrams || 100;
-    const ratio = grams / baseGrams;
-
-    const calories = Math.round(food.baseCalories * ratio);
-    const proteins = Math.round((food.baseProteins || 0) * ratio);
-
-    const newMeal = {
-        id: generateId('meal'),
-        name: food.name,
-        calories: calories,
-        proteins: proteins,
-        grams: grams,
-        originalFoodId: food.id
-    };
-
-    if (!state.health.meals[currentMealTab]) state.health.meals[currentMealTab] = [];
-    state.health.meals[currentMealTab].push(newMeal);
-
-    // Update Totals
-    state.health.calories.consumed += calories;
-    if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
-    state.health.proteins.consumed += proteins;
-
-    saveState();
-    renderMealsList();
-    renderHealthDashboard();
-
-    if (currentMealTab === 'cheat') {
-        showXpToast(`+${Math.round(calories)} kcal (Sgarro)`, '👿');
-    } else {
-        showXpToast(`+${Math.round(calories)} kcal`, '🍽️');
-    }
 }
 
 function deleteMeal(index) {
