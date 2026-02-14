@@ -7884,6 +7884,7 @@ function saveFoodToDatabase() {
     const calories = parseFloat(document.getElementById('foodCalories').value);
     const proteins = parseFloat(document.getElementById('foodProteins').value) || 0;
     const category = document.getElementById('foodCategory').value;
+    const unitGrams = parseFloat(document.getElementById('foodUnitGrams').value) || 0;
 
     if (!name || isNaN(calories)) return alert("Inserisci almeno nome e calorie!");
 
@@ -7923,6 +7924,7 @@ function saveFoodToDatabase() {
     document.getElementById('foodName').value = '';
     document.getElementById('foodCalories').value = '';
     document.getElementById('foodProteins').value = '';
+    document.getElementById('foodUnitGrams').value = '';
     if (document.getElementById('foodEditingId')) document.getElementById('foodEditingId').value = '';
 }
 
