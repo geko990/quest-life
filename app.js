@@ -4911,13 +4911,17 @@ function togglePomodoro() {
 function startPomodoro() {
     initPomodoroAudio();
     if (pomodoroAudio) {
+        // Reset time to avoid glitches
+        pomodoroAudio.currentTime = 0;
         pomodoroAudio.play().then(() => {
             console.log("Audio playing");
-            // Force update metadata ensuring playback started
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
         }).catch(e => {
             console.error("Audio play failed", e);
-            alert("Errore riproduzione audio background: " + e.message);
+            if (e.name !== 'AbortError') {
+                // Only alert for non-abort errors (Aborts happen on rapid pause/play)
+                alert("Errore audio: " + e.message);
+            }
         });
     }
     pomodoroRunning = true;
@@ -5035,8 +5039,8 @@ function updatePomodoroDisplay() {
 // BACKGROUND AUDIO / LOCK SCREEN TIMER
 // ============================================
 
-// Silent MP3 (Base64) - 1 second of silence to keep audio session active
-const SILENT_AUDIO = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw//OEAAAAAAAAAAAAAAAAAAAAAAAAMGluZgAAAA8AAAAEAAABIAAAzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz//OEAAAAAAAAAAAAAAAAAAAAAAAATGF2YzU4LjU0LjEwMAAAAAAAAAAAAAAAAP87AAAAADAAAxAAAAAAAAAAAAAAA//OEAAAAAAABAAAAAP8ZAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAABAAAAAP8ZAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OEAAAAAAABAAAAAP8ZAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+// Silent WAV (Base64) - ~0.5s of silence, reliable for iOS
+const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==';
 
 let pomodoroAudio = null;
 
@@ -5044,7 +5048,8 @@ function initPomodoroAudio() {
     if (!pomodoroAudio) {
         pomodoroAudio = new Audio(SILENT_AUDIO);
         pomodoroAudio.loop = true;
-        pomodoroAudio.preload = 'auto';
+        pomodoroAudio.preload = 'auto'; // load immediately
+        pomodoroAudio.volume = 0.01; // Non-zero volume sometimes helps
         // iOS Hack: Attach to DOM
         document.body.appendChild(pomodoroAudio);
     }
