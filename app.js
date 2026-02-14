@@ -8144,13 +8144,16 @@ function confirmGramInput() {
     if (currentMealTab !== 'cheat') {
         const xpAmount = Math.max(1, Math.round(calories / 50));
         if (selectedFoodForGramInput.primaryStatId) {
-            addXpToAttribute(selectedFoodForGramInput.primaryStatId, xpAmount);
+            addXp(xpAmount, selectedFoodForGramInput.primaryStatId, 'Nutrizione');
             showXpToast(`+ ${xpAmount} XP ${selectedFoodForGramInput.primaryStatId.toUpperCase()}`, '⭐');
         }
     } else {
         // PENALTY for cheat
         const penalty = Math.max(1, Math.round(calories / 100));
-        state.player.xp = Math.max(0, state.player.xp - penalty);
+        if (state.player.totalXp > 0) {
+            const actualPenalty = Math.min(penalty, state.player.totalXp);
+            addXp(-actualPenalty);
+        }
         showXpToast(`Sgarro! - ${penalty} XP Totali`, '👿');
     }
 
