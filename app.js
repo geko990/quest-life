@@ -2663,29 +2663,54 @@ function showChallengePreview(templateId) {
         `;
     }
 
+    // Generate preview list items
+    const subquests = template.generateSubquests();
+    const scheduleHtml = subquests.map(quest => `
+        <div class="preview-schedule-item ${quest.name.includes('Riposo') ? 'rest-day' : ''}">
+            <div class="schedule-day-icon">${quest.name.includes('Riposo') ? '🧘' : '✅'}</div>
+            <div class="schedule-day-info">
+                <span class="schedule-day-name">${quest.name}</span>
+            </div>
+            ${quest.targetReps && quest.targetReps > 1 ? `<span class="schedule-day-badge">${quest.targetReps} reps</span>` : ''}
+        </div>
+    `).join('');
+
     preview.innerHTML = `
         <div class="challenge-preview-modal" style="--preview-color: ${template.color}">
             <div class="challenge-preview-header">
                 <div class="challenge-preview-icon">${template.icon}</div>
                 <h2>${template.name}</h2>
             </div>
-            <p class="challenge-preview-desc">${template.description}</p>
-            <div class="challenge-preview-stats">
-                <div class="challenge-preview-stat">
-                    <span class="stat-label">Durata</span>
-                    <span class="stat-value">${template.duration} giorni</span>
+            
+            <div class="preview-tabs">
+                <button class="preview-tab active" onclick="switchPreviewTab('details')">Dettagli</button>
+                <button class="preview-tab" onclick="switchPreviewTab('schedule')">Programma</button>
+            </div>
+
+            <div id="preview-tab-details" class="preview-tab-content active">
+                <p class="challenge-preview-desc">${template.description}</p>
+                <div class="challenge-preview-stats">
+                    <div class="challenge-preview-stat">
+                        <span class="stat-label">Durata</span>
+                        <span class="stat-value">${template.duration} giorni</span>
+                    </div>
+                    <div class="challenge-preview-stat">
+                        <span class="stat-label">Difficoltà</span>
+                        <span class="stat-value">${'⭐'.repeat(template.stars)}</span>
+                    </div>
+                    <div class="challenge-preview-stat">
+                        <span class="stat-label">Stat</span>
+                        <span class="stat-value">${stat ? stat.icon + ' ' + stat.name : 'N/A'}</span>
+                    </div>
                 </div>
-                <div class="challenge-preview-stat">
-                    <span class="stat-label">Difficoltà</span>
-                    <span class="stat-value">${'⭐'.repeat(template.stars)}</span>
-                </div>
-                <div class="challenge-preview-stat">
-                    <span class="stat-label">Stat</span>
-                    <span class="stat-value">${stat ? stat.icon + ' ' + stat.name : 'N/A'}</span>
+                ${trackingOptionsHtml}
+            </div>
+
+            <div id="preview-tab-schedule" class="preview-tab-content" style="display: none;">
+                <div class="preview-schedule-list">
+                    ${scheduleHtml}
                 </div>
             </div>
-            
-            ${trackingOptionsHtml}
 
             <div class="challenge-preview-actions">
                 <button class="settings-btn" onclick="closeChallengePreview()">Indietro</button>
@@ -2693,6 +2718,27 @@ function showChallengePreview(templateId) {
             </div>
         </div>
     `;
+
+    // Add tab switching logic mechanism
+    window.switchPreviewTab = (tabName) => {
+        document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.preview-tab-content').forEach(c => {
+            c.classList.remove('active');
+            c.style.display = 'none';
+        });
+
+        // Find button by text content or index? Simpler to use event target if passed, but here we use strict names
+        // Actually, let's just use text matching or simple dom logic
+        const tabs = document.querySelectorAll('.preview-tab');
+        if (tabName === 'details') tabs[0].classList.add('active');
+        if (tabName === 'schedule') tabs[1].classList.add('active');
+
+        const content = document.getElementById(`preview-tab-${tabName}`);
+        if (content) {
+            content.classList.add('active');
+            content.style.display = 'block';
+        }
+    };
 
     preview.onclick = (e) => {
         if (e.target === preview) closeChallengePreview();
