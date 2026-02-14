@@ -201,35 +201,7 @@ function rebuildStreaksFromLog() {
                 // and the gap is just today (which we handled) -> wait.
                 // The loop checks YESTERDAY first. If yesterday is missing, streak is broken.
                 // Toast Notification
-                function showToast(message, type = 'normal') {
-                    let toast = document.getElementById('appToast');
-                    if (!toast) {
-                        toast = document.createElement('div');
-                        toast.id = 'appToast';
-                        toast.className = 'toast';
-                        document.body.appendChild(toast);
-                    }
-
-                    // Icon based on type
-                    let icon = '🔔';
-                    if (type === 'success') icon = '✅';
-                    if (type === 'error') icon = '❌';
-                    if (type === 'warning') icon = '⚠️';
-
-                    toast.innerHTML = `<span style="font-size: 1.2em;">${icon}</span> <span>${message}</span>`;
-                    toast.className = `toast ${type}`;
-
-                    // Trigger reflow
-                    void toast.offsetWidth;
-
-                    toast.classList.add('visible');
-
-                    // Hide after 3 seconds
-                    if (window.toastTimeout) clearTimeout(window.toastTimeout);
-                    window.toastTimeout = setTimeout(() => {
-                        toast.classList.remove('visible');
-                    }, 3000);
-                }, we shouldn't reset streak to 0 if yesterday was done?
+                // But wait! If today is missing, we shouldn't reset streak to 0 if yesterday was done?
                 // Logic check: 
                 // If Today Done: streak=1. Check Yesterday. Done? streak=2.
                 // If Today NOT Done: streak=0. Check Yesterday. Done? streak=1.
