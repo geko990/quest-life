@@ -1,20 +1,44 @@
 
 // Script temporaneo per verificare se l'applicazione forzata del tema risolve il glitch
+// Script temporaneo per verificare se l'applicazione forzata del tema risolve il glitch
 (function () {
-    try {
-        console.log("Applying theme fix...");
-        // Tentativo di leggere lo stato salvato grezzo
-        const rawState = localStorage.getItem('questlife_state');
-        if (rawState) {
-            const state = JSON.parse(rawState);
-            if (state.settings) {
-                if (state.settings.theme) document.body.dataset.theme = state.settings.theme;
-                if (state.settings.mode) document.body.dataset.mode = state.settings.mode;
-                if (state.settings.accent) document.body.dataset.accent = state.settings.accent;
-                console.log("Theme forced from raw state:", state.settings.theme, state.settings.mode);
+    function applyTheme() {
+        try {
+            console.log("Applying theme fix...");
+            const rawState = localStorage.getItem('questlife_state_v2') || localStorage.getItem('questlife_state');
+
+            let theme = 'standard';
+            let mode = 'light';
+            let accent = 'violet';
+
+            if (rawState) {
+                const state = JSON.parse(rawState);
+                if (state.settings) {
+                    if (state.settings.theme) theme = state.settings.theme;
+                    if (state.settings.mode) mode = state.settings.mode;
+                    if (state.settings.accent) accent = state.settings.accent;
+                }
             }
+
+            if (document.body) {
+                document.body.dataset.theme = theme;
+                document.body.dataset.mode = mode;
+                document.body.dataset.accent = accent;
+                console.log("Theme applied:", theme, mode);
+            } else {
+                // If body is not ready, wait for it
+                document.addEventListener('DOMContentLoaded', applyTheme);
+            }
+        } catch (e) {
+            console.error("Theme fix failed:", e);
         }
-    } catch (e) {
-        console.error("Theme fix failed:", e);
+    }
+
+    // Attempt immediately if body exists, otherwise wait
+    if (document.body) {
+        applyTheme();
+    } else {
+        // Use MutationObserver to detect body injection if needed, or just DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', applyTheme);
     }
 })();
