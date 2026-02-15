@@ -5065,9 +5065,46 @@ function initPomodoroAudio() {
     if (window.audioCtx && window.audioCtx.state === 'suspended') {
         window.audioCtx.resume();
     } else {
-        initAudio(); // Call global initAudio if exists
+        if (typeof initAudio === 'function') initAudio();
     }
 }
+
+// Debug function to force sound and metadata
+window.testLockScreen = function () {
+    initPomodoroAudio();
+
+    // Play an audible beep using Oscillator to confirm system audio is working
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 440; // A4
+        gain.gain.value = 0.1;
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+
+        // Also start the silent audio to hold the session
+        pomodoroAudio.play().then(() => {
+            console.log("Test audio playing");
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: "TEST LOCK SCREEN",
+                    artist: "Funziona!",
+                    album: "Quest Life",
+                    artwork: [{ src: 'icon.png', sizes: '512x512', type: 'image/png' }]
+                });
+                navigator.mediaSession.playbackState = 'playing';
+            }
+            alert("Segnale inviato! Blocca lo schermo ORA per controllare.");
+        }).catch(e => alert("Errore Audio: " + e.message));
+
+    } catch (e) {
+        alert("Errore Context: " + e.message);
+    }
+};
 
 function updateLockScreenTimer(timeStr, status) {
     if (!('mediaSession' in navigator)) return;
