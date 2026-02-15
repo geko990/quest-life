@@ -2024,40 +2024,10 @@ function getHabitsForDate(dateStr) {
             if (createdDate > dateStr) return false;
         }
 
-        // 3. Handle PROGRESSIVE habits (times_week/times_month) with shifting behavior
-        if (h.frequency === 'times_week' || h.frequency === 'times_month') {
-            const isWeekly = h.frequency === 'times_week';
-            const periodId = isWeekly ? getWeekIdentifier(dateStr) : getMonthIdentifier(dateStr);
-            const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
-            const targetCompletions = h.freqTimes || 1;
-
-            // If target met, only show on days it was completed (for history)
-            if (completionsThisPeriod >= targetCompletions) {
-                return state.completionLog[dateStr]?.habits?.includes(h.id);
-            }
-
-            // For PAST days: only show if completed on that day (shifting behavior)
-            if (isPast) {
-                return state.completionLog[dateStr]?.habits?.includes(h.id);
-            }
-
-            // For TODAY: show if shiftedToDate is today or earlier (or not set)
-            if (isToday) {
-                // ALWAYS show if completed TODAY (even if shifted to tomorrow)
-                if (state.completionLog[dateStr]?.habits?.includes(h.id)) return true;
-                if (h.shiftedToDate && h.shiftedToDate > dateStr) return false;
-                return true;
-            }
-
-            // For FUTURE: only show if shiftedToDate matches
-            if (h.shiftedToDate === dateStr) return true;
-            return false;
-        }
-
-        // 4. Handle simple periodic habits (weekly/monthly/yearly) - original logic
+        // 3. Handle PERIODIC habits (Weekly/Monthly/Yearly/Times_Week/Times_Month)
         if (h.frequency && h.frequency !== 'daily') {
-            const isWeekly = h.frequency === 'weekly';
-            const isMonthly = h.frequency === 'monthly';
+            const isWeekly = h.frequency === 'weekly' || h.frequency === 'times_week';
+            const isMonthly = h.frequency === 'monthly' || h.frequency === 'times_month';
             const periodId = isWeekly ? getWeekIdentifier(dateStr) :
                 isMonthly ? getMonthIdentifier(dateStr) :
                     getYearIdentifier(dateStr);
@@ -2065,15 +2035,37 @@ function getHabitsForDate(dateStr) {
             const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
             const targetCompletions = h.freqTimes || 1;
 
-            if (completionsThisPeriod >= targetCompletions) {
-                const wasCompletedToday = state.completionLog[dateStr]?.habits?.includes(h.id);
-                if (!wasCompletedToday) return false;
-            }
+            // STRICT VISIBILITY RULE:
+            // 1. If completed on this specific date, ALWAYS SHOW (history).
+            // 2. If Today AND Quota NOT Met, SHOW (to allow completion).
+            // 3. If Future (optional, assuming we show future plans) AND Quota NOT Met, SHOW.
+            // 4. Otherwise HIDE (Past incomplete, or Quota met for today/future).
+
+            // Check if completed on this specific date
+            const isCompletedOnDate = state.completionLog[dateStr]?.habits?.includes(h.id);
+
+            if (isCompletedOnDate) return true;
+
+            // If quota is met, and not completed today, hide it
+            if (completionsThisPeriod >= targetCompletions) return false;
+
+            // If quota NOT met:
+            // Show if it's TODAY (to do it)
+            if (isToday) return true;
+
+            // Show if it's FUTURE (to plan it) - Optional, but standard behavior
+            if (dateStr > today) return true;
+
+            // If PAST and NOT completed (and quota not met), logic says HIDE "remove directly".
+            // So if isPast and !isCompletedOnDate, we return false.
+            if (isPast) return false;
         }
 
         return true;
     });
 }
+
+
 
 // Helper to count how many times a habit was completed in a given period
 function countCompletionsInPeriod(habitId, frequency, periodId) {
@@ -4458,6 +4450,25 @@ function selectEmoji(emoji) {
     renderHeader();
     renderProfilePopup();
     closeAvatarModal();
+}
+
+window.switchAvatarTab = function (tab) {
+    const emojiBtn = document.getElementById('btnAvatarEmoji');
+    const photoBtn = document.getElementById('btnAvatarPhoto');
+    const emojiContent = document.getElementById('avatarEmojiContent');
+    const photoContent = document.getElementById('avatarPhotoContent');
+
+    if (tab === 'emoji') {
+        emojiBtn.classList.add('active');
+        photoBtn.classList.remove('active');
+        emojiContent.classList.remove('hidden');
+        photoContent.classList.add('hidden');
+    } else {
+        emojiBtn.classList.remove('active');
+        photoBtn.classList.add('active');
+        emojiContent.classList.add('hidden');
+        photoContent.classList.remove('hidden');
+    }
 }
 
 function handleAvatarUpload(event) {
