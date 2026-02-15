@@ -4421,6 +4421,7 @@ function duplicateTask(type, id) {
 
 function openAvatarModal() {
     document.getElementById('avatarModalOverlay').classList.add('active');
+    switchAvatarTab('emoji'); // Reset to emoji tab
     renderEmojiGrid();
 }
 
@@ -4428,13 +4429,6 @@ function closeAvatarModal() {
     document.getElementById('avatarModalOverlay').classList.remove('active');
 }
 
-function switchAvatarTab(tab) {
-    document.querySelectorAll('.avatar-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[onclick= "switchAvatarTab('${tab}')"]`).classList.add('active');
-
-    document.getElementById('emojiTab').classList.toggle('hidden', tab !== 'emoji');
-    document.getElementById('uploadTab').classList.toggle('hidden', tab !== 'upload');
-}
 
 function renderEmojiGrid() {
     document.getElementById('emojiGrid').innerHTML = AVATAR_EMOJIS.map(emoji =>
