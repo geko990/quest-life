@@ -4979,10 +4979,7 @@ function pausePomodoro() {
 }
 
 function resetPomodoro() {
-    if (pomodoroAudio) {
-        pomodoroAudio.pause();
-        pomodoroAudio.currentTime = 0;
-    }
+
     pomodoroRunning = false;
     state.pomodoro.status = 'idle';
     state.pomodoro.targetTime = null;
@@ -5038,9 +5035,6 @@ function updatePomodoroDisplay() {
     // Update document title for browser tab
     document.title = (state.pomodoro.status === 'running') ? `(${timeStr}) Quest Life` : 'Quest Life';
 
-    // Update Media Session (Lock Screen)
-    updateLockScreenTimer(timeStr, state.pomodoro.status);
-
     const countEl = document.getElementById('pomodoroCount');
     if (countEl) countEl.textContent = state.pomodoro.sessionsToday;
 
@@ -5053,137 +5047,10 @@ function updatePomodoroDisplay() {
 // BACKGROUND AUDIO / LOCK SCREEN TIMER
 // ============================================
 
-// Silent WAV (Base64) - ~0.5s of silence
-const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==';
-
-let pomodoroAudio = null;
-
-function initPomodoroAudio() {
-    if (!pomodoroAudio) {
-        pomodoroAudio = new Audio(SILENT_AUDIO);
-        pomodoroAudio.loop = true;
-        pomodoroAudio.preload = 'auto';
-        pomodoroAudio.volume = 0.05; // Slightly higher volume to ensure system detects it
-
-        // Critical for iOS:
-        pomodoroAudio.setAttribute('playsinline', '');
-        pomodoroAudio.setAttribute('webkit-playsinline', '');
-
-        document.body.appendChild(pomodoroAudio);
-    }
-
-    // Resume Web Audio Context if available (helper for iOS)
-    if (window.audioCtx && window.audioCtx.state === 'suspended') {
-        window.audioCtx.resume();
-    } else {
-        if (typeof initAudio === 'function') initAudio();
-    }
-}
-
-// Debug function to force sound and metadata
-window.testLockScreen = function () {
-    initPomodoroAudio();
-
-    // Play an audible beep using Oscillator to confirm system audio is working
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 440; // A4
-        gain.gain.value = 0.1;
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
-
-        // Also start the silent audio to hold the session
-        pomodoroAudio.play().then(() => {
-            console.log("Test audio playing");
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: "TEST LOCK SCREEN",
-                    artist: "Funziona!",
-                    album: "Quest Life",
-                    artwork: [{ src: 'icon.png', sizes: '512x512', type: 'image/png' }]
-                });
-                navigator.mediaSession.playbackState = 'playing';
-            }
-            alert("Segnale inviato! Blocca lo schermo ORA per controllare.");
-        }).catch(e => alert("Errore Audio: " + e.message));
-
-    } catch (e) {
-        alert("Errore Context: " + e.message);
-    }
-};
-
-function updateLockScreenTimer(timeStr, status) {
-    if (!('mediaSession' in navigator)) return;
-
-    // Status mapping
-    let title = 'Pomodoro Timer';
-    let artist = 'Focus';
-    let artwork = 'icon.png'; // Use absolute path or clean relative
-
-    if (status === 'running') {
-        title = timeStr;
-        artist = '🔥 Focus in corso';
-    } else if (status === 'paused') {
-        title = timeStr; // Keep showing time even in pause
-        artist = '⏸️ In Pausa';
-    } else if (status === 'idle') {
-        title = 'Pomodoro Pronto';
-        artist = 'Avvia per iniziare';
-    }
-
-    try {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: title,
-            artist: artist,
-            album: 'Quest Life',
-            artwork: [
-                { src: 'icon.png', sizes: '192x192', type: 'image/png' },
-                { src: 'icon.png', sizes: '512x512', type: 'image/png' }
-            ]
-        });
-
-        // Update playback state
-        if (status === 'running') {
-            navigator.mediaSession.playbackState = 'playing';
-        } else if (status === 'paused') {
-            navigator.mediaSession.playbackState = 'paused';
-        } else {
-            navigator.mediaSession.playbackState = 'none';
-        }
-    } catch (e) {
-        console.error("Media Session Error:", e);
-    }
-}
-
-// Media Session Action Handlers
-if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => {
-        if (state.pomodoro.status === 'paused' || state.pomodoro.status === 'idle') {
-            startPomodoro();
-        }
-    });
-
-    navigator.mediaSession.setActionHandler('pause', () => {
-        if (state.pomodoro.status === 'running') {
-            pausePomodoro();
-        }
-    });
-
-    navigator.mediaSession.setActionHandler('stop', () => {
-        resetPomodoro();
-    });
-}
+// [REMOVED] Background audio hacks removed for stability (v3.2.20)
+// Timer now runs in foreground only.
 
 function completePomodoro() {
-    if (pomodoroAudio) {
-        pomodoroAudio.pause();
-        pomodoroAudio.currentTime = 0;
-    }
     clearInterval(pomodoroInterval);
     pomodoroRunning = false;
     state.pomodoro.status = 'idle';
@@ -5198,6 +5065,7 @@ function completePomodoro() {
     state.pomodoro.sessionsToday++;
     state.pomodoro.lastSessionDate = getGameDateString();
     addMonthlyPoints(1); // Pomodoro Point
+
     saveState();
 
     // Play sound (simple beep)
