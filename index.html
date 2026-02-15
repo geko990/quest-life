@@ -666,7 +666,7 @@
                         </div>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
                             Versione: <span id="appVersion" onclick="updateApp()"
-                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.2.18</span> •
+                                style="pointer-events: auto; cursor:pointer; text-decoration:underline;">3.2.19</span> •
                             Quest Life PWA
                         </p>
                     </div>
@@ -717,13 +717,29 @@
             <div class="modal-header">
                 <h3>Scegli Avatar</h3>
             </div>
-            <div class="emoji-grid" id="emojiGrid"></div>
-        </div>
-        <div class="avatar-tab-content hidden" id="uploadTab">
-            <input type="file" id="avatarUpload" accept="image/*" onchange="handleAvatarUpload(event)">
-            <label for="avatarUpload" class="upload-label">
-                📷 Carica una foto
-            </label>
+
+            <div class="avatar-tabs" style="display:flex; padding:0 16px; gap:10px; margin-bottom:15px;">
+                <button class="btn-secondary active" id="btnAvatarEmoji" onclick="switchAvatarTab('emoji')"
+                    style="flex:1;">😀 Emoji</button>
+                <button class="btn-secondary" id="btnAvatarPhoto" onclick="switchAvatarTab('photo')" style="flex:1;">📷
+                    Foto</button>
+            </div>
+
+            <!-- Content Container -->
+            <div id="avatarEmojiContent">
+                <div class="emoji-grid" id="emojiGrid"></div>
+            </div>
+
+            <div id="avatarPhotoContent" class="hidden" style="padding:20px; text-align:center;">
+                <input type="file" id="avatarUpload" accept="image/*" onchange="handleAvatarUpload(event)"
+                    style="display:none;">
+                <label for="avatarUpload" class="upload-label"
+                    style="display:inline-block; padding:20px; border:2px dashed var(--text-muted); border-radius:12px; cursor:pointer; width:100%;">
+                    <div style="font-size:30px; margin-bottom:10px;">📷</div>
+                    <div style="font-size:14px;">Tocca per caricare una foto</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:5px;">Max 2MB</div>
+                </label>
+            </div>
         </div>
     </div>
     </div>
