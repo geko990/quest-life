@@ -3811,6 +3811,11 @@ textarea {
    AVATAR MODAL
    ============================================ */
 
+#avatarModalOverlay {
+    z-index: 11000 !important;
+    /* Above profile popup (3000) and center popup (10000) */
+}
+
 .avatar-modal {
     max-height: 70vh;
 }
