@@ -1,7 +1,7 @@
-// QUEST LIFE SERVICE WORKER v3.2.12
+// QUEST LIFE SERVICE WORKER v3.2.13
 // Network-First strategy for HTML to prevent stale versions
 
-const CACHE_NAME = 'quest-life-v3.2.12';
+const CACHE_NAME = 'quest-life-v3.2.13';
 const ASSETS = [
     './',
     './index.html',
@@ -18,7 +18,14 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS);
+            // Force fetch with timestamp to bypass HTTP cache
+            const assetsWithCacheBust = ASSETS.map(url => {
+                if (url.includes('index.html') || url.includes('app.js') || url.includes('styles.css')) {
+                    return url + '?t=' + Date.now();
+                }
+                return url;
+            });
+            return cache.addAll(assetsWithCacheBust);
         })
     );
     self.skipWaiting();
