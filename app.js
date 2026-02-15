@@ -2031,10 +2031,8 @@ function getHabitsForDate(dateStr) {
             const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
             const targetCompletions = h.freqTimes || 1;
 
-            // If target met, normally only show on days it was completed (to declutter history)
-            // But for TODAY, always show it so user can manage it (e.g. uncheck extras, or check if they want to overachieve)
+            // If target met, only show on days it was completed (for history)
             if (completionsThisPeriod >= targetCompletions) {
-                if (isToday) return true;
                 return state.completionLog[dateStr]?.habits?.includes(h.id);
             }
 
@@ -2068,7 +2066,6 @@ function getHabitsForDate(dateStr) {
             const targetCompletions = h.freqTimes || 1;
 
             if (completionsThisPeriod >= targetCompletions) {
-                if (isToday) return true;
                 const wasCompletedToday = state.completionLog[dateStr]?.habits?.includes(h.id);
                 if (!wasCompletedToday) return false;
             }
