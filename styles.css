@@ -4273,6 +4273,21 @@ textarea {
     color: white;
 }
 
+.subtask-item-detail.completed .subtask-checkbox::after {
+    content: '✓';
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.card-subtask-badge {
+    font-size: 10px;
+    color: var(--accent-primary);
+    font-weight: 600;
+    background: rgba(124, 58, 237, 0.1);
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
 /* ============================================
    ARCHIVE MODAL
    ============================================ */
@@ -6773,4 +6788,248 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
     font-weight: 800;
     padding: 2px 8px;
     border-radius: 10px;
+}
+
+/* ============================================
+   ANDAMENTO PESO SECTION
+   ============================================ */
+
+.andamento-peso-section {
+    margin-top: 15px;
+    padding: 10px 12px;
+    background: var(--bg-secondary);
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s;
+}
+
+.andamento-peso-section:active {
+    transform: scale(0.98);
+}
+
+.andamento-peso-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.andamento-peso-value {
+    font-size: 13px;
+    color: #ec4899;
+    font-weight: 600;
+}
+
+/* ============================================
+   MEAL PLANNER
+   ============================================ */
+
+.meal-planner-modal {
+    max-height: 85vh;
+    overflow-y: auto;
+    padding-bottom: 15px !important;
+}
+
+.planner-day-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 12px 0;
+}
+
+.planner-nav-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.planner-nav-btn:active {
+    transform: scale(0.9);
+    background: var(--accent-primary);
+    color: white;
+}
+
+.planner-day-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 140px;
+    text-align: center;
+}
+
+.planner-meals-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 5px;
+}
+
+.planner-meal-section {
+    background: var(--bg-secondary);
+    border-radius: 14px;
+    padding: 10px;
+    border: 1px solid var(--glass-border);
+}
+
+.planner-meal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.planner-meal-subtotal {
+    font-size: 11px;
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.planner-meal-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.planner-food-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.planner-food-name {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planner-food-info {
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.planner-food-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.6;
+    padding: 2px 4px;
+    transition: opacity 0.2s;
+}
+
+.planner-food-remove:hover {
+    opacity: 1;
+}
+
+.planner-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-style: italic;
+    padding: 8px;
+}
+
+.planner-add-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: 1px dashed var(--accent-primary);
+    color: var(--accent-primary);
+    padding: 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s;
+}
+
+.planner-add-btn:active {
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.planner-totals {
+    margin: 12px 5px;
+    background: var(--bg-secondary);
+    border-radius: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.planner-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.planner-total-row:first-child {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.planner-total-row.over {
+    color: #f43f5e;
+}
+
+.planner-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 5px;
+}
+
+.planner-action-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 10px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.planner-action-btn:active {
+    transform: scale(0.96);
+}
+
+.planner-action-btn.primary {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+}
+
+.planner-action-btn.danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
 }
