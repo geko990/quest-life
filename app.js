@@ -3550,6 +3550,7 @@ function setAccent(color) {
     const dropdown = document.getElementById('colorDropdown');
     if (dropdown) dropdown.classList.add('hidden');
 }
+window.setAccent = setAccent;
 
 // Theme Selection Dropdown Toggle
 function toggleThemeDropdown() {
