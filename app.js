@@ -8845,11 +8845,13 @@ function showHealthHistory() {
         overlay.classList.remove('hidden');
         modal.classList.remove('hidden');
 
-        // Reset view to chart
-        toggleNutritionHistoryView('chart');
+        // Ensure chart view is shown, list hidden
+        const chartView = document.getElementById('nutrition-chart-view');
+        const listView = document.getElementById('nutrition-list-view');
+        if (chartView) chartView.classList.remove('hidden');
+        if (listView) listView.classList.add('hidden');
 
-        // Render the always-visible weight trend
-        setTimeout(() => renderWeightTrendInAndamento(), 200);
+        setTimeout(() => renderNutritionChart(currentChartMetric || 'calories'), 50);
     }
 }
 window.showHealthHistory = showHealthHistory;
@@ -8862,23 +8864,24 @@ function closeNutritionTrends() {
 }
 window.closeNutritionTrends = closeNutritionTrends;
 
-function toggleNutritionHistoryView(view) {
+function toggleNutritionHistoryView() {
     const chartView = document.getElementById('nutrition-chart-view');
     const listView = document.getElementById('nutrition-list-view');
-    const btnChart = document.getElementById('btn-view-chart');
-    const btnList = document.getElementById('btn-view-list');
+    const hamburger = document.querySelector('.andamento-hamburger');
 
-    if (view === 'chart') {
+    const isListVisible = !listView.classList.contains('hidden');
+
+    if (isListVisible) {
+        // Switch back to chart
         chartView.classList.remove('hidden');
         listView.classList.add('hidden');
-        btnChart.classList.add('active');
-        btnList.classList.remove('active');
-        setTimeout(() => renderNutritionChart(currentChartMetric), 50);
+        if (hamburger) hamburger.textContent = '☰';
+        setTimeout(() => renderNutritionChart(currentChartMetric || 'calories'), 50);
     } else {
+        // Switch to list
         chartView.classList.add('hidden');
         listView.classList.remove('hidden');
-        btnChart.classList.remove('active');
-        btnList.classList.add('active');
+        if (hamburger) hamburger.textContent = '📊';
         renderNutritionHistoryList();
     }
 }
@@ -8977,22 +8980,21 @@ window.saveHistoryEntry = saveHistoryEntry;
 
 function switchNutritionChart(metric) {
     currentChartMetric = metric;
-    // Update tab styles (only for the 3 main tabs, not peso)
-    if (metric !== 'weight') {
-        document.querySelectorAll('.chart-tab').forEach(btn => {
-            const text = btn.textContent.toLowerCase();
-            const matches = (
-                (metric === 'calories' && text.includes('alimentazione')) ||
-                (metric === 'water' && text.includes('acqua')) ||
-                (metric === 'steps' && text.includes('passi'))
-            );
-            if (matches) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-    }
+    // Update all tab styles across both rows
+    document.querySelectorAll('#nutrition-chart-view .chart-tab').forEach(btn => {
+        const text = btn.textContent.toLowerCase();
+        const matches = (
+            (metric === 'calories' && text.includes('dieta')) ||
+            (metric === 'water' && text.includes('acqua')) ||
+            (metric === 'steps' && text.includes('passi')) ||
+            (metric === 'weight' && text.includes('peso'))
+        );
+        if (matches) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
     renderNutritionChart(metric);
 }
 window.switchNutritionChart = switchNutritionChart;

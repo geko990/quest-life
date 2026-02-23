@@ -1442,51 +1442,36 @@
     <div class="modal-overlay hidden" id="nutritionTrendsOverlay" onclick="closeNutritionTrends()"></div>
     <div class="profile-popup popup-center hidden" id="nutritionTrendsModal" style="max-width:360px;"
         onclick="event.stopPropagation()">
-        <div class="popup-header-info" style="margin-bottom: 10px; justify-content: center;">
-            <div class="popup-avatar-frame" style="width: 50px; height: 50px;">
-                <div class="popup-emoji" style="font-size: 24px;">📊</div>
-            </div>
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:0 5px; margin-bottom:10px;">
+            <div style="width:30px;"></div>
+            <h3 style="text-align: center; flex:1; margin:0;">📊 Andamento</h3>
+            <button class="andamento-hamburger" onclick="toggleNutritionHistoryView()" title="Mostra elenco">☰</button>
         </div>
-        <h3 style="text-align: center; margin-bottom: 5px;">Andamento Nutrizione</h3>
-        <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">
-            Ultimi 30 giorni
+        <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+            Ultimi 14 giorni
         </p>
 
-        <div style="display: flex; justify-content: center; margin-bottom: 15px;">
-            <div class="theme-switcher" style="width: 200px;">
-                <button class="theme-btn active" id="btn-view-chart"
-                    onclick="toggleNutritionHistoryView('chart')">Grafico</button>
-                <button class="theme-btn" id="btn-view-list"
-                    onclick="toggleNutritionHistoryView('list')">Elenco</button>
-            </div>
-        </div>
-
-        <!-- Chart View -->
+        <!-- Chart View (default) -->
         <div id="nutrition-chart-view">
-            <div class="chart-controls" style="display:flex; justify-content:center; gap:8px; margin-bottom:15px;">
-                <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Alimentazione</button>
+            <!-- Tab Row 1: Dieta, Acqua, Passi -->
+            <div class="chart-controls" style="display:flex; justify-content:center; gap:6px; margin-bottom:6px;">
+                <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Dieta</button>
                 <button class="chart-tab" onclick="switchNutritionChart('water')">💧 Acqua</button>
                 <button class="chart-tab" onclick="switchNutritionChart('steps')">👟 Passi</button>
+            </div>
+            <!-- Tab Row 2: Peso (full width) -->
+            <div class="chart-controls" style="display:flex; justify-content:center; gap:6px; margin-bottom:12px;">
+                <button class="chart-tab peso-tab" onclick="switchNutritionChart('weight')">⚖️ Peso</button>
             </div>
 
             <div class="chart-container" style="position: relative; height: 200px; width:100%;">
                 <canvas id="nutritionTrendChart"></canvas>
             </div>
-
-            <!-- Peso row below - full width "resultant" -->
-            <div class="andamento-peso-section" onclick="switchNutritionChart('weight')" style="cursor:pointer;">
-                <div class="andamento-peso-header">
-                    <span>⚖️ Peso</span>
-                    <span id="andamentoPesoSummary" class="andamento-peso-value"></span>
-                </div>
-                <div class="chart-container" style="position: relative; height: 120px; width:100%; margin-top:8px;">
-                    <canvas id="weightTrendChart"></canvas>
-                </div>
-            </div>
         </div>
 
-        <!-- List View (Hidden by default) -->
-        <div id="nutrition-list-view" class="hidden" style="max-height: 250px; overflow-y: auto;">
+        <!-- List View (Hidden by default, toggled by hamburger) -->
+        <div id="nutrition-list-view" class="hidden" style="max-height: 300px; overflow-y: auto;">
             <div id="nutritionHistoryList" class="history-list">
                 <!-- Dynamic Content -->
             </div>

@@ -6822,6 +6822,32 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
     font-weight: 600;
 }
 
+.andamento-hamburger {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.andamento-hamburger:active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.peso-tab {
+    width: 100%;
+    max-width: none;
+}
+
 /* ============================================
    MEAL PLANNER
    ============================================ */
@@ -6830,6 +6856,7 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
     max-height: 85vh;
     overflow-y: auto;
     padding-bottom: 15px !important;
+    -webkit-overflow-scrolling: touch;
 }
 
 .planner-day-nav {
