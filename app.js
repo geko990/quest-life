@@ -4,8 +4,8 @@ console.log("APP.JS LOADED - v3.2.15");
    Main Application Script
    ============================================ */
 
-export const APP_VERSION = '3.2.15'; // Defined here for local verify, but constants.js is truth
-import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES, APP_VERSION as CONST_VERSION } from './js/modules/constants.js?v=3.2.15';
+export const APP_VERSION = '3.3.0'; // Defined here for local verify, but constants.js is truth
+import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES, AVATAR_EMOJIS, ACCENT_COLORS, XP_CONFIG, TITLES, DAY_NAMES, CHALLENGE_TEMPLATES, APP_VERSION as CONST_VERSION } from './js/modules/constants.js?v=3.3.0';
 import { state, setState, updateState, loadState, saveState, resetAll, checkHealthRollover } from './js/modules/state.js?v=3.2.15';
 import { getGameDateObj, formatISO, getGameDate, getGameDateString, getWeekIdentifier, getMonthIdentifier, getYearIdentifier, calculateXp, getXpForLevel, ensureUniqueIds, getCumulativeXpForLevel, calculateLevelFromXp, formatDate, generateId } from './js/modules/utils.js?v=3.2.15';
 import { setFileHandle, getFileHandle, linkDatabaseFile as linkDBInit, loadFileHandleOnStart, updateDbStatusUI, saveDataToFile } from './js/modules/storage.js?v=3.2.15';
