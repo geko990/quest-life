@@ -358,10 +358,10 @@
                                         <span class="unit">kg</span>
                                     </div>
                                     <div class="weight-details-mini" id="weightDetailsMini">
-                                        <span>Magra: <b id="leanCurrent">--</b></span>
-                                        <span>Grassa: <b id="fatCurrent">--</b></span>
+                                        <span style="white-space:nowrap;">Magra: <b id="leanCurrent">--</b></span>
+                                        <span style="white-space:nowrap;">Grassa: <b id="fatCurrent">--</b></span>
                                     </div>
-                                    <div class="progress-bar-bg" style="margin-top:5px;">
+                                    <div class="progress-bar-bg">
                                         <div id="weightProgressBar" class="progress-bar-fill"
                                             style="background: #ec4899;"></div>
                                     </div>
@@ -369,21 +369,23 @@
                                 <!-- History/Stats Card -->
                                 <div class="health-card history-card" onclick="showHealthHistory()">
                                     <div class="card-title">Stat.</div>
-                                    <div class="history-main">
-                                        <span class="history-icon" style="font-size: 24px;">📊</span>
-                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-                                            Vedi medie e storico
-                                        </div>
+                                    <div class="steps-main">
+                                        <span class="steps-icon" style="font-size: 24px;">📊</span>
+                                    </div>
+                                    <div
+                                        style="font-size: 10px; color: var(--text-muted); margin-top: auto; margin-bottom: 10px;">
+                                        Vedi medie e storico
                                     </div>
                                 </div>
                                 <!-- Meal Planner Card -->
                                 <div class="health-card planner-card" onclick="openMealPlanner()">
                                     <div class="card-title">Pianifica</div>
-                                    <div class="history-main">
-                                        <span class="history-icon" style="font-size: 24px;">📋</span>
-                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-                                            Pianifica i pasti
-                                        </div>
+                                    <div class="steps-main">
+                                        <span class="steps-icon" style="font-size: 24px;">📋</span>
+                                    </div>
+                                    <div
+                                        style="font-size: 10px; color: var(--text-muted); margin-top: auto; margin-bottom: 10px;">
+                                        Pianifica i pasti
                                     </div>
                                 </div>
                             </div>
