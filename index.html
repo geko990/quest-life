@@ -376,6 +376,16 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Meal Planner Card -->
+                                <div class="health-card planner-card" onclick="openMealPlanner()">
+                                    <div class="card-title">Pianifica</div>
+                                    <div class="history-main">
+                                        <span class="history-icon" style="font-size: 24px;">📋</span>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+                                            Pianifica i pasti
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1307,6 +1317,41 @@
     </div>
 
     <!-- WEIGHT MODAL (v3.0.0) -->
+    <!-- Meal Planner Modal -->
+    <div id="mealPlannerModal" class="modal-overlay" onclick="closeMealPlanner()">
+        <div class="modal-content premium-modal meal-planner-modal" onclick="event.stopPropagation()">
+            <div class="modal-header" style="border-bottom:1px solid var(--glass-border); padding-bottom:10px;">
+                <h3 style="width:100%; text-align:center;">📋 Pianifica Pasti</h3>
+            </div>
+
+            <!-- Day Navigation -->
+            <div class="planner-day-nav">
+                <button class="planner-nav-btn" onclick="navigatePlannerDay(-1)">◀</button>
+                <span id="plannerDayLabel" class="planner-day-label">Lun 24 Feb</span>
+                <button class="planner-nav-btn" onclick="navigatePlannerDay(1)">▶</button>
+            </div>
+
+            <!-- Meal Sections -->
+            <div class="planner-meals-container" id="plannerMealsContainer">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Totals -->
+            <div class="planner-totals" id="plannerTotals">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Actions -->
+            <div class="planner-actions">
+                <button class="planner-action-btn" onclick="copyPlanToNextDay()">🔄 Copia su domani</button>
+                <button class="planner-action-btn" onclick="copyPlanToWeek()">📋 Copia su settimana</button>
+                <button class="planner-action-btn primary" onclick="applyPlanToDay()">✅ Applica al giorno</button>
+                <button class="planner-action-btn danger" onclick="clearPlanDay()">🗑️ Svuota giorno</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Peso & Composizione Modal -->
     <div id="weightModal" class="modal-overlay" onclick="closeWeightModal()">
         <div class="modal-content premium-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -1419,13 +1464,24 @@
         <!-- Chart View -->
         <div id="nutrition-chart-view">
             <div class="chart-controls" style="display:flex; justify-content:center; gap:8px; margin-bottom:15px;">
-                <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Calorie</button>
-                <button class="chart-tab" onclick="switchNutritionChart('weight')">⚖️ Peso</button>
+                <button class="chart-tab active" onclick="switchNutritionChart('calories')">🔥 Alimentazione</button>
                 <button class="chart-tab" onclick="switchNutritionChart('water')">💧 Acqua</button>
+                <button class="chart-tab" onclick="switchNutritionChart('steps')">👟 Passi</button>
             </div>
 
             <div class="chart-container" style="position: relative; height: 200px; width:100%;">
                 <canvas id="nutritionTrendChart"></canvas>
+            </div>
+
+            <!-- Peso row below - full width "resultant" -->
+            <div class="andamento-peso-section" onclick="switchNutritionChart('weight')" style="cursor:pointer;">
+                <div class="andamento-peso-header">
+                    <span>⚖️ Peso</span>
+                    <span id="andamentoPesoSummary" class="andamento-peso-value"></span>
+                </div>
+                <div class="chart-container" style="position: relative; height: 120px; width:100%; margin-top:8px;">
+                    <canvas id="weightTrendChart"></canvas>
+                </div>
             </div>
         </div>
 

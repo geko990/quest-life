@@ -2209,6 +2209,14 @@ function renderHabits() {
             progressBadge = `<span class="card-progress">${completions}/${habit.freqTimes} ${periodLabel}</span>`;
         }
 
+        // Subtask badge from description
+        let subtaskBadge = '';
+        const subtaskProgress = getSubtaskProgress(habit, 'habit', viewedDate);
+        if (subtaskProgress) {
+            const icon = subtaskProgress.completed === subtaskProgress.total ? '☑' : '☐';
+            subtaskBadge = `<span class="card-subtask-badge">${icon} ${subtaskProgress.completed}/${subtaskProgress.total}</span>`;
+        }
+
         return `
             <div class="task-card ${habit.locked ? 'locked' : ''}" data-type="habit" data-id="${habit.id}">
                 <div class="swipe-actions">
@@ -2227,6 +2235,7 @@ function renderHabits() {
                             ${primaryStat ? `<span class="card-stat">${primaryStat.icon}</span>` : ''}
                             ${secondaryStat ? `<span class="card-stat" style="opacity:0.6">${secondaryStat.icon}</span>` : ''}
                             ${habit.dueDate ? `<span class="card-due">📅 ${formatDate(habit.dueDate)}</span>` : ''}
+                            ${subtaskBadge}
                         </div>
                     </div>
                     <div class="drag-handle" title="Trascina per riordinare">⋮⋮</div>
@@ -2469,6 +2478,14 @@ function renderOneshots() {
         const primaryStat = state.stats.find(s => s.id === oneshot.primaryStatId);
         const secondaryStat = oneshot.secondaryStatId ? state.stats.find(s => s.id === oneshot.secondaryStatId) : null;
 
+        // Subtask badge from description
+        let subtaskBadge = '';
+        const subtaskProgress = getSubtaskProgress(oneshot, 'oneshot');
+        if (subtaskProgress) {
+            const icon = subtaskProgress.completed === subtaskProgress.total ? '☑' : '☐';
+            subtaskBadge = `<span class="card-subtask-badge">${icon} ${subtaskProgress.completed}/${subtaskProgress.total}</span>`;
+        }
+
         return `
             <div class="task-card ${oneshot.locked ? 'locked' : ''}" data-type="oneshot" data-id="${oneshot.id}">
                 <div class="swipe-actions">
@@ -2485,6 +2502,7 @@ function renderOneshots() {
                             <span class="card-stats-col">${primaryStat ? primaryStat.icon : ''}${secondaryStat ? secondaryStat.icon : ''}</span>
                             ${oneshot.d10Roll && oneshot.dailyPlanDate === getGameDateString() ? `<span class="card-bonus">Oggi +${oneshot.d10Roll * 10}%</span>` : ''}
                             ${oneshot.dueDate ? `<span class="card-due">📅 ${formatDate(oneshot.dueDate)}</span>` : ''}
+                            ${subtaskBadge}
                         </div>
                     </div>
                     <div class="drag-handle" title="Trascina per riordinare">⋮⋮</div>
@@ -6610,6 +6628,63 @@ window.toggleDontShowInstall = toggleDontShowInstall;
 window.toggleSettingsGroup = toggleSettingsGroup;
 window.loadSettingsGroupsState = loadSettingsGroupsState;
 
+// ============================================
+// SUBTASK FROM DESCRIPTION (- lines)
+// ============================================
+
+function parseDescriptionSubtasks(description) {
+    if (!description) return { textLines: [], subtasks: [] };
+    const lines = description.split('\n');
+    const textLines = [];
+    const subtasks = [];
+    lines.forEach((line, idx) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('- ') && trimmed.length > 2) {
+            subtasks.push({ index: idx, text: trimmed.substring(2) });
+        } else if (trimmed.length > 0) {
+            textLines.push(trimmed);
+        }
+    });
+    return { textLines, subtasks };
+}
+
+function getSubtaskChecks(task, type, dateStr) {
+    if (!task.subtaskChecks) task.subtaskChecks = {};
+    if (type === 'habit') {
+        // For habits, checks are per-date
+        if (!task.subtaskChecks[dateStr]) task.subtaskChecks[dateStr] = {};
+        return task.subtaskChecks[dateStr];
+    }
+    return task.subtaskChecks;
+}
+
+function toggleDescriptionSubtask(type, taskId, subtaskIdx) {
+    const list = type === 'habit' ? state.habits : state.oneshots;
+    const task = list.find(t => t.id === taskId);
+    if (!task) return;
+
+    const dateStr = type === 'habit' ? viewedDate : '__global__';
+    const checks = getSubtaskChecks(task, type, dateStr);
+    checks[subtaskIdx] = !checks[subtaskIdx];
+    saveState();
+
+    // Re-render the detail view
+    openTaskDetail(type, taskId);
+    // Also re-render lists to update badge
+    if (type === 'habit') renderHabits();
+    else renderOneshots();
+}
+
+function getSubtaskProgress(task, type, dateStr) {
+    const parsed = parseDescriptionSubtasks(task.description);
+    if (parsed.subtasks.length === 0) return null;
+    const checks = getSubtaskChecks(task, type, dateStr || '__global__');
+    const completed = parsed.subtasks.filter((s, i) => checks[s.index]).length;
+    return { completed, total: parsed.subtasks.length };
+}
+
+window.toggleDescriptionSubtask = toggleDescriptionSubtask;
+
 function openTaskDetail(type, id) {
     const list = type === 'habit' ? state.habits : state.oneshots;
     const task = list.find(t => t.id === id);
@@ -6620,18 +6695,46 @@ function openTaskDetail(type, id) {
     const title = document.getElementById('questDetailTitle');
     const meta = document.getElementById('questDetailMeta');
     const desc = document.getElementById('questDetailDesc');
-    const subtasks = document.getElementById('questDetailSubtasks');
-    const subTitle = document.getElementById('questSubtasksTitle'); // Added this line
+    const subtasksEl = document.getElementById('questDetailSubtasks');
+    const subTitle = document.getElementById('questSubtasksTitle');
 
     if (overlay && title && meta && desc) {
         title.textContent = task.name;
-        desc.className = 'task-detail-desc'; // Use the new CSS class
-        desc.style.textAlign = 'center'; // Center text for tasks
-        desc.textContent = task.description ? task.description : (type === 'habit' ? "Nessuna descrizione per questa abitudine." : "Nessuna descrizione per questo one-shot.");
 
-        // Hide subtasks container
-        if (subtasks) subtasks.style.display = 'none'; // Explicitly hide the container
-        if (subTitle) subTitle.style.display = 'none'; // Explicitly hide the title
+        // Parse description for subtasks
+        const parsed = parseDescriptionSubtasks(task.description);
+        const dateStr = type === 'habit' ? viewedDate : '__global__';
+        const checks = getSubtaskChecks(task, type, dateStr);
+
+        // Render description text (non-subtask lines)
+        desc.className = 'task-detail-desc';
+        desc.style.textAlign = 'center';
+        if (parsed.textLines.length > 0) {
+            desc.textContent = parsed.textLines.join('\n');
+        } else if (parsed.subtasks.length === 0) {
+            desc.textContent = type === 'habit' ? "Nessuna descrizione per questa abitudine." : "Nessuna descrizione per questo one-shot.";
+        } else {
+            desc.textContent = '';
+        }
+
+        // Render subtask checkboxes
+        if (parsed.subtasks.length > 0 && subtasksEl && subTitle) {
+            subTitle.style.display = 'block';
+            subTitle.textContent = 'Checklist';
+            subtasksEl.style.display = 'block';
+            subtasksEl.innerHTML = parsed.subtasks.map(sub => {
+                const isChecked = checks[sub.index] ? true : false;
+                return `
+                    <div class="subtask-item-detail ${isChecked ? 'completed' : ''}" onclick="toggleDescriptionSubtask('${type}', '${task.id}', ${sub.index})">
+                        <div class="subtask-checkbox"></div>
+                        <span style="flex-grow:1; padding-left:8px;">${sub.text}</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            if (subtasksEl) subtasksEl.style.display = 'none';
+            if (subTitle) subTitle.style.display = 'none';
+        }
 
         // Calculate XP Reward
         const baseXP = task.stars * 10;
@@ -6666,6 +6769,7 @@ function openTaskDetail(type, id) {
         overlay.classList.add('active');
     }
 }
+
 
 function showMomentumTooltip(event, xp) {
     const tooltip = document.getElementById('tooltip');
@@ -7485,6 +7589,332 @@ window.deleteFoodFromDatabase = deleteFoodFromDatabase;
 window.openGramInput = openGramInput;
 window.closeGramInput = closeGramInput;
 window.confirmGramInput = confirmGramInput;
+
+// ============================================
+// MEAL PLANNER
+// ============================================
+
+let plannerCurrentDate = null;
+const PLANNER_MEALS = [
+    { id: 'breakfast', label: 'Colazione', icon: '🌅' },
+    { id: 'lunch', label: 'Pranzo', icon: '🍝' },
+    { id: 'dinner', label: 'Cena', icon: '🌙' },
+    { id: 'snack', label: 'Snack', icon: '🍪' }
+];
+
+const DAY_LABELS_IT = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+const MONTH_LABELS_IT = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
+function formatPlannerDate(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00');
+    return `${DAY_LABELS_IT[d.getDay()]} ${d.getDate()} ${MONTH_LABELS_IT[d.getMonth()]}`;
+}
+
+function openMealPlanner() {
+    if (!state.health.mealPlans) state.health.mealPlans = {};
+    plannerCurrentDate = getGameDate();
+    document.getElementById('mealPlannerModal').classList.add('active');
+    renderMealPlanner();
+}
+
+function closeMealPlanner() {
+    document.getElementById('mealPlannerModal').classList.remove('active');
+}
+
+function navigatePlannerDay(delta) {
+    const d = new Date(plannerCurrentDate + 'T12:00:00');
+    d.setDate(d.getDate() + delta);
+    plannerCurrentDate = d.toISOString().split('T')[0];
+    renderMealPlanner();
+}
+
+function getPlanForDate(dateStr) {
+    if (!state.health.mealPlans) state.health.mealPlans = {};
+    if (!state.health.mealPlans[dateStr]) {
+        state.health.mealPlans[dateStr] = {
+            breakfast: [], lunch: [], dinner: [], snack: []
+        };
+    }
+    return state.health.mealPlans[dateStr];
+}
+
+function renderMealPlanner() {
+    const dateStr = plannerCurrentDate;
+    const plan = getPlanForDate(dateStr);
+
+    // Update day label
+    const isToday = dateStr === getGameDate();
+    const label = document.getElementById('plannerDayLabel');
+    if (label) {
+        label.textContent = formatPlannerDate(dateStr) + (isToday ? ' (Oggi)' : '');
+    }
+
+    // Render meal sections
+    const container = document.getElementById('plannerMealsContainer');
+    if (!container) return;
+
+    let totalKcal = 0;
+    let totalProt = 0;
+
+    container.innerHTML = PLANNER_MEALS.map(meal => {
+        const items = plan[meal.id] || [];
+        let mealKcal = 0;
+        let mealProt = 0;
+
+        const itemsHtml = items.length > 0 ? items.map((item, idx) => {
+            mealKcal += item.calories || 0;
+            mealProt += item.proteins || 0;
+            return `
+                <div class="planner-food-item">
+                    <span class="planner-food-name">${item.emoji || '🍽️'} ${item.name}</span>
+                    <span class="planner-food-info">${Math.round(item.calories)} kcal · ${Math.round(item.proteins || 0)}g</span>
+                    <button class="planner-food-remove" onclick="event.stopPropagation(); removePlannerFood('${dateStr}', '${meal.id}', ${idx})">✕</button>
+                </div>
+            `;
+        }).join('') : '<div class="planner-empty">(vuoto)</div>';
+
+        totalKcal += mealKcal;
+        totalProt += mealProt;
+
+        return `
+            <div class="planner-meal-section">
+                <div class="planner-meal-header">
+                    <span>${meal.icon} ${meal.label}</span>
+                    ${items.length > 0 ? `<span class="planner-meal-subtotal">${Math.round(mealKcal)} kcal</span>` : ''}
+                </div>
+                <div class="planner-meal-items">
+                    ${itemsHtml}
+                </div>
+                <button class="planner-add-btn" onclick="openPlannerFoodPicker('${dateStr}', '${meal.id}')">+ Aggiungi</button>
+            </div>
+        `;
+    }).join('');
+
+    // Render totals
+    const totalsEl = document.getElementById('plannerTotals');
+    if (totalsEl) {
+        const goalKcal = state.health.calories?.goal || 1600;
+        const goalProt = state.health.proteins?.goal || 0;
+        totalsEl.innerHTML = `
+            <div class="planner-total-row">
+                <span>Totale</span>
+                <span><strong>${Math.round(totalKcal)}</strong> kcal · <strong>${Math.round(totalProt)}</strong>g prot</span>
+            </div>
+            <div class="planner-total-row">
+                <span>Obiettivo</span>
+                <span>${goalKcal} kcal · ${goalProt}g prot</span>
+            </div>
+            <div class="planner-total-row ${totalKcal > goalKcal ? 'over' : ''}">
+                <span>Rimanenti</span>
+                <span>${Math.round(goalKcal - totalKcal)} kcal · ${Math.round(goalProt - totalProt)}g prot</span>
+            </div>
+        `;
+    }
+}
+
+function removePlannerFood(dateStr, mealId, idx) {
+    const plan = getPlanForDate(dateStr);
+    if (plan[mealId]) {
+        plan[mealId].splice(idx, 1);
+        saveState();
+        renderMealPlanner();
+    }
+}
+
+function clearPlanDay() {
+    if (!confirm('Svuotare il piano di questo giorno?')) return;
+    state.health.mealPlans[plannerCurrentDate] = {
+        breakfast: [], lunch: [], dinner: [], snack: []
+    };
+    saveState();
+    renderMealPlanner();
+    showToast('Piano giornaliero svuotato', 'info');
+}
+
+// Food picker for planner - reuses the food database
+let plannerTargetDate = null;
+let plannerTargetMeal = null;
+
+function openPlannerFoodPicker(dateStr, mealId) {
+    plannerTargetDate = dateStr;
+    plannerTargetMeal = mealId;
+
+    // Build a mini food picker overlay
+    let picker = document.getElementById('plannerFoodPicker');
+    if (!picker) {
+        picker = document.createElement('div');
+        picker.id = 'plannerFoodPicker';
+        picker.className = 'modal-overlay';
+        picker.onclick = (e) => { if (e.target === picker) closePlannerFoodPicker(); };
+        document.body.appendChild(picker);
+    }
+
+    const db = state.health.foodDatabase || [];
+    const sorted = [...db].sort((a, b) => {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    picker.innerHTML = `
+        <div class="modal-content premium-modal" onclick="event.stopPropagation()" style="max-height:80vh; overflow-y:auto;">
+            <div class="modal-header" style="position:sticky; top:0; background:var(--bg-card); z-index:1;">
+                <h3 style="width:100%; text-align:center;">🍽️ Scegli Alimento</h3>
+            </div>
+            <div style="padding:10px;">
+                ${sorted.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:20px;">Nessun alimento nel database.<br>Aggiungine dal Database Alimenti.</div>' :
+            sorted.map(food => `
+                    <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-secondary); border-radius:12px; margin-bottom:6px; border:1px solid var(--glass-border); cursor:pointer;" onclick="selectPlannerFood('${food.id}')">
+                        <div style="flex:1;">
+                            <div style="font-weight:600; font-size:13px;">${food.emoji || '🍽️'} ${food.name}</div>
+                            <div style="font-size:10px; color:var(--text-secondary);">
+                                ${food.baseCalories}kcal · ${food.baseProteins || 0}g prot /100g
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    picker.classList.add('active');
+}
+
+function closePlannerFoodPicker() {
+    const picker = document.getElementById('plannerFoodPicker');
+    if (picker) picker.classList.remove('active');
+}
+
+function selectPlannerFood(foodId) {
+    const food = (state.health.foodDatabase || []).find(f => f.id === foodId);
+    if (!food) return;
+
+    closePlannerFoodPicker();
+
+    // Ask for grams via prompt (simple approach)
+    const hasUnit = food.unitGrams && food.unitGrams > 0;
+    let input;
+    if (hasUnit) {
+        input = prompt(`${food.emoji} ${food.name}\nInserisci quantità (g) o numero pezzi (es: "2p" per 2 pezzi):`, '100');
+    } else {
+        input = prompt(`${food.emoji} ${food.name}\nInserisci grammi:`, '100');
+    }
+
+    if (!input) return;
+
+    let grams = parseFloat(input);
+    let nameSuffix = `(${grams}g)`;
+
+    if (hasUnit && input.toLowerCase().includes('p')) {
+        const pieces = parseFloat(input);
+        grams = pieces * food.unitGrams;
+        nameSuffix = `(${pieces} pz)`;
+    }
+
+    if (isNaN(grams) || grams <= 0) return;
+
+    const ratio = grams / (food.baseGrams || 100);
+    const calories = food.baseCalories * ratio;
+    const proteins = (food.baseProteins || 0) * ratio;
+
+    const plan = getPlanForDate(plannerTargetDate);
+    if (!plan[plannerTargetMeal]) plan[plannerTargetMeal] = [];
+    plan[plannerTargetMeal].push({
+        foodId: food.id,
+        emoji: food.emoji || '🍽️',
+        name: `${food.name} ${nameSuffix}`,
+        calories,
+        proteins,
+        grams
+    });
+
+    saveState();
+    renderMealPlanner();
+}
+
+function copyPlanToNextDay() {
+    const plan = getPlanForDate(plannerCurrentDate);
+    const nextDate = new Date(plannerCurrentDate + 'T12:00:00');
+    nextDate.setDate(nextDate.getDate() + 1);
+    const nextDateStr = nextDate.toISOString().split('T')[0];
+
+    // Deep clone
+    state.health.mealPlans[nextDateStr] = JSON.parse(JSON.stringify(plan));
+    saveState();
+    showToast('Piano copiato su domani!', 'success');
+}
+
+function copyPlanToWeek() {
+    const plan = getPlanForDate(plannerCurrentDate);
+    for (let i = 1; i <= 6; i++) {
+        const d = new Date(plannerCurrentDate + 'T12:00:00');
+        d.setDate(d.getDate() + i);
+        const dateStr = d.toISOString().split('T')[0];
+        state.health.mealPlans[dateStr] = JSON.parse(JSON.stringify(plan));
+    }
+    saveState();
+    showToast('Piano copiato su tutta la settimana!', 'success');
+}
+
+function applyPlanToDay() {
+    const plan = getPlanForDate(plannerCurrentDate);
+    const isToday = plannerCurrentDate === getGameDate();
+
+    if (!isToday) {
+        showToast('Puoi applicare solo il piano del giorno corrente', 'warning');
+        return;
+    }
+
+    // Map planner meals to tracking meals
+    const mealMapping = {
+        breakfast: 'breakfast',
+        lunch: 'meal',
+        dinner: 'meal',
+        snack: 'snack'
+    };
+
+    let totalCalories = 0;
+    let totalProteins = 0;
+
+    PLANNER_MEALS.forEach(meal => {
+        const items = plan[meal.id] || [];
+        const trackingTab = mealMapping[meal.id] || 'meal';
+        if (!state.health.meals[trackingTab]) state.health.meals[trackingTab] = [];
+
+        items.forEach(item => {
+            state.health.meals[trackingTab].push({
+                id: generateId('meal'),
+                name: item.name,
+                calories: item.calories,
+                proteins: item.proteins
+            });
+            totalCalories += item.calories;
+            totalProteins += item.proteins;
+        });
+    });
+
+    state.health.calories.consumed += totalCalories;
+    if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
+    state.health.proteins.consumed += totalProteins;
+
+    saveState();
+    renderHealthDashboard();
+    if (typeof renderMealsList === 'function') renderMealsList();
+    closeMealPlanner();
+    showToast(`Piano applicato: +${Math.round(totalCalories)} kcal, +${Math.round(totalProteins)}g prot`, 'success');
+}
+
+window.openMealPlanner = openMealPlanner;
+window.closeMealPlanner = closeMealPlanner;
+window.navigatePlannerDay = navigatePlannerDay;
+window.removePlannerFood = removePlannerFood;
+window.clearPlanDay = clearPlanDay;
+window.openPlannerFoodPicker = openPlannerFoodPicker;
+window.closePlannerFoodPicker = closePlannerFoodPicker;
+window.selectPlannerFood = selectPlannerFood;
+window.copyPlanToNextDay = copyPlanToNextDay;
+window.copyPlanToWeek = copyPlanToWeek;
+window.applyPlanToDay = applyPlanToDay;
 
 // Exercise Manager
 window.openExerciseManager = openExerciseManager;
@@ -8315,6 +8745,70 @@ function closeWeightModal() {
     document.getElementById('weightModal').classList.remove('active');
 }
 
+function renderWeightHistoryChart() {
+    const ctx = document.getElementById('weightHistoryChart');
+    if (!ctx) return;
+
+    if (window.weightChartInstance) {
+        window.weightChartInstance.destroy();
+    }
+
+    const history = state.health.history || [];
+    const sorted = [...history].filter(e => e.weight > 0).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const data = sorted.slice(-30);
+
+    if (data.length === 0) {
+        ctx.parentElement.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:20px;">Nessun dato peso registrato.</div>';
+        return;
+    }
+
+    const labels = data.map(e => {
+        const d = new Date(e.date);
+        return d.getDate() + '/' + (d.getMonth() + 1);
+    });
+
+    window.weightChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Peso (kg)',
+                data: data.map(e => e.weight),
+                borderColor: '#ec4899',
+                backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 3,
+                pointBackgroundColor: '#ec4899'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 15, 26, 0.9)',
+                    titleColor: '#fff',
+                    bodyColor: '#cbd5e1'
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#64748b', font: { size: 9 } }
+                },
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#64748b', font: { size: 10 } },
+                    title: { display: true, text: 'kg', color: '#475569', font: { size: 10 } }
+                }
+            }
+        }
+    });
+}
+
 function saveWeightDetails() {
     const w = state.health.weight;
     w.current = parseFloat(document.getElementById('weightInputVal').value) || 0;
@@ -8353,6 +8847,9 @@ function showHealthHistory() {
 
         // Reset view to chart
         toggleNutritionHistoryView('chart');
+
+        // Render the always-visible weight trend
+        setTimeout(() => renderWeightTrendInAndamento(), 200);
     }
 }
 window.showHealthHistory = showHealthHistory;
@@ -8480,14 +8977,22 @@ window.saveHistoryEntry = saveHistoryEntry;
 
 function switchNutritionChart(metric) {
     currentChartMetric = metric;
-    // Update tab styles
-    document.querySelectorAll('.chart-tab').forEach(btn => {
-        if (btn.textContent.toLowerCase().includes(metric === 'calories' ? 'calorie' : (metric === 'weight' ? 'peso' : 'acqua'))) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+    // Update tab styles (only for the 3 main tabs, not peso)
+    if (metric !== 'weight') {
+        document.querySelectorAll('.chart-tab').forEach(btn => {
+            const text = btn.textContent.toLowerCase();
+            const matches = (
+                (metric === 'calories' && text.includes('alimentazione')) ||
+                (metric === 'water' && text.includes('acqua')) ||
+                (metric === 'steps' && text.includes('passi'))
+            );
+            if (matches) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
     renderNutritionChart(metric);
 }
 window.switchNutritionChart = switchNutritionChart;
@@ -8519,7 +9024,7 @@ function renderNutritionChart(metric) {
     if (metric === 'calories') {
         const consumedData = relevantData.map(e => e.consumed);
         datasets.push({
-            label: 'Consumate',
+            label: 'Calorie',
             data: consumedData,
             borderColor: '#f43f5e',
             backgroundColor: 'rgba(244, 63, 94, 0.1)',
@@ -8527,19 +9032,66 @@ function renderNutritionChart(metric) {
             tension: 0.3,
             fill: true
         });
-        yAxisLabel = 'kcal';
-    } else if (metric === 'weight') {
-        const weightData = relevantData.map(e => e.weight);
+        // Also show proteins as secondary line
+        const proteinData = relevantData.map(e => e.proteins || 0);
         datasets.push({
-            label: 'Peso (kg)',
-            data: weightData,
+            label: 'Proteine (g)',
+            data: proteinData,
+            borderColor: '#8b5cf6',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            tension: 0.3,
+            fill: false,
+            borderDash: [4, 3],
+            yAxisID: 'y1'
+        });
+        yAxisLabel = 'kcal';
+    } else if (metric === 'steps') {
+        const stepsData = relevantData.map(e => e.steps || 0);
+        datasets.push({
+            label: 'Passi',
+            data: stepsData,
             borderColor: '#8b5cf6',
             backgroundColor: 'rgba(139, 92, 246, 0.1)',
             borderWidth: 2,
             tension: 0.3,
             fill: true
         });
-        yAxisLabel = 'kg';
+        yAxisLabel = 'passi';
+    } else if (metric === 'weight') {
+        const weightData = relevantData.map(e => e.weight).filter(w => w > 0);
+        const weightLabels = relevantData.filter(e => e.weight > 0).map(e => {
+            const d = new Date(e.date);
+            return d.getDate() + '/' + (d.getMonth() + 1);
+        });
+        // Use filtered labels for weight
+        nutritionChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: weightLabels,
+                datasets: [{
+                    label: 'Peso (kg)',
+                    data: weightData,
+                    borderColor: '#ec4899',
+                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#ec4899'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15,15,26,0.9)', titleColor: '#fff', bodyColor: '#cbd5e1' } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } }, title: { display: true, text: 'kg', color: '#475569', font: { size: 10 } } }
+                }
+            }
+        });
+        return; // Early return — custom rendering for weight
     } else if (metric === 'water') {
         const waterData = relevantData.map(e => e.water || 0); // Handle missing water data
         datasets.push({
@@ -8554,59 +9106,115 @@ function renderNutritionChart(metric) {
         yAxisLabel = 'L';
     }
 
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: metric === 'calories' // Show legend for dual-line calories chart
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(15, 15, 26, 0.9)',
+                titleColor: '#fff',
+                bodyColor: '#cbd5e1',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1
+            }
+        },
+        scales: {
+            x: {
+                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                ticks: { color: '#64748b', font: { size: 10 } }
+            },
+            y: {
+                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                ticks: { color: '#64748b', font: { size: 10 } },
+                title: {
+                    display: true, text: yAxisLabel,
+                    color: '#475569',
+                    font: { size: 10 }
+                }
+            }
+        }
+    };
+
+    // Add secondary Y axis for proteins in calories view
+    if (metric === 'calories') {
+        chartOptions.scales.y1 = {
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#8b5cf6', font: { size: 9 } },
+            title: { display: true, text: 'g prot', color: '#8b5cf6', font: { size: 9 } }
+        };
+    }
+
     nutritionChartInstance = new Chart(ctx, {
         type: 'line',
+        data: { labels, datasets },
+        options: chartOptions
+    });
+}
+
+// Render the always-visible mini weight chart in Andamento
+function renderWeightTrendInAndamento() {
+    const ctx = document.getElementById('weightTrendChart');
+    if (!ctx) return;
+
+    if (window.weightTrendInstance) {
+        window.weightTrendInstance.destroy();
+    }
+
+    const history = state.health.history || [];
+    const sorted = [...history].filter(e => e.weight > 0).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const data = sorted.slice(-30);
+
+    // Update summary label
+    const summary = document.getElementById('andamentoPesoSummary');
+    if (summary && data.length > 0) {
+        const latest = data[data.length - 1].weight;
+        const oldest = data[0].weight;
+        const diff = latest - oldest;
+        const sign = diff > 0 ? '+' : '';
+        summary.textContent = `${latest} kg (${sign}${diff.toFixed(1)})`;
+    } else if (summary) {
+        summary.textContent = (state.health.weight?.current || '--') + ' kg';
+    }
+
+    if (data.length === 0) {
+        ctx.parentElement.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:11px; padding:15px;">Nessun dato peso</div>';
+        return;
+    }
+
+    const labels = data.map(e => {
+        const d = new Date(e.date);
+        return d.getDate() + '/' + (d.getMonth() + 1);
+    });
+
+    window.weightTrendInstance = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: labels,
-            datasets: datasets
+            labels,
+            datasets: [{
+                label: 'Peso (kg)',
+                data: data.map(e => e.weight),
+                borderColor: '#ec4899',
+                backgroundColor: 'rgba(236, 72, 153, 0.08)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 2,
+                pointBackgroundColor: '#ec4899'
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(15, 15, 26, 0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#cbd5e1',
-                    borderColor: 'rgba(255, 255, 255, 0.1)',
-                    borderWidth: 1
-                }
-            },
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15,15,26,0.9)', titleColor: '#fff', bodyColor: '#cbd5e1' } },
             scales: {
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.05)'
-                    },
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 10 }
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.05)'
-                    },
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 10 }
-                    },
-                    title: {
-                        display: true,
-                        text: yAxisLabel,
-                        color: '#475569',
-                        font: { size: 10 }
-                    }
-                }
-            },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
+                x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 8 }, maxTicksLimit: 6 } },
+                y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { size: 9 } } }
             }
         }
     });
