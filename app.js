@@ -7757,8 +7757,8 @@ function openPlannerFoodPicker(dateStr, mealId) {
     });
 
     picker.innerHTML = `
-        <div class="modal-content premium-modal" onclick="event.stopPropagation()" style="max-height:80vh; overflow-y:auto;">
-            <div class="modal-header" style="position:sticky; top:0; background:var(--bg-card); z-index:1;">
+        <div class="modal-content meal-planner-modal" onclick="event.stopPropagation()" style="max-height:80vh; border-radius:24px; background:var(--bg-primary); padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); border:1px solid var(--glass-border);">
+            <div class="modal-header" style="position:sticky; top:-20px; background:var(--bg-primary); z-index:1; margin:-20px -20px 10px -20px; padding:16px 20px; border-radius:24px 24px 0 0;">
                 <h3 style="width:100%; text-align:center;">🍽️ Scegli Alimento</h3>
             </div>
             <div style="padding:10px;">
