@@ -6854,9 +6854,10 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
 
 .meal-planner-modal {
     max-height: 85vh;
-    overflow-y: auto;
+    overflow-y: auto !important;
     padding-bottom: 15px !important;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .planner-day-nav {
