@@ -2423,7 +2423,7 @@ input#settingName {
     background: var(--bg-secondary);
     border-radius: 3px;
     overflow: hidden;
-    margin-top: auto;
+    margin-top: 0;
 }
 
 .progress-bar-fill {
@@ -6541,12 +6541,10 @@ textarea {
 
 .weight-details-mini {
     display: flex;
-    justify-content: space-between;
-    gap: 8px;
+    justify-content: space-around;
     font-size: 10px;
     color: var(--text-muted);
-    margin-top: auto;
-    margin-bottom: 4px;
+    margin-top: 5px;
 }
 
 .weight-details-mini b {
