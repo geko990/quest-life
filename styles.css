@@ -2423,7 +2423,7 @@ input#settingName {
     background: var(--bg-secondary);
     border-radius: 3px;
     overflow: hidden;
-    margin-top: 0;
+    margin-top: auto;
 }
 
 .progress-bar-fill {
@@ -6412,11 +6412,6 @@ textarea {
 }
 
 .history-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
     cursor: pointer;
 }
 
@@ -6546,10 +6541,12 @@ textarea {
 
 .weight-details-mini {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    gap: 8px;
     font-size: 10px;
     color: var(--text-muted);
-    margin-top: 5px;
+    margin-top: auto;
+    margin-bottom: 4px;
 }
 
 .weight-details-mini b {
