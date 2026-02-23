@@ -7735,9 +7735,12 @@ function clearPlanDay() {
 let plannerTargetDate = null;
 let plannerTargetMeal = null;
 
+let plannerFoodFilter = 'all';
+
 function openPlannerFoodPicker(dateStr, mealId) {
     plannerTargetDate = dateStr;
     plannerTargetMeal = mealId;
+    plannerFoodFilter = 'all';
 
     // Build a mini food picker overlay
     let picker = document.getElementById('plannerFoodPicker');
@@ -7749,36 +7752,71 @@ function openPlannerFoodPicker(dateStr, mealId) {
         document.body.appendChild(picker);
     }
 
+    picker.innerHTML = `
+        <div class="modal-content meal-planner-modal" onclick="event.stopPropagation()" style="max-height:80vh; border-radius:24px; background:var(--bg-primary); padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); border:1px solid var(--glass-border);">
+            <div style="position:sticky; top:-20px; background:var(--bg-primary); z-index:1; margin:-20px -20px 0 -20px; padding:16px 20px 0 20px; border-radius:24px 24px 0 0;">
+                <h3 style="width:100%; text-align:center; margin-bottom:10px;">🍽️ Scegli Alimento</h3>
+                <div class="picker-filter-tabs" id="pickerFilterTabs">
+                    <button class="picker-filter active" onclick="filterPlannerFood('all')">Tutti</button>
+                    <button class="picker-filter" onclick="filterPlannerFood('breakfast')">🌅</button>
+                    <button class="picker-filter" onclick="filterPlannerFood('meal')">🍝</button>
+                    <button class="picker-filter" onclick="filterPlannerFood('snack')">🍪</button>
+                    <button class="picker-filter" onclick="filterPlannerFood('cheat')">🍕</button>
+                </div>
+            </div>
+            <div id="plannerFoodListContainer" style="padding:10px 0;"></div>
+        </div>
+    `;
+
+    picker.classList.add('active');
+    renderPlannerFoodList();
+}
+
+function filterPlannerFood(category) {
+    plannerFoodFilter = category;
+    // Update active tab
+    document.querySelectorAll('#pickerFilterTabs .picker-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    renderPlannerFoodList();
+}
+
+function renderPlannerFoodList() {
+    const container = document.getElementById('plannerFoodListContainer');
+    if (!container) return;
+
     const db = state.health.foodDatabase || [];
-    const sorted = [...db].sort((a, b) => {
+    let filtered = plannerFoodFilter === 'all' ? db :
+        db.filter(f => {
+            if (plannerFoodFilter === 'meal') return ['meal', 'lunch', 'dinner'].includes(f.category);
+            return f.category === plannerFoodFilter;
+        });
+
+    const sorted = [...filtered].sort((a, b) => {
         if (a.isFavorite && !b.isFavorite) return -1;
         if (!a.isFavorite && b.isFavorite) return 1;
         return a.name.localeCompare(b.name);
     });
 
-    picker.innerHTML = `
-        <div class="modal-content meal-planner-modal" onclick="event.stopPropagation()" style="max-height:80vh; border-radius:24px; background:var(--bg-primary); padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); border:1px solid var(--glass-border);">
-            <div class="modal-header" style="position:sticky; top:-20px; background:var(--bg-primary); z-index:1; margin:-20px -20px 10px -20px; padding:16px 20px; border-radius:24px 24px 0 0;">
-                <h3 style="width:100%; text-align:center;">🍽️ Scegli Alimento</h3>
-            </div>
-            <div style="padding:10px;">
-                ${sorted.length === 0 ? '<div style="text-align:center; color:var(--text-muted); padding:20px;">Nessun alimento nel database.<br>Aggiungine dal Database Alimenti.</div>' :
-            sorted.map(food => `
-                    <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-secondary); border-radius:12px; margin-bottom:6px; border:1px solid var(--glass-border); cursor:pointer;" onclick="selectPlannerFood('${food.id}')">
-                        <div style="flex:1;">
-                            <div style="font-weight:600; font-size:13px;">${food.emoji || '🍽️'} ${food.name}</div>
-                            <div style="font-size:10px; color:var(--text-secondary);">
-                                ${food.baseCalories}kcal · ${food.baseProteins || 0}g prot /100g
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
+    if (sorted.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px; font-size:12px;">Nessun alimento in questa categoria.</div>';
+        return;
+    }
+
+    container.innerHTML = sorted.map(food => `
+        <div class="meal-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-secondary); border-radius:12px; margin-bottom:6px; border:1px solid var(--glass-border); cursor:pointer;" onclick="selectPlannerFood('${food.id}')">
+            <div style="flex:1;">
+                <div style="font-weight:600; font-size:13px;">${food.emoji || '🍽️'} ${food.name}</div>
+                <div style="font-size:10px; color:var(--text-secondary);">
+                    ${food.baseCalories}kcal · ${food.baseProteins || 0}g prot /100g
+                </div>
             </div>
         </div>
-    `;
-
-    picker.classList.add('active');
+    `).join('');
 }
+
+window.filterPlannerFood = filterPlannerFood;
 
 function closePlannerFoodPicker() {
     const picker = document.getElementById('plannerFoodPicker');

@@ -2270,14 +2270,14 @@ input#settingName {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    min-height: 125px;
-    /* Ensure uniform height across row */
+    min-height: 120px;
 }
 
 .calories-card {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-bottom: 8px;
 }
 
 .card-title {
@@ -2382,10 +2382,11 @@ input#settingName {
 .health-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
-.steps-card {}
+
 
 .steps-main {
     display: flex;
@@ -6851,6 +6852,32 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
 /* ============================================
    MEAL PLANNER
    ============================================ */
+
+.picker-filter-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 0 12px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.picker-filter {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.picker-filter.active {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+}
 
 .meal-planner-modal {
     max-height: 85vh;
