@@ -360,6 +360,29 @@ export function checkHealthRollover() {
         if (!state.health.history) state.health.history = [];
         state.health.history.push(historyEntry);
 
+        // Fill in missing days if any
+        let lastDate = new Date(state.health.lastUpdate);
+        let currentDate = new Date(today);
+        let loopCount = 0;
+
+        lastDate.setDate(lastDate.getDate() + 1);
+
+        while (lastDate < currentDate && loopCount < 30) {
+            const missingEntry = {
+                date: lastDate.toDateString(),
+                consumed: 0,
+                burned: 0,
+                proteins: 0,
+                steps: 0,
+                weight: state.health.weight.current || 0,
+                water: 0
+            };
+            state.health.history.push(missingEntry);
+
+            lastDate.setDate(lastDate.getDate() + 1);
+            loopCount++;
+        }
+
         // Keep last 30 days
         if (state.health.history.length > 30) {
             state.health.history = state.health.history.slice(-30);
