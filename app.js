@@ -1383,31 +1383,7 @@ function initSortable() {
         }));
     }
 
-    // Subtask lists (Dynamic)
-    document.querySelectorAll('.quest-subtasks-list').forEach(list => {
-        // Avoid duplicate initialization
-        if (list.dataset.sortableInitialized) return;
-        list.dataset.sortableInitialized = 'true';
-
-        sortableInstances.push(new Sortable(list, {
-            animation: 100,
-            handle: '.subquest-drag-handle', // Specific handle
-            ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-chosen',
-            dragClass: 'sortable-drag',
-            delay: 50, // Faster response
-            touchStartThreshold: 3,
-            onEnd: function (evt) {
-                if (evt.oldIndex !== evt.newIndex) {
-                    // In detail view, we rely on currentOpenedQuestId global or find it from DOM
-                    const questId = currentOpenedQuestId;
-                    if (questId) {
-                        reorderSubtasks(questId, evt.oldIndex, evt.newIndex);
-                    }
-                }
-            }
-        }));
-    });
+    // Subtask lists logic removed from initSortable: now handled securely in renderNormalQuestView
 }
 
 function reorderItems(type, oldIndex, newIndex) {
@@ -2947,10 +2923,15 @@ function renderNormalQuestView(quest, container) {
             </div>
         `;
 
-    // Re-initialize Sortable for this specific list
+    // Re-initialize Sortable for this specific list securely
     const subtaskList = document.getElementById('questDetailSubtasks');
     if (subtaskList) {
-        new Sortable(subtaskList, {
+        // Destroy existing instance to prevent duplicate event listener leaks
+        if (window.questSubtaskSortable) {
+            window.questSubtaskSortable.destroy();
+        }
+
+        window.questSubtaskSortable = new Sortable(subtaskList, {
             animation: 100,
             handle: '.subquest-drag-handle',
             ghostClass: 'sortable-ghost',
@@ -2958,9 +2939,12 @@ function renderNormalQuestView(quest, container) {
             dragClass: 'sortable-drag',
             delay: 50,
             touchStartThreshold: 3,
+            fallbackOnBody: true, // Crucial for modal drag on mobile
             onEnd: function (evt) {
                 if (evt.oldIndex !== evt.newIndex) {
                     reorderSubtasks(quest.id, evt.oldIndex, evt.newIndex);
+                    // Force refresh to keep UI consistent
+                    openQuestDetail('quest', quest.id);
                 }
             }
         });
