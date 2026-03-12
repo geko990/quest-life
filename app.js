@@ -950,6 +950,31 @@ function unlockMonthlyMedal() {
     const monthName = monthNames[monthIndex];
     const year = monthId.split('-')[0];
 
+    const medal = {
+        id: monthId,
+        name: `${monthName} ${year}`,
+        description: "Obiettivo mensile completato!",
+        icon: "🏅",
+        topStatName: "Varie",
+        topStatIcon: "🏆",
+        earnedDate: getGameDate(),
+        topTasks: [],
+        totalCompleted: 0
+    };
+
+    updateMedalStats(medal);
+
+    state.player.monthlyChallenge.medals.push(medal);
+    saveState();
+
+    // Show Celebration
+    showMedalCelebration(medal);
+}
+
+function updateMedalStats(medal) {
+    if (!medal || !medal.id) return;
+    const monthId = medal.id;
+
     // Calculate top stat for this month from xpLog
     const monthXpEntries = state.xpLog.filter(entry => {
         if (!entry.date) return false;
@@ -974,8 +999,6 @@ function unlockMonthlyMedal() {
     monthDates.forEach(date => {
         const dayLog = state.completionLog[date];
         if (!dayLog) return;
-
-        // Handle both legacy (array) and new (object) structure safely
 
         // OneShots
         const oneshotIds = Array.isArray(dayLog.oneshots) ? dayLog.oneshots : [];
@@ -1009,23 +1032,11 @@ function unlockMonthlyMedal() {
     // Sort by stars (highest first) and take top 10
     const topTasks = [...completedTasks].sort((a, b) => b.stars - a.stars).slice(0, 10);
 
-    const medal = {
-        id: monthId,
-        name: `${monthName} ${year}`,
-        description: "Obiettivo mensile completato!",
-        icon: topStat?.icon || "🏅",
-        topStatName: topStat?.name || "Varie",
-        topStatIcon: topStat?.icon || "🏆",
-        earnedDate: getGameDate(),
-        topTasks: topTasks,
-        totalCompleted: completedTasks.length
-    };
-
-    state.player.monthlyChallenge.medals.push(medal);
-    saveState();
-
-    // Show Celebration
-    showMedalCelebration(medal);
+    medal.icon = topStat?.icon || "🏅";
+    medal.topStatName = topStat?.name || "Varie";
+    medal.topStatIcon = topStat?.icon || "🏆";
+    medal.topTasks = topTasks;
+    medal.totalCompleted = completedTasks.length;
 }
 
 function showMedalCelebration(medal) {
@@ -1654,6 +1665,7 @@ function renderProfilePopup() {
         } else {
             // Show only last 5 reversed
             const recentMedals = [...state.player.monthlyChallenge.medals].reverse().slice(0, 5);
+            recentMedals.forEach(m => updateMedalStats(m)); // Force dynamic recalculation
             mGrid.innerHTML = recentMedals.map(m => `
                 <div class="medal-item" onclick="showMedalDetail('${m.id}')">
                     <div class="medal-golden-circle">
@@ -5921,6 +5933,8 @@ function showMedalDetail(medalId) {
     const modal = document.getElementById('medalDetailModal');
     const overlay = document.getElementById('medalDetailOverlay');
     if (!modal || !overlay) return;
+
+    updateMedalStats(medal); // Retroactive dynamic update
 
     // Build top tasks HTML
     let topTasksHtml = '';
