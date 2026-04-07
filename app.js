@@ -921,20 +921,27 @@ function addMonthlyPoints(amount) {
     // const oldPoints = state.player.monthlyChallenge.points; // logic changed to check condition continuously
 
     state.player.monthlyChallenge.points = newPoints;
-    saveState();
+    
+    const currentMonth = state.player.monthlyChallenge.currentMonth;
+    const existingMedal = state.player.monthlyChallenge.medals.find(m => m.id === currentMonth);
 
-    // Check for Medal Unlock
-    // REQUIREMENT: 50 Points AND Pyramid (1x5*, 2x4*, 3x3*)
-    if (newPoints >= target) {
-        const currentMonth = state.player.monthlyChallenge.currentMonth;
-        const starCounts = getMonthlyStarCounts(currentMonth);
+    if (existingMedal) {
+        // Aggiorna dinamicamente la medaglia del mese in corso ogni volta che si fanno punti
+        updateMedalStats(existingMedal);
+    } else {
+        // Check for Medal Unlock
+        // REQUIREMENT: 50 Points AND Pyramid (1x5*, 2x4*, 3x3*)
+        if (newPoints >= target) {
+            const starCounts = getMonthlyStarCounts(currentMonth);
+            const pyramidMet = (starCounts[5] >= 1) && (starCounts[4] >= 2) && (starCounts[3] >= 3);
 
-        const pyramidMet = (starCounts[5] >= 1) && (starCounts[4] >= 2) && (starCounts[3] >= 3);
-
-        if (pyramidMet) {
-            unlockMonthlyMedal();
+            if (pyramidMet) {
+                unlockMonthlyMedal();
+            }
         }
     }
+
+    saveState();
 }
 
 function unlockMonthlyMedal() {
@@ -1665,7 +1672,12 @@ function renderProfilePopup() {
         } else {
             // Show only last 5 reversed
             const recentMedals = [...state.player.monthlyChallenge.medals].reverse().slice(0, 5);
-            recentMedals.forEach(m => updateMedalStats(m)); // Force dynamic recalculation
+            // BUGFIX: Only update current month medal to prevent losing older medals stats
+            recentMedals.forEach(m => {
+                if (m.id === state.player.monthlyChallenge.currentMonth) {
+                    updateMedalStats(m);
+                }
+            });
             mGrid.innerHTML = recentMedals.map(m => `
                 <div class="medal-item" onclick="showMedalDetail('${m.id}')">
                     <div class="medal-golden-circle">
@@ -3269,8 +3281,15 @@ function toggleSubquest(questId, subquestId, forceState = null) {
 
     // Auto-complete quest if all subquests done
     if (quest.subquests.every(s => s.completed) && quest.subquests.length > 0) {
-        completeQuest(questId);
-        if (currentOpenedQuestId === questId) closeQuestDetailModal(); // Close detail if completed
+        setTimeout(() => {
+            if (confirm("Campagna completata! 🎉\n\nVuoi chiuderla come Vinta e incassare i premi completi?\n(Seleziona 'Annulla' se vuoi aggiungere nuove missioni per continuare la campagna)")) {
+                completeQuest(questId);
+                if (currentOpenedQuestId === questId) closeQuestDetailModal();
+            } else {
+                if (currentOpenedQuestId === questId) closeQuestDetailModal();
+                editTask('quest', questId);
+            }
+        }, 200); // Piccolo delay per far vedere la checkbox che si riempie
         return;
     }
 
@@ -4927,26 +4946,6 @@ function togglePomodoro() {
 }
 
 function startPomodoro() {
-    initPomodoroAudio();
-    if (pomodoroAudio) {
-        // Reset time to avoid glitches
-        pomodoroAudio.currentTime = 0;
-        pomodoroAudio.play().then(() => {
-            console.log("Audio playing");
-            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-
-            // Visual feedback
-            const statusEl = document.getElementById('pomodoroStatus');
-            if (statusEl) statusEl.textContent += " 🔊";
-
-        }).catch(e => {
-            console.error("Audio play failed", e);
-            if (e.name !== 'AbortError') {
-                // Only alert for non-abort errors (Aborts happen on rapid pause/play)
-                alert("Errore audio: " + e.message);
-            }
-        });
-    }
     pomodoroRunning = true;
     state.pomodoro.status = 'running';
 
@@ -4968,7 +4967,6 @@ function startPomodoro() {
 }
 
 function pausePomodoro() {
-    if (pomodoroAudio) pomodoroAudio.pause();
     pomodoroRunning = false;
     state.pomodoro.status = 'paused';
 
@@ -5077,18 +5075,7 @@ function completePomodoro() {
 
     saveState();
 
-    // Play sound (simple beep)
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 800;
-        gain.gain.value = 0.3;
-        osc.start();
-        setTimeout(() => osc.stop(), 200);
-    } catch (e) { /* Audio not supported */ }
+
 
     // Vibrate on mobile
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
@@ -5934,7 +5921,10 @@ function showMedalDetail(medalId) {
     const overlay = document.getElementById('medalDetailOverlay');
     if (!modal || !overlay) return;
 
-    updateMedalStats(medal); // Retroactive dynamic update
+    // Only update dynamically if it's the current month's medal
+    if (medal.id === state.player.monthlyChallenge.currentMonth) {
+        updateMedalStats(medal);
+    }
 
     // Build top tasks HTML
     let topTasksHtml = '';
