@@ -2715,8 +2715,14 @@ function showChallengePreview(templateId) {
                         <span class="stat-value">${template.duration} giorni</span>
                     </div>
                     <div class="challenge-preview-stat">
-                        <span class="stat-label">Difficoltà</span>
-                        <span class="stat-value">${'⭐'.repeat(template.stars)}</span>
+                        <span class="stat-label">Difficoltà (Premi)</span>
+                        <div class="star-selector preview-star-selector" data-stars="${template.stars}" style="display:flex; gap:2px; font-size:16px;">
+                            <span class="star ${template.stars >= 1 ? '' : 'dim'}" data-value="1" onclick="updatePreviewStars(1)" style="cursor:pointer">⭐</span>
+                            <span class="star ${template.stars >= 2 ? '' : 'dim'}" data-value="2" onclick="updatePreviewStars(2)" style="cursor:pointer">⭐</span>
+                            <span class="star ${template.stars >= 3 ? '' : 'dim'}" data-value="3" onclick="updatePreviewStars(3)" style="cursor:pointer">⭐</span>
+                            <span class="star ${template.stars >= 4 ? '' : 'dim'}" data-value="4" onclick="updatePreviewStars(4)" style="cursor:pointer">⭐</span>
+                            <span class="star ${template.stars >= 5 ? '' : 'dim'}" data-value="5" onclick="updatePreviewStars(5)" style="cursor:pointer">⭐</span>
+                        </div>
                     </div>
                     <div class="challenge-preview-stat">
                         <span class="stat-label">Stat</span>
@@ -2738,6 +2744,19 @@ function showChallengePreview(templateId) {
             </div>
         </div>
     `;
+
+    window.updatePreviewStars = function(num) {
+        const selector = document.querySelector('.preview-star-selector');
+        if (!selector) return;
+        selector.dataset.stars = num;
+        selector.querySelectorAll('.star').forEach(star => {
+            if (parseInt(star.dataset.value) <= num) {
+                star.classList.remove('dim');
+            } else {
+                star.classList.add('dim');
+            }
+        });
+    };
 
     // Add tab switching logic mechanism
     window.switchPreviewTab = (tabName) => {
@@ -2788,6 +2807,13 @@ function importChallenge(templateId) {
         selectedMode = modeInput.value;
     }
 
+    // Capture stars from preview UI if available
+    let customStars = template.stars;
+    const starSelector = document.querySelector('.preview-star-selector');
+    if (starSelector && starSelector.dataset.stars) {
+        customStars = parseInt(starSelector.dataset.stars);
+    }
+
     // Generate subquests (daily tasks) for the challenge
     const subquests = template.generateSubquests();
 
@@ -2798,7 +2824,7 @@ function importChallenge(templateId) {
         description: template.description,
         icon: template.icon,
         category: template.category,
-        stars: template.stars,
+        stars: customStars,
         primaryStatId: template.primaryStatId,
         color: template.color || '#ff9800',
         createdAt: getGameDateString(),
@@ -3854,7 +3880,8 @@ function openModal(type, editData = null) {
                 </div>
                 <div class="form-group">
                     <label>Sub-quest (una per riga)</label>
-                    <textarea id="inputSubs" placeholder="es.&#10;Completare 10 lezioni&#10;Parlare con madrelingua">${editData?.subquests?.map(s => s.name).join('\n') || ''}</textarea>
+                    <textarea id="inputSubs" ${editData?.isChallengeTemplate ? 'disabled style="opacity:0.5"' : ''} placeholder="es.&#10;Completare 10 lezioni&#10;Parlare con madrelingua">${editData?.subquests?.map(s => s.name).join('\n') || ''}</textarea>
+                    ${editData?.isChallengeTemplate ? '<small style="color:var(--text-muted); display:block; margin-top:5px;">I task delle Sfide Preimpostate non si possono modificare manualmente qui per non corromperne i dati (ripetizioni giornaliere ecc.).</small>' : ''}
                 </div>
                 <div class="form-group">
                     <label>Premio Finale (opzionale)</label>
@@ -4076,12 +4103,14 @@ function submitModal() {
                 editingItem.dueDate = dueDate;
                 editingItem.description = description;
                 editingItem.customReward = document.getElementById('inputCustomReward')?.value || '';
-                // Preserve completed status for existing subquests
-                const existingCompleted = {};
-                editingItem.subquests.forEach(s => existingCompleted[s.name] = s.completed);
-                editingItem.subquests = subquests.map(s => ({
-                    ...s, completed: existingCompleted[s.name] || false
-                }));
+                // Preserve completed status for existing subquests OR prevent overwrite if Challenge Template
+                if (!editingItem.isChallengeTemplate) {
+                    const existingCompleted = {};
+                    editingItem.subquests.forEach(s => existingCompleted[s.name] = s.completed);
+                    editingItem.subquests = subquests.map(s => ({
+                        ...s, completed: existingCompleted[s.name] || false
+                    }));
+                }
             } else {
                 state.quests.push({
                     id: 'quest_' + Date.now(),
