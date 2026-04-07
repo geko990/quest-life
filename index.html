@@ -111,8 +111,8 @@
                 </div>
                 <div class="popup-xp-text" id="popupXpText">0 / 100 XP</div>
 
-                <!-- Medal Progress (Now Clickable) -->
-                <div class="clickable" onclick="openArchive()" style="margin-top: 15px; cursor: pointer;">
+                <!-- Medal Progress -->
+                <div style="margin-top: 15px;">
                     <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">
                         MEDAGLIE MENSILI</div>
                     <div class="popup-xp-bar">
@@ -464,14 +464,7 @@
                             <input type="text" id="settingName" placeholder="Il tuo nome"
                                 onchange="updatePlayerName(this.value)">
                         </div>
-                        <div class="recap-history-card" onclick="showRecapHistory()">
-                            <div class="recap-history-card-icon">📜</div>
-                            <div class="recap-history-card-text">
-                                <div class="recap-history-card-title">Storico Imprese</div>
-                                <div class="recap-history-card-sub">Visualizza i tuoi recap settimanali</div>
-                            </div>
-                            <div class="recap-history-card-arrow">›</div>
-                        </div>
+
                         <div class="settings-row">
                             <label>Inizio nuovo giorno</label>
                             <select id="dayStartTime" onchange="updateDayStartTime(this.value)">
@@ -1030,18 +1023,7 @@
         <button class="recap-close-btn" onclick="closeWeeklyRecap()">Continua 🚀</button>
     </div>
 
-    <!-- Recap History Modal -->
-    <div class="recap-overlay hidden" id="recapHistoryOverlay" onclick="closeRecapHistory()"></div>
-    <div class="recap-popup hidden" id="recapHistoryModal" style="max-height: 80vh; overflow-y: auto; z-index: 10001;"
-        onclick="event.stopPropagation()">
-        <div class="recap-header">
-            <h2>📜 Storico Imprese</h2>
-        </div>
-        <div id="recapHistoryList" style="margin: 15px 0;">
-            <!-- Dynamically populated -->
-        </div>
-        <button class="recap-close-btn" onclick="closeRecapHistory()">Chiudi</button>
-    </div>
+
 
     <!-- Medal Detail Modal -->
     <div class="recap-overlay hidden" id="medalDetailOverlay" onclick="closeMedalDetail()"></div>
@@ -1065,19 +1047,7 @@
             </div>
         </div>
     </div>
-    <!-- Archive Modal -->
-    <div class="modal-overlay" id="archiveModal" onclick="closeArchive()">
-        <div class="modal archive-modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>📜 Storico Imprese</h3>
-            </div>
-            <div class="modal-body archive-body">
-                <div class="archive-list" id="archiveList">
-                    <!-- Dynamic content -->
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Immersive Background Canvas -->
     <canvas id="bgCanvas"
