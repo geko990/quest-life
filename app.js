@@ -4158,7 +4158,7 @@ function initSwipe() {
     let isSwiping = false;
     let swipeWasTriggered = false;
     const ACTION_THRESHOLD = 70;  // Reduced for easier swipe trigger
-    const MAX_SWIPE = 120;
+    const MAX_SWIPE = 70;
 
     document.addEventListener('pointerdown', (e) => {
         // Don't start swipe if touching drag handle (handled by SortableJS)
@@ -4187,15 +4187,42 @@ function initSwipe() {
         const limitedDiff = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, diff));
         currentSwipeCard.style.transform = `translateX(${limitedDiff}px)`;
 
-        // Visual feedback
-        // Visual feedback
         const taskCard = currentSwipeCard.closest('.task-card');
         if (!taskCard) return;
 
-        if (limitedDiff > ACTION_THRESHOLD * 0.7) {
+        // Auto trigger action if threshold is fully reached during move
+        if (limitedDiff >= ACTION_THRESHOLD) {
+            isSwiping = false;
+            swipeWasTriggered = true;
+            const type = taskCard.dataset.type;
+            const id = taskCard.dataset.id;
+            
+            taskCard.classList.remove('swiping', 'swipe-edit-hint', 'swipe-delete-hint');
+            currentSwipeCard.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+            currentSwipeCard.style.transform = 'translateX(0)';
+            currentSwipeCard = null;
+            
+            editTask(type, id);
+            return;
+        } else if (limitedDiff <= -ACTION_THRESHOLD) {
+            isSwiping = false;
+            swipeWasTriggered = true;
+            const type = taskCard.dataset.type;
+            const id = taskCard.dataset.id;
+            
+            taskCard.classList.remove('swiping', 'swipe-edit-hint', 'swipe-delete-hint');
+            currentSwipeCard.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+            currentSwipeCard.style.transform = 'translateX(0)';
+            currentSwipeCard = null;
+            
+            showDeleteConfirm(type, id, taskCard);
+            return;
+        }
+
+        if (limitedDiff > ACTION_THRESHOLD * 0.6) {
             taskCard.classList.add('swipe-edit-hint');
             taskCard.classList.remove('swipe-delete-hint');
-        } else if (limitedDiff < -ACTION_THRESHOLD * 0.7) {
+        } else if (limitedDiff < -ACTION_THRESHOLD * 0.6) {
             taskCard.classList.add('swipe-delete-hint');
             taskCard.classList.remove('swipe-edit-hint');
         } else {
