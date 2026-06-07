@@ -327,6 +327,12 @@ function checkPenalties() {
     // If we already ran the penalty check today after noon, skip
     if (state.lastPenaltyCheck === todayNoonCheck) return;
 
+    // USER SETTING: Check if penalties are enabled
+    if (state.settings.enableDailyPenalties === false) {
+        console.log('Daily penalties are disabled in settings.');
+        return;
+    }
+
     // Calculate penalties for yesterday's uncompleted daily habits
     const penalties = [];
 
@@ -3361,7 +3367,7 @@ function completeQuest(questId) {
 // ============================================
 
 function addXp(amount, statId, sourceName = null) {
-    state.player.totalXp += amount;
+    state.player.totalXp = Math.max(0, state.player.totalXp + amount);
 
     // Level Up Player (Cumulative Logic)
     while (state.player.totalXp >= getCumulativeXpForLevel(state.player.level + 1)) {
@@ -3480,8 +3486,10 @@ function initSettings() {
     // Sync popup toggle settings (button style)
     syncPopupToggleButtons('enableDailyPlanner', 'dailyPlannerOn', 'dailyPlannerOff');
     syncPopupToggleButtons('enableWeeklyRecap', 'weeklyRecapOn', 'weeklyRecapOff');
+    syncPopupToggleButtons('enableDailyPenalties', 'dailyPenaltiesOn', 'dailyPenaltiesOff');
     syncPopupToggleButtons('soundEnabled', 'soundOn', 'soundOff');
     syncPopupToggleButtons('showDiceButton', 'diceButtonOn', 'diceButtonOff');
+    syncPopupToggleButtons('animatedBackground', 'animBgOn', 'animBgOff');
     updateDiceButtonVisibility();
 
     // Sync week start buttons
@@ -3524,6 +3532,7 @@ function setPopupSetting(setting, value) {
 
     if (setting === 'enableDailyPlanner') { onBtnId = 'dailyPlannerOn'; offBtnId = 'dailyPlannerOff'; }
     else if (setting === 'enableWeeklyRecap') { onBtnId = 'weeklyRecapOn'; offBtnId = 'weeklyRecapOff'; }
+    else if (setting === 'enableDailyPenalties') { onBtnId = 'dailyPenaltiesOn'; offBtnId = 'dailyPenaltiesOff'; }
     else if (setting === 'animatedBackground') { onBtnId = 'animBgOn'; offBtnId = 'animBgOff'; }
     else if (setting === 'showDiceButton') { onBtnId = 'diceButtonOn'; offBtnId = 'diceButtonOff'; }
     else { onBtnId = 'soundOn'; offBtnId = 'soundOff'; } // Sound
@@ -6747,7 +6756,8 @@ function calculateNutritionResults(entry) {
         water: false,
         protein: false,
         xpRewards: [],
-        penalties: []
+        penalties: [],
+        hasData: (consumed > 0 || burned > 0 || entry.water > 0 || entry.proteins > 0)
     };
 
     // 1. Calories
@@ -6786,7 +6796,8 @@ function applyNutritionRewards(results, dateStr) {
         const xp = 30;
         addXp(xp, 'str', 'Nutrizione Equilibrata');
         rewards.push({ label: 'Calorie Obiettivo', xp: xp, stat: 'Forza' });
-    } else if (results.calories === 'excess') {
+    } else if (results.calories === 'excess' && results.hasData) {
+        // Only penalize if data was entered
         const xp = 60;
         addXp(-xp, 'con', 'Eccesso Calorico');
         penalties.push({ label: 'Sgarro Calorico', xp: xp, stat: 'Costituzione' });

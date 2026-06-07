@@ -84,7 +84,7 @@ export let state = {
         exerciseDatabase: [], // Array di ExerciseItem: {id, emoji, name, baseCount, baseCalories, xpReward, statId}
         lastUpdate: null
     },
-    settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday' }
+    settings: { theme: 'light', accent: 'violet', dayStartTime: 0, weekStart: 'sunday', enableDailyPenalties: true }
 };
 
 export function setState(newState) {
@@ -139,6 +139,7 @@ export function loadState() {
             if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
             // Ensure dayStartTime exists
             if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
+            if (state.settings.enableDailyPenalties === undefined) state.settings.enableDailyPenalties = true;
 
             state.habits = parsed.habits || [];
             state.oneshots = parsed.oneshots || [];
