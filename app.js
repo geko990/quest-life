@@ -7398,6 +7398,11 @@ window.openHealthInput = openHealthInput;
 window.closeHealthInput = closeHealthInput;
 window.submitHealthInput = submitHealthInput;
 window.addWater = addWater;
+window.addProtein = addProtein;
+window.addCalories = addCalories;
+window.addSteps = addSteps;
+
+
 window.addPresetHealth = addPresetHealth;
 window.switchNutritionTab = switchNutritionTab;
 window.toggleNutritionItem = toggleNutritionItem;
@@ -7922,6 +7927,32 @@ function addWater(amount = 0.25) {
     renderHealthDashboard();
     if (amount > 0) showXpToast(`+${amount}L Acqua!`, '🥛');
 }
+
+function addProtein(amount) {
+    if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
+    state.health.proteins.consumed = Math.max(0, state.health.proteins.consumed + amount);
+    saveState();
+    renderHealthDashboard();
+    if (amount > 0) showXpToast(`+${amount}g Proteine!`, '🍗');
+}
+
+function addCalories(amount) {
+    if (!state.health.calories) state.health.calories = { goal: 1600, consumed: 0, burned: 0 };
+    state.health.calories.consumed = Math.max(0, state.health.calories.consumed + amount);
+    saveState();
+    renderHealthDashboard();
+    if (amount > 0) showXpToast(`+${amount} Calorie!`, '🍴');
+}
+
+function addSteps(amount) {
+    if (!state.health.steps) state.health.steps = { goal: 10000, current: 0 };
+    state.health.steps.current = Math.max(0, state.health.steps.current + amount);
+    saveState();
+    renderHealthDashboard();
+    if (amount > 0) showXpToast(`+${amount.toLocaleString()} Passi!`, '👟');
+}
+
+
 
 function addPresetHealth(presetId) {
     const preset = state.health.presets.find(p => p.id === presetId);
