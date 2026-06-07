@@ -300,11 +300,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-quick-actions">
-                                    <button class="quick-add-btn" onclick="addCalories(100); event.stopPropagation();">+100 kcal</button>
-                                    <button class="quick-add-btn" onclick="addCalories(250); event.stopPropagation();">+250 kcal</button>
-                                    <button class="quick-add-btn" onclick="addCalories(500); event.stopPropagation();">+500 kcal</button>
-                                </div>
                             </div>
 
                             <div class="health-row">
@@ -318,11 +313,6 @@
                                     <div class="steps-goal">Obiettivo: <span id="stepsGoalText">10.000</span></div>
                                     <div class="progress-bar-bg">
                                         <div id="stepsProgressBar" class="progress-bar-fill"></div>
-                                    </div>
-                                    <div class="card-quick-actions">
-                                        <button class="quick-add-btn" onclick="addSteps(1000); event.stopPropagation();">+1k</button>
-                                        <button class="quick-add-btn" onclick="addSteps(2500); event.stopPropagation();">+2.5k</button>
-                                        <button class="quick-add-btn" onclick="addSteps(5000); event.stopPropagation();">+5k</button>
                                     </div>
                                 </div>
 
@@ -339,18 +329,14 @@
                                         <div id="proteinsProgressBar" class="progress-bar-fill"
                                             style="background: var(--accent-primary);"></div>
                                     </div>
-                                    <div class="card-quick-actions">
-                                        <button class="quick-add-btn" onclick="addProtein(10); event.stopPropagation();">+10g</button>
-                                        <button class="quick-add-btn" onclick="addProtein(25); event.stopPropagation();">+25g</button>
-                                        <button class="quick-add-btn" onclick="addProtein(40); event.stopPropagation();">+40g</button>
-                                    </div>
                                 </div>
 
                                 <!-- Water Card (v3.1.30 Refinement) -->
                                 <div class="health-card water-card" onclick="openHealthInput('water_goal')">
                                     <div class="card-title">Acqua</div>
                                     <div class="steps-main">
-                                        <span class="steps-icon">🥛</span>
+                                        <span class="steps-icon" onclick="addWater(0.25); event.stopPropagation();"
+                                            style="cursor:pointer;" title="Aggiungi 250ml">🥛</span>
                                         <span id="waterCurrentValue" class="steps-value">0</span><small
                                             style="font-size:12px; margin-left:2px;">l</small>
                                     </div>
@@ -358,11 +344,6 @@
                                     <div class="progress-bar-bg">
                                         <div id="waterProgressBar" class="progress-bar-fill"
                                             style="background: #0ea5e9;"></div>
-                                    </div>
-                                    <div class="card-quick-actions">
-                                        <button class="quick-add-btn" onclick="addWater(0.25); event.stopPropagation();">+0.25L</button>
-                                        <button class="quick-add-btn" onclick="addWater(0.5); event.stopPropagation();">+0.5L</button>
-                                        <button class="quick-add-btn" onclick="addWater(1.0); event.stopPropagation();">+1L</button>
                                     </div>
                                 </div>
                             </div>

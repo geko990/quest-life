@@ -2265,74 +2265,19 @@ input#settingName {
 
 .health-card {
     background: var(--bg-primary);
-    border-radius: 20px;
-    padding: 14px 16px;
-    box-shadow: var(--glass-shadow, 0 4px 15px rgba(0, 0, 0, 0.05));
-    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    min-height: 145px;
-    transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.health-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: var(--accent-primary);
+    min-height: 120px;
 }
 
 .calories-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-    min-height: 200px;
-}
-
-/* Quick Action Row inside cards */
-.card-quick-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: auto;
-    padding-top: 10px;
-    width: 100%;
-}
-
-.quick-add-btn {
-    flex: 1;
-    background: var(--bg-secondary);
-    border: 1px solid var(--glass-border);
-    color: var(--text-secondary);
-    border-radius: 20px;
-    padding: 6px 4px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.quick-add-btn:hover {
-    background: var(--accent-primary);
-    color: white !important;
-    border-color: var(--accent-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.quick-add-btn:active {
-    transform: translateY(0);
-}
-
-@media (max-width: 600px) {
-    .health-row {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-    }
-    .health-card {
-        min-height: 135px;
-    }
+    gap: 5px;
+    margin-bottom: 8px;
 }
 
 .card-title {
