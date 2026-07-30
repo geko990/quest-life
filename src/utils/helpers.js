@@ -1,13 +1,8 @@
-/* ============================================
-   QUEST LIFE - RPG Habit Tracker v2
-   Utils Module
-   ============================================ */
-import { state } from './state.js';
 import { XP_CONFIG, DAY_NAMES } from './constants.js';
 
-export function getGameDateObj() {
+export function getGameDateObj(dayStartTime = 0) {
     const now = new Date();
-    const startHour = state && state.settings ? (parseInt(state.settings.dayStartTime) || 0) : 0;
+    const startHour = parseInt(dayStartTime) || 0;
     return new Date(now.getTime() - startHour * 60 * 60 * 1000);
 }
 
@@ -19,22 +14,22 @@ export function formatISO(date) {
     return `${year}-${month}-${day}`;
 }
 
-export function getGameDate() {
-    return formatISO(getGameDateObj());
+export function getGameDate(dayStartTime = 0) {
+    return formatISO(getGameDateObj(dayStartTime));
 }
 
-export function getGameDateString() {
-    return getGameDateObj().toDateString();
+export function getGameDateString(dayStartTime = 0) {
+    return getGameDateObj(dayStartTime).toDateString();
 }
 
 // Helpers for periodic habits
-export function getWeekIdentifier(dateStr) {
+export function getWeekIdentifier(dateStr, weekStart = 'sunday') {
     if (!dateStr) return null;
     const date = new Date(dateStr);
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
     // Get week start preference (default: Sunday = 0)
-    const weekStartMonday = state?.settings?.weekStart === 'monday';
+    const weekStartMonday = weekStart === 'monday';
 
     // Adjust day number based on week start
     let dayNum = d.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday

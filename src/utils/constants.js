@@ -1,8 +1,3 @@
-/* ============================================
-   QUEST LIFE - RPG Habit Tracker v2
-   Constants Module
-   ============================================ */
-
 export const APP_VERSION = '3.3.0';
 
 export const DEFAULT_ATTRIBUTES = [
@@ -42,7 +37,6 @@ export const DB_VERSION = 1;
 export const DB_STORE = 'handles';
 
 export const CHALLENGE_TEMPLATES = [
-    // ================== PUSH-UP CHALLENGES (30 Days - Specific Sets) ==================
     {
         id: 'pushup_lv1',
         name: '💪 Flessioni Liv.1',
@@ -56,31 +50,27 @@ export const CHALLENGE_TEMPLATES = [
         color: '#22c55e',
         unlockRequirement: null,
         generateSubquests: () => {
-            // 30 Days exactly
             const daily = [
-                '2-2-2', '3-2-2', '3-2-2', 'Recupero', // Days 1-4
-                '3-3-2', '4-3-2', '4-3-3', 'Recupero', // Days 5-8
-                '5-4-3', '5-4-4', '6-5-4', 'Recupero', // Days 9-12
-                '6-5-5', '7-6-5', '7-6-6', 'Recupero', // Days 13-16
-                '8-6-5', '8-7-6', '9-7-6', 'Recupero', // Days 17-20
-                '10-8-6', '10-8-8', '11-9-8', 'Recupero', // Days 21-24
-                '12-10-8', '13-10-9', '14-11-10', 'Recupero', // Days 25-28
-                '15-12-10', 'TEST: 30 Max' // Days 29-30
+                '2-2-2', '3-2-2', '3-2-2', 'Recupero',
+                '3-3-2', '4-3-2', '4-3-3', 'Recupero',
+                '5-4-3', '5-4-4', '6-5-4', 'Recupero',
+                '6-5-5', '7-6-5', '7-6-6', 'Recupero',
+                '8-6-5', '8-7-6', '9-7-6', 'Recupero',
+                '10-8-6', '10-8-8', '11-9-8', 'Recupero',
+                '12-10-8', '13-10-9', '14-11-10', 'Recupero',
+                '15-12-10', 'TEST: 30 Max'
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
                 let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
-                    // Sum the numbers in the string (e.g. "2-2-2" -> 6)
-                    displayTarget = target; // Store original string "2-2-2"
+                    displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) {
                         totalReps = parts.reduce((a, b) => a + b, 0);
                     }
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
-                    `${totalReps} flessioni`;
-
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} flessioni`;
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -105,14 +95,14 @@ export const CHALLENGE_TEMPLATES = [
         unlockRequirement: 'pushup_lv1',
         generateSubquests: () => {
             const daily = [
-                '10-10-8', '12-10-8', '12-10-10', 'Recupero', // Days 1-4
-                '14-12-10', '14-12-12', '15-13-12', 'Recupero', // Days 5-8
-                '16-14-12', '16-14-14', '18-16-14', 'Recupero', // Days 9-12
-                '18-16-15', '20-18-15', '20-18-16', 'Recupero', // Days 13-16
-                '22-20-15', '22-20-18', '24-22-18', 'Recupero', // Days 17-20
-                '25-22-20', '26-24-20', '28-24-20', 'Recupero', // Days 21-24
-                '30-26-22', '32-28-24', '35-30-25', 'Recupero', // Days 25-28
-                '40-30-25', 'TEST: 60 Max' // Days 29-30
+                '10-10-8', '12-10-8', '12-10-10', 'Recupero',
+                '14-12-10', '14-12-12', '15-13-12', 'Recupero',
+                '16-14-12', '16-14-14', '18-16-14', 'Recupero',
+                '18-16-15', '20-18-15', '20-18-16', 'Recupero',
+                '22-20-15', '22-20-18', '24-22-18', 'Recupero',
+                '25-22-20', '26-24-20', '28-24-20', 'Recupero',
+                '30-26-22', '32-28-24', '35-30-25', 'Recupero',
+                '40-30-25', 'TEST: 60 Max'
             ];
             return daily.map((target, i) => {
                 let totalReps = 1;
@@ -122,9 +112,7 @@ export const CHALLENGE_TEMPLATES = [
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
-                    `${totalReps} flessioni`;
-
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} flessioni`;
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -166,9 +154,7 @@ export const CHALLENGE_TEMPLATES = [
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
-                    `${totalReps} flessioni`;
-
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} flessioni`;
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -179,8 +165,6 @@ export const CHALLENGE_TEMPLATES = [
             });
         }
     },
-
-    // ================== SIT-UP CHALLENGES (30 Days - Specific Sets) ==================
     {
         id: 'situp_lv1',
         name: '🍫 Sit-Ups Liv.1',
@@ -212,9 +196,7 @@ export const CHALLENGE_TEMPLATES = [
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
-                    `${totalReps} sit-ups`;
-
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} sit-ups`;
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -256,9 +238,7 @@ export const CHALLENGE_TEMPLATES = [
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' :
-                    `${totalReps} sit-ups`;
-
+                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} sit-ups`;
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -269,8 +249,6 @@ export const CHALLENGE_TEMPLATES = [
             });
         }
     },
-
-    // ================== PLANK CHALLENGE ==================
     {
         id: 'plank_30',
         name: '🪵 Plank Challenge',
@@ -280,7 +258,7 @@ export const CHALLENGE_TEMPLATES = [
         category: 'fitness',
         stars: 4,
         level: 1,
-        primaryStatId: 'con', // Constitution for endurance
+        primaryStatId: 'con',
         color: '#0ea5e9',
         unlockRequirement: null,
         generateSubquests: () => {
@@ -305,8 +283,6 @@ export const CHALLENGE_TEMPLATES = [
             });
         }
     },
-
-    // ================== NUTRITION CHALLENGES (3 Types) ==================
     {
         id: 'nutrition_maintain',
         name: '🥗 Nutrizione Mantenimento',
@@ -318,7 +294,7 @@ export const CHALLENGE_TEMPLATES = [
         level: 1,
         primaryStatId: 'con',
         color: '#22c55e',
-        trackingMode: 'checkbox', // can be 'checkbox' or 'detailed'
+        trackingMode: 'checkbox',
         unlockRequirement: null,
         generateSubquests: () => Array.from({ length: 30 }, (_, i) => ({
             id: `day_${i + 1}`,
@@ -367,8 +343,6 @@ export const CHALLENGE_TEMPLATES = [
             completed: false
         }))
     },
-
-    // ================== OTHER CHALLENGES ==================
     {
         id: 'no_smoke_7',
         name: '🚭 Detox Sigarette (7gg)',
