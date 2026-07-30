@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent-primary: var(--accent-primary, #7c3aed);
+  --color-accent-secondary: var(--accent-secondary, #c084fc);
+  --color-accent-gradient: var(--accent-gradient, linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%));
+  
+  --color-bg-main: var(--bg-main, #0f0f1a);
+  --color-bg-card: var(--bg-card, rgba(20, 20, 35, 0.6));
+  --color-text-main: var(--text-main, #f8fafc);
+  --color-text-secondary: var(--text-secondary, #94a3b8);
+  --color-border-color: var(--border-color, rgba(255, 255, 255, 0.08));
+
+  --font-cinzel: "Cinzel", serif;
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+  --font-hand: "Patrick Hand", cursive;
+}
+
+/* Base style resets */
+:root {
+  font-family: "Outfit", sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar Hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism card utility */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Circle progress animation helper */
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.35s;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Active bottom nav indicator animation */
+.nav-item-active {
+  color: var(--accent-primary);
+  transform: translateY(-4px);
+  text-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+}
+
+/* Custom fonts conditional styling based on theme class on HTML element */
+.theme-fantasy h1, .theme-fantasy h2, .theme-fantasy h3,
+.theme-dnd h1, .theme-dnd h2, .theme-dnd h3 {
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.05em;
+}
+
+.theme-futuristic h1, .theme-futuristic h2, .theme-futuristic h3 {
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px var(--accent-primary);
+}
+
+/* Theme variable values definition */
+:root, .theme-light {
+  --bg-main: #f8fafc;
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --border-color: rgba(0, 0, 0, 0.06);
+  
+  --accent-primary: #7c3aed;
+  --accent-secondary: #c084fc;
+  --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+}
+
+.theme-dark {
+  --bg-main: #0f0f1a;
+  --bg-card: rgba(20, 20, 35, 0.6);
+  --text-main: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-fantasy.theme-dark {
+  --bg-main: #130f1a;
+  --bg-card: rgba(25, 20, 35, 0.75);
+  --border-color: rgba(212, 175, 55, 0.15); /* Gold outline */
+}
+
+.theme-dnd.theme-dark {
+  --bg-main: #170d0d;
+  --bg-card: rgba(30, 15, 15, 0.75);
+  --border-color: rgba(185, 28, 28, 0.15); /* Red outline */
+}
+
+.theme-futuristic.theme-dark {
+  --bg-main: #020617;
+  --bg-card: rgba(15, 23, 42, 0.8);
+  --border-color: rgba(6, 182, 212, 0.2); /* Neon cyan outline */
+}
+
+.theme-pirate.theme-dark {
+  --bg-main: #1c1917;
+  --bg-card: rgba(44, 40, 38, 0.75);
+  --border-color: rgba(217, 119, 6, 0.15); /* Bronze outline */
+}
+
+/* Accent primary color variables setup programmatically in React or fallback classes */
+.accent-violet {
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #c084fc;
+  --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+}
+.accent-blue {
+  --accent-primary: #3b82f6;
+  --accent-secondary: #93c5fd;
+  --accent-gradient: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+.accent-indigo {
+  --accent-primary: #4f46e5;
+  --accent-secondary: #a5b4fc;
+  --accent-gradient: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+}
+.accent-cyan {
+  --accent-primary: #06b6d4;
+  --accent-secondary: #67e8f9;
+  --accent-gradient: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
+}
+.accent-teal {
+  --accent-primary: #0d9488;
+  --accent-secondary: #5eead4;
+  --accent-gradient: linear-gradient(135deg, #2dd4bf 0%, #0f766e 100%);
+}
+.accent-emerald {
+  --accent-primary: #10b981;
+  --accent-secondary: #6ee7b7;
+  --accent-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+.accent-gold {
+  --accent-primary: #eab308;
+  --accent-secondary: #fde047;
+  --accent-gradient: linear-gradient(135deg, #fde047 0%, #ca8a04 100%);
+}
+.accent-orange {
+  --accent-primary: #f97316;
+  --accent-secondary: #fdba74;
+  --accent-gradient: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+}
+.accent-rose {
+  --accent-primary: #f43f5e;
+  --accent-secondary: #fda4af;
+  --accent-gradient: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+}
+.accent-pink {
+  --accent-primary: #ec4899;
+  --accent-secondary: #f9a8d4;
+  --accent-gradient: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+}
+.accent-red {
+  --accent-primary: #ef4444;
+  --accent-secondary: #fca5a5;
+  --accent-gradient: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+}
+.accent-green {
+  --accent-primary: #22c55e;
+  --accent-secondary: #86efac;
+  --accent-gradient: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+}
+.accent-yellow {
+  --accent-primary: #facc15;
+  --accent-secondary: #fef08a;
+  --accent-gradient: linear-gradient(135deg, #fde047 0%, #d97706 100%);
+}
+.accent-lime {
+  --accent-primary: #84cc16;
+  --accent-secondary: #bef264;
+  --accent-gradient: linear-gradient(135deg, #a3e635 0%, #65a30d 100%);
+}
+.accent-sky {
+  --accent-primary: #0ea5e9;
+  --accent-secondary: #7dd3fc;
+  --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+}

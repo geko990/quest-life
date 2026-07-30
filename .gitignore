@@ -12,3 +12,9 @@
 # Logs
 *.log
 npm-debug.log*
+
+# Node.js
+node_modules/
+.node-bin/
+dist/
+
