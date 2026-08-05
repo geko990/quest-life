@@ -116,7 +116,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
             value={slot.name}
             onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
             placeholder={placeholder}
-            className="w-full bg-white dark:bg-slate-950/80 border border-slate-300 dark:border-border-color/60 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-text-main placeholder:text-slate-400 dark:placeholder:text-text-secondary/40 focus:outline-none focus:border-accent-primary transition-colors shadow-sm"
+            className="planner-input w-full rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:border-accent-primary transition-colors shadow-sm"
           />
           <div className="absolute right-3.5 top-1/2 -translate-y-1/2 opacity-30 text-xs">
             💥
@@ -145,7 +145,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
             <select
               value={slot.statId}
               onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
-              className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-border-color/60 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-900 dark:text-text-main focus:outline-none focus:border-accent-primary max-w-[98px] truncate shadow-sm"
+              className="planner-select rounded-lg px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-accent-primary max-w-[98px] truncate shadow-sm"
             >
               {stats.map(s => (
                 <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -156,7 +156,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
             <select
               value={slot.secondaryStatId || ''}
               onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
-              className="bg-white/90 dark:bg-slate-900/80 border border-slate-300 dark:border-border-color/40 rounded-lg px-1.5 py-1 text-[10px] font-medium text-slate-700 dark:text-text-secondary focus:outline-none focus:border-accent-primary max-w-[98px] truncate shadow-sm"
+              className="planner-select rounded-lg px-1.5 py-1 text-[10px] font-medium focus:outline-none focus:border-accent-primary max-w-[98px] truncate shadow-sm"
             >
               <option value="">+ Sec (nessuno)</option>
               {stats.map(s => (
@@ -172,14 +172,14 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-5 animate-fade-in overflow-y-auto"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 animate-fade-in overflow-y-auto"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[365px] mx-auto bg-bg-main border border-border-color/60 rounded-3xl shadow-2xl px-6 pt-8 pb-8 my-auto animate-scale-up flex flex-col justify-between min-h-[640px]"
+        className="w-full max-w-[365px] mx-auto bg-bg-main border border-border-color/60 rounded-3xl shadow-2xl px-6 py-9 my-auto animate-scale-up flex flex-col justify-between min-h-[640px] space-y-6"
       >
         {/* Header with ample headroom above for bouncing die */}
-        <div className="text-center mb-6 pt-3">
+        <div className="text-center pt-4 pb-2">
           <div className="flex items-center justify-center gap-2 mb-2 pt-2">
             <span className="text-3xl animate-bounce filter drop-shadow-[0_0_8px_rgba(255,180,0,0.5)]">🎲</span>
             <h2 className="text-xl font-bold font-cinzel tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500">
@@ -191,8 +191,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
           </p>
         </div>
 
-        {/* Slot Cards List with generous 16px vertical gap */}
-        <div className="space-y-4 mb-8">
+        {/* Slot Cards List with generous 20px vertical gap */}
+        <div className="space-y-5 my-2">
           {renderSlot('action', 'Azione', 'Es: Completare il report', '🎯')}
           {renderSlot('bonus', 'Azione Bonus', 'Es: Chiamare il medico', '⚡')}
           {renderSlot('movement', 'Movimento', 'Es: Passeggiata 30min', '🚶')}
@@ -201,7 +201,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
 
         {/* Bottom Actions Footer with ample bottom clearance */}
         {showResult ? (
-          <div className="text-center animate-scale-up space-y-2 py-4 pb-2">
+          <div className="text-center animate-scale-up space-y-2 py-4 pb-4">
             <div className="text-5xl font-extrabold text-accent-primary drop-shadow-[0_0_14px_rgba(255,107,0,0.7)]">
               {diceResult}
             </div>
@@ -210,13 +210,13 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
             </div>
           </div>
         ) : isRolling ? (
-          <div className="text-center py-5 pb-2">
+          <div className="text-center py-5 pb-4">
             <div className="text-5xl font-extrabold text-text-main animate-pulse">
               {diceResult}
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 pt-4 pb-2 mt-2">
+          <div className="flex items-center gap-3 pt-5 pb-4 border-t border-border-color/20">
             <button
               type="button"
               onClick={onClose}
