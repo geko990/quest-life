@@ -3,15 +3,14 @@ import React from 'react';
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType }) {
   const navItems = [
     { id: 'habits', icon: '📜', label: 'Abitudini' },
-    { id: 'oneshots', icon: '💥', label: 'Missioni' },
-    { id: 'quests', icon: '🏆', label: 'Campagne' },
+    { id: 'missions', icon: '⚔️', label: 'Missioni' },
     { id: 'home', icon: 'avatar', label: 'Eroe', isCenter: true },
     { id: 'nutrition', icon: '🍎', label: 'Salute' },
     { id: 'settings', icon: '⚙️', label: 'Opzioni' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-bg-card/80 backdrop-blur-xl border-t border-border-color flex items-center justify-around px-2 z-50 shadow-2xl">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-bg-card/90 backdrop-blur-xl border-t border-border-color flex items-center justify-around px-2 z-50 shadow-2xl pb-[env(safe-area-inset-bottom)]">
       {navItems.map((item) => {
         if (item.isCenter) {
           return (
