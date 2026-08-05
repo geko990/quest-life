@@ -242,7 +242,86 @@ export default function HomeTab({
         </h2>
       </div>
 
-      {/* 1. D&D Daily Recap & Quick Planner Card */}
+      {/* 1. Radar Chart (FIRST THING TO SEE - No title text) */}
+      <div className="glass-panel p-4 max-w-sm mx-auto text-center relative overflow-hidden border border-border-color">
+        <div className="relative flex justify-center items-center h-[260px]">
+          {renderRadarChart()}
+        </div>
+      </div>
+
+      {/* 2. Section: Attributi */}
+      <div className="glass-panel overflow-hidden border border-border-color">
+        <div className="px-4 py-3 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center">
+          <h3
+            onClick={() => toggleSection('attributes')}
+            className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
+          >
+            ⚔️ Attributi
+          </h3>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onOpenModal('attribute')}
+              className="w-6 h-6 rounded-full bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-white font-bold text-sm flex items-center justify-center transition-all"
+              title="Aggiungi Attributo"
+            >
+              +
+            </button>
+            <span
+              onClick={() => toggleSection('attributes')}
+              className="text-xs text-text-secondary cursor-pointer select-none transition-transform duration-200"
+              style={{ transform: expanded.attributes ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              ▼
+            </span>
+          </div>
+        </div>
+        {expanded.attributes && (
+          <div className="p-3.5 space-y-3 animate-fade-in">
+            {attributes.map(renderCard)}
+          </div>
+        )}
+      </div>
+
+      {/* 3. Section: Abilità */}
+      <div className="glass-panel overflow-hidden border border-border-color">
+        <div className="px-4 py-3 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center">
+          <h3
+            onClick={() => toggleSection('abilities')}
+            className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
+          >
+            ✨ Abilità
+          </h3>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onOpenModal('ability')}
+              className="w-6 h-6 rounded-full bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-white font-bold text-sm flex items-center justify-center transition-all"
+              title="Aggiungi Abilità"
+            >
+              +
+            </button>
+            <span
+              onClick={() => toggleSection('abilities')}
+              className="text-xs text-text-secondary cursor-pointer select-none transition-transform duration-200"
+              style={{ transform: expanded.abilities ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              ▼
+            </span>
+          </div>
+        </div>
+        {expanded.abilities && (
+          <div className="p-3.5 space-y-3 animate-fade-in">
+            {abilities.length === 0 ? (
+              <div className="py-6 text-center text-xs text-text-secondary italic">
+                Nessuna abilità speciale creata. Clicca "+" per crearne una!
+              </div>
+            ) : (
+              abilities.map(renderCard)
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 4. D&D Daily Recap & Quick Planner Card */}
       <div className="glass-panel p-4 border border-border-color relative overflow-hidden">
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
@@ -283,7 +362,7 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* 2. Sostentamento & Health Summary Card */}
+      {/* 5. Sostentamento & Health Summary Card */}
       {health && (
         <div className="glass-panel p-4 border border-border-color">
           <div className="flex justify-between items-center mb-3">
@@ -314,17 +393,7 @@ export default function HomeTab({
         </div>
       )}
 
-      {/* 3. Radar Chart section */}
-      <div className="glass-panel p-5 max-w-sm mx-auto text-center">
-        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4 font-cinzel">
-          Statistiche Ultimi 30 Giorni
-        </h3>
-        <div className="relative flex justify-center items-center h-[260px]">
-          {renderRadarChart()}
-        </div>
-      </div>
-
-      {/* 4. Storico Imprese Recenti */}
+      {/* 6. Storico Imprese Recenti */}
       <div className="glass-panel p-4 border border-border-color">
         <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel mb-3 flex items-center gap-1.5">
           📜 Storico Imprese Recenti
@@ -346,76 +415,6 @@ export default function HomeTab({
             ))
           )}
         </div>
-      </div>
-
-      {/* 5. Attributes Accordion */}
-      <div className="glass-panel overflow-hidden border border-border-color">
-        <div className="px-4 py-3.5 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center">
-          <h3
-            onClick={() => toggleSection('attributes')}
-            className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
-          >
-            ⚔️ Attributi
-          </h3>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onOpenModal('attribute')}
-              className="w-6 h-6 rounded-full bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-white font-bold text-sm flex items-center justify-center transition-all"
-            >
-              +
-            </button>
-            <span
-              onClick={() => toggleSection('attributes')}
-              className="text-xs text-text-secondary cursor-pointer select-none transition-transform duration-200"
-              style={{ transform: expanded.attributes ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            >
-              ▼
-            </span>
-          </div>
-        </div>
-        {expanded.attributes && (
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 animate-fade-in">
-            {attributes.map(renderCard)}
-          </div>
-        )}
-      </div>
-
-      {/* 6. Abilities Accordion */}
-      <div className="glass-panel overflow-hidden border border-border-color">
-        <div className="px-4 py-3.5 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center">
-          <h3
-            onClick={() => toggleSection('abilities')}
-            className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
-          >
-            ✨ Abilità Speciali
-          </h3>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onOpenModal('ability')}
-              className="w-6 h-6 rounded-full bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-white font-bold text-sm flex items-center justify-center transition-all"
-            >
-              +
-            </button>
-            <span
-              onClick={() => toggleSection('abilities')}
-              className="text-xs text-text-secondary cursor-pointer select-none transition-transform duration-200"
-              style={{ transform: expanded.abilities ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            >
-              ▼
-            </span>
-          </div>
-        </div>
-        {expanded.abilities && (
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 animate-fade-in">
-            {abilities.length === 0 ? (
-              <div className="col-span-full py-6 text-center text-xs text-text-secondary italic">
-                Nessuna abilità speciale creata. Clicca "+" per crearne una!
-              </div>
-            ) : (
-              abilities.map(renderCard)
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
