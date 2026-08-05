@@ -5,6 +5,7 @@ import Modal from './components/Modal';
 import DailyPlannerModal from './components/DailyPlannerModal';
 import HomeTab from './tabs/HomeTab';
 import HabitsTab from './tabs/HabitsTab';
+import MissionsTab from './tabs/MissionsTab';
 import OneShotTab from './tabs/OneShotTab';
 import QuestsTab from './tabs/QuestsTab';
 import NutritionTab from './tabs/NutritionTab';
@@ -752,30 +753,23 @@ export default function App() {
             settings={settings}
           />
         );
+      case 'missions':
       case 'oneshots':
+      case 'quests':
         return (
-          <OneShotTab
+          <MissionsTab
             oneshots={oneshots}
             onToggleOneshot={handleToggleOneshot}
-            onOpenModal={handleOpenModal}
             onDeleteOneshot={(id) => setOneshots(prev => prev.filter(o => o.id !== id))}
             onEditOneshot={(data) => handleOpenModal('oneshot', data)}
+            quests={quests}
+            onToggleSubquest={handleToggleSubquest}
+            onDeleteQuest={(id) => setQuests(prev => prev.filter(q => q.id !== id))}
+            onEditQuest={(data) => handleOpenModal('quest', data)}
+            onOpenModal={handleOpenModal}
             stats={stats}
             settings={settings}
             onOpenDailyPlanner={() => setShowPlannerModal(true)}
-          />
-        );
-      case 'quests':
-        return (
-          <QuestsTab
-            quests={quests}
-            setQuests={setQuests}
-            onToggleSubquest={handleToggleSubquest}
-            onOpenModal={handleOpenModal}
-            onDeleteQuest={(id) => setQuests(prev => prev.filter(q => q.id !== id))}
-            onEditQuest={(data) => handleOpenModal('quest', data)}
-            stats={stats}
-            onRewardXp={handleRewardXp}
             onActivateChallenge={handleActivateChallenge}
           />
         );
