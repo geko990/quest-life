@@ -239,7 +239,7 @@ export default function HabitsTab({
   };
 
   return (
-    <div className="space-y-6 pb-20 p-4">
+    <div className="space-y-5 pb-24 p-4 max-w-md mx-auto">
       {/* Calendar Header */}
       <div className="glass-panel p-3">
         <div
@@ -283,7 +283,7 @@ export default function HabitsTab({
       {/* Section Header & Time Filters */}
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center px-1">
-          <h2 className="text-base font-bold text-text-main font-cinzel">
+          <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
             📜 Abitudini <span className="text-xs text-text-secondary font-sans font-normal ml-2">({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
           </h2>
           <div className="flex gap-2">

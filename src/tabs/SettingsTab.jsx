@@ -31,10 +31,12 @@ export default function SettingsTab({
   };
 
   return (
-    <div className="space-y-4 pb-20 p-4">
+    <div className="space-y-5 pb-24 p-4 max-w-md mx-auto">
       {/* Tab Header */}
-      <div className="px-1 flex justify-between items-center">
-        <h2 className="text-base font-bold text-text-main font-cinzel">⚙️ Impostazioni</h2>
+      <div className="flex justify-between items-center px-1">
+        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
+          ⚙️ Impostazioni
+        </h2>
       </div>
 
       {/* Group 1: Profile & Gameplay */}

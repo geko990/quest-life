@@ -39,7 +39,7 @@ export default function MissionsTab({
     <div className="space-y-5 pb-24 p-4 max-w-md mx-auto">
       {/* Top Header */}
       <div className="flex justify-between items-center px-1">
-        <h2 className="text-base font-bold text-text-main font-cinzel flex items-center gap-1.5">
+        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
           ⚔️ Registro Missioni
         </h2>
         <div className="flex gap-2">
