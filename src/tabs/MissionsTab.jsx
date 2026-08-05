@@ -142,20 +142,20 @@ export default function MissionsTab({
                     onSwipeLeft={() => onEditOneshot(o)}
                   >
                     <div
-                      className={`p-2.5 min-h-[55px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
+                      className={`px-4 py-2.5 min-h-[60px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
                         o.completed
                           ? 'border-l-green-500 opacity-60 bg-green-500/5'
                           : 'border-l-accent-primary hover:border-l-accent-secondary'
                       }`}
                     >
                       {/* Checkbox & Details */}
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex items-center gap-3.5 flex-1 min-w-0">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onToggleOneshot(o.id);
                           }}
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          className={`w-6.5 h-6.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ml-0.5 ${
                             o.completed
                               ? 'border-green-500 bg-green-500 text-white shadow-sm'
                               : 'border-border-color hover:border-accent-primary bg-slate-950/20'
@@ -227,7 +227,7 @@ export default function MissionsTab({
                     {/* Quest Header */}
                     <div
                       onClick={() => toggleQuestExpand(q.id)}
-                      className="p-3 min-h-[55px] cursor-pointer flex justify-between items-center gap-3 select-none"
+                      className="px-4 py-2.5 min-h-[60px] cursor-pointer flex justify-between items-center gap-3 select-none"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">

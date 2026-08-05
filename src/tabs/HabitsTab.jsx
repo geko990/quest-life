@@ -398,9 +398,9 @@ export default function HabitsTab({
                 onSwipeLeft={() => onEditHabit(h)}
                 disabled={viewedDate !== todayStr}
               >
-                {/* Individual Habit Card Frame - Compact 55px Height */}
+                {/* Individual Habit Card Frame - Standardized 60px Height */}
                 <div
-                  className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-3 min-h-[55px] shadow-md cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl border transition-all duration-300 flex items-center gap-3.5 min-h-[60px] shadow-md cursor-pointer ${
                     isCompleted
                       ? 'border-green-500/40 bg-green-500/10 opacity-75'
                       : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50'
@@ -413,7 +413,7 @@ export default function HabitsTab({
                       onToggleHabit(h.id, viewedDate);
                     }}
                     disabled={viewedDate !== todayStr}
-                    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    className={`w-6.5 h-6.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ml-0.5 ${
                       isCompleted
                         ? 'border-green-500 bg-green-500 text-white shadow-sm'
                         : viewedDate === todayStr
