@@ -102,7 +102,15 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement;
     const themeName = settings.theme || 'standard';
-    const modeName = settings.mode || (themeName === 'light' ? 'light' : 'dark');
+
+    let isLightMode = false;
+    if (settings.themeMode === 'light' || settings.mode === 'light' || (settings.theme === 'light' && settings.themeMode !== 'dark')) {
+      isLightMode = true;
+    } else if (settings.themeMode === 'system') {
+      isLightMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    }
+
+    const modeName = isLightMode ? 'light' : 'dark';
     root.className = `theme-${themeName} accent-${settings.accent || 'violet'}`;
     root.setAttribute('data-theme', themeName);
     root.setAttribute('data-mode', modeName);
@@ -110,9 +118,9 @@ export default function App() {
     // Set theme color metadata
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      meta.setAttribute('content', modeName === 'light' ? '#f8fafc' : '#0f0f1a');
+      meta.setAttribute('content', modeName === 'light' ? '#f1f5f9' : '#0b0b14');
     }
-  }, [settings.theme, settings.accent, settings.mode]);
+  }, [settings.theme, settings.accent, settings.mode, settings.themeMode]);
 
   // 6. Rollover check (Check if day rolled over)
   useEffect(() => {
