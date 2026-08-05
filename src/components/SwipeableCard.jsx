@@ -82,8 +82,8 @@ export default function SwipeableCard({
           <span>Completa</span>
         </div>
         <div className="flex items-center gap-1.5 opacity-80">
-          <span>Opzioni</span>
-          <span>⚙️</span>
+          <span>Modifica</span>
+          <span>✏️</span>
         </div>
       </div>
 

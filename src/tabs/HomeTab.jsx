@@ -179,33 +179,15 @@ export default function HomeTab({
       <div
         key={stat.id}
         onClick={() => onOpenStatDetail && onOpenStatDetail(stat)}
-        className={`relative glass-panel p-4 flex flex-col justify-between min-h-[108px] group/card cursor-pointer hover:border-accent-primary/60 border border-white/10 shadow-lg transition-all ${
+        className={`glass-panel p-3 flex flex-col justify-between min-h-[72px] cursor-pointer hover:border-accent-primary/60 border border-white/10 shadow-lg transition-all ${
           !stat.visible ? 'opacity-40 hover:opacity-75' : ''
         }`}
       >
-        {/* Action Controls */}
-        <div className="absolute right-2.5 top-2.5 flex gap-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 bg-slate-900/90 px-2 py-0.5 rounded-full border border-border-color shadow-sm z-10" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => onEditStat(stat)}
-            className="text-[10px] text-text-secondary hover:text-accent-primary"
-            title="Modifica"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={() => onDeleteStat(stat.id)}
-            className="text-[10px] text-text-secondary hover:text-red-500"
-            title="Elimina"
-          >
-            🗑️
-          </button>
-        </div>
-
         {/* Card Header (Icon + Name + Level) */}
         <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-2xl leading-none filter drop-shadow-sm">{stat.icon}</span>
-            <span className="text-[10px] font-extrabold text-accent-primary px-2 py-0.5 bg-accent-primary/15 rounded-md border border-accent-primary/25">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xl leading-none filter drop-shadow-sm">{stat.icon}</span>
+            <span className="text-[9px] font-extrabold text-accent-primary px-1.5 py-0.5 bg-accent-primary/15 rounded-md border border-accent-primary/25">
               Lvl {stat.level}
             </span>
           </div>
@@ -213,12 +195,12 @@ export default function HomeTab({
         </div>
 
         {/* Progress bar */}
-        <div className="mt-2.5 pt-1.5 border-t border-border-color/20">
-          <div className="flex justify-between text-[9px] text-text-secondary mb-1 font-medium">
-            <span>{stat.xp} / {xpForNext} XP</span>
+        <div className="mt-1 pt-1 border-t border-border-color/20">
+          <div className="flex justify-between text-[8px] text-text-secondary mb-0.5 font-medium">
+            <span>{stat.xp}/{xpForNext} XP</span>
             <span className="font-semibold text-accent-secondary">{Math.round(xpProgress)}%</span>
           </div>
-          <div className="w-full h-1.5 bg-slate-950/50 rounded-full overflow-hidden border border-border-color/30">
+          <div className="w-full h-1 bg-slate-950/50 rounded-full overflow-hidden border border-border-color/30">
             <div
               className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary transition-all duration-300"
               style={{ width: `${xpProgress}%` }}

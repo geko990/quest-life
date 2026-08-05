@@ -142,28 +142,32 @@ export default function MissionsTab({
                     onSwipeLeft={() => onEditOneshot(o)}
                   >
                     <div
-                      className={`p-4 flex items-center justify-between group relative transition-all duration-300 border-l-4 ${
+                      className={`p-3.5 min-h-[72px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
                         o.completed
                           ? 'border-l-green-500 opacity-60 bg-green-500/5'
                           : 'border-l-accent-primary hover:border-l-accent-secondary'
                       }`}
                     >
                       {/* Checkbox & Details */}
-                      <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-4">
+                      <div className="flex items-center gap-3.5 flex-1 min-w-0">
                         <button
-                          onClick={() => onToggleOneshot(o.id)}
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleOneshot(o.id);
+                          }}
+                          className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                             o.completed
-                              ? 'border-green-500 bg-green-500 text-white'
+                              ? 'border-green-500 bg-green-500 text-white shadow-sm'
                               : 'border-border-color hover:border-accent-primary bg-slate-950/20'
                           }`}
+                          title={o.completed ? "Segna come incompleta" : "Segna come completata"}
                         >
-                          {o.completed && <span className="text-[11px] font-bold">✓</span>}
+                          {o.completed && <span className="text-xs font-extrabold">✓</span>}
                         </button>
 
-                        <div className="min-w-0">
+                        <div onClick={() => onEditOneshot(o)} className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-lg flex-shrink-0">{o.emoji || '💥'}</span>
+                            <span className="text-lg flex-shrink-0 filter drop-shadow-sm">{o.emoji || '💥'}</span>
                             <h4 className={`text-xs font-bold text-text-main truncate ${o.completed ? 'line-through text-text-secondary' : ''}`}>
                               {o.name}
                             </h4>
@@ -181,24 +185,6 @@ export default function MissionsTab({
                             </span>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => onEditOneshot(o)}
-                          className="text-text-secondary hover:text-accent-primary text-xs"
-                          title="Modifica"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => onDeleteOneshot(o.id)}
-                          className="text-text-secondary hover:text-red-500 text-xs"
-                          title="Elimina"
-                        >
-                          🗑️
-                        </button>
                       </div>
                     </div>
                   </SwipeableCard>
