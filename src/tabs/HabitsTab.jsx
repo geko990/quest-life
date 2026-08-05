@@ -218,15 +218,9 @@ export default function HabitsTab({
     calendarDays.push(dateObj);
   }
 
-  const [timeFilter, setTimeFilter] = useState('all');
-
   const visibleHabits = getHabitsForDate(viewedDate);
-  const filteredHabits = visibleHabits.filter(h => {
-    if (timeFilter === 'all') return true;
-    return h.timeOfDay === timeFilter;
-  });
 
-  const habitsToShow = filteredHabits.map(h => ({
+  const habitsToShow = visibleHabits.map(h => ({
     ...h,
     completed: isHabitCompletedOnDate(h.id, viewedDate)
   })).sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
@@ -239,7 +233,7 @@ export default function HabitsTab({
   };
 
   return (
-    <div className="w-full space-y-4 pb-24 box-border">
+    <div className="w-full space-y-5 pb-28 box-border">
       {/* Calendar Header */}
       <div className="glass-panel p-3">
         <div
@@ -280,51 +274,27 @@ export default function HabitsTab({
         </div>
       </div>
 
-      {/* Section Header & Time Filters */}
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-between items-center px-1">
-          <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
-            📜 Abitudini <span className="text-xs text-text-secondary font-sans font-normal ml-2">({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
-          </h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowPomodoro(!showPomodoro)}
-              className={`w-9 h-9 rounded-full glass-panel flex items-center justify-center text-lg active:scale-95 transition-transform ${
-                pomodoro.status !== 'idle' ? 'border-red-500 animate-pulse' : ''
-              }`}
-              title="Timer Pomodoro"
-            >
-              🍅
-            </button>
-            <button
-              onClick={() => onOpenModal('habit')}
-              className="w-9 h-9 rounded-full bg-accent-gradient text-white flex items-center justify-center text-xl font-bold shadow-md active:scale-95 transition-transform"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        {/* Time of Day Filter Pills */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
-          {[
-            { id: 'all', label: 'Tutte' },
-            { id: 'morning', label: '🌅 Mattino' },
-            { id: 'afternoon', label: '☀️ Pomeriggio' },
-            { id: 'evening', label: '🌙 Sera' }
-          ].map(f => (
-            <button
-              key={f.id}
-              onClick={() => setTimeFilter(f.id)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
-                timeFilter === f.id
-                  ? 'bg-accent-primary text-white shadow-sm'
-                  : 'bg-slate-900/30 text-text-secondary hover:text-text-main border border-border-color/30'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+      {/* Section Header */}
+      <div className="flex justify-between items-center px-1">
+        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
+          📜 Abitudini <span className="text-xs text-text-secondary font-sans font-normal ml-2">({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
+        </h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowPomodoro(!showPomodoro)}
+            className={`w-9 h-9 rounded-full glass-panel flex items-center justify-center text-lg active:scale-95 transition-transform ${
+              pomodoro.status !== 'idle' ? 'border-red-500 animate-pulse' : ''
+            }`}
+            title="Timer Pomodoro"
+          >
+            🍅
+          </button>
+          <button
+            onClick={() => onOpenModal('habit')}
+            className="w-9 h-9 rounded-full bg-accent-gradient text-white flex items-center justify-center text-xl font-bold shadow-md active:scale-95 transition-transform"
+          >
+            +
+          </button>
         </div>
       </div>
 
@@ -410,7 +380,7 @@ export default function HabitsTab({
       )}
 
       {/* Habits List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {habitsToShow.length === 0 ? (
           <div className="glass-panel p-8 text-center text-xs text-text-secondary italic">
             Nessuna abitudine per questa data. Clicca "+" per crearne una!
@@ -428,90 +398,91 @@ export default function HabitsTab({
                 onSwipeLeft={() => onEditHabit(h)}
                 disabled={viewedDate !== todayStr}
               >
-                {/* Individual Habit Card Frame */}
+                {/* Individual Habit Card Frame - Tall 2-Line Layout with Left Checkbox */}
                 <div
-                  className={`p-4 rounded-2xl border transition-all duration-300 space-y-2.5 ${
+                  className={`p-4 rounded-2xl border transition-all duration-300 flex items-center gap-3.5 min-h-[86px] shadow-lg ${
                     isCompleted
                       ? 'border-green-500/40 bg-green-500/10 opacity-75'
-                      : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50 shadow-md'
+                      : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50'
                   }`}
                 >
-                  {/* Row 1: Checkbox + Name + Edit/Delete */}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {/* Circle Checkbox Button */}
-                      <button
-                        onClick={() => onToggleHabit(h.id, viewedDate)}
-                        disabled={viewedDate !== todayStr}
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                          isCompleted
-                            ? 'border-green-500 bg-green-500 text-white shadow-sm'
-                            : viewedDate === todayStr
-                            ? 'border-border-color hover:border-accent-primary bg-slate-900/40'
-                            : 'border-border-color cursor-not-allowed opacity-40 bg-slate-900/20'
-                        }`}
-                      >
-                        {isCompleted && <span className="text-[11px] font-bold">✓</span>}
-                      </button>
+                  {/* LEFT COLUMN: ONLY Checkbox Circle */}
+                  <button
+                    onClick={() => onToggleHabit(h.id, viewedDate)}
+                    disabled={viewedDate !== todayStr}
+                    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      isCompleted
+                        ? 'border-green-500 bg-green-500 text-white shadow-sm'
+                        : viewedDate === todayStr
+                        ? 'border-border-color hover:border-accent-primary bg-slate-900/40'
+                        : 'border-border-color cursor-not-allowed opacity-40 bg-slate-900/20'
+                    }`}
+                    title={isCompleted ? "Segna come incompleta" : "Segna come completata"}
+                  >
+                    {isCompleted && <span className="text-xs font-extrabold">✓</span>}
+                  </button>
 
-                      {/* Emoji & Name */}
+                  {/* RIGHT COLUMN: 2 Clean Lines */}
+                  <div className="flex-1 flex flex-col justify-center gap-1.5 min-w-0">
+                    {/* Line 1: Emoji + Name + Action Buttons */}
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xl flex-shrink-0">{h.emoji || '📜'}</span>
+                        <span className="text-xl flex-shrink-0 filter drop-shadow-sm">{h.emoji || '📜'}</span>
                         <h4 className={`text-sm font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
                           {h.name}
                         </h4>
                       </div>
+
+                      {/* Action Controls */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => onEditHabit(h)}
+                          className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-slate-900/80 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-accent-primary text-xs transition-all"
+                          title="Modifica"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => onDeleteHabit(h.id)}
+                          className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-red-500/20 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-red-400 text-xs transition-all"
+                          title="Elimina"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => onEditHabit(h)}
-                        className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-slate-900/80 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-accent-primary text-xs transition-all"
-                        title="Modifica"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => onDeleteHabit(h.id)}
-                        className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-red-500/20 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-red-400 text-xs transition-all"
-                        title="Elimina"
-                      >
-                        🗑️
-                      </button>
+                    {/* Line 2: Streak + Difficulty Stars + Attribute/Ability Badges */}
+                    <div className="flex items-center gap-2 flex-wrap text-[10px]">
+                      {/* Streak Flame Badge */}
+                      {h.streak > 0 && (
+                        <span className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                          🔥 {h.streak} gg
+                        </span>
+                      )}
+
+                      {/* Difficulty Stars */}
+                      <span className="bg-slate-900/40 border border-border-color/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 text-amber-400 font-bold">
+                        {'★'.repeat(h.difficulty)}
+                        <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
+                      </span>
+
+                      {/* Primary Stat Badge */}
+                      {primaryStat && (
+                        <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
+                          <span>{primaryStat.icon}</span>
+                          <span>{primaryStat.name}</span>
+                        </span>
+                      )}
+
+                      {/* Secondary Stat Badge */}
+                      {secondaryStat && (
+                        <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
+                          <span>{secondaryStat.icon}</span>
+                          <span>{secondaryStat.name}</span>
+                        </span>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Row 2: Badges (Streak + Difficulty Stars + Primary Stat + Secondary Stat) */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-border-color/20 flex-wrap text-[10px]">
-                    {/* Streak Flame Badge */}
-                    {h.streak > 0 && (
-                      <span className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                        🔥 {h.streak} gg
-                      </span>
-                    )}
-
-                    {/* Difficulty Stars */}
-                    <span className="bg-slate-900/40 border border-border-color/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 text-amber-400 font-bold">
-                      {'★'.repeat(h.difficulty)}
-                      <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
-                    </span>
-
-                    {/* Primary Stat Badge */}
-                    {primaryStat && (
-                      <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
-                        <span>{primaryStat.icon}</span>
-                        <span>{primaryStat.name}</span>
-                      </span>
-                    )}
-
-                    {/* Secondary Stat Badge (if present) */}
-                    {secondaryStat && (
-                      <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
-                        <span>{secondaryStat.icon}</span>
-                        <span>{secondaryStat.name}</span>
-                      </span>
-                    )}
                   </div>
                 </div>
               </SwipeableCard>
