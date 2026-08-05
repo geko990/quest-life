@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getGameDate, getGameDateObj, formatISO, getWeekIdentifier, getMonthIdentifier, getYearIdentifier } from '../utils/helpers';
+import SwipeableCard from '../components/SwipeableCard';
 
 export default function HabitsTab({
   habits,
@@ -420,76 +421,82 @@ export default function HabitsTab({
             const primaryStat = stats.find(s => s.id === h.primaryTarget);
 
             return (
-              <div
+              <SwipeableCard
                 key={h.id}
-                className={`glass-panel p-4 flex items-center justify-between group relative transition-all duration-300 border-l-4 ${
-                  isCompleted
-                    ? 'border-l-green-500 opacity-60 bg-green-500/5'
-                    : 'border-l-accent-primary hover:border-l-accent-secondary'
-                }`}
+                onSwipeRight={() => viewedDate === todayStr && onToggleHabit(h.id, viewedDate)}
+                onSwipeLeft={() => onEditHabit(h)}
+                disabled={viewedDate !== todayStr}
               >
-                {/* Left: Checkbox + info */}
-                <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-4">
-                  {/* Circle Checkbox */}
-                  <button
-                    onClick={() => onToggleHabit(h.id, viewedDate)}
-                    disabled={viewedDate !== todayStr}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      isCompleted
-                        ? 'border-green-500 bg-green-500 text-white'
-                        : viewedDate === todayStr
-                        ? 'border-border-color hover:border-accent-primary bg-slate-950/20'
-                        : 'border-border-color cursor-not-allowed opacity-50 bg-slate-950/10'
-                    }`}
-                  >
-                    {isCompleted && <span className="text-[11px] font-bold">✓</span>}
-                  </button>
+                <div
+                  className={`p-4 flex items-center justify-between group relative transition-all duration-300 border-l-4 ${
+                    isCompleted
+                      ? 'border-l-green-500 opacity-60 bg-green-500/5'
+                      : 'border-l-accent-primary hover:border-l-accent-secondary'
+                  }`}
+                >
+                  {/* Left: Checkbox + info */}
+                  <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-4">
+                    {/* Circle Checkbox */}
+                    <button
+                      onClick={() => onToggleHabit(h.id, viewedDate)}
+                      disabled={viewedDate !== todayStr}
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        isCompleted
+                          ? 'border-green-500 bg-green-500 text-white'
+                          : viewedDate === todayStr
+                          ? 'border-border-color hover:border-accent-primary bg-slate-950/20'
+                          : 'border-border-color cursor-not-allowed opacity-50 bg-slate-950/10'
+                      }`}
+                    >
+                      {isCompleted && <span className="text-[11px] font-bold">✓</span>}
+                    </button>
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-lg flex-shrink-0">{h.emoji || '📜'}</span>
-                      <h4 className={`text-xs font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
-                        {h.name}
-                      </h4>
-                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-lg flex-shrink-0">{h.emoji || '📜'}</span>
+                        <h4 className={`text-xs font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
+                          {h.name}
+                        </h4>
+                      </div>
 
-                    <div className="flex items-center gap-2 mt-1 text-[10px] text-text-secondary">
-                      {h.streak > 0 && (
-                        <span className="text-orange-400 font-bold flex items-center gap-0.5">
-                          🔥 {h.streak}
+                      <div className="flex items-center gap-2 mt-1 text-[10px] text-text-secondary">
+                        {h.streak > 0 && (
+                          <span className="text-orange-400 font-bold flex items-center gap-0.5">
+                            🔥 {h.streak}
+                          </span>
+                        )}
+                        {primaryStat && (
+                          <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                            {primaryStat.icon} {primaryStat.name}
+                          </span>
+                        )}
+                        <span className="text-yellow-400">
+                          {'★'.repeat(h.difficulty)}
+                          <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
                         </span>
-                      )}
-                      {primaryStat && (
-                        <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                          {primaryStat.icon} {primaryStat.name}
-                        </span>
-                      )}
-                      <span className="text-yellow-400">
-                        {'★'.repeat(h.difficulty)}
-                        <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
-                      </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Right: Actions */}
-                <div className="flex gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button
-                    onClick={() => onEditHabit(h)}
-                    className="text-text-secondary hover:text-accent-primary text-xs"
-                    title="Modifica"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => onDeleteHabit(h.id)}
-                    className="text-text-secondary hover:text-red-500 text-xs"
-                    title="Elimina"
-                  >
-                    🗑️
-                  </button>
+                  {/* Right: Actions */}
+                  <div className="flex gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                      onClick={() => onEditHabit(h)}
+                      className="text-text-secondary hover:text-accent-primary text-xs"
+                      title="Modifica"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => onDeleteHabit(h.id)}
+                      className="text-text-secondary hover:text-red-500 text-xs"
+                      title="Elimina"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </SwipeableCard>
             );
           })
         )}
