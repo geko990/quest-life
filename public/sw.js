@@ -1,5 +1,5 @@
 // RPG LIFE SERVICE WORKER
-const CACHE_NAME = 'rpg-life-v4.0.0';
+const CACHE_NAME = 'rpg-life-v4.1.0';
 
 // Files to cache on install (app shell)
 const PRECACHE_ASSETS = [
@@ -29,41 +29,16 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Navigation requests (HTML) - Network First
-  if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request)
-        .then((response) => {
-          // Cache the latest page
+  // Network First strategy for all requests so user always receives latest code immediately
+  e.respondWith(
+    fetch(e.request)
+      .then((response) => {
+        if (response && response.status === 200 && e.request.url.startsWith('http')) {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
-          return response;
-        })
-        .catch(() => caches.match(e.request) || caches.match('./index.html'))
-    );
-    return;
-  }
-
-  // Dynamic Cache First strategy for JS, CSS, fonts, and images
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(e.request).then((response) => {
-        // Don't cache failed requests or non-http protocols (e.g. chrome-extension)
-        if (!response || response.status !== 200 || !e.request.url.startsWith('http')) {
-          return response;
         }
-
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(e.request, copy);
-        });
-
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(e.request))
   );
 });

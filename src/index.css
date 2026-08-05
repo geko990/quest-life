@@ -30,7 +30,38 @@ body {
   background-attachment: fixed;
   color: var(--text-main, #f8fafc);
   -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+[data-mode="light"] {
+    --bg-main: #f1f5f9;
+    --bg-primary: #f8f9fc;
+    --bg-secondary: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --text-main: #0f172a;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --border-color: rgba(0, 0, 0, 0.12);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(0, 0, 0, 0.15);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+[data-mode="dark"] {
+    --bg-main: #0b0b14;
+    --bg-primary: #0f0f1a;
+    --bg-secondary: #1a1a2e;
+    --bg-card: rgba(20, 20, 36, 0.85);
+    --text-main: #f8fafc;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(30, 30, 50, 0.85);
+    --glass-border: rgba(60, 60, 100, 0.5);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .glass-panel {
