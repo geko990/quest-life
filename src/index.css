@@ -84,6 +84,21 @@ body {
   border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
+/* Daily Planner Inputs & Selects Theme Enforcement */
+[data-mode="light"] .planner-input,
+[data-mode="light"] .planner-select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-mode="dark"] .planner-input,
+[data-mode="dark"] .planner-select {
+  background-color: rgba(2, 6, 23, 0.9) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
 [data-mode="dark"] {
     --bg-main: #0b0b14;
     --bg-primary: #0f0f1a;
