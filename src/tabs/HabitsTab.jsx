@@ -217,8 +217,15 @@ export default function HabitsTab({
     calendarDays.push(dateObj);
   }
 
+  const [timeFilter, setTimeFilter] = useState('all');
+
   const visibleHabits = getHabitsForDate(viewedDate);
-  const habitsToShow = visibleHabits.map(h => ({
+  const filteredHabits = visibleHabits.filter(h => {
+    if (timeFilter === 'all') return true;
+    return h.timeOfDay === timeFilter;
+  });
+
+  const habitsToShow = filteredHabits.map(h => ({
     ...h,
     completed: isHabitCompletedOnDate(h.id, viewedDate)
   })).sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
@@ -272,27 +279,51 @@ export default function HabitsTab({
         </div>
       </div>
 
-      {/* Section Header */}
-      <div className="flex justify-between items-center px-1">
-        <h2 className="text-base font-bold text-text-main font-cinzel">
-          📜 Abitudini <span className="text-xs text-text-secondary font-sans font-normal ml-2">({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowPomodoro(!showPomodoro)}
-            className={`w-9 h-9 rounded-full glass-panel flex items-center justify-center text-lg active:scale-95 transition-transform ${
-              pomodoro.status !== 'idle' ? 'border-red-500 animate-pulse' : ''
-            }`}
-            title="Timer Pomodoro"
-          >
-            🍅
-          </button>
-          <button
-            onClick={() => onOpenModal('habit')}
-            className="w-9 h-9 rounded-full bg-accent-gradient text-white flex items-center justify-center text-xl font-bold shadow-md active:scale-95 transition-transform"
-          >
-            +
-          </button>
+      {/* Section Header & Time Filters */}
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-between items-center px-1">
+          <h2 className="text-base font-bold text-text-main font-cinzel">
+            📜 Abitudini <span className="text-xs text-text-secondary font-sans font-normal ml-2">({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
+          </h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowPomodoro(!showPomodoro)}
+              className={`w-9 h-9 rounded-full glass-panel flex items-center justify-center text-lg active:scale-95 transition-transform ${
+                pomodoro.status !== 'idle' ? 'border-red-500 animate-pulse' : ''
+              }`}
+              title="Timer Pomodoro"
+            >
+              🍅
+            </button>
+            <button
+              onClick={() => onOpenModal('habit')}
+              className="w-9 h-9 rounded-full bg-accent-gradient text-white flex items-center justify-center text-xl font-bold shadow-md active:scale-95 transition-transform"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Time of Day Filter Pills */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
+          {[
+            { id: 'all', label: 'Tutte' },
+            { id: 'morning', label: '🌅 Mattino' },
+            { id: 'afternoon', label: '☀️ Pomeriggio' },
+            { id: 'evening', label: '🌙 Sera' }
+          ].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setTimeFilter(f.id)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                timeFilter === f.id
+                  ? 'bg-accent-primary text-white shadow-sm'
+                  : 'bg-slate-900/30 text-text-secondary hover:text-text-main border border-border-color/30'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
