@@ -686,6 +686,33 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, stats }
           </>
         );
 
+      case 'stat_detail':
+        const statData = editData || {};
+        return (
+          <div className="space-y-4 text-center">
+            <div className="w-16 h-16 mx-auto rounded-full bg-accent-primary/10 border-2 border-accent-primary flex items-center justify-center text-3xl shadow-lg">
+              {statData.icon || '⭐'}
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-text-main font-cinzel">{statData.name}</h4>
+              <p className="text-xs text-text-secondary">{statData.description || 'Statistica del personaggio'}</p>
+            </div>
+            <div className="bg-slate-950/40 p-3 rounded-xl border border-border-color/40 flex justify-around">
+              <div>
+                <span className="text-[10px] text-text-secondary uppercase block font-bold">Livello</span>
+                <span className="text-lg font-bold text-accent-primary">{statData.level || 1}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-text-secondary uppercase block font-bold">XP Accumulati</span>
+                <span className="text-lg font-bold text-amber-400">{statData.xp || 0}</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-text-secondary/80 italic leading-relaxed">
+              Man mano che completi abitudini e missioni collegate a {statData.name}, guadagnerai XP ed aumenterai il livello di questa statistica!
+            </p>
+          </div>
+        );
+
       default:
         if (type?.startsWith('health_')) {
           const field = type.split('_')[1];
@@ -731,6 +758,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, stats }
       food: 'Alimento nel database',
       exercise: 'Esercizio nel database',
       weight: 'Statistiche Peso',
+      stat_detail: 'Dettaglio Statistica'
     };
     if (type?.startsWith('health_')) return 'Aggiorna Dati';
     return `${action} ${names[type] || 'Elemento'}`;
