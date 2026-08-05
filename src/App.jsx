@@ -824,7 +824,7 @@ export default function App() {
 
       {/* Primary content area */}
       <main
-        className="flex-1 w-full overflow-y-auto px-3 pt-2 pb-24 no-scrollbar box-border touch-pan-y"
+        className="flex-1 w-full overflow-y-auto px-3.5 pt-2.5 pb-24 no-scrollbar box-border touch-pan-y"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {renderActiveTab()}

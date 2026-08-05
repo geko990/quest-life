@@ -179,22 +179,22 @@ export default function HomeTab({
       <div
         key={stat.id}
         onClick={() => onOpenStatDetail && onOpenStatDetail(stat)}
-        className={`relative glass-panel p-3 flex flex-col justify-between min-h-[96px] group/card cursor-pointer hover:border-accent-primary/60 transition-all ${
+        className={`relative glass-panel p-3.5 flex flex-col justify-between min-h-[102px] group/card cursor-pointer hover:border-accent-primary/60 transition-all ${
           !stat.visible ? 'opacity-40 hover:opacity-75' : ''
         }`}
       >
         {/* Action Controls */}
-        <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 bg-bg-card/90 px-1.5 py-0.5 rounded-full border border-border-color shadow-sm z-10" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute right-2.5 top-2.5 flex gap-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 bg-slate-900/90 px-2 py-0.5 rounded-full border border-border-color shadow-sm z-10" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onEditStat(stat)}
-            className="text-[9px] text-text-secondary hover:text-accent-primary"
+            className="text-[10px] text-text-secondary hover:text-accent-primary"
             title="Modifica"
           >
             ✏️
           </button>
           <button
             onClick={() => onDeleteStat(stat.id)}
-            className="text-[9px] text-text-secondary hover:text-red-500"
+            className="text-[10px] text-text-secondary hover:text-red-500"
             title="Elimina"
           >
             🗑️
@@ -203,22 +203,22 @@ export default function HomeTab({
 
         {/* Card Header (Icon + Name + Level) */}
         <div>
-          <div className="flex justify-between items-start mb-1">
-            <span className="text-xl leading-none">{stat.icon}</span>
-            <span className="text-[10px] font-extrabold text-accent-primary px-1.5 py-0.5 bg-accent-primary/15 rounded-md border border-accent-primary/20">
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-2xl leading-none filter drop-shadow-sm">{stat.icon}</span>
+            <span className="text-[10px] font-extrabold text-accent-primary px-2 py-0.5 bg-accent-primary/15 rounded-md border border-accent-primary/25">
               Lvl {stat.level}
             </span>
           </div>
-          <h4 className="text-xs font-bold text-text-main truncate" title={stat.name}>{stat.name}</h4>
+          <h4 className="text-xs font-bold text-text-main truncate tracking-wide" title={stat.name}>{stat.name}</h4>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-2 pt-1 border-t border-border-color/20">
-          <div className="flex justify-between text-[9px] text-text-secondary mb-1">
-            <span>{stat.xp}/{xpForNext} XP</span>
-            <span className="font-semibold">{Math.round(xpProgress)}%</span>
+        <div className="mt-2.5 pt-1.5 border-t border-border-color/20">
+          <div className="flex justify-between text-[9px] text-text-secondary mb-1 font-medium">
+            <span>{stat.xp} / {xpForNext} XP</span>
+            <span className="font-semibold text-accent-secondary">{Math.round(xpProgress)}%</span>
           </div>
-          <div className="w-full h-1.5 bg-slate-950/40 rounded-full overflow-hidden border border-border-color/30">
+          <div className="w-full h-1.5 bg-slate-950/50 rounded-full overflow-hidden border border-border-color/30">
             <div
               className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary transition-all duration-300"
               style={{ width: `${xpProgress}%` }}
@@ -233,7 +233,7 @@ export default function HomeTab({
   const recentXpLogs = (xpLog || []).slice(-5).reverse();
 
   return (
-    <div className="w-full space-y-5 pb-24 box-border min-h-screen">
+    <div className="w-full space-y-4.5 pb-24 box-border px-1">
       {/* Tab Header */}
       <div className="flex justify-between items-center px-1 w-full">
         <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
@@ -242,7 +242,7 @@ export default function HomeTab({
       </div>
 
       {/* 1. Radar Chart (FIRST THING TO SEE - No title text) */}
-      <div className="glass-panel p-4 w-full text-center relative overflow-hidden border border-border-color">
+      <div className="glass-panel p-4.5 w-full text-center relative overflow-hidden border border-border-color">
         <div className="relative flex justify-center items-center h-[260px]">
           {renderRadarChart()}
         </div>
@@ -250,7 +250,7 @@ export default function HomeTab({
 
       {/* 2. Section: Attributi (2 per row) */}
       <div className="glass-panel overflow-hidden border border-border-color w-full">
-        <div className="px-4 py-3 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center w-full">
+        <div className="px-4.5 py-3.5 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center w-full">
           <h3
             onClick={() => toggleSection('attributes')}
             className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
@@ -275,7 +275,7 @@ export default function HomeTab({
           </div>
         </div>
         {expanded.attributes && (
-          <div className="p-3 grid grid-cols-2 gap-2.5 animate-fade-in">
+          <div className="p-3.5 grid grid-cols-2 gap-3 animate-fade-in">
             {attributes.map(renderCard)}
           </div>
         )}
@@ -283,7 +283,7 @@ export default function HomeTab({
 
       {/* 3. Section: Abilità (2 per row) */}
       <div className="glass-panel overflow-hidden border border-border-color w-full">
-        <div className="px-4 py-3 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center w-full">
+        <div className="px-4.5 py-3.5 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center w-full">
           <h3
             onClick={() => toggleSection('abilities')}
             className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
@@ -308,7 +308,7 @@ export default function HomeTab({
           </div>
         </div>
         {expanded.abilities && (
-          <div className="p-3 grid grid-cols-2 gap-2.5 animate-fade-in">
+          <div className="p-3.5 grid grid-cols-2 gap-3 animate-fade-in">
             {abilities.length === 0 ? (
               <div className="col-span-2 py-6 text-center text-xs text-text-secondary italic">
                 Nessuna abilità speciale creata. Clicca "+" per crearne una!
