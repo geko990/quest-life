@@ -62,34 +62,39 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-bg-card/90 backdrop-blur-xl border-b border-border-color shadow-sm pt-[env(safe-area-inset-top)]">
-      <div className="max-w-md mx-auto grid grid-cols-3 items-center px-4 py-2.5 relative">
+    <header className="sticky top-0 z-40 w-full bg-slate-950/90 backdrop-blur-2xl border-b border-white/10 shadow-lg pt-[env(safe-area-inset-top)]">
+      <div className="max-w-md mx-auto grid grid-cols-3 items-center px-4 py-4 min-h-[76px] relative">
         
-        {/* LEFT: Streak Badge (Flame + Count) */}
+        {/* LEFT: Streak Flame Badge */}
         <div className="flex items-center justify-start">
           <div
             onClick={() => setShowStreak(!showStreak)}
-            className={`header-streak flex items-center gap-1.5 cursor-pointer bg-slate-900/40 border border-slate-700/30 px-2.5 py-1 rounded-full select-none transition-all duration-300 active:scale-95 hover:bg-slate-950/30 ${
-              isStreakActive ? 'opacity-100 shadow-[0_0_12px_rgba(249,115,22,0.25)] border-orange-500/30' : 'grayscale opacity-75'
+            className={`header-streak flex items-center gap-2 cursor-pointer bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full select-none transition-all duration-300 active:scale-95 hover:bg-orange-500/20 shadow-md ${
+              isStreakActive ? 'opacity-100 shadow-[0_0_15px_rgba(249,115,22,0.3)] border-orange-500/50' : 'grayscale opacity-75'
             }`}
-            title="Visualizza la serie attiva"
+            title="Visualizza la tua serie attiva"
           >
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-xs shadow-md animate-pulse">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-sm shadow-md animate-pulse flex-shrink-0">
               🔥
             </div>
-            <span className="text-xs font-bold text-orange-400">{player.globalStreak || 0}</span>
+            <span className="text-sm font-extrabold text-orange-400 font-sans tracking-tight">
+              {player.globalStreak || 0}
+            </span>
           </div>
         </div>
 
-        {/* CENTER: App Title (RPG Life) */}
-        <div className="flex items-center justify-center">
+        {/* CENTER: Grand App Title (RPG Life) */}
+        <div className="flex flex-col items-center justify-center">
           <h1
             onClick={() => forceUpdateApp(true)}
-            className="text-lg font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-accent-secondary select-none tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-transform text-center"
+            className="text-2xl font-extrabold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-accent-primary to-accent-secondary select-none tracking-widest cursor-pointer hover:scale-105 active:scale-95 transition-transform text-center filter drop-shadow-[0_2px_10px_rgba(168,85,247,0.4)]"
             title="Tocca per forzare l'aggiornamento dell'app"
           >
             RPG Life
           </h1>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-text-secondary/70 -mt-0.5 text-center">
+            Habit Tracker RPG
+          </span>
         </div>
 
         {/* RIGHT: Avatar Photo/Emoji + Level Badge */}
@@ -99,14 +104,14 @@ export default function Header({
             className="header-profile flex items-center gap-1.5 cursor-pointer select-none transition-transform active:scale-95"
             title="Visualizza profilo e medaglie"
           >
-            <div className="relative w-8 h-8 rounded-full bg-slate-800 border-2 border-accent-primary flex items-center justify-center shadow-md overflow-hidden">
+            <div className="relative w-10 h-10 rounded-full bg-slate-900 border-2 border-accent-primary flex items-center justify-center shadow-lg overflow-hidden ring-2 ring-accent-primary/40 flex-shrink-0">
               {player.avatarType === 'image' && player.avatarImage ? (
                 <img src={player.avatarImage} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-sm">{player.avatarEmoji || '⚔️'}</span>
+                <span className="text-lg">{player.avatarEmoji || '⚔️'}</span>
               )}
             </div>
-            <div className="bg-accent-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-bg-main -ml-2.5 mt-3.5 z-10 shadow-sm">
+            <div className="bg-accent-primary text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-slate-950 -ml-3.5 mt-4 z-10 shadow-md">
               Lvl {player.level}
             </div>
           </div>
@@ -116,7 +121,7 @@ export default function Header({
         {showStreak && (
           <div
             ref={streakRef}
-            className="absolute left-4 top-13 w-72 p-4 glass-panel z-50 text-left shadow-2xl animate-float border border-border-color"
+            className="absolute left-4 top-16 w-72 p-4 glass-panel z-50 text-left shadow-2xl animate-float border border-white/10"
           >
             <div className="flex items-center gap-3 mb-3 border-b border-border-color pb-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-600 flex items-center justify-center text-xl shadow">
@@ -145,11 +150,11 @@ export default function Header({
         {showProfile && (
           <div
             ref={profileRef}
-            className="absolute right-4 top-13 w-80 p-5 glass-panel z-50 text-left shadow-2xl animate-scale-up border border-border-color"
+            className="absolute right-4 top-16 w-80 p-5 glass-panel z-50 text-left shadow-2xl animate-scale-up border border-white/10"
           >
             {/* Avatar & Level title info */}
             <div className="flex items-center gap-3.5 mb-4 pb-3 border-b border-border-color">
-              <div className="relative w-12 h-12 rounded-full bg-slate-800 border-2 border-accent-primary flex items-center justify-center shadow-inner text-xl overflow-hidden flex-shrink-0">
+              <div className="relative w-12 h-12 rounded-full bg-slate-900 border-2 border-accent-primary flex items-center justify-center shadow-inner text-xl overflow-hidden flex-shrink-0">
                 {player.avatarType === 'image' && player.avatarImage ? (
                   <img src={player.avatarImage} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                 ) : (
