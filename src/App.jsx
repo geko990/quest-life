@@ -816,7 +816,7 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-[#0b0b14] text-text-main flex flex-col font-sans overflow-hidden">
+    <div className="fixed inset-0 w-full h-full bg-[var(--bg-main,#0b0b14)] text-text-main flex flex-col font-sans overflow-hidden transition-colors duration-300">
       {/* Upper header */}
       <div className="flex-shrink-0 w-full z-40">
         <Header
