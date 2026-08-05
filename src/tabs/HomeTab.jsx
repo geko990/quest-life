@@ -233,7 +233,7 @@ export default function HomeTab({
   const recentXpLogs = (xpLog || []).slice(-5).reverse();
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-5 pb-24 p-4 box-border min-h-screen">
+    <div className="w-full space-y-5 pb-24 box-border min-h-screen">
       {/* Tab Header */}
       <div className="flex justify-between items-center px-1 w-full">
         <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
