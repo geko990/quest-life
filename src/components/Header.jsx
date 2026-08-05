@@ -62,58 +62,54 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-slate-950/90 backdrop-blur-2xl border-b border-white/10 shadow-lg pt-[env(safe-area-inset-top)]">
-      <div className="max-w-md mx-auto grid grid-cols-3 items-center px-4 py-4 min-h-[76px] relative">
+    <header className="sticky top-0 z-40 w-full bg-slate-950/95 backdrop-blur-2xl border-b border-white/10 shadow-lg pt-[env(safe-area-inset-top)]">
+      <div className="w-full max-w-md mx-auto flex items-center justify-between px-4 py-4 min-h-[80px] relative">
         
         {/* LEFT: Streak Flame Badge */}
-        <div className="flex items-center justify-start">
-          <div
-            onClick={() => setShowStreak(!showStreak)}
-            className={`header-streak flex items-center gap-2 cursor-pointer bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full select-none transition-all duration-300 active:scale-95 hover:bg-orange-500/20 shadow-md ${
-              isStreakActive ? 'opacity-100 shadow-[0_0_15px_rgba(249,115,22,0.3)] border-orange-500/50' : 'grayscale opacity-75'
-            }`}
-            title="Visualizza la tua serie attiva"
-          >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-sm shadow-md animate-pulse flex-shrink-0">
-              🔥
-            </div>
-            <span className="text-sm font-extrabold text-orange-400 font-sans tracking-tight">
-              {player.globalStreak || 0}
-            </span>
+        <div
+          onClick={() => setShowStreak(!showStreak)}
+          className={`header-streak ml-2 flex items-center gap-1.5 cursor-pointer bg-slate-900/80 border border-orange-500/50 px-3 py-1.5 rounded-full select-none transition-all duration-300 active:scale-95 hover:bg-orange-500/20 shadow-md ${
+            isStreakActive ? 'opacity-100 shadow-[0_0_12px_rgba(249,115,22,0.35)] border-orange-500/60' : 'grayscale opacity-75'
+          }`}
+          title="Visualizza la tua serie attiva"
+        >
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-xs shadow-md animate-pulse flex-shrink-0">
+            🔥
           </div>
+          <span className="text-xs font-extrabold text-orange-400 font-sans tracking-tight">
+            {player.globalStreak || 0}
+          </span>
         </div>
 
         {/* CENTER: Grand App Title (RPG Life) */}
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center px-2">
           <h1
             onClick={() => forceUpdateApp(true)}
-            className="text-2xl font-extrabold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-accent-primary to-accent-secondary select-none tracking-widest cursor-pointer hover:scale-105 active:scale-95 transition-transform text-center filter drop-shadow-[0_2px_10px_rgba(168,85,247,0.4)]"
+            className="text-xl font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-accent-primary to-accent-secondary select-none tracking-widest cursor-pointer hover:scale-105 active:scale-95 transition-transform text-center filter drop-shadow-[0_2px_8px_rgba(168,85,247,0.4)]"
             title="Tocca per forzare l'aggiornamento dell'app"
           >
             RPG Life
           </h1>
-          <span className="text-[9px] font-bold uppercase tracking-widest text-text-secondary/70 -mt-0.5 text-center">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-text-secondary/70 -mt-0.5 text-center">
             Habit Tracker RPG
           </span>
         </div>
 
         {/* RIGHT: Avatar Photo/Emoji + Level Badge */}
-        <div className="flex items-center justify-end">
-          <div
-            onClick={() => setShowProfile(!showProfile)}
-            className="header-profile flex items-center gap-1.5 cursor-pointer select-none transition-transform active:scale-95"
-            title="Visualizza profilo e medaglie"
-          >
-            <div className="relative w-10 h-10 rounded-full bg-slate-900 border-2 border-accent-primary flex items-center justify-center shadow-lg overflow-hidden ring-2 ring-accent-primary/40 flex-shrink-0">
-              {player.avatarType === 'image' && player.avatarImage ? (
-                <img src={player.avatarImage} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-lg">{player.avatarEmoji || '⚔️'}</span>
-              )}
-            </div>
-            <div className="bg-accent-primary text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-slate-950 -ml-3.5 mt-4 z-10 shadow-md">
-              Lvl {player.level}
-            </div>
+        <div
+          onClick={() => setShowProfile(!showProfile)}
+          className="header-profile mr-2 relative cursor-pointer select-none transition-transform active:scale-95 flex-shrink-0"
+          title="Visualizza profilo e medaglie"
+        >
+          <div className="relative w-9 h-9 rounded-full bg-slate-900 border-2 border-accent-primary flex items-center justify-center shadow-lg overflow-hidden ring-2 ring-accent-primary/40">
+            {player.avatarType === 'image' && player.avatarImage ? (
+              <img src={player.avatarImage} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-base">{player.avatarEmoji || '⚔️'}</span>
+            )}
+          </div>
+          <div className="absolute -bottom-1 -right-1 bg-accent-primary text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-full border border-slate-950 shadow-md">
+            {player.level}
           </div>
         </div>
 
