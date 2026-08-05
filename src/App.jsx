@@ -100,14 +100,18 @@ export default function App() {
   // 5. Apply Theme classes to root HTML element
   useEffect(() => {
     const root = document.documentElement;
-    root.className = `theme-${settings.theme} accent-${settings.accent}`;
+    const themeName = settings.theme || 'standard';
+    const modeName = settings.mode || (themeName === 'light' ? 'light' : 'dark');
+    root.className = `theme-${themeName} accent-${settings.accent || 'violet'}`;
+    root.setAttribute('data-theme', themeName);
+    root.setAttribute('data-mode', modeName);
     
     // Set theme color metadata
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      meta.setAttribute('content', settings.theme === 'light' ? '#f8fafc' : '#0f0f1a');
+      meta.setAttribute('content', modeName === 'light' ? '#f8fafc' : '#0f0f1a');
     }
-  }, [settings.theme, settings.accent]);
+  }, [settings.theme, settings.accent, settings.mode]);
 
   // 6. Rollover check (Check if day rolled over)
   useEffect(() => {
