@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, type, editData, onSave, stats }) {
+export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats }) {
   if (!isOpen) return null;
 
   const [form, setForm] = useState({});
@@ -791,20 +791,38 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, stats }
           </div>
 
           {/* Footer Actions */}
-          <div className="px-5 py-3.5 bg-slate-950/20 border-t border-border-color/40 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded text-xs font-bold text-text-secondary hover:text-text-main border border-border-color hover:bg-slate-950/10 transition-colors"
-            >
-              Annulla
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 rounded text-xs font-bold text-white bg-gradient-to-r from-accent-primary to-accent-secondary hover:brightness-110 shadow-md transition-all active:scale-95"
-            >
-              Salva
-            </button>
+          <div className="px-5 py-3.5 bg-slate-950/20 border-t border-border-color/40 flex justify-between items-center">
+            {editData && onDelete ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                    onDelete(editData.id || editData);
+                    onClose();
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-white hover:bg-red-500/80 border border-red-500/30 transition-all active:scale-95 flex items-center gap-1.5"
+              >
+                <span>🗑️</span>
+                <span>Elimina</span>
+              </button>
+            ) : <div></div>}
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-text-secondary hover:text-text-main border border-border-color hover:bg-slate-950/10 transition-colors"
+              >
+                Annulla
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-accent-primary to-accent-secondary hover:brightness-110 shadow-md transition-all active:scale-95"
+              >
+                Salva
+              </button>
+            </div>
           </div>
         </form>
       </div>

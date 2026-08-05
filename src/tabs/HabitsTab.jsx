@@ -398,9 +398,9 @@ export default function HabitsTab({
                 onSwipeLeft={() => onEditHabit(h)}
                 disabled={viewedDate !== todayStr}
               >
-                {/* Individual Habit Card Frame - Tall 2-Line Layout with Left Checkbox */}
+                {/* Individual Habit Card Frame - Standardized min-h-[72px] Height */}
                 <div
-                  className={`p-4 rounded-2xl border transition-all duration-300 flex items-center gap-3.5 min-h-[86px] shadow-lg ${
+                  className={`p-3.5 rounded-2xl border transition-all duration-300 flex items-center gap-3.5 min-h-[72px] shadow-lg cursor-pointer ${
                     isCompleted
                       ? 'border-green-500/40 bg-green-500/10 opacity-75'
                       : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50'
@@ -408,7 +408,10 @@ export default function HabitsTab({
                 >
                   {/* LEFT COLUMN: ONLY Checkbox Circle */}
                   <button
-                    onClick={() => onToggleHabit(h.id, viewedDate)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleHabit(h.id, viewedDate);
+                    }}
                     disabled={viewedDate !== todayStr}
                     className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                       isCompleted
@@ -422,34 +425,17 @@ export default function HabitsTab({
                     {isCompleted && <span className="text-xs font-extrabold">✓</span>}
                   </button>
 
-                  {/* RIGHT COLUMN: 2 Clean Lines */}
-                  <div className="flex-1 flex flex-col justify-center gap-1.5 min-w-0">
-                    {/* Line 1: Emoji + Name + Action Buttons */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xl flex-shrink-0 filter drop-shadow-sm">{h.emoji || '📜'}</span>
-                        <h4 className={`text-sm font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
-                          {h.name}
-                        </h4>
-                      </div>
-
-                      {/* Action Controls */}
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <button
-                          onClick={() => onEditHabit(h)}
-                          className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-slate-900/80 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-accent-primary text-xs transition-all"
-                          title="Modifica"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => onDeleteHabit(h.id)}
-                          className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-red-500/20 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-red-400 text-xs transition-all"
-                          title="Elimina"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+                  {/* RIGHT COLUMN: 2 Clean Lines (Tap opens Edit Modal) */}
+                  <div
+                    onClick={() => onEditHabit(h)}
+                    className="flex-1 flex flex-col justify-center gap-1 min-w-0"
+                  >
+                    {/* Line 1: Emoji + Name */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-lg flex-shrink-0 filter drop-shadow-sm">{h.emoji || '📜'}</span>
+                      <h4 className={`text-xs font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
+                        {h.name}
+                      </h4>
                     </div>
 
                     {/* Line 2: Streak + Difficulty Stars + Attribute/Ability Badges */}

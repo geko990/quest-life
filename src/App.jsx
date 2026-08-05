@@ -569,6 +569,19 @@ export default function App() {
     }
   };
 
+  // Delete handler for global Edit Modal
+  const handleDeleteModal = (id) => {
+    if (modalType === 'attribute' || modalType === 'ability') {
+      handleDeleteStat(id);
+    } else if (modalType === 'habit') {
+      handleDeleteHabit(id);
+    } else if (modalType === 'oneshot') {
+      handleDeleteOneshot(id);
+    } else if (modalType === 'quest') {
+      handleDeleteQuest(id);
+    }
+  };
+
   // 10. Preset Challenge Activation
   const handleActivateChallenge = (tmpl) => {
     const subquests = tmpl.generateSubquests();
@@ -856,6 +869,7 @@ export default function App() {
         type={modalType}
         editData={editData}
         onSave={handleSaveModal}
+        onDelete={handleDeleteModal}
         stats={stats}
       />
 
