@@ -66,7 +66,7 @@ export default function SwipeableCard({
   const isLeft = translateX < -20;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border-color/30">
+    <div className="relative overflow-hidden rounded-xl">
       {/* Background action colors */}
       <div
         className={`absolute inset-0 flex items-center justify-between px-4 font-bold text-xs transition-colors ${
