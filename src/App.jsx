@@ -724,9 +724,15 @@ export default function App() {
           <HomeTab
             stats={stats}
             xpLog={xpLog}
+            player={player}
+            health={health}
+            pomodoro={pomodoro}
             onOpenModal={handleOpenModal}
             onDeleteStat={(id) => setStats(prev => prev.filter(s => s.id !== id))}
             onEditStat={(data) => handleOpenModal(data.type, data)}
+            onOpenPlanner={() => setShowPlannerModal(true)}
+            onOpenPomodoro={() => handleOpenModal('pomodoro')}
+            onOpenStatDetail={(stat) => handleOpenModal('stat_detail', stat)}
           />
         );
       case 'habits':

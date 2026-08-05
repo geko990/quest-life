@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { getXpForLevel } from '../utils/helpers';
 
-export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEditStat }) {
+export default function HomeTab({
+  stats,
+  xpLog,
+  player,
+  health,
+  pomodoro,
+  onOpenModal,
+  onDeleteStat,
+  onEditStat,
+  onOpenPlanner,
+  onOpenPomodoro,
+  onOpenStatDetail
+}) {
   const [expanded, setExpanded] = useState({ attributes: true, abilities: true });
 
   const toggleSection = (section) => {
@@ -27,7 +39,6 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
     });
     return xpByStats;
   };
-
 
   const rollingXp = getRollingXpByStats(30);
   const visibleStats = stats.filter(s => s.visible);
@@ -60,7 +71,7 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
       };
     };
 
-    // 1. Grid webs (nested polygons)
+    // Grid webs
     const gridLevels = [0.25, 0.5, 0.75, 1.0];
     const gridPaths = gridLevels.map(level => {
       const points = [];
@@ -71,7 +82,7 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
       return points.join(' ');
     });
 
-    // 2. Axis lines
+    // Axis lines
     const axisLines = [];
     for (let i = 0; i < N; i++) {
       const endCoords = getCoordinates(i, 1.0);
@@ -89,14 +100,14 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
       );
     }
 
-    // 3. Emojis labels position
+    // Emojis labels position
     const labelItems = visibleStats.map((s, i) => {
       const coords = getCoordinates(i, 1.25);
       return (
-        <g key={`label-${s.id}`} className="cursor-help" title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
+        <g key={`label-${s.id}`} className="cursor-pointer" onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
-            y={coords.y + 7} // vertical alignment adjust
+            y={coords.y + 7}
             textAnchor="middle"
             className="text-2xl filter drop-shadow select-none hover:scale-125 transition-transform"
           >
@@ -106,7 +117,7 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
       );
     });
 
-    // 4. Player XP Polygon
+    // Player XP Polygon
     const playerPoints = visibleStats.map((s, i) => {
       const val = rollingXp[s.id] || 0;
       const factor = val / maxVal;
@@ -124,15 +135,15 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
           cx={coords.x}
           cy={coords.y}
           r="4"
-          className="fill-accent-primary stroke-bg-main"
+          className="fill-accent-primary stroke-bg-main cursor-pointer"
           strokeWidth="1.5"
+          onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
         />
       );
     });
 
     return (
       <svg width={size} height={size} className="mx-auto select-none drop-shadow-md">
-        {/* Background Grids */}
         {gridPaths.map((path, idx) => (
           <polygon
             key={`grid-${idx}`}
@@ -142,11 +153,7 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
             strokeWidth="1"
           />
         ))}
-
-        {/* Axis Lines */}
         {axisLines}
-
-        {/* Player Data Polygon */}
         {playerPoints && (
           <polygon
             points={playerPoints}
@@ -155,11 +162,7 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
             strokeLinejoin="round"
           />
         )}
-
-        {/* Data Vertices */}
         {playerVertices}
-
-        {/* Emojis Labels */}
         {labelItems}
       </svg>
     );
@@ -175,12 +178,13 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
     return (
       <div
         key={stat.id}
-        className={`relative glass-panel p-4 flex flex-col justify-between min-h-[92px] group/card ${
-          !stat.visible ? 'opacity-40 hover:opacity-75 transition-opacity' : ''
+        onClick={() => onOpenStatDetail && onOpenStatDetail(stat)}
+        className={`relative glass-panel p-4 flex flex-col justify-between min-h-[92px] group/card cursor-pointer hover:border-accent-primary/50 transition-all ${
+          !stat.visible ? 'opacity-40 hover:opacity-75' : ''
         }`}
       >
         {/* Action Controls */}
-        <div className="absolute right-3 top-3 flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 bg-bg-card/90 px-1.5 py-0.5 rounded-full border border-border-color shadow-sm">
+        <div className="absolute right-3 top-3 flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 bg-bg-card/90 px-1.5 py-0.5 rounded-full border border-border-color shadow-sm z-10" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => onEditStat(stat)}
             className="text-[10px] text-text-secondary hover:text-accent-primary"
@@ -226,11 +230,86 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
     );
   };
 
+  // Recent XP Log items
+  const recentXpLogs = (xpLog || []).slice(-5).reverse();
+
   return (
     <div className="space-y-6 pb-20 p-4">
-      {/* Radar Chart section */}
+      {/* 1. D&D Daily Recap & Quick Planner Card */}
+      <div className="glass-panel p-4 border border-border-color relative overflow-hidden">
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎲</span>
+            <div>
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel">
+                Pianificatore D&D
+              </h3>
+              <p className="text-[10px] text-text-secondary">Pianifica le azioni di oggi per bonus XP</p>
+            </div>
+          </div>
+          <button
+            onClick={onOpenPlanner}
+            className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-1"
+          >
+            🎲 Lancia D10
+          </button>
+        </div>
+
+        {/* Quick status preview */}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
+            <span>🎯</span>
+            <span className="text-[11px] text-text-secondary truncate">Azione: Principale</span>
+          </div>
+          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
+            <span>⚡</span>
+            <span className="text-[11px] text-text-secondary truncate">Bonus: Secondaria</span>
+          </div>
+          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
+            <span>🚶</span>
+            <span className="text-[11px] text-text-secondary truncate">Movimento: 30m</span>
+          </div>
+          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
+            <span>🛡️</span>
+            <span className="text-[11px] text-text-secondary truncate">Reazione: Risposta</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Sostentamento & Health Summary Card */}
+      {health && (
+        <div className="glass-panel p-4 border border-border-color">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel flex items-center gap-1.5">
+              🍎 Sostentamento Oggi
+            </h3>
+            <span className="text-[10px] text-accent-primary font-bold">
+              {health.calories?.consumed || 0} / {health.calories?.target || 2000} kcal
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="bg-slate-950/30 p-2 rounded-lg border border-border-color/30">
+              <div className="text-lg">🔥</div>
+              <div className="font-bold text-text-main text-xs">{health.calories?.consumed || 0}</div>
+              <div className="text-[9px] text-text-secondary uppercase">Calorie</div>
+            </div>
+            <div className="bg-slate-950/30 p-2 rounded-lg border border-border-color/30">
+              <div className="text-lg">💧</div>
+              <div className="font-bold text-accent-primary text-xs">{health.water?.consumed || 0} / {health.water?.target || 8}</div>
+              <div className="text-[9px] text-text-secondary uppercase">Bicchieri</div>
+            </div>
+            <div className="bg-slate-950/30 p-2 rounded-lg border border-border-color/30">
+              <div className="text-lg">🚶</div>
+              <div className="font-bold text-text-main text-xs">{health.steps?.current || 0}</div>
+              <div className="text-[9px] text-text-secondary uppercase">Passi</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Radar Chart section */}
       <div className="glass-panel p-5 max-w-sm mx-auto text-center">
-        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4">
+        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4 font-cinzel">
           Statistiche Ultimi 30 Giorni
         </h3>
         <div className="relative flex justify-center items-center h-[260px]">
@@ -238,7 +317,31 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
         </div>
       </div>
 
-      {/* Attributes Accordion */}
+      {/* 4. Storico Imprese Recenti */}
+      <div className="glass-panel p-4 border border-border-color">
+        <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel mb-3 flex items-center gap-1.5">
+          📜 Storico Imprese Recenti
+        </h3>
+        <div className="space-y-2">
+          {recentXpLogs.length === 0 ? (
+            <p className="text-xs text-text-secondary italic text-center py-2">
+              Nessuna impresa registrata di recente. Completa abitudini o missioni per guadagnare XP!
+            </p>
+          ) : (
+            recentXpLogs.map((log, idx) => (
+              <div key={idx} className="flex justify-between items-center bg-slate-950/30 p-2 rounded-lg border border-border-color/30 text-xs">
+                <div className="flex items-center gap-2">
+                  <span>✨</span>
+                  <span className="text-text-main font-medium">{log.reason || 'Attività completata'}</span>
+                </div>
+                <span className="font-bold text-amber-400">+{log.amount} XP</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* 5. Attributes Accordion */}
       <div className="glass-panel overflow-hidden border border-border-color">
         <div className="px-4 py-3.5 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center">
           <h3
@@ -270,7 +373,7 @@ export default function HomeTab({ stats, xpLog, onOpenModal, onDeleteStat, onEdi
         )}
       </div>
 
-      {/* Abilities Accordion */}
+      {/* 6. Abilities Accordion */}
       <div className="glass-panel overflow-hidden border border-border-color">
         <div className="px-4 py-3.5 bg-slate-950/20 border-b border-border-color/40 flex justify-between items-center">
           <h3
