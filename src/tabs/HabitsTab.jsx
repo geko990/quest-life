@@ -419,6 +419,7 @@ export default function HabitsTab({
           habitsToShow.map((h) => {
             const isCompleted = h.completed;
             const primaryStat = stats.find(s => s.id === h.primaryTarget);
+            const secondaryStat = stats.find(s => s.id === h.secondaryTarget);
 
             return (
               <SwipeableCard
@@ -427,73 +428,90 @@ export default function HabitsTab({
                 onSwipeLeft={() => onEditHabit(h)}
                 disabled={viewedDate !== todayStr}
               >
+                {/* Individual Habit Card Frame */}
                 <div
-                  className={`p-4 flex items-center justify-between group relative transition-all duration-300 border-l-4 ${
+                  className={`p-4 rounded-2xl border transition-all duration-300 space-y-2.5 ${
                     isCompleted
-                      ? 'border-l-green-500 opacity-60 bg-green-500/5'
-                      : 'border-l-accent-primary hover:border-l-accent-secondary'
+                      ? 'border-green-500/40 bg-green-500/10 opacity-75'
+                      : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50 shadow-md'
                   }`}
                 >
-                  {/* Left: Checkbox + info */}
-                  <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-4">
-                    {/* Circle Checkbox */}
-                    <button
-                      onClick={() => onToggleHabit(h.id, viewedDate)}
-                      disabled={viewedDate !== todayStr}
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        isCompleted
-                          ? 'border-green-500 bg-green-500 text-white'
-                          : viewedDate === todayStr
-                          ? 'border-border-color hover:border-accent-primary bg-slate-950/20'
-                          : 'border-border-color cursor-not-allowed opacity-50 bg-slate-950/10'
-                      }`}
-                    >
-                      {isCompleted && <span className="text-[11px] font-bold">✓</span>}
-                    </button>
+                  {/* Row 1: Checkbox + Name + Edit/Delete */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {/* Circle Checkbox Button */}
+                      <button
+                        onClick={() => onToggleHabit(h.id, viewedDate)}
+                        disabled={viewedDate !== todayStr}
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          isCompleted
+                            ? 'border-green-500 bg-green-500 text-white shadow-sm'
+                            : viewedDate === todayStr
+                            ? 'border-border-color hover:border-accent-primary bg-slate-900/40'
+                            : 'border-border-color cursor-not-allowed opacity-40 bg-slate-900/20'
+                        }`}
+                      >
+                        {isCompleted && <span className="text-[11px] font-bold">✓</span>}
+                      </button>
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-lg flex-shrink-0">{h.emoji || '📜'}</span>
-                        <h4 className={`text-xs font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
+                      {/* Emoji & Name */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xl flex-shrink-0">{h.emoji || '📜'}</span>
+                        <h4 className={`text-sm font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
                           {h.name}
                         </h4>
                       </div>
+                    </div>
 
-                      <div className="flex items-center gap-2 mt-1 text-[10px] text-text-secondary">
-                        {h.streak > 0 && (
-                          <span className="text-orange-400 font-bold flex items-center gap-0.5">
-                            🔥 {h.streak}
-                          </span>
-                        )}
-                        {primaryStat && (
-                          <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                            {primaryStat.icon} {primaryStat.name}
-                          </span>
-                        )}
-                        <span className="text-yellow-400">
-                          {'★'.repeat(h.difficulty)}
-                          <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
-                        </span>
-                      </div>
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => onEditHabit(h)}
+                        className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-slate-900/80 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-accent-primary text-xs transition-all"
+                        title="Modifica"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => onDeleteHabit(h.id)}
+                        className="w-7 h-7 rounded-lg bg-slate-900/40 hover:bg-red-500/20 border border-border-color/40 flex items-center justify-center text-text-secondary hover:text-red-400 text-xs transition-all"
+                        title="Elimina"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
 
-                  {/* Right: Actions */}
-                  <div className="flex gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button
-                      onClick={() => onEditHabit(h)}
-                      className="text-text-secondary hover:text-accent-primary text-xs"
-                      title="Modifica"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => onDeleteHabit(h.id)}
-                      className="text-text-secondary hover:text-red-500 text-xs"
-                      title="Elimina"
-                    >
-                      🗑️
-                    </button>
+                  {/* Row 2: Badges (Streak + Difficulty Stars + Primary Stat + Secondary Stat) */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-border-color/20 flex-wrap text-[10px]">
+                    {/* Streak Flame Badge */}
+                    {h.streak > 0 && (
+                      <span className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                        🔥 {h.streak} gg
+                      </span>
+                    )}
+
+                    {/* Difficulty Stars */}
+                    <span className="bg-slate-900/40 border border-border-color/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 text-amber-400 font-bold">
+                      {'★'.repeat(h.difficulty)}
+                      <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
+                    </span>
+
+                    {/* Primary Stat Badge */}
+                    {primaryStat && (
+                      <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
+                        <span>{primaryStat.icon}</span>
+                        <span>{primaryStat.name}</span>
+                      </span>
+                    )}
+
+                    {/* Secondary Stat Badge (if present) */}
+                    {secondaryStat && (
+                      <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
+                        <span>{secondaryStat.icon}</span>
+                        <span>{secondaryStat.name}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
               </SwipeableCard>

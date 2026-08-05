@@ -821,7 +821,7 @@ export default function App() {
       />
 
       {/* Primary content area */}
-      <main className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full pb-20 no-scrollbar">
+      <main className="flex-1 overflow-y-auto max-w-2xl mx-auto w-full pt-2 pb-24 no-scrollbar">
         {renderActiveTab()}
       </main>
 
