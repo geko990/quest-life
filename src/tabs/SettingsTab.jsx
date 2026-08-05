@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ACCENT_COLORS } from '../utils/constants';
+import { ACCENT_COLORS, APP_VERSION } from '../utils/constants';
+import { forceUpdateApp, checkAppUpdate } from '../utils/helpers';
 
 export default function SettingsTab({
   settings,
@@ -417,6 +418,59 @@ export default function SettingsTab({
                 className="w-full bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-500 hover:text-white font-bold py-2 rounded-lg transition-all active:scale-95"
               >
                 ⚠️ Reset Completo dell'App
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Group 4: Info & System (Versione & Aggiornamenti) */}
+      <div className="glass-panel overflow-hidden border border-border-color">
+        <div
+          onClick={() => toggleGroup('system')}
+          className="px-4 py-3 bg-slate-950/20 hover:bg-slate-950/40 cursor-pointer flex justify-between items-center select-none"
+        >
+          <h3 className="font-bold text-xs text-text-main flex items-center gap-1.5 uppercase tracking-wide">
+            ℹ️ Sistema & Aggiornamenti
+          </h3>
+          <span className="text-xs text-text-secondary">
+            {expandedGroup === 'system' ? '▲' : '▼'}
+          </span>
+        </div>
+
+        {expandedGroup === 'system' && (
+          <div className="p-4 space-y-4 text-xs animate-slide-down">
+            {/* Version Display (Clickable for Force Update) */}
+            <div
+              onClick={() => forceUpdateApp(true)}
+              className="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-border-color/40 cursor-pointer hover:border-accent-primary/50 transition-all select-none"
+              title="Tocca per forzare l'aggiornamento"
+            >
+              <div>
+                <span className="font-bold text-text-main block">Versione Applicazione</span>
+                <span className="text-[10px] text-text-secondary">Tocca qui per forzare il ricaricamento</span>
+              </div>
+              <span className="px-2.5 py-1 bg-accent-primary/20 border border-accent-primary/40 text-accent-primary font-bold rounded-full text-xs">
+                v{APP_VERSION}
+              </span>
+            </div>
+
+            {/* Update Action Buttons */}
+            <div className="space-y-2">
+              <button
+                onClick={checkAppUpdate}
+                className="w-full bg-slate-800/60 hover:bg-slate-800 border border-border-color/50 text-text-main font-bold py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>🔄</span>
+                <span>Controlla Aggiornamenti Normale</span>
+              </button>
+
+              <button
+                onClick={() => forceUpdateApp(true)}
+                className="w-full bg-gradient-to-r from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 font-bold py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>⚡</span>
+                <span>Forza Aggiornamento (Svuota Cache & SW)</span>
               </button>
             </div>
           </div>
