@@ -142,7 +142,7 @@ export default function MissionsTab({
                     onSwipeLeft={() => onEditOneshot(o)}
                   >
                     <div
-                      className={`px-5 py-3 min-h-[60px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
+                      className={`pl-7 pr-4 py-3 min-h-[60px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
                         o.completed
                           ? 'border-l-green-500 opacity-60 bg-green-500/5'
                           : 'border-l-accent-primary hover:border-l-accent-secondary'
@@ -155,7 +155,7 @@ export default function MissionsTab({
                             e.stopPropagation();
                             onToggleOneshot(o.id);
                           }}
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ml-1 ${
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ml-3 shadow-sm ${
                             o.completed
                               ? 'border-green-500 bg-green-500 text-white shadow-sm'
                               : 'border-border-color hover:border-accent-primary bg-slate-950/20'
