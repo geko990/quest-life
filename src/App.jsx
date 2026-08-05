@@ -808,31 +808,38 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-main text-text-main flex flex-col font-sans transition-all">
+    <div className="fixed inset-0 w-full h-full bg-[#0b0b14] text-text-main flex flex-col font-sans overflow-hidden">
       {/* Upper header */}
-      <Header
-        player={player}
-        setPlayer={setPlayer}
-        stats={stats}
-        completionLog={completionLog}
-        xpLog={xpLog}
-        settings={settings}
-        onOpenMottoEdit={() => setShowMottoModal(true)}
-      />
+      <div className="flex-shrink-0 w-full z-40">
+        <Header
+          player={player}
+          setPlayer={setPlayer}
+          stats={stats}
+          completionLog={completionLog}
+          xpLog={xpLog}
+          settings={settings}
+          onOpenMottoEdit={() => setShowMottoModal(true)}
+        />
+      </div>
 
       {/* Primary content area */}
-      <main className="flex-1 overflow-y-auto w-full px-3 pt-2 pb-24 no-scrollbar box-border">
+      <main
+        className="flex-1 w-full overflow-y-auto px-3 pt-2 pb-24 no-scrollbar box-border touch-pan-y"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         {renderActiveTab()}
       </main>
 
       {/* Lower bottom navigation */}
-      <BottomNav
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        avatarEmoji={player.avatarEmoji}
-        avatarImage={player.avatarImage}
-        avatarType={player.avatarType}
-      />
+      <div className="flex-shrink-0 w-full z-40">
+        <BottomNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          avatarEmoji={player.avatarEmoji}
+          avatarImage={player.avatarImage}
+          avatarType={player.avatarType}
+        />
+      </div>
 
       {/* Global generic Modal creator */}
       <Modal

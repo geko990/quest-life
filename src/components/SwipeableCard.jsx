@@ -38,6 +38,7 @@ export default function SwipeableCard({
     }
 
     if (isHorizontalRef.current === true) {
+      if (e.cancelable) e.preventDefault();
       // Limit swipe distance
       const clamped = Math.max(-120, Math.min(120, diffX));
       setTranslateX(clamped);
