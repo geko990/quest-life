@@ -53,9 +53,9 @@ export default function HomeTab({
       );
     }
 
-    const size = 260;
+    const size = 340;
     const center = size / 2;
-    const radius = 80;
+    const radius = 110;
     const N = visibleStats.length;
 
     // Data points & Max calculation
@@ -102,14 +102,14 @@ export default function HomeTab({
 
     // Emojis labels position
     const labelItems = visibleStats.map((s, i) => {
-      const coords = getCoordinates(i, 1.25);
+      const coords = getCoordinates(i, 1.22);
       return (
         <g key={`label-${s.id}`} className="cursor-pointer" onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
-            y={coords.y + 7}
+            y={coords.y + 9}
             textAnchor="middle"
-            className="text-2xl filter drop-shadow select-none hover:scale-125 transition-transform"
+            className="text-3xl filter drop-shadow select-none hover:scale-125 transition-transform"
           >
             {s.icon}
           </text>
@@ -134,16 +134,16 @@ export default function HomeTab({
           key={`vertex-${s.id}`}
           cx={coords.x}
           cy={coords.y}
-          r="4"
+          r="5"
           className="fill-accent-primary stroke-bg-main cursor-pointer"
-          strokeWidth="1.5"
+          strokeWidth="2"
           onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
         />
       );
     });
 
     return (
-      <svg width={size} height={size} className="mx-auto select-none drop-shadow-md">
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[340px] max-h-[340px] mx-auto select-none drop-shadow-xl">
         {gridPaths.map((path, idx) => (
           <polygon
             key={`grid-${idx}`}
@@ -158,7 +158,7 @@ export default function HomeTab({
           <polygon
             points={playerPoints}
             className="fill-accent-primary/25 stroke-accent-primary"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinejoin="round"
           />
         )}
@@ -241,9 +241,9 @@ export default function HomeTab({
         </h2>
       </div>
 
-      {/* 1. Radar Chart (FIRST THING TO SEE - No title text) */}
-      <div className="glass-panel p-4.5 w-full text-center relative overflow-hidden border border-border-color">
-        <div className="relative flex justify-center items-center h-[260px]">
+      {/* 1. Radar Chart (FIRST THING TO SEE - Square 1:1 aspect ratio) */}
+      <div className="glass-panel p-4 w-full aspect-square flex items-center justify-center relative overflow-hidden border border-border-color shadow-xl">
+        <div className="w-full h-full flex justify-center items-center p-2">
           {renderRadarChart()}
         </div>
       </div>
