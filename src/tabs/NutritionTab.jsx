@@ -141,10 +141,12 @@ export default function NutritionTab({
   const activeInventory = inventory[activeInventoryTab] || [];
 
   return (
-    <div className="space-y-6 pb-20 p-4">
+    <div className="space-y-5 pb-24 p-4 max-w-md mx-auto">
       {/* Tab Header */}
       <div className="flex justify-between items-center px-1">
-        <h2 className="text-base font-bold text-text-main font-cinzel">🍎 Diario Salute</h2>
+        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
+          🍎 Diario Salute
+        </h2>
       </div>
 
       {/* Main Calorie Dashboard */}
