@@ -26,9 +26,10 @@ html, body {
   min-height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #0b0b14 !important;
+  background-color: var(--bg-main, #0b0b14);
   color: var(--text-main, #f8fafc);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
@@ -43,18 +44,44 @@ body {
 }
 
 [data-mode="light"] {
-    --bg-main: #0b0b14;
-    --bg-primary: #f8f9fc;
-    --bg-secondary: #ffffff;
-    --bg-card: rgba(255, 255, 255, 0.92);
+    --bg-main: #f1f5f9;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.95);
     --text-main: #0f172a;
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --text-muted: #64748b;
     --border-color: rgba(0, 0, 0, 0.12);
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(0, 0, 0, 0.15);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-bg: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(0, 0, 0, 0.12);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+[data-mode="light"] body {
+  background-color: #f1f5f9 !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(217, 119, 6, 0.06) 0%, transparent 40%);
+}
+
+[data-mode="light"] .bg-slate-950,
+[data-mode="light"] .bg-slate-950\/10,
+[data-mode="light"] .bg-slate-950\/20,
+[data-mode="light"] .bg-slate-950\/30,
+[data-mode="light"] .bg-slate-950\/40,
+[data-mode="light"] .bg-slate-950\/50,
+[data-mode="light"] .bg-slate-950\/80,
+[data-mode="light"] .bg-slate-950\/85,
+[data-mode="light"] .bg-slate-950\/90,
+[data-mode="light"] .bg-slate-950\/95 {
+  background-color: rgba(241, 245, 249, 0.85) !important;
+}
+
+[data-mode="light"] header,
+[data-mode="light"] nav {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 [data-mode="dark"] {
@@ -70,6 +97,13 @@ body {
     --glass-bg: rgba(30, 30, 50, 0.85);
     --glass-border: rgba(60, 60, 100, 0.5);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-mode="dark"] body {
+  background-color: #0b0b14 !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(217, 119, 6, 0.08) 0%, transparent 40%);
 }
 
 .glass-panel {
