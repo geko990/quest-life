@@ -179,7 +179,7 @@ export default function HomeTab({
       <div
         key={stat.id}
         onClick={() => onOpenStatDetail && onOpenStatDetail(stat)}
-        className={`glass-panel p-2.5 flex flex-col justify-between min-h-[55px] cursor-pointer hover:border-accent-primary/60 border border-white/10 shadow-md transition-all ${
+        className={`glass-panel px-3.5 py-2.5 flex flex-col justify-between min-h-[60px] cursor-pointer hover:border-accent-primary/60 border border-white/10 shadow-md transition-all ${
           !stat.visible ? 'opacity-40 hover:opacity-75' : ''
         }`}
       >
