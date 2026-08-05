@@ -398,9 +398,9 @@ export default function HabitsTab({
                 onSwipeLeft={() => onEditHabit(h)}
                 disabled={viewedDate !== todayStr}
               >
-                {/* Individual Habit Card Frame - Standardized min-h-[72px] Height */}
+                {/* Individual Habit Card Frame - Compact 55px Height */}
                 <div
-                  className={`p-3.5 rounded-2xl border transition-all duration-300 flex items-center gap-3.5 min-h-[72px] shadow-lg cursor-pointer ${
+                  className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-3 min-h-[55px] shadow-md cursor-pointer ${
                     isCompleted
                       ? 'border-green-500/40 bg-green-500/10 opacity-75'
                       : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50'

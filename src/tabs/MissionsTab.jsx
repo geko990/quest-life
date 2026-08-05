@@ -142,20 +142,20 @@ export default function MissionsTab({
                     onSwipeLeft={() => onEditOneshot(o)}
                   >
                     <div
-                      className={`p-3.5 min-h-[72px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
+                      className={`p-2.5 min-h-[55px] flex items-center justify-between transition-all duration-300 border-l-4 cursor-pointer ${
                         o.completed
                           ? 'border-l-green-500 opacity-60 bg-green-500/5'
                           : 'border-l-accent-primary hover:border-l-accent-secondary'
                       }`}
                     >
                       {/* Checkbox & Details */}
-                      <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onToggleOneshot(o.id);
                           }}
-                          className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                             o.completed
                               ? 'border-green-500 bg-green-500 text-white shadow-sm'
                               : 'border-border-color hover:border-accent-primary bg-slate-950/20'
@@ -173,7 +173,7 @@ export default function MissionsTab({
                             </h4>
                           </div>
 
-                          <div className="flex items-center gap-2 mt-1 text-[10px] text-text-secondary">
+                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-text-secondary">
                             {primaryStat && (
                               <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                                 {primaryStat.icon} {primaryStat.name}
@@ -227,18 +227,15 @@ export default function MissionsTab({
                     {/* Quest Header */}
                     <div
                       onClick={() => toggleQuestExpand(q.id)}
-                      className="p-4 cursor-pointer flex justify-between items-start gap-3 select-none"
+                      className="p-3 min-h-[55px] cursor-pointer flex justify-between items-center gap-3 select-none"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xl flex-shrink-0">{q.emoji || '🏆'}</span>
+                          <span className="text-lg flex-shrink-0">{q.emoji || '🏆'}</span>
                           <h4 className="text-xs font-bold text-text-main truncate">{q.name}</h4>
                         </div>
-                        {q.description && (
-                          <p className="text-[10px] text-text-secondary mt-1 line-clamp-1">{q.description}</p>
-                        )}
 
-                        <div className="flex items-center gap-2 mt-2 text-[10px] text-text-secondary flex-wrap">
+                        <div className="flex items-center gap-2 mt-1 text-[10px] text-text-secondary flex-wrap">
                           {primaryStat && (
                             <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                               {primaryStat.icon} {primaryStat.name}
@@ -255,28 +252,6 @@ export default function MissionsTab({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditQuest(q);
-                            }}
-                            className="text-text-secondary hover:text-accent-primary text-xs"
-                            title="Modifica"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteQuest(q.id);
-                            }}
-                            className="text-text-secondary hover:text-red-500 text-xs"
-                            title="Elimina"
-                          >
-                            🗑️
-                          </button>
-                        </div>
                         <span className="text-xs text-text-secondary">
                           {isExpanded ? '▲' : '▼'}
                         </span>
