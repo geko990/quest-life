@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   const [slots, setSlots] = useState({
-    action: { name: '', stars: 3, statId: 'int' },
-    bonus: { name: '', stars: 2, statId: 'int' },
-    movement: { name: '', stars: 2, statId: 'str' },
-    reaction: { name: '', stars: 2, statId: 'wis' }
+    action: { name: '', stars: 3, statId: 'int', secondaryStatId: '' },
+    bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '' },
+    movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '' },
+    reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '' }
   });
 
   const [isRolling, setIsRolling] = useState(false);
@@ -16,10 +16,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   useEffect(() => {
     if (isOpen) {
       setSlots({
-        action: { name: '', stars: 3, statId: 'int' },
-        bonus: { name: '', stars: 2, statId: 'int' },
-        movement: { name: '', stars: 2, statId: 'str' },
-        reaction: { name: '', stars: 2, statId: 'wis' }
+        action: { name: '', stars: 3, statId: 'int', secondaryStatId: '' },
+        bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '' },
+        movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '' },
+        reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '' }
       });
       setIsRolling(false);
       setDiceResult(null);
@@ -80,27 +80,53 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
     }, 100);
   };
 
+  // Themed Slot Colors
+  const slotThemes = {
+    action: {
+      headerColor: 'text-red-400',
+      bgClass: 'bg-red-950/20 border-red-500/30'
+    },
+    bonus: {
+      headerColor: 'text-amber-400',
+      bgClass: 'bg-amber-950/20 border-amber-500/30'
+    },
+    movement: {
+      headerColor: 'text-sky-400',
+      bgClass: 'bg-sky-950/20 border-sky-500/30'
+    },
+    reaction: {
+      headerColor: 'text-purple-400',
+      bgClass: 'bg-purple-950/20 border-purple-500/30'
+    }
+  };
+
   const renderSlot = (key, title, placeholder, icon) => {
     const slot = slots[key];
+    const theme = slotThemes[key] || { headerColor: 'text-accent-primary', bgClass: 'bg-slate-900/40 border-border-color/40' };
+
     return (
-      <div className="bg-slate-900/40 dark:bg-slate-900/60 border border-border-color/40 p-3.5 rounded-2xl shadow-sm flex flex-col gap-2 transition-all">
-        <div className="flex items-center text-xs font-extrabold text-accent-primary uppercase tracking-wider">
+      <div className={`p-3.5 rounded-2xl border shadow-md flex flex-col gap-2.5 transition-all ${theme.bgClass}`}>
+        <div className={`flex items-center text-xs font-extrabold uppercase tracking-wider ${theme.headerColor}`}>
           <span className="mr-1.5 text-sm">{icon}</span> {title}
         </div>
+
         <div className="relative">
           <input
             type="text"
             value={slot.name}
             onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
             placeholder={placeholder}
-            className="w-full bg-slate-950/60 border border-border-color/60 rounded-xl px-3 py-2 text-xs font-medium text-text-main placeholder:text-text-secondary/40 focus:outline-none focus:border-accent-primary transition-colors"
+            className="w-full bg-slate-950/70 border border-border-color/60 rounded-xl px-3 py-2 text-xs font-semibold text-text-main placeholder:text-text-secondary/40 focus:outline-none focus:border-accent-primary transition-colors"
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-30 cursor-pointer hover:opacity-100 transition-opacity text-xs">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-30 text-xs">
             💥
           </div>
         </div>
-        <div className="flex items-center justify-between mt-0.5">
-          <div className="flex gap-1 text-base">
+
+        {/* Stars and Stat Selectors (Inset & Inward Offset) */}
+        <div className="px-2.5 py-1.5 bg-slate-950/50 rounded-xl border border-white/5 flex items-center justify-between gap-2 flex-wrap">
+          {/* Stars (Left Inset) */}
+          <div className="flex gap-1 text-base pl-0.5">
             {[1, 2, 3, 4, 5].map(star => (
               <button
                 key={star}
@@ -112,15 +138,32 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
               </button>
             ))}
           </div>
-          <select
-            value={slot.statId}
-            onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
-            className="bg-slate-950/80 border border-border-color/60 rounded-lg px-2 py-1 text-[11px] font-semibold text-text-secondary focus:outline-none focus:border-accent-primary"
-          >
-            {stats.filter(s => s.type === 'attribute').map(s => (
-              <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-            ))}
-          </select>
+
+          {/* Primary & Secondary Stat Selectors (Right Inset) */}
+          <div className="flex items-center gap-1.5 pr-0.5">
+            {/* Primary Stat */}
+            <select
+              value={slot.statId}
+              onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
+              className="bg-slate-900 border border-border-color/60 rounded-lg px-2 py-1 text-[10px] font-bold text-text-main focus:outline-none focus:border-accent-primary max-w-[95px] truncate"
+            >
+              {stats.map(s => (
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+
+            {/* Secondary Stat (Optional) */}
+            <select
+              value={slot.secondaryStatId || ''}
+              onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
+              className="bg-slate-900/80 border border-border-color/40 rounded-lg px-1.5 py-1 text-[10px] font-medium text-text-secondary focus:outline-none focus:border-accent-primary max-w-[95px] truncate"
+            >
+              <option value="">+ Sec (nessuno)</option>
+              {stats.map(s => (
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     );
@@ -129,22 +172,26 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-5 animate-fade-in overflow-y-auto"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-5 animate-fade-in overflow-y-auto"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[350px] mx-auto bg-bg-main border border-border-color/60 rounded-3xl shadow-2xl p-6 my-auto animate-scale-up"
+        className="w-full max-w-[360px] mx-auto bg-bg-main border border-border-color/60 rounded-3xl shadow-2xl px-6 pt-7 pb-8 my-auto animate-scale-up flex flex-col justify-between min-h-[580px]"
       >
-        <div className="text-center mb-5">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="text-2xl animate-bounce">🎲</span>
-            <h2 className="text-lg font-bold font-cinzel text-text-main tracking-wider">È IL TUO TURNO!</h2>
+        {/* Header with headroom for bouncing die */}
+        <div className="text-center mb-5 pt-1">
+          <div className="flex items-center justify-center gap-2 mb-1.5 pt-1">
+            <span className="text-3xl animate-bounce filter drop-shadow-[0_0_8px_rgba(255,180,0,0.5)]">🎲</span>
+            <h2 className="text-xl font-bold font-cinzel tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-100 to-amber-400">
+              È IL TUO TURNO!
+            </h2>
           </div>
           <p className="text-[10px] text-text-secondary uppercase tracking-widest font-extrabold opacity-75">
             Pianifica le tue azioni per oggi
           </p>
         </div>
 
+        {/* Slot Cards List */}
         <div className="space-y-3 mb-6">
           {renderSlot('action', 'Azione', 'Es: Completare il report', '🎯')}
           {renderSlot('bonus', 'Azione Bonus', 'Es: Chiamare il medico', '⚡')}
@@ -152,34 +199,35 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
           {renderSlot('reaction', 'Reazione', 'Es: Rispondere a 3 email', '🛡️')}
         </div>
 
+        {/* Bottom Actions Footer */}
         {showResult ? (
-          <div className="text-center animate-scale-up space-y-2 py-3">
-            <div className="text-5xl font-bold text-accent-primary drop-shadow-[0_0_12px_rgba(255,107,0,0.6)]">
+          <div className="text-center animate-scale-up space-y-2 py-4">
+            <div className="text-5xl font-extrabold text-accent-primary drop-shadow-[0_0_14px_rgba(255,107,0,0.7)]">
               {diceResult}
             </div>
-            <div className="text-sm font-bold text-green-400">
+            <div className="text-sm font-extrabold text-green-400">
               + {diceResult * 10}% XP Bonus! 🎉
             </div>
           </div>
         ) : isRolling ? (
-          <div className="text-center py-4">
-            <div className="text-5xl font-bold text-text-main animate-pulse">
+          <div className="text-center py-5">
+            <div className="text-5xl font-extrabold text-text-main animate-pulse">
               {diceResult}
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl shadow-sm active:scale-95 transition-all text-center"
+              className="flex-1 py-4 px-4 min-h-[52px] bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-extrabold text-xs rounded-2xl shadow-sm active:scale-95 transition-all text-center flex items-center justify-center"
             >
               Salta
             </button>
             <button
               type="button"
               onClick={handleRollDice}
-              className="flex-[1.8] py-3 px-4 bg-gradient-to-r from-accent-primary via-purple-600 to-accent-secondary hover:brightness-110 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-purple-900/30 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+              className="flex-[1.8] py-4 px-4 min-h-[52px] bg-gradient-to-r from-accent-primary via-purple-600 to-accent-secondary hover:brightness-110 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-purple-900/40 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
             >
               <span>🎲</span> Lancia un D10!
             </button>
