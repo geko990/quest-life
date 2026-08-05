@@ -10,8 +10,8 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none pb-[env(safe-area-inset-bottom)]">
-      <nav className="pointer-events-auto max-w-md mx-auto h-16 bg-slate-950/85 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-3 shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
+    <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom)]">
+      <nav className="pointer-events-auto w-full h-16 bg-slate-950/85 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-2 shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
         {navItems.map((item) => {
           if (item.isCenter) {
             const isCenterActive = activeTab === item.id;

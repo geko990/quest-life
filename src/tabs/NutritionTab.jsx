@@ -141,7 +141,7 @@ export default function NutritionTab({
   const activeInventory = inventory[activeInventoryTab] || [];
 
   return (
-    <div className="space-y-5 pb-24 p-4 max-w-md mx-auto">
+    <div className="w-full space-y-4 pb-24 box-border">
       {/* Tab Header */}
       <div className="flex justify-between items-center px-1">
         <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
