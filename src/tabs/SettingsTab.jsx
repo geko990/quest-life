@@ -31,7 +31,7 @@ export default function SettingsTab({
   };
 
   return (
-    <div className="w-full space-y-4 pb-24 box-border">
+    <div className="w-full space-y-6 pb-28 box-border">
       {/* Tab Header */}
       <div className="flex justify-between items-center px-1">
         <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
@@ -40,12 +40,12 @@ export default function SettingsTab({
       </div>
 
       {/* Group 1: Profile & Gameplay */}
-      <div className="glass-panel overflow-hidden border border-border-color">
+      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
         <div
           onClick={() => toggleGroup('profile')}
-          className="px-4 py-3 bg-slate-950/20 hover:bg-slate-950/40 cursor-pointer flex justify-between items-center select-none"
+          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
         >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-1.5 uppercase tracking-wide">
+          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
             👤 Profilo & Gameplay
           </h3>
           <span className="text-xs text-text-secondary">
@@ -54,26 +54,26 @@ export default function SettingsTab({
         </div>
 
         {expandedGroup === 'profile' && (
-          <div className="p-4 space-y-4 text-xs animate-slide-down">
+          <div className="p-5 space-y-5 text-xs animate-slide-down">
             {/* Name Input */}
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-text-secondary uppercase text-[10px]">Nome Giocatore</label>
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Nome Giocatore</label>
               <input
                 type="text"
                 defaultValue={player.name}
                 onBlur={(e) => updatePlayerName(e.target.value)}
                 placeholder="Inserisci il tuo nome..."
-                className="bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm text-text-main focus:border-accent-primary focus:outline-none"
+                className="bg-slate-950/40 border border-border-color rounded-xl px-4 py-3 text-sm text-text-main focus:border-accent-primary focus:outline-none shadow-sm"
               />
             </div>
 
             {/* Day Start Hour */}
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-text-secondary uppercase text-[10px]">Inizio nuovo giorno</label>
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Inizio nuovo giorno</label>
               <select
                 value={settings.dayStartTime}
                 onChange={(e) => updateSetting('dayStartTime', parseInt(e.target.value))}
-                className="bg-slate-950/40 border border-border-color rounded px-3 py-2 text-xs text-text-main focus:outline-none"
+                className="bg-slate-950/40 border border-border-color rounded-xl px-4 py-3 text-xs text-text-main focus:outline-none shadow-sm"
               >
                 <option value="0">00:00 (Mezzanotte)</option>
                 <option value="1">01:00</option>
@@ -88,19 +88,19 @@ export default function SettingsTab({
             {/* Week Start Day */}
             <div className="flex justify-between items-center pt-2">
               <span className="font-bold text-text-main">Inizio Settimana</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('weekStart', 'monday')}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.weekStart === 'monday' ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.weekStart === 'monday' ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   Lun
                 </button>
                 <button
                   onClick={() => updateSetting('weekStart', 'sunday')}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.weekStart !== 'monday' ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.weekStart !== 'monday' ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   Dom
@@ -111,13 +111,13 @@ export default function SettingsTab({
         )}
       </div>
 
-      {/* Group 2: Personalizzazione (Visuals & Custom themes) */}
-      <div className="glass-panel overflow-hidden border border-border-color">
+      {/* Group 2: Personalizzazione (Visuals & Custom themes & Light/Dark Mode) */}
+      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
         <div
           onClick={() => toggleGroup('visuals')}
-          className="px-4 py-3 bg-slate-950/20 hover:bg-slate-950/40 cursor-pointer flex justify-between items-center select-none"
+          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
         >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-1.5 uppercase tracking-wide">
+          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
             🎨 Personalizzazione
           </h3>
           <span className="text-xs text-text-secondary">
@@ -126,14 +126,71 @@ export default function SettingsTab({
         </div>
 
         {expandedGroup === 'visuals' && (
-          <div className="p-4 space-y-4 text-xs animate-slide-down">
+          <div className="p-5 space-y-5 text-xs animate-slide-down">
+            {/* Light / Dark Mode selector */}
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">
+                Modalità Luminosità (Light / Dark)
+              </label>
+              <div className="grid grid-cols-3 gap-2 bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
+                <button
+                  onClick={() => {
+                    updateSetting('themeMode', 'dark');
+                    updateSetting('mode', 'dark');
+                  }}
+                  className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    (settings.themeMode === 'dark' || (!settings.themeMode && settings.theme !== 'light'))
+                      ? 'bg-accent-primary text-white shadow-md'
+                      : 'text-text-secondary hover:text-text-main'
+                  }`}
+                >
+                  <span>🌙</span>
+                  <span>Scuro</span>
+                </button>
+                <button
+                  onClick={() => {
+                    updateSetting('themeMode', 'light');
+                    updateSetting('mode', 'light');
+                  }}
+                  className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    (settings.themeMode === 'light' || settings.theme === 'light')
+                      ? 'bg-accent-primary text-white shadow-md'
+                      : 'text-text-secondary hover:text-text-main'
+                  }`}
+                >
+                  <span>☀️</span>
+                  <span>Chiaro</span>
+                </button>
+                <button
+                  onClick={() => {
+                    updateSetting('themeMode', 'system');
+                    updateSetting('mode', 'dark');
+                  }}
+                  className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    settings.themeMode === 'system'
+                      ? 'bg-accent-primary text-white shadow-md'
+                      : 'text-text-secondary hover:text-text-main'
+                  }`}
+                >
+                  <span>💻</span>
+                  <span>Sistema</span>
+                </button>
+              </div>
+            </div>
+
             {/* Theme presets */}
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-text-secondary uppercase text-[10px]">Stile del Gioco</label>
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Stile del Gioco</label>
               <select
                 value={settings.theme}
-                onChange={(e) => updateSetting('theme', e.target.value)}
-                className="bg-slate-950/40 border border-border-color rounded px-3 py-2 text-xs text-text-main focus:outline-none"
+                onChange={(e) => {
+                  updateSetting('theme', e.target.value);
+                  if (e.target.value === 'light') {
+                    updateSetting('themeMode', 'light');
+                    updateSetting('mode', 'light');
+                  }
+                }}
+                className="bg-slate-950/40 border border-border-color rounded-xl px-4 py-3 text-xs text-text-main focus:outline-none shadow-sm"
               >
                 <option value="dark">Standard Sci-Fi</option>
                 <option value="light">Standard Light ☀️</option>
@@ -145,9 +202,9 @@ export default function SettingsTab({
             </div>
 
             {/* Accent Color picker */}
-            <div className="flex flex-col gap-1.5">
-              <label className="font-bold text-text-secondary uppercase text-[10px]">Colore dell'Accento</label>
-              <div className="flex gap-2 flex-wrap bg-slate-950/10 p-2.5 rounded-lg border border-border-color/20">
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Colore dell'Accento</label>
+              <div className="flex gap-2.5 flex-wrap bg-slate-950/20 p-3 rounded-xl border border-border-color/20">
                 {ACCENT_COLORS.map((color) => {
                   const colorsMap = {
                     violet: 'bg-violet-500',
@@ -170,8 +227,8 @@ export default function SettingsTab({
                     <button
                       key={color}
                       onClick={() => updateSetting('accent', color)}
-                      className={`w-6 h-6 rounded-full ${colorsMap[color] || 'bg-slate-500'} flex items-center justify-center transition-all ${
-                        settings.accent === color ? 'ring-2 ring-white scale-110' : 'opacity-80 hover:opacity-100 hover:scale-105'
+                      className={`w-7 h-7 rounded-full ${colorsMap[color] || 'bg-slate-500'} flex items-center justify-center transition-all ${
+                        settings.accent === color ? 'ring-2 ring-white scale-110 shadow-md' : 'opacity-80 hover:opacity-100 hover:scale-105'
                       }`}
                       title={color}
                     />
@@ -181,21 +238,21 @@ export default function SettingsTab({
             </div>
 
             {/* Animated Background */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center pt-1">
               <span className="font-bold text-text-main">Sfondo Animato</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('animatedBackground', true)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.animatedBackground !== false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.animatedBackground !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   ON
                 </button>
                 <button
                   onClick={() => updateSetting('animatedBackground', false)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.animatedBackground === false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.animatedBackground === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   OFF
@@ -207,12 +264,12 @@ export default function SettingsTab({
       </div>
 
       {/* Group 3: Funzionalità (Feature toggles) */}
-      <div className="glass-panel overflow-hidden border border-border-color">
+      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
         <div
           onClick={() => toggleGroup('features')}
-          className="px-4 py-3 bg-slate-950/20 hover:bg-slate-950/40 cursor-pointer flex justify-between items-center select-none"
+          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
         >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-1.5 uppercase tracking-wide">
+          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
             ⚡ Funzionalità & Meccaniche
           </h3>
           <span className="text-xs text-text-secondary">
@@ -221,23 +278,23 @@ export default function SettingsTab({
         </div>
 
         {expandedGroup === 'features' && (
-          <div className="p-4 space-y-3.5 text-xs animate-slide-down">
+          <div className="p-5 space-y-4 text-xs animate-slide-down">
             {/* Daily Planner */}
             <div className="flex justify-between items-center">
               <span className="font-bold text-text-main">Nuovo Turno (Daily Planner)</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('enableDailyPlanner', true)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.enableDailyPlanner !== false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.enableDailyPlanner !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   ON
                 </button>
                 <button
                   onClick={() => updateSetting('enableDailyPlanner', false)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.enableDailyPlanner === false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.enableDailyPlanner === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   OFF
@@ -248,19 +305,19 @@ export default function SettingsTab({
             {/* Sound effects */}
             <div className="flex justify-between items-center">
               <span className="font-bold text-text-main">Effetti Sonori</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('soundEnabled', true)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.soundEnabled !== false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.soundEnabled !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   ON
                 </button>
                 <button
                   onClick={() => updateSetting('soundEnabled', false)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.soundEnabled === false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.soundEnabled === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   OFF
@@ -271,19 +328,19 @@ export default function SettingsTab({
             {/* Weekly Recap */}
             <div className="flex justify-between items-center">
               <span className="font-bold text-text-main">Recap Settimanale</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('enableWeeklyRecap', true)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.enableWeeklyRecap !== false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.enableWeeklyRecap !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   ON
                 </button>
                 <button
                   onClick={() => updateSetting('enableWeeklyRecap', false)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.enableWeeklyRecap === false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.enableWeeklyRecap === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   OFF
@@ -294,19 +351,19 @@ export default function SettingsTab({
             {/* Dice Button */}
             <div className="flex justify-between items-center">
               <span className="font-bold text-text-main">🎲 Bottone Dado</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('showDiceButton', true)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.showDiceButton !== false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.showDiceButton !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   ON
                 </button>
                 <button
                   onClick={() => updateSetting('showDiceButton', false)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.showDiceButton === false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.showDiceButton === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   OFF
@@ -317,19 +374,19 @@ export default function SettingsTab({
             {/* Daily Penalties */}
             <div className="flex justify-between items-center">
               <span className="font-bold text-text-main">⚠️ Penalità Giornaliere</span>
-              <div className="flex bg-slate-950/30 p-0.5 rounded-lg border border-border-color/30">
+              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
                 <button
                   onClick={() => updateSetting('enableDailyPenalties', true)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.enableDailyPenalties !== false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.enableDailyPenalties !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   ON
                 </button>
                 <button
                   onClick={() => updateSetting('enableDailyPenalties', false)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
-                    settings.enableDailyPenalties === false ? 'bg-accent-primary text-white' : 'text-text-secondary'
+                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    settings.enableDailyPenalties === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
                   }`}
                 >
                   OFF
@@ -341,12 +398,12 @@ export default function SettingsTab({
       </div>
 
       {/* Group 4: Dati & Cloud (Local DB, Import/Export, Reset) */}
-      <div className="glass-panel overflow-hidden border border-border-color">
+      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
         <div
           onClick={() => toggleGroup('data')}
-          className="px-4 py-3 bg-slate-950/20 hover:bg-slate-950/40 cursor-pointer flex justify-between items-center select-none"
+          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
         >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-1.5 uppercase tracking-wide">
+          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
             💾 Dati & Backup
           </h3>
           <span className="text-xs text-text-secondary">
@@ -355,11 +412,11 @@ export default function SettingsTab({
         </div>
 
         {expandedGroup === 'data' && (
-          <div className="p-4 space-y-4 text-xs animate-slide-down">
+          <div className="p-5 space-y-5 text-xs animate-slide-down">
             {/* Database File Connector */}
-            <div className="bg-slate-950/30 p-3.5 rounded-xl border border-border-color/40 space-y-3">
+            <div className="bg-slate-950/40 p-4 rounded-xl border border-border-color/40 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-[10px] uppercase text-text-secondary">File Database Locale</span>
+                <span className="font-bold text-[10px] uppercase text-text-secondary tracking-wider">File Database Locale</span>
                 <span className="font-bold">
                   {fileHandle ? (
                     <span className="text-green-400">🟢 Collegato: {fileHandle.name}</span>
@@ -370,7 +427,7 @@ export default function SettingsTab({
               </div>
               <button
                 onClick={fileHandle ? onLinkDatabase : onReconnectDatabase}
-                className="w-full bg-accent-primary hover:brightness-110 text-white font-bold py-2 rounded-lg transition-all active:scale-95 shadow flex items-center justify-center gap-1.5"
+                className="w-full bg-accent-primary hover:brightness-110 text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow flex items-center justify-center gap-2"
               >
                 <span>🔗</span>
                 <span>{fileHandle ? 'Cambia File Collegato' : 'Collega Database File'}</span>
@@ -381,17 +438,17 @@ export default function SettingsTab({
             </div>
 
             {/* Export / Import buttons */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={onExport}
-                className="bg-slate-950/40 hover:bg-slate-950/60 border border-border-color rounded-lg py-2.5 font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 text-text-main"
+                className="bg-slate-950/40 hover:bg-slate-950/60 border border-border-color rounded-xl py-3 font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-text-main shadow-sm"
               >
                 <span>Esporta</span>
                 <span>📤</span>
               </button>
               <button
                 onClick={onImport}
-                className="bg-slate-950/40 hover:bg-slate-950/60 border border-border-color rounded-lg py-2.5 font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 text-text-main"
+                className="bg-slate-950/40 hover:bg-slate-950/60 border border-border-color rounded-xl py-3 font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-text-main shadow-sm"
               >
                 <span>Importa</span>
                 <span>📥</span>
@@ -399,25 +456,25 @@ export default function SettingsTab({
             </div>
 
             {/* Repair & Reset tools */}
-            <div className="pt-2 border-t border-border-color/30 space-y-2.5">
-              <label className="font-bold text-text-secondary uppercase text-[10px]">Manutenzione Dati</label>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="pt-3 border-t border-border-color/30 space-y-3">
+              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Manutenzione Dati</label>
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={onFixData}
-                  className="bg-slate-800/50 hover:bg-slate-800 border border-border-color/50 rounded py-2 font-semibold text-[10px] transition-colors"
+                  className="bg-slate-800/50 hover:bg-slate-800 border border-border-color/50 rounded-xl py-2.5 font-semibold text-[10px] transition-colors"
                 >
                   🔧 Ripara Database
                 </button>
                 <button
                   onClick={onRepairStreaks}
-                  className="bg-slate-800/50 hover:bg-slate-800 border border-border-color/50 rounded py-2 font-semibold text-[10px] transition-colors"
+                  className="bg-slate-800/50 hover:bg-slate-800 border border-border-color/50 rounded-xl py-2.5 font-semibold text-[10px] transition-colors"
                 >
                   🔥 Ripara Streak
                 </button>
               </div>
               <button
                 onClick={onReset}
-                className="w-full bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-500 hover:text-white font-bold py-2 rounded-lg transition-all active:scale-95"
+                className="w-full bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-500 hover:text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow-sm"
               >
                 ⚠️ Reset Completo dell'App
               </button>
@@ -426,13 +483,13 @@ export default function SettingsTab({
         )}
       </div>
 
-      {/* Group 4: Info & System (Versione & Aggiornamenti) */}
-      <div className="glass-panel overflow-hidden border border-border-color">
+      {/* Group 5: Info & System (Versione & Aggiornamenti) */}
+      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
         <div
           onClick={() => toggleGroup('system')}
-          className="px-4 py-3 bg-slate-950/20 hover:bg-slate-950/40 cursor-pointer flex justify-between items-center select-none"
+          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
         >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-1.5 uppercase tracking-wide">
+          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
             ℹ️ Sistema & Aggiornamenti
           </h3>
           <span className="text-xs text-text-secondary">
@@ -441,27 +498,27 @@ export default function SettingsTab({
         </div>
 
         {expandedGroup === 'system' && (
-          <div className="p-4 space-y-4 text-xs animate-slide-down">
+          <div className="p-5 space-y-5 text-xs animate-slide-down">
             {/* Version Display (Clickable for Force Update) */}
             <div
               onClick={() => forceUpdateApp(true)}
-              className="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-border-color/40 cursor-pointer hover:border-accent-primary/50 transition-all select-none"
+              className="flex justify-between items-center bg-slate-950/40 p-4 rounded-xl border border-border-color/40 cursor-pointer hover:border-accent-primary/50 transition-all select-none shadow-sm"
               title="Tocca per forzare l'aggiornamento"
             >
               <div>
                 <span className="font-bold text-text-main block">Versione Applicazione</span>
                 <span className="text-[10px] text-text-secondary">Tocca qui per forzare il ricaricamento</span>
               </div>
-              <span className="px-2.5 py-1 bg-accent-primary/20 border border-accent-primary/40 text-accent-primary font-bold rounded-full text-xs">
+              <span className="px-3 py-1 bg-accent-primary/20 border border-accent-primary/40 text-accent-primary font-bold rounded-full text-xs">
                 v{APP_VERSION}
               </span>
             </div>
 
             {/* Update Action Buttons */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <button
                 onClick={checkAppUpdate}
-                className="w-full bg-slate-800/60 hover:bg-slate-800 border border-border-color/50 text-text-main font-bold py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full bg-slate-800/60 hover:bg-slate-800 border border-border-color/50 text-text-main font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
               >
                 <span>🔄</span>
                 <span>Controlla Aggiornamenti Normale</span>
@@ -469,7 +526,7 @@ export default function SettingsTab({
 
               <button
                 onClick={() => forceUpdateApp(true)}
-                className="w-full bg-gradient-to-r from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 font-bold py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
               >
                 <span>⚡</span>
                 <span>Forza Aggiornamento (Svuota Cache & SW)</span>
