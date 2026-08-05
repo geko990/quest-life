@@ -63,7 +63,7 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-slate-950/95 backdrop-blur-2xl border-b border-white/10 shadow-lg pt-[env(safe-area-inset-top)]">
-      <div className="w-full max-w-md mx-auto flex items-center justify-between px-4 py-4 min-h-[80px] relative">
+      <div className="w-full flex items-center justify-between px-3 py-3.5 min-h-[76px] relative">
         
         {/* LEFT: Streak Flame Badge */}
         <div

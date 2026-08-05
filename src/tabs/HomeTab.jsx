@@ -242,7 +242,7 @@ export default function HomeTab({
       </div>
 
       {/* 1. Radar Chart (FIRST THING TO SEE - No title text) */}
-      <div className="glass-panel p-4 w-full max-w-sm mx-auto text-center relative overflow-hidden border border-border-color">
+      <div className="glass-panel p-4 w-full text-center relative overflow-hidden border border-border-color">
         <div className="relative flex justify-center items-center h-[260px]">
           {renderRadarChart()}
         </div>

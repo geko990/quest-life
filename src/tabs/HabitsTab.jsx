@@ -239,7 +239,7 @@ export default function HabitsTab({
   };
 
   return (
-    <div className="space-y-5 pb-24 p-4 max-w-md mx-auto">
+    <div className="w-full space-y-4 pb-24 box-border">
       {/* Calendar Header */}
       <div className="glass-panel p-3">
         <div
