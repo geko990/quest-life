@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getCumulativeXpForLevel, getXpForLevel } from '../utils/helpers';
+import { getCumulativeXpForLevel, getXpForLevel, forceUpdateApp } from '../utils/helpers';
 import { TITLES } from '../utils/constants';
 
 export default function Header({
@@ -100,8 +100,12 @@ export default function Header({
         <span className="text-sm font-bold text-orange-400">{player.globalStreak || 0}</span>
       </div>
 
-      {/* Title */}
-      <h1 className="text-xl font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-accent-secondary select-none tracking-wider">
+      {/* Title (Click to Force Update) */}
+      <h1
+        onClick={() => forceUpdateApp(true)}
+        className="text-xl font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-accent-primary to-accent-secondary select-none tracking-wider cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+        title="Tocca per forzare l'aggiornamento dell'app"
+      >
         RPG Life
       </h1>
 
