@@ -30,10 +30,13 @@ export default function SwipeableCard({
 
     // Determine direction on first significant movement
     if (isHorizontalRef.current === null) {
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 5) {
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 6) {
         isHorizontalRef.current = true;
-      } else if (Math.abs(diffY) > 5) {
+      } else if (Math.abs(diffY) > 6) {
         isHorizontalRef.current = false;
+        setIsSwiping(false);
+        setTranslateX(0);
+        return;
       }
     }
 
@@ -66,7 +69,7 @@ export default function SwipeableCard({
   const isLeft = translateX < -20;
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-xl touch-pan-y">
       {/* Background action colors */}
       <div
         className={`absolute inset-0 flex items-center justify-between px-4 font-bold text-xs transition-colors ${
@@ -94,9 +97,10 @@ export default function SwipeableCard({
         onTouchEnd={handleTouchEnd}
         style={{
           transform: `translateX(${translateX}px)`,
-          transition: isSwiping ? 'none' : 'transform 0.25s ease-out'
+          transition: isSwiping ? 'none' : 'transform 0.25s ease-out',
+          touchAction: 'pan-y'
         }}
-        className={`relative bg-bg-card backdrop-blur-md select-none ${className}`}
+        className={`relative bg-bg-card backdrop-blur-md select-none touch-pan-y ${className}`}
       >
         {children}
       </div>
