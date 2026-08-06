@@ -1,3 +1,4 @@
+export const BUILD_TIME = '2026-08-06T18:35:58.503Z';
 export const APP_VERSION = '5.8.6';
 
 export const DEFAULT_ATTRIBUTES = [

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp -r dist/* .",
+    "build": "node scripts/update-version.js && vite build && cp -r dist/* .",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
+import { initPWA } from './utils/pwaManager';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -9,14 +10,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>
 );
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=5.8.6')
-      .then(reg => {
-        console.log('PWA ServiceWorker registered (v5.8.6)');
-        reg.update();
-      })
-      .catch(err => console.log('SW registration error:', err));
-  });
-}
-
+// Initialize PWA Service Worker & update monitoring
+initPWA();

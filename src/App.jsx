@@ -15,6 +15,7 @@ import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
 import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp } from './utils/helpers';
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
+import { onUpdateAvailable } from './utils/pwaManager';
 
 export default function App() {
   // 1. Initial State Loading
@@ -70,28 +71,10 @@ export default function App() {
   const [latestVersion, setLatestVersion] = useState(APP_VERSION);
 
   useEffect(() => {
-    const checkVersion = async () => {
-      try {
-        const res = await fetch('./version.json?t=' + Date.now());
-        if (res.ok) {
-          const data = await res.json();
-          if (data.version && data.version !== APP_VERSION) {
-            setLatestVersion(data.version);
-            setUpdateAvailable(true);
-          }
-        }
-      } catch (err) {
-        console.log('Offline version check skipped');
-      }
-    };
-
-    checkVersion();
-    const interval = setInterval(checkVersion, 30000);
-    window.addEventListener('focus', checkVersion);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', checkVersion);
-    };
+    onUpdateAvailable((newVersion) => {
+      if (newVersion) setLatestVersion(newVersion);
+      setUpdateAvailable(true);
+    });
   }, []);
 
   // 3. Load FileHandle on Start

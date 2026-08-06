@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ACCENT_COLORS, APP_VERSION } from '../utils/constants';
+import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
 import { forceUpdateApp, checkAppUpdate } from '../utils/helpers';
 
 export default function SettingsTab({
@@ -367,7 +367,7 @@ export default function SettingsTab({
             🔄 Forza Aggiornamento PWA
           </button>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-            RPG Life v{APP_VERSION}
+            RPG Life v{APP_VERSION} {BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })})` : ''}
           </div>
         </div>
       </div>
