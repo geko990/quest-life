@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { getXpForLevel } from '../utils/helpers';
 
 export default function HomeTab({
   stats,
+  setStats,
   xpLog,
   player,
   health,
   pomodoro,
+  dailyActions = [],
+  onToggleDailyAction,
   onOpenModal,
-  onDeleteStat,
-  onEditStat,
   onOpenPlanner,
   onOpenPomodoro,
   onOpenStatDetail
 }) {
-  const [expanded, setExpanded] = useState({ attributes: true, abilities: true });
-
-  const toggleSection = (section) => {
-    setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
-  };
+  const [showVisibilityModal, setShowVisibilityModal] = useState(false);
+  const pressTimerRef = useRef(null);
 
   // Calculate rolling 30-day XP per stat
   const getRollingXpByStats = (days = 30) => {
@@ -27,7 +25,7 @@ export default function HomeTab({
     cutoffDate.setDate(now.getDate() - days);
 
     const xpByStats = {};
-    xpLog.forEach(log => {
+    (xpLog || []).forEach(log => {
       const logDate = new Date(log.date);
       if (logDate >= cutoffDate && logDate <= now) {
         xpByStats[log.statId] = (xpByStats[log.statId] || 0) + log.amount;
@@ -42,12 +40,33 @@ export default function HomeTab({
   const rollingXp = getRollingXpByStats(30);
   const visibleStats = stats.filter(s => s.visible);
 
-  // SVG Radar Chart Calculations
+  // Long press handler on radar chart card
+  const handleTouchStart = () => {
+    pressTimerRef.current = setTimeout(() => {
+      setShowVisibilityModal(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+    }
+  };
+
+  const toggleStatVisibility = (statId) => {
+    setStats(prev => prev.map(s => (s.id === statId ? { ...s, visible: !s.visible } : s)));
+  };
+
+  // SVG Circular Radar Chart Calculations
   const renderRadarChart = () => {
     if (visibleStats.length === 0) {
       return (
-        <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-secondary)', padding: '24px 0' }}>
-          Rendi visibile almeno un attributo per generare il grafico.
+        <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-secondary)', padding: '36px 0' }}>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎯</div>
+          <div>Nessun attributo visibile.</div>
+          <div style={{ fontSize: '11px', color: 'var(--accent-primary)', marginTop: '4px', cursor: 'pointer' }} onClick={() => setShowVisibilityModal(true)}>
+            Tieni premuto qui per selezionare cosa mostrare
+          </div>
         </div>
       );
     }
@@ -69,15 +88,20 @@ export default function HomeTab({
       };
     };
 
+    // 1. Concentric Circles instead of Sharp Polygon Hexagon
     const gridLevels = [0.25, 0.5, 0.75, 1.0];
-    const gridPaths = gridLevels.map(level => {
-      const points = [];
-      for (let i = 0; i < N; i++) {
-        const coords = getCoordinates(i, level);
-        points.push(`${coords.x},${coords.y}`);
-      }
-      return points.join(' ');
-    });
+    const gridCircles = gridLevels.map((level, idx) => (
+      <circle
+        key={`grid-circle-${idx}`}
+        cx={center}
+        cy={center}
+        r={radius * level}
+        fill="none"
+        stroke="rgba(124, 58, 237, 0.22)"
+        strokeWidth="1.5"
+        strokeDasharray={level === 1.0 ? 'none' : '3,3'}
+      />
+    ));
 
     const axisLines = [];
     for (let i = 0; i < N; i++) {
@@ -97,14 +121,14 @@ export default function HomeTab({
     }
 
     const labelItems = visibleStats.map((s, i) => {
-      const coords = getCoordinates(i, 1.22);
+      const coords = getCoordinates(i, 1.24);
       return (
         <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
             y={coords.y + 9}
             textAnchor="middle"
-            style={{ fontSize: '28px', userSelect: 'none' }}
+            style={{ fontSize: '26px', userSelect: 'none' }}
           >
             {s.icon}
           </text>
@@ -140,20 +164,12 @@ export default function HomeTab({
 
     return (
       <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '340px', maxHeight: '340px', margin: '0 auto' }}>
-        {gridPaths.map((path, idx) => (
-          <polygon
-            key={`grid-${idx}`}
-            points={path}
-            fill="none"
-            stroke="rgba(124, 58, 237, 0.25)"
-            strokeWidth="1.5"
-          />
-        ))}
+        {gridCircles}
         {axisLines}
         {playerPoints && (
           <polygon
             points={playerPoints}
-            fill="rgba(124, 58, 237, 0.25)"
+            fill="rgba(124, 58, 237, 0.28)"
             stroke="var(--accent-primary)"
             strokeWidth="3"
             strokeLinejoin="round"
@@ -165,139 +181,123 @@ export default function HomeTab({
     );
   };
 
-  const attributes = stats.filter(s => s.type === 'attribute');
-  const abilities = stats.filter(s => s.type === 'ability');
-
-  const renderCard = (stat) => {
-    const xpForNext = getXpForLevel(stat.level + 1);
-    const xpProgress = Math.min(100, (stat.xp / xpForNext) * 100);
-
-    return (
-      <div
-        key={stat.id}
-        onClick={() => onOpenStatDetail && onOpenStatDetail(stat)}
-        className="glass-panel"
-        style={{
-          padding: '12px 14px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '60px',
-          cursor: 'pointer',
-          opacity: !stat.visible ? 0.4 : 1
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-            <span style={{ fontSize: '20px' }}>{stat.icon}</span>
-            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', padding: '2px 6px', background: 'rgba(124, 58, 237, 0.15)', borderRadius: '4px' }}>
-              Lvl {stat.level}
-            </span>
-          </div>
-          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }} title={stat.name}>{stat.name}</h4>
-        </div>
-
-        <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--glass-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-secondary)', marginBottom: '2px' }}>
-            <span>{stat.xp}/{xpForNext} XP</span>
-            <span style={{ fontWeight: 'bold' }}>{Math.round(xpProgress)}%</span>
-          </div>
-          <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div
-              style={{ height: '100%', width: `${xpProgress}%`, background: 'var(--accent-gradient, #7c3aed)', transition: 'width 0.3s' }}
-            ></div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const recentXpLogs = (xpLog || []).slice(-5).reverse();
+  // Default 4 D&D Actions of the Day
+  const defaultActions = [
+    { id: 'act_main', type: 'Azione', emoji: '⚔️', title: 'Azione Principale', desc: 'Task o obiettivo principale del giorno' },
+    { id: 'act_bonus', type: 'Azione Bonus', emoji: '⚡', title: 'Azione Bonus', desc: 'Attività rapida o secondaria' },
+    { id: 'act_move', type: 'Movimento', emoji: '🏃', title: 'Movimento', desc: 'Attività fisica o passi' },
+    { id: 'act_react', type: 'Reazione', emoji: '🛡️', title: 'Reazione', desc: 'Gestione imprevisto o risposta' }
+  ];
 
   return (
     <section id="section-home" className="section active">
-      {/* 1. Radar Chart (FIRST THING TO SEE - 1:1 aspect ratio) */}
-      <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContents: 'center' }}>
+      {/* 1. Circular Radar Chart Card with Long Press Gesture */}
+      <div
+        className="glass-panel"
+        onMouseDown={handleTouchStart}
+        onMouseUp={handleTouchEnd}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          padding: '16px',
+          marginBottom: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          userSelect: 'none',
+          cursor: 'pointer'
+        }}
+        title="Tieni premuto per gestire visibilità attributi"
+      >
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+            📊 RADAR ABILITÀ (30GG)
+          </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowVisibilityModal(true); }}
+            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '4px 10px', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}
+          >
+            ⚙️ Gestisci
+          </button>
+        </div>
+
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           {renderRadarChart()}
         </div>
-      </div>
 
-      {/* 2. Section: Attributi */}
-      <div className="glass-panel" style={{ overflow: 'hidden', marginBottom: '16px' }}>
-        <div style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3
-            onClick={() => toggleSection('attributes')}
-            style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}
-          >
-            ⚔️ Attributi
-          </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={() => onOpenModal('attribute')}
-              className="add-btn-circle"
-              style={{ width: '26px', height: '26px', fontSize: '14px' }}
-              title="Aggiungi Attributo"
-            >
-              +
-            </button>
-            <span
-              onClick={() => toggleSection('attributes')}
-              style={{ cursor: 'pointer', fontSize: '12px', color: 'var(--text-secondary)', transform: expanded.attributes ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-            >
-              ▼
-            </span>
-          </div>
+        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
+          💡 Tieni premuto sul grafico per mostrare/nascondere attributi o aggiungerne di nuovi
         </div>
-        {expanded.attributes && (
-          <div style={{ padding: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {attributes.map(renderCard)}
-          </div>
-        )}
       </div>
 
-      {/* 3. Section: Abilità */}
-      <div className="glass-panel" style={{ overflow: 'hidden', marginBottom: '16px' }}>
-        <div style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3
-            onClick={() => toggleSection('abilities')}
-            style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}
-          >
-            ✨ Abilità
-          </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={() => onOpenModal('ability')}
-              className="add-btn-circle"
-              style={{ width: '26px', height: '26px', fontSize: '14px' }}
-              title="Aggiungi Abilità"
-            >
-              +
-            </button>
-            <span
-              onClick={() => toggleSection('abilities')}
-              style={{ cursor: 'pointer', fontSize: '12px', color: 'var(--text-secondary)', transform: expanded.abilities ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-            >
-              ▼
-            </span>
-          </div>
-        </div>
-        {expanded.abilities && (
-          <div style={{ padding: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {abilities.length === 0 ? (
-              <div style={{ gridColumn: 'span 2', padding: '16px 0', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                Nessuna abilità speciale creata. Clicca "+" per crearne una!
-              </div>
-            ) : (
-              abilities.map(renderCard)
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 4. D&D Daily Recap */}
+      {/* 2. Tessera "Azioni del Giorno" (Azione, Azione Bonus, Movimento, Reazione) */}
       <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>⚔️</span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                Azioni del Giorno
+              </h3>
+              <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)' }}>
+                I tuoi 4 slot tattici quotidiani (si resettano a fine giornata)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {defaultActions.map((action) => {
+            const isCompleted = (dailyActions || []).includes(action.id);
+            return (
+              <div
+                key={action.id}
+                onClick={() => onToggleDailyAction && onToggleDailyAction(action.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  background: 'var(--bg-secondary)',
+                  border: isCompleted ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  opacity: isCompleted ? 0.75 : 1,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {/* Checkbox */}
+                <div
+                  className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
+                  style={{ width: '24px', height: '24px', flexShrink: 0 }}
+                ></div>
+
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{action.emoji}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
+                      {action.type}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                    {action.title}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                    {action.desc}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. D&D Daily Planner */}
+      <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px' }}>🎲</span>
             <div>
@@ -317,9 +317,9 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* 5. Sostentamento Summary */}
+      {/* 4. Sostentamento Summary */}
       {health && (
-        <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
+        <div className="glass-panel" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               🍎 Sostentamento Oggi
@@ -348,29 +348,78 @@ export default function HomeTab({
         </div>
       )}
 
-      {/* 6. Storico Imprese Recenti */}
-      <div className="glass-panel" style={{ padding: '16px' }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-          📜 Storico Imprese Recenti
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {recentXpLogs.length === 0 ? (
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
-              Nessuna impresa registrata di recente. Completa abitudini o missioni per guadagnare XP!
-            </p>
-          ) : (
-            recentXpLogs.map((log, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>✨</span>
-                  <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{log.reason || 'Attività completata'}</span>
+      {/* Stat Visibility & Management Modal */}
+      {showVisibilityModal && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 99990, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          onClick={() => setShowVisibilityModal(false)}
+        >
+          <div
+            style={{ width: '100%', maxWidth: '380px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '20px', boxShadow: '0 16px 48px rgba(0,0,0,0.4)', boxSizing: 'border-box' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                📊 Gestisci Visibilità Grafico
+              </h3>
+              <button
+                onClick={() => setShowVisibilityModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+              <button
+                onClick={() => { setShowVisibilityModal(false); onOpenModal('attribute'); }}
+                className="btn-primary"
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              >
+                + Attributo
+              </button>
+              <button
+                onClick={() => { setShowVisibilityModal(false); onOpenModal('ability'); }}
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+              >
+                + Abilità
+              </button>
+            </div>
+
+            <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {stats.map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => toggleStatVisibility(s.id)}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: '10px', cursor: 'pointer', border: '1px solid var(--glass-border)' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '20px' }}>{s.icon}</span>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{s.name}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{s.type} • Liv. {s.level}</div>
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={s.visible !== false}
+                    onChange={() => {}}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                  />
                 </div>
-                <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>+{log.amount} XP</span>
-              </div>
-            ))
-          )}
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowVisibilityModal(false)}
+              className="btn-primary"
+              style={{ width: '100%', marginTop: '16px', padding: '10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+            >
+              Fatto ✓
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
