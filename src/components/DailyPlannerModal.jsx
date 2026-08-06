@@ -12,7 +12,6 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   const [diceResult, setDiceResult] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Reset state when opened
   useEffect(() => {
     if (isOpen) {
       setSlots({
@@ -47,8 +46,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
     setIsRolling(true);
     let rollCount = 0;
     const maxRolls = 15;
-    
-    // Play sound if possible
+
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
@@ -57,7 +55,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
       osc.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + 0.1);
-    } catch(e){}
+    } catch (e) {}
 
     const interval = setInterval(() => {
       setDiceResult(Math.floor(Math.random() * 10) + 1);
@@ -80,83 +78,102 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
     }, 100);
   };
 
-  // Themed Slot Colors
   const slotThemes = {
-    action: {
-      headerColor: 'text-red-400',
-      bgClass: 'bg-red-950/20 border-red-500/30'
-    },
-    bonus: {
-      headerColor: 'text-amber-400',
-      bgClass: 'bg-amber-950/20 border-amber-500/30'
-    },
-    movement: {
-      headerColor: 'text-sky-400',
-      bgClass: 'bg-sky-950/20 border-sky-500/30'
-    },
-    reaction: {
-      headerColor: 'text-purple-400',
-      bgClass: 'bg-purple-950/20 border-purple-500/30'
-    }
+    action: { title: '🎯 AZIONE', color: '#ef4444' },
+    bonus: { title: '⚡ AZIONE BONUS', color: '#f59e0b' },
+    movement: { title: '🚶 MOVIMENTO', color: '#0ea5e9' },
+    reaction: { title: '🛡️ REAZIONE', color: '#a855f7' }
   };
 
-  const renderSlot = (key, title, placeholder, icon) => {
+  const renderSlot = (key, placeholder) => {
     const slot = slots[key];
-    const theme = slotThemes[key] || { headerColor: 'text-accent-primary', bgClass: 'bg-slate-900/40 border-border-color/40' };
+    const theme = slotThemes[key];
 
     return (
-      <div className={`p-4 rounded-2xl border shadow-md flex flex-col gap-3 transition-all ${theme.bgClass}`}>
-        <div className={`flex items-center text-xs font-extrabold uppercase tracking-wider ${theme.headerColor}`}>
-          <span className="mr-1.5 text-sm">{icon}</span> {title}
+      <div
+        style={{
+          padding: '10px 12px',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}
+      >
+        <div style={{ fontSize: '11px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase' }}>
+          {theme.title}
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            value={slot.name}
-            onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
-            placeholder={placeholder}
-            className="planner-input w-full rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:border-accent-primary transition-colors shadow-sm"
-          />
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 opacity-30 text-xs">
-            💥
-          </div>
-        </div>
+        <input
+          type="text"
+          value={slot.name}
+          onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
+          placeholder={placeholder}
+          style={{
+            width: '100%',
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '8px',
+            padding: '8px 10px',
+            fontSize: '12px',
+            color: 'var(--text-primary)',
+            boxSizing: 'border-box'
+          }}
+        />
 
-        {/* Stars and Stat Selectors (Inset & Inward Offset with Theme Support) */}
-        <div className="px-3 py-2 bg-slate-100/90 dark:bg-slate-950/60 rounded-xl border border-slate-200/80 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap shadow-inner">
-          {/* Stars (Left Inset) */}
-          <div className="flex gap-1 text-base pl-0.5">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+          {/* Stars */}
+          <div style={{ display: 'flex', gap: '2px', fontSize: '16px' }}>
             {[1, 2, 3, 4, 5].map(star => (
               <button
                 key={star}
                 type="button"
                 onClick={() => handleSlotChange(key, 'stars', star)}
-                className={`transition-all active:scale-125 focus:outline-none ${star <= slot.stars ? 'text-amber-400 drop-shadow-[0_0_4px_rgba(250,204,21,0.6)]' : 'text-slate-400 dark:text-slate-700'}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  color: star <= slot.stars ? '#f59e0b' : 'var(--text-muted)'
+                }}
               >
                 ★
               </button>
             ))}
           </div>
 
-          {/* Primary & Secondary Stat Selectors (Right Inset - White in Light Mode) */}
-          <div className="flex items-center gap-1.5 pr-0.5">
-            {/* Primary Stat */}
+          {/* Stat Selectors */}
+          <div style={{ display: 'flex', gap: '6px' }}>
             <select
               value={slot.statId}
               onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
-              className="planner-select rounded-lg px-2 py-1 text-[10px] font-bold focus:outline-none focus:border-accent-primary max-w-[98px] truncate shadow-sm"
+              style={{
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '6px',
+                padding: '4px 6px',
+                fontSize: '10px',
+                fontWeight: 'bold'
+              }}
             >
               {stats.map(s => (
                 <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
               ))}
             </select>
 
-            {/* Secondary Stat (Optional) */}
             <select
               value={slot.secondaryStatId || ''}
               onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
-              className="planner-select rounded-lg px-1.5 py-1 text-[10px] font-medium focus:outline-none focus:border-accent-primary max-w-[98px] truncate shadow-sm"
+              style={{
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '6px',
+                padding: '4px 6px',
+                fontSize: '10px'
+              }}
             >
               <option value="">+ Sec (nessuno)</option>
               {stats.map(s => (
@@ -171,65 +188,81 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
 
   return (
     <div
+      className="modal active"
       onClick={onClose}
-      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 animate-fade-in overflow-y-auto"
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
     >
       <div
+        className="modal-content"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[365px] mx-auto bg-bg-main border border-border-color/60 rounded-3xl shadow-2xl px-6 py-9 my-auto animate-scale-up flex flex-col justify-between min-h-[640px] space-y-6"
+        style={{ width: '100%', maxWidth: '420px', padding: '20px', maxHeight: '90vh', overflowY: 'auto' }}
       >
-        {/* Header with ample headroom above for bouncing die */}
-        <div className="text-center pt-4 pb-2">
-          <div className="flex items-center justify-center gap-2 mb-2 pt-2">
-            <span className="text-3xl animate-bounce filter drop-shadow-[0_0_8px_rgba(255,180,0,0.5)]">🎲</span>
-            <h2 className="text-xl font-bold font-cinzel tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500">
-              È IL TUO TURNO!
-            </h2>
-          </div>
-          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-extrabold opacity-75">
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <div style={{ fontSize: '28px', marginBottom: '4px' }}>🎲</div>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            È IL TUO TURNO!
+          </h2>
+          <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             Pianifica le tue azioni per oggi
           </p>
         </div>
 
-        {/* Slot Cards List with generous 20px vertical gap */}
-        <div className="space-y-5 my-2">
-          {renderSlot('action', 'Azione', 'Es: Completare il report', '🎯')}
-          {renderSlot('bonus', 'Azione Bonus', 'Es: Chiamare il medico', '⚡')}
-          {renderSlot('movement', 'Movimento', 'Es: Passeggiata 30min', '🚶')}
-          {renderSlot('reaction', 'Reazione', 'Es: Rispondere a 3 email', '🛡️')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+          {renderSlot('action', 'Es: Completare il report')}
+          {renderSlot('bonus', 'Es: Chiamare il medico')}
+          {renderSlot('movement', 'Es: Passeggiata 30min')}
+          {renderSlot('reaction', 'Es: Rispondere a 3 email')}
         </div>
 
-        {/* Bottom Actions Footer with ample bottom clearance */}
         {showResult ? (
-          <div className="text-center animate-scale-up space-y-2 py-4 pb-4">
-            <div className="text-5xl font-extrabold text-accent-primary drop-shadow-[0_0_14px_rgba(255,107,0,0.7)]">
+          <div style={{ textAlign: 'center', padding: '12px 0' }}>
+            <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               {diceResult}
             </div>
-            <div className="text-sm font-extrabold text-green-400">
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#22c55e' }}>
               + {diceResult * 10}% XP Bonus! 🎉
             </div>
           </div>
         ) : isRolling ? (
-          <div className="text-center py-5 pb-4">
-            <div className="text-5xl font-extrabold text-text-main animate-pulse">
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {diceResult}
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 pt-5 pb-4 border-t border-border-color/20">
+          <div style={{ display: 'flex', gap: '10px' }}>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-4 px-4 min-h-[52px] bg-slate-200 dark:bg-slate-800/90 hover:bg-slate-300 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-xs rounded-2xl shadow-sm active:scale-95 transition-all text-center flex items-center justify-center"
+              style={{
+                flex: 1,
+                padding: '12px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-primary)',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                borderRadius: '10px',
+                cursor: 'pointer'
+              }}
             >
               Salta
             </button>
             <button
               type="button"
               onClick={handleRollDice}
-              className="flex-[1.8] py-4 px-4 min-h-[52px] bg-gradient-to-r from-accent-primary via-purple-600 to-accent-secondary hover:brightness-110 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-purple-900/40 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+              className="btn-primary"
+              style={{
+                flex: 1.8,
+                padding: '12px',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
-              <span>🎲</span> Lancia un D10!
+              🎲 Lancia un D10!
             </button>
           </div>
         )}
