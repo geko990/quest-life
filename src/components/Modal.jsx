@@ -737,18 +737,57 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 value={form.value !== undefined ? form.value : ''}
                 onChange={handleNumberChange}
                 step={type === 'health_water' || type === 'health_water_goal' ? '0.1' : '1'}
+      case 'pomodoro':
+        return (
+          <div className="space-y-4 text-xs">
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">Allena Abilità</label>
+              <select
+                name="targetStatId"
+                value={form.targetStatId || stats[0]?.id || 'int'}
+                onChange={handleChange}
+                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none"
+              >
+                {visibleStats.map(s => (
+                  <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">Durata Lavoro (minuti)</label>
+              <input
+                type="number"
+                name="workDuration"
+                value={form.workDuration || 25}
+                onChange={handleNumberChange}
+                min="1"
+                max="120"
                 required
-                className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-lg focus:border-accent-primary focus:outline-none font-bold"
+                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none font-bold"
               />
             </div>
-          );
-        }
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">XP Premio a fine sessione</label>
+              <input
+                type="number"
+                name="xpPerSession"
+                value={form.xpPerSession || 25}
+                onChange={handleNumberChange}
+                min="1"
+                max="500"
+                required
+                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none font-bold"
+              />
+            </div>
+          </div>
+        );
+
         return null;
     }
   };
 
   const getTitle = () => {
-    const action = editData ? 'Modifica' : 'Aggiungi';
+    const action = editData ? 'Modifica' : 'Imposta';
     const names = {
       attribute: 'Attributo',
       ability: 'Abilità',
@@ -758,7 +797,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       food: 'Alimento nel database',
       exercise: 'Esercizio nel database',
       weight: 'Statistiche Peso',
-      stat_detail: 'Dettaglio Statistica'
+      stat_detail: 'Dettaglio Statistica',
+      pomodoro: 'Timer Pomodoro'
     };
     if (type?.startsWith('health_')) return 'Aggiorna Dati';
     return `${action} ${names[type] || 'Elemento'}`;

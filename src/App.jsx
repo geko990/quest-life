@@ -527,6 +527,13 @@ export default function App() {
         };
         setQuests(prev => [...prev, newQuest]);
       }
+    } else if (modalType === 'pomodoro') {
+      setPomodoro(prev => ({
+        ...prev,
+        targetStatId: formData.targetStatId || prev.targetStatId,
+        workDuration: formData.workDuration || prev.workDuration,
+        xpPerSession: formData.xpPerSession || prev.xpPerSession
+      }));
     } else if (modalType === 'food') {
       // Add shopping list food item
       const newItem = {
