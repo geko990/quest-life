@@ -11,6 +11,15 @@
     --text-main: var(--text-primary, #1a1a2e);
 }
 
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+*:focus {
+    outline: none;
+}
+
+
 .glass-panel,
 .card {
     background: var(--bg-card, #ffffff);
@@ -807,6 +816,9 @@ body {
 
 .section.active {
     display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 @keyframes fadeIn {

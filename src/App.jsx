@@ -865,7 +865,7 @@ export default function App() {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
+        height: '100dvh',
         maxWidth: '480px',
         margin: '0 auto',
         position: 'relative',
@@ -931,7 +931,7 @@ export default function App() {
           minHeight: 0,
           width: '100%',
           overflowY: 'auto',
-          padding: '16px',
+          padding: '16px 16px 28px 16px',
           boxSizing: 'border-box',
           WebkitOverflowScrolling: 'touch'
         }}

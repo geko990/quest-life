@@ -1,4 +1,4 @@
-export const BUILD_TIME = '2026-08-06T18:41:02.760Z';
+export const BUILD_TIME = '2026-08-06T18:47:28.507Z';
 export const APP_VERSION = '5.8.7';
 
 export const DEFAULT_ATTRIBUTES = [
