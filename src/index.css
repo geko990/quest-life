@@ -5,6 +5,11 @@
    Complete Styles with All Features
    ============================================ */
 
+/* CSS Variable Aliases for React Compatibility */
+:root {
+    --bg-main: var(--bg-primary, #f8f9fc);
+    --text-main: var(--text-primary, #1a1a2e);
+}
 
 /* ============================================
    DEEP THEMING ENGINE
@@ -15,11 +20,13 @@
     --bg-primary: #f8f9fc;
     --bg-secondary: #ffffff;
     --bg-card: #f1f3f9;
+    --bg-main: #f8f9fc;
     --text-primary: #1a1a2e;
     --text-secondary: #4a4a6a;
+    --text-main: #1a1a2e;
     --text-muted: #8888aa;
     --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-border: rgba(0, 0, 0, 0.1);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
@@ -27,8 +34,10 @@
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
     --bg-card: #252540;
+    --bg-main: #0f0f1a;
     --text-primary: #f0f0f5;
     --text-secondary: #b0b0c0;
+    --text-main: #f0f0f5;
     --text-muted: #6a6a8a;
     --glass-bg: rgba(30, 30, 50, 0.85);
     --glass-border: rgba(60, 60, 100, 0.5);
