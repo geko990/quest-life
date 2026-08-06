@@ -11,8 +11,9 @@ import QuestsTab from './tabs/QuestsTab';
 import NutritionTab from './tabs/NutritionTab';
 import SettingsTab from './tabs/SettingsTab';
 
+import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
-import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier } from './utils/helpers';
+import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp } from './utils/helpers';
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
 
 export default function App() {
@@ -56,6 +57,35 @@ export default function App() {
   const [showMottoModal, setShowMottoModal] = useState(false);
   const [mottoText, setMottoText] = useState(player.motto || '');
   const [showPlannerModal, setShowPlannerModal] = useState(false);
+
+  // Version Auto-Check hook
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [latestVersion, setLatestVersion] = useState(APP_VERSION);
+
+  useEffect(() => {
+    const checkVersion = async () => {
+      try {
+        const res = await fetch('./version.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data.version && data.version !== APP_VERSION) {
+            setLatestVersion(data.version);
+            setUpdateAvailable(true);
+          }
+        }
+      } catch (err) {
+        console.log('Offline version check skipped');
+      }
+    };
+
+    checkVersion();
+    const interval = setInterval(checkVersion, 30000);
+    window.addEventListener('focus', checkVersion);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', checkVersion);
+    };
+  }, []);
 
   // 3. Load FileHandle on Start
   useEffect(() => {
@@ -850,6 +880,42 @@ export default function App() {
         color: 'var(--text-primary)'
       }}
     >
+      {/* PWA Update Floating Banner */}
+      {updateAvailable && (
+        <div
+          onClick={() => forceUpdateApp(false)}
+          style={{
+            position: 'fixed',
+            top: '12px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 99999,
+            width: 'calc(100% - 32px)',
+            maxWidth: '440px',
+            background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+            color: 'white',
+            padding: '10px 14px',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(124, 58, 237, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justify-content: 'space-between',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '16px' }}>🚀</span>
+            <span>Nuova versione v{latestVersion} pronta!</span>
+          </div>
+          <span style={{ background: 'rgba(255,255,255,0.25)', padding: '4px 10px', borderRadius: '10px', fontSize: '11px' }}>
+            Aggiorna Ora 🔄
+          </span>
+        </div>
+      )}
+
       {/* Upper header */}
       <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
         <Header
