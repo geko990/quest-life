@@ -138,7 +138,7 @@ export default function NutritionTab({
   const activeInventory = inventory[activeInventoryTab] || [];
 
   return (
-    <section id="section-nutrition" className="section active" style={{ paddingBottom: '90px' }}>
+    <section id="section-nutrition" className="section active">
       {/* Tab Header */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h2 style={{ margin: 0 }}>🍎 Diario Salute</h2>

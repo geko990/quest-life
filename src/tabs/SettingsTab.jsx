@@ -31,7 +31,7 @@ export default function SettingsTab({
   };
 
   return (
-    <section id="section-settings" className="section active" style={{ paddingBottom: '90px' }}>
+    <section id="section-settings" className="section active">
       {/* Tab Header */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h2 style={{ margin: 0 }}>⚙️ Impostazioni</h2>
