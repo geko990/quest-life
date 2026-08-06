@@ -10,30 +10,53 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom)]">
-      <nav className="pointer-events-auto w-full h-16 bg-slate-950/85 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-2 shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+      <nav
+        style={{
+          pointerEvents: 'auto',
+          width: '100%',
+          maxWidth: '480px',
+          height: '60px',
+          background: 'var(--bg-secondary)',
+          borderTop: '1px solid var(--glass-border)',
+          display: 'flex',
+          justify: 'space-around',
+          alignItems: 'center',
+          boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.1)',
+          position: 'relative'
+        }}
+      >
         {navItems.map((item) => {
           if (item.isCenter) {
             const isCenterActive = activeTab === item.id;
             return (
-              <div key={item.id} className="relative -top-5 flex flex-col items-center select-none">
+              <div key={item.id} style={{ position: 'relative', top: '-18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <button
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-14 h-14 rounded-full bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center border-4 border-slate-950 shadow-xl transform transition-all duration-300 active:scale-95 hover:scale-110 ${
-                    isCenterActive
-                      ? 'scale-110 ring-4 ring-accent-primary/50 shadow-[0_0_20px_rgba(168,85,247,0.5)]'
-                      : 'hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]'
-                  }`}
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '50%',
+                    background: 'var(--accent-gradient, linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%))',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '3px solid var(--bg-secondary)',
+                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+                    cursor: 'pointer',
+                    transform: isCenterActive ? 'scale(1.1)' : 'scale(1)',
+                    transition: 'transform 0.2s'
+                  }}
                   title="Scheda Eroe (Home)"
                 >
                   {avatarType === 'image' && avatarImage ? (
                     <img
                       src={avatarImage}
                       alt="Avatar"
-                      className="w-full h-full rounded-full object-cover"
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
                   ) : (
-                    <span className="text-2xl drop-shadow">{avatarEmoji || '⚔️'}</span>
+                    <span style={{ fontSize: '22px' }}>{avatarEmoji || '⚔️'}</span>
                   )}
                 </button>
               </div>
@@ -45,21 +68,23 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center justify-center flex-1 h-full relative transition-all duration-200 select-none ${
-                isActive
-                  ? 'text-accent-primary font-bold scale-105'
-                  : 'text-text-secondary hover:text-text-main hover:scale-105'
-              }`}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 1,
+                height: '100%',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                fontWeight: isActive ? 'bold' : 'normal',
+                transition: 'color 0.2s'
+              }}
             >
-              <span className={`text-lg mb-0.5 transition-transform ${isActive ? 'scale-110' : ''}`}>
-                {item.icon}
-              </span>
-              <span className="text-[10px] font-semibold tracking-tight">{item.label}</span>
-
-              {/* Active Tab Glowing Dot Indicator */}
-              {isActive && (
-                <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-accent-primary shadow-[0_0_8px_var(--accent-primary)] animate-pulse"></div>
-              )}
+              <span style={{ fontSize: '18px', marginBottom: '2px' }}>{item.icon}</span>
+              <span style={{ fontSize: '10px' }}>{item.label}</span>
             </button>
           );
         })}
