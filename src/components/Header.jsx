@@ -112,98 +112,121 @@ export default function Header({
 
       {/* Profile Popup */}
       {showProfile && (
-        <div className="profile-popup popup-right" ref={profileRef}>
-          <div className="popup-header-info">
-            <div className="popup-avatar-frame">
-              {player.avatarType === 'image' && player.avatarImage ? (
-                <img className="popup-img" src={player.avatarImage} alt="Avatar" />
-              ) : (
-                <span className="popup-emoji" id="popupEmoji">
-                  {player.avatarEmoji || '⚔️'}
-                </span>
-              )}
-            </div>
-            <div className="popup-details">
-              <h3 className="popup-name" id="popupName">{player.name}</h3>
-              <div className="popup-level-info">
-                <span className="popup-level">
-                  Livello <span id="popupLevel">{player.level}</span>
-                </span>
-                <span className="popup-title" id="popupTitle">{getPlayerTitle()}</span>
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9990, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setShowProfile(false)}
+        >
+          <div
+            className="profile-popup popup-right"
+            ref={profileRef}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              top: '65px',
+              right: '16px',
+              width: 'calc(100vw - 32px)',
+              maxWidth: '340px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '20px',
+              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
+              padding: '20px',
+              zIndex: 9999,
+              boxSizing: 'border-box'
+            }}
+          >
+            <div className="popup-header-info">
+              <div className="popup-avatar-frame">
+                {player.avatarType === 'image' && player.avatarImage ? (
+                  <img className="popup-img" src={player.avatarImage} alt="Avatar" />
+                ) : (
+                  <span className="popup-emoji" id="popupEmoji">
+                    {player.avatarEmoji || '⚔️'}
+                  </span>
+                )}
+              </div>
+              <div className="popup-details">
+                <h3 className="popup-name" id="popupName">{player.name}</h3>
+                <div className="popup-level-info">
+                  <span className="popup-level">
+                    Livello <span id="popupLevel">{player.level}</span>
+                  </span>
+                  <span className="popup-title" id="popupTitle">{getPlayerTitle()}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="popup-xp-container">
-            <div className="popup-xp-bar">
-              <div
-                className="popup-xp-fill"
-                id="popupXpFill"
-                style={{ width: `${xpPercent}%` }}
-              ></div>
-            </div>
-            <div className="popup-xp-text" id="popupXpText">
-              {Math.floor(xpInLevel)} / {Math.floor(xpNeededForLevel)} XP
-            </div>
-
-            {/* Medal Progress */}
-            <div style={{ marginTop: '15px' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 'bold' }}>
-                MEDAGLIE MENSILI ({getMonthName(player.monthlyChallenge?.currentMonth)})
-              </div>
+            <div className="popup-xp-container">
               <div className="popup-xp-bar">
                 <div
                   className="popup-xp-fill"
-                  id="monthlyProgressFill"
-                  style={{
-                    width: `${Math.min(100, ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100)}%`,
-                    background: 'var(--accent-gold, #f59e0b)'
-                  }}
+                  id="popupXpFill"
+                  style={{ width: `${xpPercent}%` }}
                 ></div>
               </div>
-              <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span id="monthlyLabel">{getMonthName(player.monthlyChallenge?.currentMonth)}</span>
-                <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-                  {player.monthlyChallenge?.points || 0}/{player.monthlyChallenge?.target || 50}
-                </span>
+              <div className="popup-xp-text" id="popupXpText">
+                {Math.floor(xpInLevel)} / {Math.floor(xpNeededForLevel)} XP
+              </div>
+
+              {/* Medal Progress */}
+              <div style={{ marginTop: '15px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 'bold' }}>
+                  MEDAGLIE MENSILI ({getMonthName(player.monthlyChallenge?.currentMonth)})
+                </div>
+                <div className="popup-xp-bar">
+                  <div
+                    className="popup-xp-fill"
+                    id="monthlyProgressFill"
+                    style={{
+                      width: `${Math.min(100, ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100)}%`,
+                      background: 'var(--accent-gold, #f59e0b)'
+                    }}
+                  ></div>
+                </div>
+                <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span id="monthlyLabel">{getMonthName(player.monthlyChallenge?.currentMonth)}</span>
+                  <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                    {player.monthlyChallenge?.points || 0}/{player.monthlyChallenge?.target || 50}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Medals Showcase Grid */}
-          <div className="popup-motto-container" style={{ marginTop: '10px' }}>
-            <div className="medals-grid" id="medalsGrid">
-              {!player.monthlyChallenge?.medals || player.monthlyChallenge?.medals?.length === 0 ? (
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                  Nessuna medaglia sbloccata questo mese
-                </span>
-              ) : (
-                player.monthlyChallenge?.medals?.map((medal, idx) => (
-                  <div
-                    key={idx}
-                    title={`${medal.name} - ${medal.earnedDate}`}
-                    className="medal-item"
-                    style={{ fontSize: '20px', cursor: 'help' }}
-                  >
-                    {medal.icon || '🏆'}
-                  </div>
-                ))
-              )}
+            {/* Medals Showcase Grid */}
+            <div className="popup-motto-container" style={{ marginTop: '10px' }}>
+              <div className="medals-grid" id="medalsGrid">
+                {!player.monthlyChallenge?.medals || player.monthlyChallenge?.medals?.length === 0 ? (
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    Nessuna medaglia sbloccata questo mese
+                  </span>
+                ) : (
+                  player.monthlyChallenge?.medals?.map((medal, idx) => (
+                    <div
+                      key={idx}
+                      title={`${medal.name} - ${medal.earnedDate}`}
+                      className="medal-item"
+                      style={{ fontSize: '20px', cursor: 'help' }}
+                    >
+                      {medal.icon || '🏆'}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Personal Motto */}
-          <div className="popup-motto-container" style={{ marginTop: '10px' }}>
-            <div
-              className="motto-display"
-              id="popupMottoDisplay"
-              onClick={() => {
-                setShowProfile(false);
-                onOpenMottoEdit();
-              }}
-              style={{ cursor: 'pointer', fontStyle: 'italic' }}
-            >
-              {player.motto ? `"${player.motto}"` : 'Inserisci il tuo motto qui... ✍️'}
+            {/* Personal Motto */}
+            <div className="popup-motto-container" style={{ marginTop: '10px' }}>
+              <div
+                className="motto-display"
+                id="popupMottoDisplay"
+                onClick={() => {
+                  setShowProfile(false);
+                  onOpenMottoEdit();
+                }}
+                style={{ cursor: 'pointer', fontStyle: 'italic' }}
+              >
+                {player.motto ? `"${player.motto}"` : 'Inserisci il tuo motto qui... ✍️'}
+              </div>
             </div>
           </div>
         </div>
@@ -211,30 +234,53 @@ export default function Header({
 
       {/* Streak Popup */}
       {showStreak && (
-        <div className="profile-popup popup-left" ref={streakRef}>
-          <div className="popup-header-info">
-            <div className="popup-avatar-frame" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
-              <span className="popup-emoji">🔥</span>
-            </div>
-            <div className="popup-details">
-              <h3 className="popup-name">Serie Attiva</h3>
-              <div className="popup-level-info">
-                <span className="popup-level">
-                  <span id="popupStreakCount">{player.globalStreak || 0}</span> Giorni
-                </span>
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9990, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setShowStreak(false)}
+        >
+          <div
+            className="profile-popup popup-left"
+            ref={streakRef}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              top: '65px',
+              left: '16px',
+              width: 'calc(100vw - 32px)',
+              maxWidth: '320px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '20px',
+              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
+              padding: '20px',
+              zIndex: 9999,
+              boxSizing: 'border-box'
+            }}
+          >
+            <div className="popup-header-info">
+              <div className="popup-avatar-frame" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+                <span className="popup-emoji">🔥</span>
+              </div>
+              <div className="popup-details">
+                <h3 className="popup-name">Serie Attiva</h3>
+                <div className="popup-level-info">
+                  <span className="popup-level">
+                    <span id="popupStreakCount">{player.globalStreak || 0}</span> Giorni
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="popup-motto-container">
-            <div className="freeze-info" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span className="freeze-icon">❄️</span>
-              <span className="freeze-count" id="popupFreezeCount">{player.streakFreezes || 0}</span>
-              <span className="freeze-max">/ 2 congelamenti rimanenti</span>
+            <div className="popup-motto-container">
+              <div className="freeze-info" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span className="freeze-icon">❄️</span>
+                <span className="freeze-count" id="popupFreezeCount">{player.streakFreezes || 0}</span>
+                <span className="freeze-max">/ 2 congelamenti rimanenti</span>
+              </div>
+              <p className="freeze-desc" style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>
+                I congelamenti salvano la tua serie se salti un giorno. Si ripristinano il 1° giorno del mese.
+              </p>
             </div>
-            <p className="freeze-desc" style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>
-              I congelamenti salvano la tua serie se salti un giorno. Si ripristinano il 1° giorno del mese.
-            </p>
           </div>
         </div>
       )}
