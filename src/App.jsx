@@ -829,9 +829,22 @@ export default function App() {
   };
 
   return (
-    <div className="app-container" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div
+      className="app-container"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        maxWidth: '480px',
+        margin: '0 auto',
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'var(--bg-primary)',
+        color: 'var(--text-primary)'
+      }}
+    >
       {/* Upper header */}
-      <div className="flex-shrink-0 w-full z-40">
+      <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
         <Header
           player={player}
           setPlayer={setPlayer}
@@ -843,16 +856,24 @@ export default function App() {
         />
       </div>
 
-      {/* Primary content area */}
+      {/* Primary content area (Bounded strictly between Header and BottomNav) */}
       <main
-        className="flex-1 w-full overflow-y-auto px-5 pt-3 pb-28 no-scrollbar box-border touch-pan-y"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="content-area"
+        style={{
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
+          overflowY: 'auto',
+          padding: '16px',
+          boxSizing: 'border-box',
+          WebkitOverflowScrolling: 'touch'
+        }}
       >
         {renderActiveTab()}
       </main>
 
       {/* Lower bottom navigation */}
-      <div className="flex-shrink-0 w-full z-40">
+      <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
         <BottomNav
           activeTab={activeTab}
           setActiveTab={setActiveTab}

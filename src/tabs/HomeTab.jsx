@@ -215,7 +215,7 @@ export default function HomeTab({
   const recentXpLogs = (xpLog || []).slice(-5).reverse();
 
   return (
-    <section id="section-home" className="section active" style={{ paddingBottom: '90px' }}>
+    <section id="section-home" className="section active">
       {/* 1. Radar Chart (FIRST THING TO SEE - 1:1 aspect ratio) */}
       <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContents: 'center' }}>
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>

@@ -34,7 +34,7 @@ export default function MissionsTab({
   const completedQuests = quests.filter(q => q.completed);
 
   return (
-    <section id="section-activities" className="section active" style={{ paddingBottom: '90px' }}>
+    <section id="section-activities" className="section active">
       {/* Top Header */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h2 style={{ margin: 0 }}>⚔️ Registro Missioni</h2>
