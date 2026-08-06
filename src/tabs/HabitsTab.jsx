@@ -234,15 +234,8 @@ export default function HabitsTab({
                 onClick={() => setViewedDate(dateStr)}
                 className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'active' : ''}`}
               >
-                <div className="day-name">{dayNames[day.getDay()]}</div>
-                <div className="day-number">{day.getDate()}</div>
-                <div
-                  className="day-dot"
-                  style={{
-                    backgroundColor: completionPct === 100 ? '#22c55e' : completionPct > 0 ? 'var(--accent-primary)' : 'transparent',
-                    opacity: completionPct > 0 ? 1 : 0
-                  }}
-                ></div>
+                <div className="calendar-day-name">{dayNames[day.getDay()]}</div>
+                <div className="calendar-day-number">{day.getDate()}</div>
               </div>
             );
           })}

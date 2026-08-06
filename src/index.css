@@ -3947,6 +3947,9 @@ textarea {
     text-align: center;
     padding: 30px 20px;
     color: var(--text-muted);
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.12));
+    border-radius: var(--radius-lg, 14px);
 }
 
 .empty-state-icon {
