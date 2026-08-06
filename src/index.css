@@ -726,6 +726,43 @@ body {
     text-align: right;
 }
 
+.popup-motto-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md, 12px);
+    padding: 10px 12px;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+
+.motto-display {
+    color: var(--text-primary);
+    font-style: italic;
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.medals-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 28px;
+}
+
+.medal-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 1px solid var(--glass-border);
+    font-size: 18px;
+}
+
 .popup-motto-container label {
     display: block;
     font-size: 12px;

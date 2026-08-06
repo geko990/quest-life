@@ -11,24 +11,12 @@ export default function Header({
   settings,
   onOpenMottoEdit
 }) {
-  const [showProfile, setShowProfile] = useState(false);
+  const [showProfile, setShowProfile] = useState(true);
   const [showStreak, setShowStreak] = useState(false);
   const profileRef = useRef(null);
   const streakRef = useRef(null);
 
-  // Close popups on click outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (profileRef.current && !profileRef.current.contains(event.target) && !event.target.closest('.header-profile')) {
-        setShowProfile(false);
-      }
-      if (streakRef.current && !streakRef.current.contains(event.target) && !event.target.closest('.header-streak')) {
-        setShowStreak(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // Backdrop overlay handles popup closure on click outside
 
   // Calculate XP and level info
   const currentLevelTotal = getCumulativeXpForLevel(player.level);
