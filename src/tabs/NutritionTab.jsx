@@ -280,7 +280,7 @@ export default function NutritionTab({
             <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{waterCurrent * 0.25}</span>
             <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>L</span>
           </div>
-          <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>Obiettivo: {waterGoal * 0.25}L ({waterGoal} bicchieri)</div>
+          <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Obiettivo: {waterGoal * 0.25}L ({waterGoal} bicch.)</div>
           <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${waterPct}%`, background: '#06b6d4', transition: 'width 0.3s' }}></div>
           </div>

@@ -36,8 +36,8 @@ export default function MissionsTab({
   return (
     <section id="section-activities" className="section active">
       {/* Top Header */}
-      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>⚔️ Registro Missioni</h2>
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '15px' }}>
+        <h2 style={{ margin: 0, fontSize: '1.25rem' }}>⚔️ Registro Missioni</h2>
         <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
           {settings.showDiceButton !== false && (
             <button

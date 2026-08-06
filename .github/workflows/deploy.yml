@@ -33,6 +33,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Copy public assets to dist
+        run: |
+          cp public/sw.js dist/sw.js
+          cp public/version.json dist/version.json
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

@@ -11,7 +11,7 @@ export default function Header({
   settings,
   onOpenMottoEdit
 }) {
-  const [showProfile, setShowProfile] = useState(true);
+  const [showProfile, setShowProfile] = useState(false);
   const [showStreak, setShowStreak] = useState(false);
   const profileRef = useRef(null);
   const streakRef = useRef(null);

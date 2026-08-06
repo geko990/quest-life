@@ -358,7 +358,7 @@ export default function SettingsTab({
         </div>
 
         {/* Version Badge & Force Update */}
-        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+        <div style={{ textAlign: 'center', padding: '16px 0 40px 0' }}>
           <button
             onClick={() => forceUpdateApp(true)}
             className="btn-primary"
