@@ -3586,16 +3586,21 @@ textarea {
     z-index: 2;
     width: 100%;
     box-sizing: border-box;
-    background: var(--bg-primary);
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.12));
+    box-shadow: var(--glass-shadow, 0 4px 12px rgba(0, 0, 0, 0.06));
     padding: 14px 16px;
-    border-radius: var(--radius-md);
-    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    border-radius: var(--radius-lg, 14px);
+    transition: transform 0.2s ease, opacity 0.2s ease;
     display: flex;
     align-items: center;
     gap: 12px;
     cursor: pointer;
     touch-action: pan-y;
-    /* Prevent horizontal scroll interference on iOS */
+}
+
+.task-card.completed .swipe-content {
+    opacity: 0.75;
 }
 
 .task-card.locked .swipe-content {

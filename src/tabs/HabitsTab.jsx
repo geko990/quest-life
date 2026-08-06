@@ -205,7 +205,7 @@ export default function HabitsTab({
   const habitsToShow = visibleHabits.map(h => ({
     ...h,
     completed: isHabitCompletedOnDate(h.id, viewedDate)
-  })).sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+  }));
 
   const formatTime = (secs) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
@@ -343,7 +343,7 @@ export default function HabitsTab({
               return (
                 <div
                   key={h.id}
-                  className={`task-card ${h.locked ? 'locked' : ''}`}
+                  className={`task-card ${h.locked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}`}
                   data-type="habit"
                   data-id={h.id}
                 >
