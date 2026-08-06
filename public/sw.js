@@ -1,7 +1,8 @@
 // RPG LIFE SERVICE WORKER
-const CACHE_NAME = 'rpg-life-v5.8.6';
+const CACHE_NAME = 'rpg-life-v5.8.6-1786041358503';
+const SW_VERSION = '5.8.6';
 
-// Files to cache on install (app shell)
+// Assets to precache on install (app shell)
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -9,8 +10,8 @@ const PRECACHE_ASSETS = [
   './manifest.json'
 ];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(
+self.addEventListener('install', (event) => {
+  event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(PRECACHE_ASSETS);
     })
@@ -18,8 +19,8 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
@@ -28,17 +29,33 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-self.addEventListener('fetch', (e) => {
-  // Network First strategy for all requests so user always receives latest code immediately
-  e.respondWith(
-    fetch(e.request)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // Never cache version.json or sw.js; always fetch fresh from network without HTTP cache
+  if (url.pathname.endsWith('/version.json') || url.pathname.endsWith('/sw.js')) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Network First strategy for all app resources so user receives latest code immediately
+  event.respondWith(
+    fetch(event.request)
       .then((response) => {
-        if (response && response.status === 200 && e.request.url.startsWith('http')) {
+        if (response && response.status === 200 && event.request.url.startsWith('http') && event.request.method === 'GET') {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         }
         return response;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(event.request))
   );
 });

@@ -111,43 +111,6 @@ export function formatDate(dateStr) {
     return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
 }
 
-export async function forceUpdateApp(promptConfirm = true) {
-    if (promptConfirm && !window.confirm("Vuoi forzare l'aggiornamento dell'applicazione? Verrà svuotata la cache e ricaricata l'app.")) {
-        return;
-    }
+export { forceUpdateApp, checkAppUpdate } from './pwaManager';
 
-    try {
-        if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-                await registration.unregister();
-            }
-        }
-
-        if ('caches' in window) {
-            const keys = await caches.keys();
-            await Promise.all(keys.map(key => caches.delete(key)));
-        }
-    } catch (e) {
-        console.error("Error clearing SW cache", e);
-    }
-
-    window.location.reload(true);
-}
-
-export async function checkAppUpdate() {
-    try {
-        if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-                await registration.update();
-            }
-        }
-        alert("Controllo aggiornamenti completato. Ricarico l'applicazione...");
-    } catch (e) {
-        console.error("Error updating SW", e);
-    }
-
-    window.location.reload(true);
-}
 
