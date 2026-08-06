@@ -31,510 +31,210 @@ export default function SettingsTab({
   };
 
   return (
-    <div className="w-full space-y-6 pb-28 box-border">
+    <section id="section-settings" className="section active" style={{ paddingBottom: '90px' }}>
       {/* Tab Header */}
-      <div className="flex justify-between items-center px-1">
-        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
-          ⚙️ Impostazioni
-        </h2>
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <h2 style={{ margin: 0 }}>⚙️ Impostazioni</h2>
       </div>
 
-      {/* Group 1: Profile & Gameplay */}
-      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
-        <div
-          onClick={() => toggleGroup('profile')}
-          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
-        >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
-            👤 Profilo & Gameplay
-          </h3>
-          <span className="text-xs text-text-secondary">
-            {expandedGroup === 'profile' ? '▲' : '▼'}
-          </span>
-        </div>
-
-        {expandedGroup === 'profile' && (
-          <div className="p-5 space-y-5 text-xs animate-slide-down">
-            {/* Name Input */}
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Nome Giocatore</label>
-              <input
-                type="text"
-                defaultValue={player.name}
-                onBlur={(e) => updatePlayerName(e.target.value)}
-                placeholder="Inserisci il tuo nome..."
-                className="bg-slate-950/40 border border-border-color rounded-xl px-4 py-3 text-sm text-text-main focus:border-accent-primary focus:outline-none shadow-sm"
-              />
-            </div>
-
-            {/* Day Start Hour */}
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Inizio nuovo giorno</label>
-              <select
-                value={settings.dayStartTime}
-                onChange={(e) => updateSetting('dayStartTime', parseInt(e.target.value))}
-                className="bg-slate-950/40 border border-border-color rounded-xl px-4 py-3 text-xs text-text-main focus:outline-none shadow-sm"
-              >
-                <option value="0">00:00 (Mezzanotte)</option>
-                <option value="1">01:00</option>
-                <option value="2">02:00</option>
-                <option value="3">03:00</option>
-                <option value="4">04:00</option>
-                <option value="5">05:00</option>
-                <option value="6">06:00</option>
-              </select>
-            </div>
-
-            {/* Week Start Day */}
-            <div className="flex justify-between items-center pt-2">
-              <span className="font-bold text-text-main">Inizio Settimana</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('weekStart', 'monday')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.weekStart === 'monday' ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  Lun
-                </button>
-                <button
-                  onClick={() => updateSetting('weekStart', 'sunday')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.weekStart !== 'monday' ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  Dom
-                </button>
-              </div>
-            </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* Group 1: Profile & Gameplay */}
+        <div className="glass-panel" style={{ overflow: 'hidden' }}>
+          <div
+            onClick={() => toggleGroup('profile')}
+            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              👤 Profilo & Gameplay
+            </h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {expandedGroup === 'profile' ? '▲' : '▼'}
+            </span>
           </div>
-        )}
-      </div>
 
-      {/* Group 2: Personalizzazione (Visuals & Custom themes & Light/Dark Mode) */}
-      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
-        <div
-          onClick={() => toggleGroup('visuals')}
-          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
-        >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
-            🎨 Personalizzazione
-          </h3>
-          <span className="text-xs text-text-secondary">
-            {expandedGroup === 'visuals' ? '▲' : '▼'}
-          </span>
-        </div>
+          {expandedGroup === 'profile' && (
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
+              {/* Name Input */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Nome Giocatore</label>
+                <input
+                  type="text"
+                  defaultValue={player.name}
+                  onBlur={(e) => updatePlayerName(e.target.value)}
+                  placeholder="Inserisci il tuo nome..."
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '13px' }}
+                />
+              </div>
 
-        {expandedGroup === 'visuals' && (
-          <div className="p-5 space-y-5 text-xs animate-slide-down">
-            {/* Light / Dark Mode selector */}
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">
-                Modalità Luminosità (Light / Dark)
-              </label>
-              <div className="grid grid-cols-3 gap-2 bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => {
-                    updateSetting('themeMode', 'dark');
-                    updateSetting('mode', 'dark');
-                  }}
-                  className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                    (settings.themeMode === 'dark' || (!settings.themeMode && settings.theme !== 'light'))
-                      ? 'bg-accent-primary text-white shadow-md'
-                      : 'text-text-secondary hover:text-text-main'
-                  }`}
+              {/* Day Start Hour */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Inizio nuovo giorno</label>
+                <select
+                  value={settings.dayStartTime}
+                  onChange={(e) => updateSetting('dayStartTime', parseInt(e.target.value))}
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 >
-                  <span>🌙</span>
-                  <span>Scuro</span>
-                </button>
-                <button
-                  onClick={() => {
-                    updateSetting('themeMode', 'light');
-                    updateSetting('mode', 'light');
-                  }}
-                  className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                    (settings.themeMode === 'light' || settings.theme === 'light')
-                      ? 'bg-accent-primary text-white shadow-md'
-                      : 'text-text-secondary hover:text-text-main'
-                  }`}
-                >
-                  <span>☀️</span>
-                  <span>Chiaro</span>
-                </button>
-                <button
-                  onClick={() => {
-                    updateSetting('themeMode', 'system');
-                    updateSetting('mode', 'dark');
-                  }}
-                  className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                    settings.themeMode === 'system'
-                      ? 'bg-accent-primary text-white shadow-md'
-                      : 'text-text-secondary hover:text-text-main'
-                  }`}
-                >
-                  <span>💻</span>
-                  <span>Sistema</span>
-                </button>
+                  <option value="0">00:00 (Mezzanotte)</option>
+                  <option value="1">01:00</option>
+                  <option value="2">02:00</option>
+                  <option value="3">03:00</option>
+                  <option value="4">04:00</option>
+                  <option value="5">05:00</option>
+                  <option value="6">06:00</option>
+                </select>
+              </div>
+
+              {/* Week Start Day */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Inizio Settimana</span>
+                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                  <button
+                    onClick={() => updateSetting('weekStart', 'monday')}
+                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: settings.weekStart === 'monday' ? 'var(--accent-primary)' : 'transparent', color: settings.weekStart === 'monday' ? '#fff' : 'var(--text-secondary)' }}
+                  >
+                    Lun
+                  </button>
+                  <button
+                    onClick={() => updateSetting('weekStart', 'sunday')}
+                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: settings.weekStart === 'sunday' ? 'var(--accent-primary)' : 'transparent', color: settings.weekStart === 'sunday' ? '#fff' : 'var(--text-secondary)' }}
+                  >
+                    Dom
+                  </button>
+                </div>
+              </div>
+
+              {/* Daily Penalties Toggle */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Penalità Giornaliere</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Sottrai XP per abitudini quotidiane saltate</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.enablePenalties !== false}
+                  onChange={(e) => updateSetting('enablePenalties', e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                />
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Theme presets */}
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Stile del Gioco</label>
-              <select
-                value={settings.theme}
-                onChange={(e) => {
-                  updateSetting('theme', e.target.value);
-                  if (e.target.value === 'light') {
-                    updateSetting('themeMode', 'light');
-                    updateSetting('mode', 'light');
-                  }
-                }}
-                className="bg-slate-950/40 border border-border-color rounded-xl px-4 py-3 text-xs text-text-main focus:outline-none shadow-sm"
-              >
-                <option value="dark">Standard Sci-Fi</option>
-                <option value="light">Standard Light ☀️</option>
-                <option value="fantasy">High Fantasy 💍</option>
-                <option value="dnd">Dungeons & Dragons 📜</option>
-                <option value="futuristic">Grid Runner Neon 👾</option>
-                <option value="pirate">Pirate Coast 🏴‍☠️</option>
-              </select>
-            </div>
+        {/* Group 2: Aspect & Theme */}
+        <div className="glass-panel" style={{ overflow: 'hidden' }}>
+          <div
+            onClick={() => toggleGroup('theme')}
+            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              🎨 Aspetto & Temi
+            </h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {expandedGroup === 'theme' ? '▲' : '▼'}
+            </span>
+          </div>
 
-            {/* Accent Color picker */}
-            <div className="flex flex-col gap-2">
-              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Colore dell'Accento</label>
-              <div className="flex gap-2.5 flex-wrap bg-slate-950/20 p-3 rounded-xl border border-border-color/20">
-                {ACCENT_COLORS.map((color) => {
-                  const colorsMap = {
-                    violet: 'bg-violet-500',
-                    blue: 'bg-blue-500',
-                    indigo: 'bg-indigo-500',
-                    cyan: 'bg-cyan-500',
-                    teal: 'bg-teal-500',
-                    emerald: 'bg-emerald-500',
-                    gold: 'bg-yellow-500',
-                    orange: 'bg-orange-500',
-                    rose: 'bg-rose-500',
-                    pink: 'bg-pink-500',
-                    red: 'bg-red-500',
-                    green: 'bg-green-500',
-                    yellow: 'bg-yellow-400',
-                    lime: 'bg-lime-500',
-                    sky: 'bg-sky-500',
-                  };
-                  return (
+          {expandedGroup === 'theme' && (
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
+              {/* Theme selection */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Stile Tema</label>
+                <select
+                  value={settings.theme || 'standard'}
+                  onChange={(e) => updateSetting('theme', e.target.value)}
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
+                >
+                  <option value="standard">Standard RPG</option>
+                  <option value="fantasy">Fantasy (Pergamena / Legno)</option>
+                  <option value="futuristic">Cyberpunk Neon</option>
+                  <option value="pirate">7th Sea / Pirate</option>
+                </select>
+              </div>
+
+              {/* Mode Selection */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Modalità</span>
+                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                  {['dark', 'light', 'system'].map((m) => (
                     <button
-                      key={color}
-                      onClick={() => updateSetting('accent', color)}
-                      className={`w-7 h-7 rounded-full ${colorsMap[color] || 'bg-slate-500'} flex items-center justify-center transition-all ${
-                        settings.accent === color ? 'ring-2 ring-white scale-110 shadow-md' : 'opacity-80 hover:opacity-100 hover:scale-105'
-                      }`}
-                      title={color}
-                    />
-                  );
-                })}
+                      key={m}
+                      onClick={() => updateSetting('themeMode', m)}
+                      style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: (settings.themeMode || 'dark') === m ? 'var(--accent-primary)' : 'transparent', color: (settings.themeMode || 'dark') === m ? '#fff' : 'var(--text-secondary)' }}
+                    >
+                      {m === 'dark' ? 'Scuro' : m === 'light' ? 'Chiaro' : 'Auto'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-
-            {/* Animated Background */}
-            <div className="flex justify-between items-center pt-1">
-              <span className="font-bold text-text-main">Sfondo Animato</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('animatedBackground', true)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.animatedBackground !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  ON
-                </button>
-                <button
-                  onClick={() => updateSetting('animatedBackground', false)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.animatedBackground === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  OFF
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Group 3: Funzionalità (Feature toggles) */}
-      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
-        <div
-          onClick={() => toggleGroup('features')}
-          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
-        >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
-            ⚡ Funzionalità & Meccaniche
-          </h3>
-          <span className="text-xs text-text-secondary">
-            {expandedGroup === 'features' ? '▲' : '▼'}
-          </span>
+          )}
         </div>
 
-        {expandedGroup === 'features' && (
-          <div className="p-5 space-y-4 text-xs animate-slide-down">
-            {/* Daily Planner */}
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-text-main">Nuovo Turno (Daily Planner)</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('enableDailyPlanner', true)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.enableDailyPlanner !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  ON
-                </button>
-                <button
-                  onClick={() => updateSetting('enableDailyPlanner', false)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.enableDailyPlanner === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  OFF
-                </button>
-              </div>
-            </div>
-
-            {/* Sound effects */}
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-text-main">Effetti Sonori</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('soundEnabled', true)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.soundEnabled !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  ON
-                </button>
-                <button
-                  onClick={() => updateSetting('soundEnabled', false)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.soundEnabled === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  OFF
-                </button>
-              </div>
-            </div>
-
-            {/* Weekly Recap */}
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-text-main">Recap Settimanale</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('enableWeeklyRecap', true)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.enableWeeklyRecap !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  ON
-                </button>
-                <button
-                  onClick={() => updateSetting('enableWeeklyRecap', false)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.enableWeeklyRecap === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  OFF
-                </button>
-              </div>
-            </div>
-
-            {/* Dice Button */}
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-text-main">🎲 Bottone Dado</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('showDiceButton', true)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.showDiceButton !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  ON
-                </button>
-                <button
-                  onClick={() => updateSetting('showDiceButton', false)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.showDiceButton === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  OFF
-                </button>
-              </div>
-            </div>
-
-            {/* Daily Penalties */}
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-text-main">⚠️ Penalità Giornaliere</span>
-              <div className="flex bg-slate-950/40 p-1 rounded-xl border border-border-color/30">
-                <button
-                  onClick={() => updateSetting('enableDailyPenalties', true)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.enableDailyPenalties !== false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  ON
-                </button>
-                <button
-                  onClick={() => updateSetting('enableDailyPenalties', false)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    settings.enableDailyPenalties === false ? 'bg-accent-primary text-white shadow-sm' : 'text-text-secondary'
-                  }`}
-                >
-                  OFF
-                </button>
-              </div>
-            </div>
+        {/* Group 3: Data Management & Backup */}
+        <div className="glass-panel" style={{ overflow: 'hidden' }}>
+          <div
+            onClick={() => toggleGroup('data')}
+            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              💾 Gestione Dati & Backup
+            </h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {expandedGroup === 'data' ? '▲' : '▼'}
+            </span>
           </div>
-        )}
-      </div>
 
-      {/* Group 4: Dati & Cloud (Local DB, Import/Export, Reset) */}
-      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
-        <div
-          onClick={() => toggleGroup('data')}
-          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
-        >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
-            💾 Dati & Backup
-          </h3>
-          <span className="text-xs text-text-secondary">
-            {expandedGroup === 'data' ? '▲' : '▼'}
-          </span>
-        </div>
-
-        {expandedGroup === 'data' && (
-          <div className="p-5 space-y-5 text-xs animate-slide-down">
-            {/* Database File Connector */}
-            <div className="bg-slate-950/40 p-4 rounded-xl border border-border-color/40 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-[10px] uppercase text-text-secondary tracking-wider">File Database Locale</span>
-                <span className="font-bold">
-                  {fileHandle ? (
-                    <span className="text-green-400">🟢 Collegato: {fileHandle.name}</span>
-                  ) : (
-                    <span className="text-text-secondary/70">Nessun file</span>
-                  )}
-                </span>
-              </div>
-              <button
-                onClick={fileHandle ? onLinkDatabase : onReconnectDatabase}
-                className="w-full bg-accent-primary hover:brightness-110 text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow flex items-center justify-center gap-2"
-              >
-                <span>🔗</span>
-                <span>{fileHandle ? 'Cambia File Collegato' : 'Collega Database File'}</span>
-              </button>
-              <p className="text-[10px] text-text-secondary/80 leading-relaxed text-center">
-                Salva automaticamente tutte le modifiche su un file locale sul tuo computer (solo Desktop Chrome/Safari/Edge).
-              </p>
-            </div>
-
-            {/* Export / Import buttons */}
-            <div className="grid grid-cols-2 gap-3">
+          {expandedGroup === 'data' && (
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={onExport}
-                className="bg-slate-950/40 hover:bg-slate-950/60 border border-border-color rounded-xl py-3 font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-text-main shadow-sm"
+                className="btn-primary"
+                style={{ padding: '10px 16px', fontSize: '12px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                <span>Esporta</span>
-                <span>📤</span>
+                📤 Esporta Backup JSON
               </button>
               <button
                 onClick={onImport}
-                className="bg-slate-950/40 hover:bg-slate-950/60 border border-border-color rounded-xl py-3 font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-text-main shadow-sm"
+                style={{ padding: '10px 16px', fontSize: '12px', fontWeight: 'bold', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                <span>Importa</span>
-                <span>📥</span>
+                📥 Importa Backup JSON
               </button>
-            </div>
-
-            {/* Repair & Reset tools */}
-            <div className="pt-3 border-t border-border-color/30 space-y-3">
-              <label className="font-bold text-text-secondary uppercase text-[10px] tracking-wider">Manutenzione Dati</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={onFixData}
-                  className="bg-slate-800/50 hover:bg-slate-800 border border-border-color/50 rounded-xl py-2.5 font-semibold text-[10px] transition-colors"
-                >
-                  🔧 Ripara Database
-                </button>
-                <button
-                  onClick={onRepairStreaks}
-                  className="bg-slate-800/50 hover:bg-slate-800 border border-border-color/50 rounded-xl py-2.5 font-semibold text-[10px] transition-colors"
-                >
-                  🔥 Ripara Streak
-                </button>
-              </div>
+              <button
+                onClick={onFixData}
+                style={{ padding: '8px 12px', fontSize: '11px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                🔧 Ripara Integrità Database
+              </button>
+              <button
+                onClick={onRepairStreaks}
+                style={{ padding: '8px 12px', fontSize: '11px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                🔥 Ricalcola Serie Attive
+              </button>
               <button
                 onClick={onReset}
-                className="w-full bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-500 hover:text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow-sm"
+                style={{ padding: '8px 12px', fontSize: '11px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', cursor: 'pointer', marginTop: '6px' }}
               >
-                ⚠️ Reset Completo dell'App
+                ⚠️ Azzera Tutti i Dati
               </button>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Group 5: Info & System (Versione & Aggiornamenti) */}
-      <div className="glass-panel overflow-hidden border border-border-color shadow-lg">
-        <div
-          onClick={() => toggleGroup('system')}
-          className="px-5 py-4 bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer flex justify-between items-center select-none"
-        >
-          <h3 className="font-bold text-xs text-text-main flex items-center gap-2 font-cinzel tracking-wide">
-            ℹ️ Sistema & Aggiornamenti
-          </h3>
-          <span className="text-xs text-text-secondary">
-            {expandedGroup === 'system' ? '▲' : '▼'}
-          </span>
+          )}
         </div>
 
-        {expandedGroup === 'system' && (
-          <div className="p-5 space-y-5 text-xs animate-slide-down">
-            {/* Version Display (Clickable for Force Update) */}
-            <div
-              onClick={() => forceUpdateApp(true)}
-              className="flex justify-between items-center bg-slate-950/40 p-4 rounded-xl border border-border-color/40 cursor-pointer hover:border-accent-primary/50 transition-all select-none shadow-sm"
-              title="Tocca per forzare l'aggiornamento"
-            >
-              <div>
-                <span className="font-bold text-text-main block">Versione Applicazione</span>
-                <span className="text-[10px] text-text-secondary">Tocca qui per forzare il ricaricamento</span>
-              </div>
-              <span className="px-3 py-1 bg-accent-primary/20 border border-accent-primary/40 text-accent-primary font-bold rounded-full text-xs">
-                v{APP_VERSION}
-              </span>
-            </div>
-
-            {/* Update Action Buttons */}
-            <div className="space-y-3">
-              <button
-                onClick={checkAppUpdate}
-                className="w-full bg-slate-800/60 hover:bg-slate-800 border border-border-color/50 text-text-main font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
-              >
-                <span>🔄</span>
-                <span>Controlla Aggiornamenti Normale</span>
-              </button>
-
-              <button
-                onClick={() => forceUpdateApp(true)}
-                className="w-full bg-gradient-to-r from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 font-bold py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
-              >
-                <span>⚡</span>
-                <span>Forza Aggiornamento (Svuota Cache & SW)</span>
-              </button>
-            </div>
+        {/* Version Badge & Force Update */}
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <button
+            onClick={() => forceUpdateApp(true)}
+            className="btn-primary"
+            style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', marginBottom: '8px' }}
+          >
+            🔄 Forza Aggiornamento PWA
+          </button>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+            RPG Life v{APP_VERSION}
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
