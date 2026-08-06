@@ -210,7 +210,7 @@ export default function SettingsTab({
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          justify-content: 'center',
+                          justifyContent: 'center',
                           color: '#ffffff',
                           fontSize: '12px',
                           fontWeight: 'bold',

@@ -1,11 +1,11 @@
 {
   "name": "rpg-life",
   "private": true,
-  "version": "5.8.6",
+  "version": "5.8.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/update-version.js && vite build && cp -r dist/* .",
+    "build": "node scripts/update-version.js && vite build && cp -r dist/* . && node scripts/update-version.js --post",
     "preview": "vite preview"
   },
   "dependencies": {

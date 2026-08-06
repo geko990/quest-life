@@ -893,7 +893,7 @@ export default function App() {
             boxShadow: '0 10px 30px rgba(124, 58, 237, 0.5)',
             display: 'flex',
             alignItems: 'center',
-            justify-content: 'space-between',
+            justifyContent: 'space-between',
             cursor: 'pointer',
             fontSize: '12px',
             fontWeight: 'bold',
