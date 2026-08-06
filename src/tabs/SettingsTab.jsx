@@ -7,6 +7,7 @@ export default function SettingsTab({
   setSettings,
   player,
   setPlayer,
+  xpLog = [],
   fileHandle,
   onLinkDatabase,
   onReconnectDatabase,
@@ -317,6 +318,41 @@ export default function SettingsTab({
               >
                 ⚠️ Azzera Tutti i Dati
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* Group 5: Storico Imprese Recenti */}
+        <div className="glass-panel" style={{ overflow: 'hidden' }}>
+          <div
+            onClick={() => toggleGroup('history')}
+            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              📜 Storico Imprese Recenti
+            </h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {expandedGroup === 'history' ? '▲' : '▼'}
+            </span>
+          </div>
+
+          {expandedGroup === 'history' && (
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(xpLog || []).length === 0 ? (
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
+                  Nessuna impresa registrata di recente.
+                </p>
+              ) : (
+                (xpLog || []).slice(-10).reverse().map((log, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>✨</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{log.reason || 'Attività completata'}</span>
+                    </div>
+                    <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>+{log.amount} XP</span>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>

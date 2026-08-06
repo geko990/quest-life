@@ -11,9 +11,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=5.8.4')
+    navigator.serviceWorker.register('./sw.js?v=5.8.5')
       .then(reg => {
-        console.log('PWA ServiceWorker registered (v5.8.4)');
+        console.log('PWA ServiceWorker registered (v5.8.5)');
         reg.update();
       })
       .catch(err => console.log('SW registration error:', err));

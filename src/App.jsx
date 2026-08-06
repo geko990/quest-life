@@ -44,6 +44,13 @@ export default function App() {
   const [inventory, setInventory] = useState(initialFullState.inventory);
   const [health, setHealth] = useState(initialFullState.health);
   const [settings, setSettings] = useState(initialFullState.settings);
+  const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);
+
+  const handleToggleDailyAction = (actionId) => {
+    setDailyActions(prev => (
+      prev.includes(actionId) ? prev.filter(id => id !== actionId) : [...prev, actionId]
+    ));
+  };
 
   const [activeTab, setActiveTab] = useState('home');
   const [fileHandle, setFileHandle] = useState(null);
@@ -782,10 +789,13 @@ export default function App() {
         return (
           <HomeTab
             stats={stats}
+            setStats={setStats}
             xpLog={xpLog}
             player={player}
             health={health}
             pomodoro={pomodoro}
+            dailyActions={dailyActions}
+            onToggleDailyAction={handleToggleDailyAction}
             onOpenModal={handleOpenModal}
             onDeleteStat={(id) => setStats(prev => prev.filter(s => s.id !== id))}
             onEditStat={(data) => handleOpenModal(data.type, data)}
@@ -850,6 +860,7 @@ export default function App() {
             setSettings={setSettings}
             player={player}
             setPlayer={setPlayer}
+            xpLog={xpLog}
             fileHandle={fileHandle}
             onLinkDatabase={handleLinkDatabase}
             onReconnectDatabase={handleReconnectDatabase}
