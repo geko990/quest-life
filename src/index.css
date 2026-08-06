@@ -5,10 +5,19 @@
    Complete Styles with All Features
    ============================================ */
 
-/* CSS Variable Aliases for React Compatibility */
+/* CSS Variable Aliases & Utility Classes for React Compatibility */
 :root {
     --bg-main: var(--bg-primary, #f8f9fc);
     --text-main: var(--text-primary, #1a1a2e);
+}
+
+.glass-panel,
+.card {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.12));
+    border-radius: var(--radius-lg, 14px);
+    box-shadow: var(--glass-shadow, 0 4px 12px rgba(0, 0, 0, 0.06));
+    color: var(--text-primary);
 }
 
 /* ============================================

@@ -145,8 +145,8 @@ export default function HomeTab({
             key={`grid-${idx}`}
             points={path}
             fill="none"
-            stroke="var(--glass-border)"
-            strokeWidth="1"
+            stroke="rgba(124, 58, 237, 0.25)"
+            strokeWidth="1.5"
           />
         ))}
         {axisLines}
