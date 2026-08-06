@@ -166,11 +166,111 @@ export default function SettingsTab({
                   ))}
                 </div>
               </div>
+              {/* Accent Color Selection (Colore Dettagli) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Colore Dettagli (Accent)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                  {ACCENT_COLORS.map((c) => {
+                    const activeColor = settings.accent || settings.accentColor || 'violet';
+                    const isSelected = activeColor === c;
+                    
+                    const hexMap = {
+                      violet: '#7c3aed',
+                      blue: '#3b82f6',
+                      indigo: '#6366f1',
+                      cyan: '#06b6d4',
+                      teal: '#14b8a6',
+                      emerald: '#10b981',
+                      gold: '#f59e0b',
+                      orange: '#f97316',
+                      rose: '#f43f5e',
+                      pink: '#ec4899',
+                      red: '#ef4444',
+                      green: '#22c55e',
+                      yellow: '#eab308',
+                      lime: '#84cc16',
+                      sky: '#0ea5e9'
+                    };
+
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => {
+                          updateSetting('accent', c);
+                          updateSetting('accentColor', c);
+                        }}
+                        title={c}
+                        style={{
+                          height: '32px',
+                          borderRadius: '10px',
+                          background: hexMap[c] || '#7c3aed',
+                          border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)',
+                          boxShadow: isSelected ? `0 0 10px ${hexMap[c] || '#7c3aed'}` : 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify-content: 'center',
+                          color: '#ffffff',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          transition: 'transform 0.15s ease'
+                        }}
+                      >
+                        {isSelected ? '✓' : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Group 3: Data Management & Backup */}
+        {/* Group 3: File Database Local */}
+        <div className="glass-panel" style={{ overflow: 'hidden' }}>
+          <div
+            onClick={() => toggleGroup('storage')}
+            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              📁 Sync File Locale (PC / Chrome)
+            </h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {expandedGroup === 'storage' ? '▲' : '▼'}
+            </span>
+          </div>
+
+          {expandedGroup === 'storage' && (
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
+              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                Collega un file `.json` locale per salvare le modifiche direttamente sul tuo disco rigido ad ogni azione.
+              </p>
+              {fileHandle ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '10px 12px', borderRadius: '8px' }}>
+                  <div style={{ fontWeight: 'bold', color: '#22c55e', fontSize: '11px' }}>
+                    ✓ File Locale Collegato: {fileHandle.name}
+                  </div>
+                  <button
+                    onClick={onReconnectDatabase}
+                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer' }}
+                  >
+                    🔄 Riconnetti Autorizzazioni File
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={onLinkDatabase}
+                  className="btn-primary"
+                  style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                >
+                  🔗 Collega File Database su Disco
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Group 4: Data Management & Backup */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('data')}
