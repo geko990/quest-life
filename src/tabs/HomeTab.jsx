@@ -33,7 +33,6 @@ export default function HomeTab({
         xpByStats[log.statId] = (xpByStats[log.statId] || 0) + log.amount;
       }
     });
-    // Ensure no stat XP goes below 0
     Object.keys(xpByStats).forEach(key => {
       xpByStats[key] = Math.max(0, xpByStats[key]);
     });
@@ -47,7 +46,7 @@ export default function HomeTab({
   const renderRadarChart = () => {
     if (visibleStats.length === 0) {
       return (
-        <div className="text-center text-xs text-text-secondary py-6">
+        <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-secondary)', padding: '24px 0' }}>
           Rendi visibile almeno un attributo per generare il grafico.
         </div>
       );
@@ -58,7 +57,6 @@ export default function HomeTab({
     const radius = 110;
     const N = visibleStats.length;
 
-    // Data points & Max calculation
     const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
     const maxVal = Math.max(50, ...rollingData);
 
@@ -71,7 +69,6 @@ export default function HomeTab({
       };
     };
 
-    // Grid webs
     const gridLevels = [0.25, 0.5, 0.75, 1.0];
     const gridPaths = gridLevels.map(level => {
       const points = [];
@@ -82,7 +79,6 @@ export default function HomeTab({
       return points.join(' ');
     });
 
-    // Axis lines
     const axisLines = [];
     for (let i = 0; i < N; i++) {
       const endCoords = getCoordinates(i, 1.0);
@@ -93,23 +89,22 @@ export default function HomeTab({
           y1={center}
           x2={endCoords.x}
           y2={endCoords.y}
-          stroke="var(--border-color)"
+          stroke="var(--glass-border)"
           strokeWidth="1.5"
           strokeDasharray="3,3"
         />
       );
     }
 
-    // Emojis labels position
     const labelItems = visibleStats.map((s, i) => {
       const coords = getCoordinates(i, 1.22);
       return (
-        <g key={`label-${s.id}`} className="cursor-pointer" onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
+        <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
             y={coords.y + 9}
             textAnchor="middle"
-            className="text-3xl filter drop-shadow select-none hover:scale-125 transition-transform"
+            style={{ fontSize: '28px', userSelect: 'none' }}
           >
             {s.icon}
           </text>
@@ -117,7 +112,6 @@ export default function HomeTab({
       );
     });
 
-    // Player XP Polygon
     const playerPoints = visibleStats.map((s, i) => {
       const val = rollingXp[s.id] || 0;
       const factor = val / maxVal;
@@ -135,21 +129,23 @@ export default function HomeTab({
           cx={coords.x}
           cy={coords.y}
           r="5"
-          className="fill-accent-primary stroke-bg-main cursor-pointer"
+          fill="var(--accent-primary)"
+          stroke="var(--bg-primary)"
           strokeWidth="2"
+          style={{ cursor: 'pointer' }}
           onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
         />
       );
     });
 
     return (
-      <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[340px] max-h-[340px] mx-auto select-none drop-shadow-xl">
+      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '340px', maxHeight: '340px', margin: '0 auto' }}>
         {gridPaths.map((path, idx) => (
           <polygon
             key={`grid-${idx}`}
             points={path}
             fill="none"
-            stroke="var(--border-color)"
+            stroke="var(--glass-border)"
             strokeWidth="1"
           />
         ))}
@@ -157,7 +153,8 @@ export default function HomeTab({
         {playerPoints && (
           <polygon
             points={playerPoints}
-            className="fill-accent-primary/25 stroke-accent-primary"
+            fill="rgba(124, 58, 237, 0.25)"
+            stroke="var(--accent-primary)"
             strokeWidth="3"
             strokeLinejoin="round"
           />
@@ -179,31 +176,35 @@ export default function HomeTab({
       <div
         key={stat.id}
         onClick={() => onOpenStatDetail && onOpenStatDetail(stat)}
-        className={`glass-panel px-4 py-3 flex flex-col justify-between min-h-[60px] cursor-pointer hover:border-accent-primary/60 border border-white/10 shadow-md transition-all ${
-          !stat.visible ? 'opacity-40 hover:opacity-75' : ''
-        }`}
+        className="glass-panel"
+        style={{
+          padding: '12px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          minHeight: '60px',
+          cursor: 'pointer',
+          opacity: !stat.visible ? 0.4 : 1
+        }}
       >
-        {/* Card Header (Icon + Name + Level) */}
         <div>
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xl leading-none filter drop-shadow-sm">{stat.icon}</span>
-            <span className="text-[9px] font-extrabold text-accent-primary px-1.5 py-0.5 bg-accent-primary/15 rounded-md border border-accent-primary/25">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ fontSize: '20px' }}>{stat.icon}</span>
+            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', padding: '2px 6px', background: 'rgba(124, 58, 237, 0.15)', borderRadius: '4px' }}>
               Lvl {stat.level}
             </span>
           </div>
-          <h4 className="text-xs font-bold text-text-main truncate tracking-wide" title={stat.name}>{stat.name}</h4>
+          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }} title={stat.name}>{stat.name}</h4>
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-1 pt-1 border-t border-border-color/20">
-          <div className="flex justify-between text-[8px] text-text-secondary mb-0.5 font-medium">
+        <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-secondary)', marginBottom: '2px' }}>
             <span>{stat.xp}/{xpForNext} XP</span>
-            <span className="font-semibold text-accent-secondary">{Math.round(xpProgress)}%</span>
+            <span style={{ fontWeight: 'bold' }}>{Math.round(xpProgress)}%</span>
           </div>
-          <div className="w-full h-1 bg-slate-950/50 rounded-full overflow-hidden border border-border-color/30">
+          <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
             <div
-              className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary transition-all duration-300"
-              style={{ width: `${xpProgress}%` }}
+              style={{ height: '100%', width: `${xpProgress}%`, background: 'var(--accent-gradient, #7c3aed)', transition: 'width 0.3s' }}
             ></div>
           </div>
         </div>
@@ -211,88 +212,80 @@ export default function HomeTab({
     );
   };
 
-  // Recent XP Log items
   const recentXpLogs = (xpLog || []).slice(-5).reverse();
 
   return (
-    <div className="w-full space-y-5.5 pb-24 box-border">
-      {/* Tab Header */}
-      <div className="flex justify-between items-center px-1 w-full">
-        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
-          🛡️ Scheda Eroe
-        </h2>
-      </div>
-
-      {/* 1. Radar Chart (FIRST THING TO SEE - Square 1:1 aspect ratio) */}
-      <div className="glass-panel p-4 w-full aspect-square flex items-center justify-center relative overflow-hidden border border-border-color shadow-xl">
-        <div className="w-full h-full flex justify-center items-center p-2">
+    <section id="section-home" className="section active" style={{ paddingBottom: '90px' }}>
+      {/* 1. Radar Chart (FIRST THING TO SEE - 1:1 aspect ratio) */}
+      <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContents: 'center' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           {renderRadarChart()}
         </div>
       </div>
 
-      {/* 2. Section: Attributi (2 per row) */}
-      <div className="glass-panel overflow-hidden border border-border-color w-full shadow-lg">
-        <div className="px-4.5 py-3.5 bg-slate-950/30 border-b border-border-color/40 flex justify-between items-center w-full">
+      {/* 2. Section: Attributi */}
+      <div className="glass-panel" style={{ overflow: 'hidden', marginBottom: '16px' }}>
+        <div style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3
             onClick={() => toggleSection('attributes')}
-            className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
+            style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}
           >
             ⚔️ Attributi
           </h3>
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={() => onOpenModal('attribute')}
-              className="w-6 h-6 rounded-full bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-white font-bold text-sm flex items-center justify-center transition-all"
+              className="add-btn-circle"
+              style={{ width: '26px', height: '26px', fontSize: '14px' }}
               title="Aggiungi Attributo"
             >
               +
             </button>
             <span
               onClick={() => toggleSection('attributes')}
-              className="text-xs text-text-secondary cursor-pointer select-none transition-transform duration-200"
-              style={{ transform: expanded.attributes ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              style={{ cursor: 'pointer', fontSize: '12px', color: 'var(--text-secondary)', transform: expanded.attributes ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
             >
               ▼
             </span>
           </div>
         </div>
         {expanded.attributes && (
-          <div className="p-4 grid grid-cols-2 gap-3.5 animate-fade-in">
+          <div style={{ padding: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {attributes.map(renderCard)}
           </div>
         )}
       </div>
 
-      {/* 3. Section: Abilità (2 per row) */}
-      <div className="glass-panel overflow-hidden border border-border-color w-full shadow-lg">
-        <div className="px-4.5 py-3.5 bg-slate-950/30 border-b border-border-color/40 flex justify-between items-center w-full">
+      {/* 3. Section: Abilità */}
+      <div className="glass-panel" style={{ overflow: 'hidden', marginBottom: '16px' }}>
+        <div style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3
             onClick={() => toggleSection('abilities')}
-            className="font-bold text-sm text-text-main flex items-center gap-1.5 cursor-pointer font-cinzel select-none"
+            style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}
           >
             ✨ Abilità
           </h3>
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={() => onOpenModal('ability')}
-              className="w-6 h-6 rounded-full bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-white font-bold text-sm flex items-center justify-center transition-all"
+              className="add-btn-circle"
+              style={{ width: '26px', height: '26px', fontSize: '14px' }}
               title="Aggiungi Abilità"
             >
               +
             </button>
             <span
               onClick={() => toggleSection('abilities')}
-              className="text-xs text-text-secondary cursor-pointer select-none transition-transform duration-200"
-              style={{ transform: expanded.abilities ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              style={{ cursor: 'pointer', fontSize: '12px', color: 'var(--text-secondary)', transform: expanded.abilities ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
             >
               ▼
             </span>
           </div>
         </div>
         {expanded.abilities && (
-          <div className="p-4 grid grid-cols-2 gap-3.5 animate-fade-in">
+          <div style={{ padding: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {abilities.length === 0 ? (
-              <div className="col-span-2 py-6 text-center text-xs text-text-secondary italic">
+              <div style={{ gridColumn: 'span 2', padding: '16px 0', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                 Nessuna abilità speciale creata. Clicca "+" per crearne una!
               </div>
             ) : (
@@ -302,101 +295,82 @@ export default function HomeTab({
         )}
       </div>
 
-      {/* 4. D&D Daily Recap & Quick Planner Card */}
-      <div className="glass-panel p-4 border border-border-color relative overflow-hidden">
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🎲</span>
+      {/* 4. D&D Daily Recap */}
+      <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>🎲</span>
             <div>
-              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel">
+              <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 Pianificatore D&D
               </h3>
-              <p className="text-[10px] text-text-secondary">Pianifica le azioni di oggi per bonus XP</p>
+              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)' }}>Pianifica le azioni di oggi per bonus XP</p>
             </div>
           </div>
           <button
             onClick={onOpenPlanner}
-            className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:brightness-110 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 flex items-center gap-1"
+            className="btn-primary"
+            style={{ padding: '6px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
           >
             🎲 Lancia D10
           </button>
         </div>
-
-        {/* Quick status preview */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
-            <span>🎯</span>
-            <span className="text-[11px] text-text-secondary truncate">Azione: Principale</span>
-          </div>
-          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
-            <span>⚡</span>
-            <span className="text-[11px] text-text-secondary truncate">Bonus: Secondaria</span>
-          </div>
-          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
-            <span>🚶</span>
-            <span className="text-[11px] text-text-secondary truncate">Movimento: 30m</span>
-          </div>
-          <div className="bg-slate-950/40 p-2 rounded-lg border border-border-color/40 flex items-center gap-2">
-            <span>🛡️</span>
-            <span className="text-[11px] text-text-secondary truncate">Reazione: Risposta</span>
-          </div>
-        </div>
       </div>
 
-      {/* 5. Sostentamento & Health Summary Card */}
+      {/* 5. Sostentamento Summary */}
       {health && (
-        <div className="glass-panel p-4 border border-border-color">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel flex items-center gap-1.5">
+        <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               🍎 Sostentamento Oggi
             </h3>
-            <span className="text-[10px] text-accent-primary font-bold">
+            <span style={{ fontSize: '12px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
               {health.calories?.consumed || 0} / {health.calories?.target || 2000} kcal
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="bg-slate-950/30 p-2 rounded-lg border border-border-color/30">
-              <div className="text-lg">🔥</div>
-              <div className="font-bold text-text-main text-xs">{health.calories?.consumed || 0}</div>
-              <div className="text-[9px] text-text-secondary uppercase">Calorie</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', textAlign: 'center' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '18px' }}>🔥</div>
+              <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--text-primary)' }}>{health.calories?.consumed || 0}</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Calorie</div>
             </div>
-            <div className="bg-slate-950/30 p-2 rounded-lg border border-border-color/30">
-              <div className="text-lg">💧</div>
-              <div className="font-bold text-accent-primary text-xs">{health.water?.consumed || 0} / {health.water?.target || 8}</div>
-              <div className="text-[9px] text-text-secondary uppercase">Bicchieri</div>
+            <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '18px' }}>💧</div>
+              <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.target || 8}</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bicchieri</div>
             </div>
-            <div className="bg-slate-950/30 p-2 rounded-lg border border-border-color/30">
-              <div className="text-lg">🚶</div>
-              <div className="font-bold text-text-main text-xs">{health.steps?.current || 0}</div>
-              <div className="text-[9px] text-text-secondary uppercase">Passi</div>
+            <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '18px' }}>🚶</div>
+              <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--text-primary)' }}>{health.steps?.current || 0}</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Passi</div>
             </div>
           </div>
         </div>
       )}
 
       {/* 6. Storico Imprese Recenti */}
-      <div className="glass-panel p-4 border border-border-color">
-        <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-cinzel mb-3 flex items-center gap-1.5">
+      <div className="glass-panel" style={{ padding: '16px' }}>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
           📜 Storico Imprese Recenti
         </h3>
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {recentXpLogs.length === 0 ? (
-            <p className="text-xs text-text-secondary italic text-center py-2">
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
               Nessuna impresa registrata di recente. Completa abitudini o missioni per guadagnare XP!
             </p>
           ) : (
             recentXpLogs.map((log, idx) => (
-              <div key={idx} className="flex justify-between items-center bg-slate-950/30 p-2 rounded-lg border border-border-color/30 text-xs">
-                <div className="flex items-center gap-2">
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>✨</span>
-                  <span className="text-text-main font-medium">{log.reason || 'Attività completata'}</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{log.reason || 'Attività completata'}</span>
                 </div>
-                <span className="font-bold text-amber-400">+{log.amount} XP</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>+{log.amount} XP</span>
               </div>
             ))
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -34,7 +34,6 @@ export default function HabitsTab({
         setPomoSecs(diff);
 
         if (diff <= 0) {
-          // Timer finished!
           clearInterval(interval);
           handlePomodoroFinish();
         }
@@ -61,16 +60,13 @@ export default function HabitsTab({
   }, []);
 
   const handlePomodoroFinish = () => {
-    // Reward XP
     onRewardXp(pomodoro.targetStatId, pomodoro.xpPerSession);
-    
-    // Play a basic beep sound if audio is enabled
     if (settings.soundEnabled) {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
         osc.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.3);
@@ -128,7 +124,7 @@ export default function HabitsTab({
     }));
   };
 
-  // Helper: count how many times a habit was completed in a given period
+  // Count completions in period
   const countCompletionsInPeriod = (habitId, frequency, periodId) => {
     let count = 0;
     Object.keys(completionLog).forEach(dateStr => {
@@ -147,7 +143,7 @@ export default function HabitsTab({
     return count;
   };
 
-  // Helper: get visible habits for a specific date
+  // Helper: get visible habits for date
   const getHabitsForDate = (dateStr) => {
     const isPast = dateStr < todayStr;
     const isToday = dateStr === todayStr;
@@ -188,24 +184,11 @@ export default function HabitsTab({
 
   const getCompletionPercentageForDate = (dateStr) => {
     const visibleHabits = getHabitsForDate(dateStr);
-    if (visibleHabits.length === 0) {
-      // Check if there were any habits created before that date
-      const possible = habits.filter(h => {
-        if (h.locked) return false;
-        if (h.createdAt) {
-          const createdDate = h.createdAt.split('T')[0];
-          if (createdDate > dateStr) return false;
-        }
-        return true;
-      });
-      return possible.length > 0 ? 100 : 0;
-    }
-
+    if (visibleHabits.length === 0) return 0;
     let completed = 0;
     visibleHabits.forEach(h => {
       if (isHabitCompletedOnDate(h.id, dateStr)) completed++;
     });
-
     return Math.floor((completed / visibleHabits.length) * 100);
   };
 
@@ -219,27 +202,25 @@ export default function HabitsTab({
   }
 
   const visibleHabits = getHabitsForDate(viewedDate);
-
   const habitsToShow = visibleHabits.map(h => ({
     ...h,
     completed: isHabitCompletedOnDate(h.id, viewedDate)
   })).sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
-  // Format time (MM:SS)
   const formatTime = (secs) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
     const s = (secs % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
 
+  // XP calculation from stars/difficulty
+  const calculateXp = (stars = 1) => (stars || 1) * 10;
+
   return (
-    <div className="w-full space-y-5 pb-28 box-border">
-      {/* Calendar Header */}
-      <div className="glass-panel p-3">
-        <div
-          ref={calendarScrollRef}
-          className="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth"
-        >
+    <section id="section-habits" className="section active">
+      {/* Calendar Header (v3.3.0) */}
+      <div className="calendar-container" id="calendarContainer">
+        <div className="calendar-scroll" id="calendarScroll" ref={calendarScrollRef}>
           {calendarDays.map((day, idx) => {
             const dateStr = formatISO(day);
             const isToday = dateStr === todayStr;
@@ -251,231 +232,162 @@ export default function HabitsTab({
               <div
                 key={idx}
                 onClick={() => setViewedDate(dateStr)}
-                className={`flex-shrink-0 w-11 py-2 rounded-xl flex flex-col items-center cursor-pointer transition-all duration-200 ${
-                  isSelected
-                    ? 'bg-accent-primary text-white scale-105 shadow-md shadow-accent-primary/20'
-                    : isToday
-                    ? 'bg-accent-primary/10 text-accent-primary border border-accent-primary/20'
-                    : 'bg-slate-900/20 hover:bg-slate-950/20 text-text-secondary hover:text-text-main'
-                }`}
+                className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'active' : ''}`}
               >
-                <span className="text-[9px] uppercase font-bold tracking-wider opacity-75">
-                  {dayNames[day.getDay()]}
-                </span>
-                <span className="text-sm font-bold mt-0.5">{day.getDate()}</span>
-                {/* Micro completion dot/ring */}
-                <div className="w-1.5 h-1.5 rounded-full mt-1.5 transition-colors" style={{
-                  backgroundColor: completionPct === 100 ? '#22c55e' : completionPct > 0 ? 'var(--accent-primary)' : 'transparent',
-                  border: completionPct > 0 && completionPct < 100 ? '1px solid currentColor' : 'none'
-                }}></div>
+                <div className="day-name">{dayNames[day.getDay()]}</div>
+                <div className="day-number">{day.getDate()}</div>
+                <div
+                  className="day-dot"
+                  style={{
+                    backgroundColor: completionPct === 100 ? '#22c55e' : completionPct > 0 ? 'var(--accent-primary)' : 'transparent',
+                    opacity: completionPct > 0 ? 1 : 0
+                  }}
+                ></div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Section Header */}
-      <div className="flex justify-between items-center px-1">
-        <h2 className="text-base font-bold text-text-main font-cinzel tracking-wide flex items-center gap-2">
-          📜 Abitudini <span className="text-xs text-text-secondary font-sans font-normal ml-2">({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowPomodoro(!showPomodoro)}
-            className={`w-9 h-9 rounded-full glass-panel flex items-center justify-center text-lg active:scale-95 transition-transform ${
-              pomodoro.status !== 'idle' ? 'border-red-500 animate-pulse' : ''
-            }`}
-            title="Timer Pomodoro"
-          >
-            🍅
-          </button>
-          <button
-            onClick={() => onOpenModal('habit')}
-            className="w-9 h-9 rounded-full bg-accent-gradient text-white flex items-center justify-center text-xl font-bold shadow-md active:scale-95 transition-transform"
-          >
-            +
-          </button>
-        </div>
-      </div>
-
-      {/* Pomodoro Panel */}
-      {showPomodoro && (
-        <div className="glass-panel p-5 border border-red-500/10 bg-gradient-to-br from-red-500/5 to-transparent animate-scale-up">
-          <div className="flex justify-between items-center border-b border-border-color pb-2 mb-4">
-            <h3 className="text-xs font-bold text-red-400 uppercase tracking-widest flex items-center gap-1.5">
-              🍅 Timer Pomodoro
-            </h3>
-            <span className="text-[10px] text-text-secondary bg-slate-950/30 px-2 py-0.5 rounded-full">
-              Sessioni completate: {pomodoro.sessionsToday || 0}
-            </span>
-          </div>
-
-          <div className="text-center space-y-4">
-            {/* Clock */}
-            <div className="text-5xl font-bold font-orbitron tracking-wider text-red-500 filter drop-shadow">
-              {formatTime(pomoSecs)}
-            </div>
-
-            {/* Target stat selection */}
-            {pomodoro.status === 'idle' ? (
-              <div className="max-w-xs mx-auto space-y-1.5 text-left">
-                <label className="text-[10px] uppercase font-bold text-text-secondary">Allena Abilità</label>
-                <select
-                  value={pomodoro.targetStatId}
-                  onChange={(e) => setPomodoro(prev => ({ ...prev, targetStatId: e.target.value }))}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-xs text-text-main focus:outline-none"
-                >
-                  {stats.filter(s => s.visible).map(s => (
-                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="text-xs text-text-secondary">
-                Allenando:{' '}
-                <span className="font-bold text-accent-primary">
-                  {stats.find(s => s.id === pomodoro.targetStatId)?.icon}{' '}
-                  {stats.find(s => s.id === pomodoro.targetStatId)?.name}
-                </span>
-              </div>
-            )}
-
-            {/* Controls */}
-            <div className="flex justify-center gap-3 pt-2">
-              {pomodoro.status === 'idle' && (
-                <button
-                  onClick={startPomodoro}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold text-xs px-6 py-2 rounded-full shadow-md active:scale-95 transition-transform"
-                >
-                  Avvia Sessione
-                </button>
-              )}
-              {pomodoro.status === 'running' && (
-                <button
-                  onClick={pausePomodoro}
-                  className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-6 py-2 rounded-full shadow-md active:scale-95 transition-transform"
-                >
-                  Pausa
-                </button>
-              )}
-              {pomodoro.status === 'paused' && (
-                <>
-                  <button
-                    onClick={resumePomodoro}
-                    className="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-5 py-2 rounded-full shadow-md active:scale-95 transition-transform"
-                  >
-                    Riprendi
-                  </button>
-                  <button
-                    onClick={stopPomodoro}
-                    className="bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2 rounded-full shadow-md active:scale-95 transition-transform"
-                  >
-                    Annulla
-                  </button>
-                </>
-              )}
-            </div>
+      {/* Habits Wrapper (v3.3.0) */}
+      <div className="habits-wrapper">
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h2 style={{ margin: 0 }}>
+            📜 Abitudini <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--text-secondary)' }}>({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
+          </h2>
+          <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="add-btn-circle"
+              onClick={() => setShowPomodoro(!showPomodoro)}
+              title="Timer Pomodoro"
+            >
+              🍅
+            </button>
+            <button
+              className="add-btn-circle"
+              onClick={() => onOpenModal('habit')}
+            >
+              +
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Habits List */}
-      <div className="space-y-4">
-        {habitsToShow.length === 0 ? (
-          <div className="glass-panel p-8 text-center text-xs text-text-secondary italic">
-            Nessuna abitudine per questa data. Clicca "+" per crearne una!
+        {/* Pomodoro Panel (v3.3.0 style) */}
+        {showPomodoro && (
+          <div className="glass-panel" style={{ padding: '16px', marginBottom: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3 style={{ margin: 0, fontSize: '14px', color: '#ef4444' }}>🍅 Timer Pomodoro</h3>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                Sessioni oggi: {pomodoro.sessionsToday || 0}
+              </span>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '40px', fontWeight: 'bold', fontFamily: 'Orbitron, sans-serif', color: '#ef4444', marginBottom: '10px' }}>
+                {formatTime(pomoSecs)}
+              </div>
+
+              {pomodoro.status === 'idle' ? (
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', color: 'var(--text-secondary)' }}>Allena Abilità</label>
+                  <select
+                    value={pomodoro.targetStatId}
+                    onChange={(e) => setPomodoro(prev => ({ ...prev, targetStatId: e.target.value }))}
+                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', padding: '6px 12px', borderRadius: '8px', fontSize: '12px' }}
+                  >
+                    {stats.filter(s => s.visible).map(s => (
+                      <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                  Allenando: <b>{stats.find(s => s.id === pomodoro.targetStatId)?.icon} {stats.find(s => s.id === pomodoro.targetStatId)?.name}</b>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                {pomodoro.status === 'idle' && (
+                  <button onClick={startPomodoro} className="btn-primary" style={{ background: '#ef4444', padding: '6px 16px', borderRadius: '20px', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Avvia
+                  </button>
+                )}
+                {pomodoro.status === 'running' && (
+                  <button onClick={pausePomodoro} className="btn-primary" style={{ background: '#f59e0b', padding: '6px 16px', borderRadius: '20px', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Pausa
+                  </button>
+                )}
+                {pomodoro.status === 'paused' && (
+                  <>
+                    <button onClick={resumePomodoro} className="btn-primary" style={{ background: '#22c55e', padding: '6px 16px', borderRadius: '20px', color: 'white', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
+                      Riprendi
+                    </button>
+                    <button onClick={stopPomodoro} style={{ background: 'var(--bg-secondary)', padding: '6px 16px', borderRadius: '20px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
+                      Annulla
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-        ) : (
-          habitsToShow.map((h) => {
-            const isCompleted = h.completed;
-            const primaryStat = stats.find(s => s.id === h.primaryTarget);
-            const secondaryStat = stats.find(s => s.id === h.secondaryTarget);
+        )}
 
-            return (
-              <SwipeableCard
-                key={h.id}
-                onSwipeRight={() => viewedDate === todayStr && onToggleHabit(h.id, viewedDate)}
-                onSwipeLeft={() => onEditHabit(h)}
-                disabled={viewedDate !== todayStr}
-              >
-                {/* Individual Habit Card Frame - Standardized 60px Height with Spacious Left Margin */}
+        {/* Habits List (v3.3.0 original card structure) */}
+        <div className="habits-list" id="habitsList">
+          {habitsToShow.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">📜</div>
+              <div className="empty-state-text">Nessuna abitudine</div>
+              <div className="empty-state-hint">Clicca "+" per iniziare</div>
+            </div>
+          ) : (
+            habitsToShow.map((h) => {
+              const isCompleted = h.completed;
+              const primaryStat = stats.find(s => s.id === (h.primaryStatId || h.primaryTarget));
+              const secondaryStat = stats.find(s => s.id === (h.secondaryStatId || h.secondaryTarget));
+              const starsCount = h.stars || h.difficulty || 1;
+
+              return (
                 <div
-                  className={`pl-7 pr-4 py-3 rounded-xl border transition-all duration-300 flex items-center gap-4 min-h-[60px] shadow-md cursor-pointer ${
-                    isCompleted
-                      ? 'border-green-500/40 bg-green-500/10 opacity-75'
-                      : 'border-border-color bg-slate-950/30 hover:border-accent-primary/50 hover:bg-slate-950/50'
-                  }`}
+                  key={h.id}
+                  className={`task-card ${h.locked ? 'locked' : ''}`}
+                  data-type="habit"
+                  data-id={h.id}
                 >
-                  {/* LEFT COLUMN: ONLY Checkbox Circle (Detached from left border with ml-3) */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleHabit(h.id, viewedDate);
-                    }}
-                    disabled={viewedDate !== todayStr}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ml-3 shadow-sm ${
-                      isCompleted
-                        ? 'border-green-500 bg-green-500 text-white shadow-sm'
-                        : viewedDate === todayStr
-                        ? 'border-border-color hover:border-accent-primary bg-slate-900/40'
-                        : 'border-border-color cursor-not-allowed opacity-40 bg-slate-900/20'
-                    }`}
-                    title={isCompleted ? "Segna come incompleta" : "Segna come completata"}
-                  >
-                    {isCompleted && <span className="text-xs font-extrabold">✓</span>}
-                  </button>
+                  <div className="swipe-content" onClick={() => onEditHabit(h)}>
+                    {/* Checkbox (v3.3.0 card-checkbox) */}
+                    <div
+                      className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (viewedDate === todayStr) {
+                          onToggleHabit(h.id, viewedDate);
+                        }
+                      }}
+                    ></div>
 
-                  {/* RIGHT COLUMN: 2 Clean Lines (Tap opens Edit Modal) */}
-                  <div
-                    onClick={() => onEditHabit(h)}
-                    className="flex-1 flex flex-col justify-center gap-1 min-w-0"
-                  >
-                    {/* Line 1: Emoji + Name */}
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-lg flex-shrink-0 filter drop-shadow-sm">{h.emoji || '📜'}</span>
-                      <h4 className={`text-xs font-bold text-text-main truncate ${isCompleted ? 'line-through text-text-secondary' : ''}`}>
-                        {h.name}
-                      </h4>
+                    {/* Content (v3.3.0 card-content & card-meta) */}
+                    <div className="card-content">
+                      <div className={`card-title ${isCompleted ? 'line-through opacity-60' : ''}`}>
+                        {h.emoji ? `${h.emoji} ` : ''}{h.name}
+                      </div>
+                      <div className="card-meta">
+                        <span className="card-stars">{'⭐'.repeat(starsCount)}</span>
+                        {h.streak > 0 && <span className="card-streak">🔥 {h.streak}</span>}
+                        <span className="card-xp">+{calculateXp(starsCount)} XP</span>
+                        {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon}</span>}
+                        {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}>{secondaryStat.icon}</span>}
+                      </div>
                     </div>
 
-                    {/* Line 2: Streak + Difficulty Stars + Attribute/Ability Badges */}
-                    <div className="flex items-center gap-2 flex-wrap text-[10px]">
-                      {/* Streak Flame Badge */}
-                      {h.streak > 0 && (
-                        <span className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                          🔥 {h.streak} gg
-                        </span>
-                      )}
-
-                      {/* Difficulty Stars */}
-                      <span className="bg-slate-900/40 border border-border-color/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 text-amber-400 font-bold">
-                        {'★'.repeat(h.difficulty)}
-                        <span className="text-slate-600">{'★'.repeat(5 - h.difficulty)}</span>
-                      </span>
-
-                      {/* Primary Stat Badge */}
-                      {primaryStat && (
-                        <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
-                          <span>{primaryStat.icon}</span>
-                          <span>{primaryStat.name}</span>
-                        </span>
-                      )}
-
-                      {/* Secondary Stat Badge */}
-                      {secondaryStat && (
-                        <span className="bg-slate-900/50 border border-border-color/40 px-2 py-0.5 rounded-full text-text-secondary font-medium flex items-center gap-1">
-                          <span>{secondaryStat.icon}</span>
-                          <span>{secondaryStat.name}</span>
-                        </span>
-                      )}
-                    </div>
+                    <div className="drag-handle" title="Trascina per riordinare">⋮⋮</div>
                   </div>
                 </div>
-              </SwipeableCard>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
