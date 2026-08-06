@@ -1,5 +1,5 @@
 // RPG LIFE SERVICE WORKER
-const CACHE_NAME = 'rpg-life-v5.8.3';
+const CACHE_NAME = 'rpg-life-v5.8.4';
 
 // Files to cache on install (app shell)
 const PRECACHE_ASSETS = [
