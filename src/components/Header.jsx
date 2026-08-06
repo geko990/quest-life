@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getCumulativeXpForLevel, getXpForLevel, forceUpdateApp } from '../utils/helpers';
+import { getCumulativeXpForLevel, forceUpdateApp } from '../utils/helpers';
 import { TITLES } from '../utils/constants';
 
 export default function Header({
@@ -62,184 +62,182 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-slate-950/95 backdrop-blur-2xl border-b border-white/10 shadow-lg pt-[env(safe-area-inset-top)]">
-      <div className="w-full flex items-center justify-between px-3 py-3.5 min-h-[76px] relative">
-        
-        {/* LEFT: Streak Flame Badge */}
+    <>
+      {/* App Header (Original v3.3.0) */}
+      <header className="app-header">
+        {/* Streak Icon (Redesigned) */}
         <div
+          className={`header-streak ${isStreakActive ? '' : 'grayscale'}`}
+          id="headerStreak"
           onClick={() => setShowStreak(!showStreak)}
-          className={`header-streak ml-2 flex items-center gap-1.5 cursor-pointer bg-slate-900/80 border border-orange-500/50 px-3 py-1.5 rounded-full select-none transition-all duration-300 active:scale-95 hover:bg-orange-500/20 shadow-md ${
-            isStreakActive ? 'opacity-100 shadow-[0_0_12px_rgba(249,115,22,0.35)] border-orange-500/60' : 'grayscale opacity-75'
-          }`}
           title="Visualizza la tua serie attiva"
         >
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-xs shadow-md animate-pulse flex-shrink-0">
-            🔥
+          <div className="streak-circle">
+            <span className="streak-emoji">🔥</span>
           </div>
-          <span className="text-xs font-extrabold text-orange-400 font-sans tracking-tight">
-            {player.globalStreak || 0}
-          </span>
+          <div className="streak-badge-count">
+            <span id="globalStreak">{player.globalStreak || 0}</span>
+          </div>
         </div>
 
-        {/* CENTER: Grand App Title (RPG Life) */}
-        <div className="flex flex-col items-center justify-center px-2">
-          <h1
-            onClick={() => forceUpdateApp(true)}
-            className="text-xl font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-accent-primary to-accent-secondary select-none tracking-widest cursor-pointer hover:scale-105 active:scale-95 transition-transform text-center filter drop-shadow-[0_2px_8px_rgba(168,85,247,0.4)]"
-            title="Tocca per forzare l'aggiornamento dell'app"
-          >
-            RPG Life
-          </h1>
-          <span className="text-[8px] font-bold uppercase tracking-widest text-text-secondary/70 -mt-0.5 text-center">
-            Habit Tracker RPG
-          </span>
-        </div>
+        <h1
+          className="app-title"
+          onClick={() => forceUpdateApp(true)}
+          style={{ cursor: 'pointer' }}
+          title="Tocca per forzare l'aggiornamento dell'app"
+        >
+          Real Playing Game
+        </h1>
 
-        {/* RIGHT: Avatar Photo/Emoji + Level Badge */}
+        {/* Compact Profile (Avatar + Level) */}
         <div
+          className="header-profile"
           onClick={() => setShowProfile(!showProfile)}
-          className="header-profile mr-2 relative cursor-pointer select-none transition-transform active:scale-95 flex-shrink-0"
           title="Visualizza profilo e medaglie"
         >
-          <div className="relative w-9 h-9 rounded-full bg-slate-900 border-2 border-accent-primary flex items-center justify-center shadow-lg overflow-hidden ring-2 ring-accent-primary/40">
+          <div className="header-avatar-frame" id="headerAvatarFrame">
             {player.avatarType === 'image' && player.avatarImage ? (
-              <img src={player.avatarImage} alt="Avatar" className="w-full h-full object-cover" />
+              <img className="header-img" src={player.avatarImage} alt="Avatar" />
             ) : (
-              <span className="text-base">{player.avatarEmoji || '⚔️'}</span>
+              <span className="header-emoji" id="headerEmoji">
+                {player.avatarEmoji || '⚔️'}
+              </span>
             )}
           </div>
-          <div className="absolute -bottom-1 -right-1 bg-accent-primary text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-full border border-slate-950 shadow-md">
-            {player.level}
+          <div className="header-level-badge">
+            <span id="headerLevel">{player.level}</span>
           </div>
         </div>
+      </header>
 
-        {/* STREAK POPUP OVERLAY */}
-        {showStreak && (
-          <div
-            ref={streakRef}
-            className="absolute left-4 top-16 w-72 p-4 glass-panel z-50 text-left shadow-2xl animate-float border border-white/10"
-          >
-            <div className="flex items-center gap-3 mb-3 border-b border-border-color pb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-600 flex items-center justify-center text-xl shadow">
-                🔥
-              </div>
-              <div>
-                <h3 className="font-bold text-xs text-text-main font-cinzel">Serie Attiva</h3>
-                <p className="text-xs text-orange-400 font-semibold">{player.globalStreak || 0} Giorni Consecutivi</p>
-              </div>
-            </div>
-            <div className="space-y-2.5 text-xs text-text-secondary">
-              <div className="flex justify-between items-center bg-slate-950/40 p-2 rounded-lg border border-border-color/30">
-                <span>❄️ Congelamenti Serie</span>
-                <span className="font-bold text-accent-primary">
-                  {player.streakFreezes || 0} / 2 questo mese
+      {/* Profile Popup */}
+      {showProfile && (
+        <div className="profile-popup popup-right" ref={profileRef}>
+          <div className="popup-header-info">
+            <div className="popup-avatar-frame">
+              {player.avatarType === 'image' && player.avatarImage ? (
+                <img className="popup-img" src={player.avatarImage} alt="Avatar" />
+              ) : (
+                <span className="popup-emoji" id="popupEmoji">
+                  {player.avatarEmoji || '⚔️'}
                 </span>
+              )}
+            </div>
+            <div className="popup-details">
+              <h3 className="popup-name" id="popupName">{player.name}</h3>
+              <div className="popup-level-info">
+                <span className="popup-level">
+                  Livello <span id="popupLevel">{player.level}</span>
+                </span>
+                <span className="popup-title" id="popupTitle">{getPlayerTitle()}</span>
               </div>
-              <p className="text-[10px] leading-relaxed text-text-secondary/80">
-                I congelamenti evitano l'azzeramento della serie se salti un giorno. Si ripristinano il 1° di ogni mese.
-              </p>
             </div>
           </div>
-        )}
 
-        {/* PROFILE & MEDALS RECAP POPUP OVERLAY */}
-        {showProfile && (
-          <div
-            ref={profileRef}
-            className="absolute right-4 top-16 w-80 p-5 glass-panel z-50 text-left shadow-2xl animate-scale-up border border-white/10"
-          >
-            {/* Avatar & Level title info */}
-            <div className="flex items-center gap-3.5 mb-4 pb-3 border-b border-border-color">
-              <div className="relative w-12 h-12 rounded-full bg-slate-900 border-2 border-accent-primary flex items-center justify-center shadow-inner text-xl overflow-hidden flex-shrink-0">
-                {player.avatarType === 'image' && player.avatarImage ? (
-                  <img src={player.avatarImage} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <span>{player.avatarEmoji || '⚔️'}</span>
-                )}
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-xs text-text-main truncate">{player.name}</h3>
-                <p className="text-[11px] text-text-secondary">
-                  Livello <span className="font-bold text-accent-primary">{player.level}</span> — <span className="font-cinzel font-semibold">{getPlayerTitle()}</span>
-                </p>
-              </div>
+          <div className="popup-xp-container">
+            <div className="popup-xp-bar">
+              <div
+                className="popup-xp-fill"
+                id="popupXpFill"
+                style={{ width: `${xpPercent}%` }}
+              ></div>
+            </div>
+            <div className="popup-xp-text" id="popupXpText">
+              {Math.floor(xpInLevel)} / {Math.floor(xpNeededForLevel)} XP
             </div>
 
-            {/* XP Progress Bar */}
-            <div className="mb-4">
-              <div className="flex justify-between text-[10px] text-text-secondary mb-1">
-                <span>Esperienza (XP)</span>
-                <span className="font-bold text-text-main">{Math.floor(xpInLevel)} / {Math.floor(xpNeededForLevel)} XP</span>
+            {/* Medal Progress */}
+            <div style={{ marginTop: '15px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 'bold' }}>
+                MEDAGLIE MENSILI ({getMonthName(player.monthlyChallenge?.currentMonth)})
               </div>
-              <div className="w-full h-2.5 bg-slate-950/50 rounded-full overflow-hidden border border-border-color/40">
+              <div className="popup-xp-bar">
                 <div
-                  className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary transition-all duration-300"
-                  style={{ width: `${xpPercent}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Monthly Medals & Points Recap */}
-            <div className="mb-4 pt-3 border-t border-border-color/40">
-              <div className="flex justify-between items-center text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">
-                <span>Punti Sfida Mensile</span>
-                <span className="text-yellow-400 font-bold">
-                  {player.monthlyChallenge?.points || 0} / {player.monthlyChallenge?.target || 50} pts
-                </span>
-              </div>
-              <div className="w-full h-2 bg-slate-950/50 rounded-full overflow-hidden border border-border-color/40 mb-3">
-                <div
-                  className="h-full bg-yellow-500 transition-all duration-300"
+                  className="popup-xp-fill"
+                  id="monthlyProgressFill"
                   style={{
-                    width: `${Math.min(
-                      100,
-                      ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100
-                    )}%`
+                    width: `${Math.min(100, ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100)}%`,
+                    background: 'var(--accent-gold, #f59e0b)'
                   }}
                 ></div>
               </div>
-
-              {/* Medals Showcase */}
-              <div>
-                <div className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">
-                  Bacheca Medaglie ({getMonthName(player.monthlyChallenge?.currentMonth)})
-                </div>
-                <div className="flex gap-2 flex-wrap min-h-8">
-                  {!player.monthlyChallenge?.medals || player.monthlyChallenge?.medals?.length === 0 ? (
-                    <span className="text-[10px] text-text-secondary/70 italic">Nessuna medaglia sbloccata questo mese</span>
-                  ) : (
-                    player.monthlyChallenge?.medals?.map((medal, idx) => (
-                      <div
-                        key={idx}
-                        title={`${medal.name} - ${medal.earnedDate}`}
-                        className="w-8 h-8 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-sm shadow cursor-help"
-                      >
-                        {medal.icon || '🏆'}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Personal Motto */}
-            <div className="pt-3 border-t border-border-color/40">
-              <div className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">
-                Motto Personale
-              </div>
-              <div
-                onClick={() => {
-                  setShowProfile(false);
-                  onOpenMottoEdit();
-                }}
-                className="text-xs italic text-text-secondary hover:text-text-main cursor-pointer bg-slate-950/30 p-2.5 rounded-lg border border-dashed border-border-color hover:border-accent-primary transition-colors text-center"
-              >
-                {player.motto ? `"${player.motto}"` : 'Inserisci il tuo motto qui... ✍️'}
+              <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span id="monthlyLabel">{getMonthName(player.monthlyChallenge?.currentMonth)}</span>
+                <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                  {player.monthlyChallenge?.points || 0}/{player.monthlyChallenge?.target || 50}
+                </span>
               </div>
             </div>
           </div>
-        )}
-      </div>
-    </header>
+
+          {/* Medals Showcase Grid */}
+          <div className="popup-motto-container" style={{ marginTop: '10px' }}>
+            <div className="medals-grid" id="medalsGrid">
+              {!player.monthlyChallenge?.medals || player.monthlyChallenge?.medals?.length === 0 ? (
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  Nessuna medaglia sbloccata questo mese
+                </span>
+              ) : (
+                player.monthlyChallenge?.medals?.map((medal, idx) => (
+                  <div
+                    key={idx}
+                    title={`${medal.name} - ${medal.earnedDate}`}
+                    className="medal-item"
+                    style={{ fontSize: '20px', cursor: 'help' }}
+                  >
+                    {medal.icon || '🏆'}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Personal Motto */}
+          <div className="popup-motto-container" style={{ marginTop: '10px' }}>
+            <div
+              className="motto-display"
+              id="popupMottoDisplay"
+              onClick={() => {
+                setShowProfile(false);
+                onOpenMottoEdit();
+              }}
+              style={{ cursor: 'pointer', fontStyle: 'italic' }}
+            >
+              {player.motto ? `"${player.motto}"` : 'Inserisci il tuo motto qui... ✍️'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Streak Popup */}
+      {showStreak && (
+        <div className="profile-popup popup-left" ref={streakRef}>
+          <div className="popup-header-info">
+            <div className="popup-avatar-frame" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+              <span className="popup-emoji">🔥</span>
+            </div>
+            <div className="popup-details">
+              <h3 className="popup-name">Serie Attiva</h3>
+              <div className="popup-level-info">
+                <span className="popup-level">
+                  <span id="popupStreakCount">{player.globalStreak || 0}</span> Giorni
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="popup-motto-container">
+            <div className="freeze-info" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span className="freeze-icon">❄️</span>
+              <span className="freeze-count" id="popupFreezeCount">{player.streakFreezes || 0}</span>
+              <span className="freeze-max">/ 2 congelamenti rimanenti</span>
+            </div>
+            <p className="freeze-desc" style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>
+              I congelamenti salvano la tua serie se salti un giorno. Si ripristinano il 1° giorno del mese.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
