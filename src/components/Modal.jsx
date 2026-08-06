@@ -737,6 +737,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 value={form.value !== undefined ? form.value : ''}
                 onChange={handleNumberChange}
                 step={type === 'health_water' || type === 'health_water_goal' ? '0.1' : '1'}
+                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none"
+              />
+            </div>
+          );
+        }
+        return null;
       case 'pomodoro':
         return (
           <div className="space-y-4 text-xs">
