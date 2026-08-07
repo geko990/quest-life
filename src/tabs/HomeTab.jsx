@@ -287,7 +287,7 @@ export default function HomeTab({
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {todayActionsList.map((action) => {
               const primaryStat = stats.find(s => s.id === action.primaryTarget);
               const isCompleted = !!action.completed;
@@ -299,33 +299,43 @@ export default function HomeTab({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
+                    gap: '10px',
                     background: 'var(--bg-secondary)',
                     border: isCompleted ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                    padding: '12px 14px',
+                    padding: '10px 12px',
                     borderRadius: '12px',
                     cursor: 'pointer',
                     opacity: isCompleted ? 0.6 : 1,
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    boxSizing: 'border-box',
+                    minWidth: 0
                   }}
                 >
                   {/* Checkbox */}
                   <div
                     className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
-                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
+                    style={{ width: '20px', height: '20px', flexShrink: 0 }}
                   ></div>
 
                   {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>{action.emoji || '🎯'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '12px' }}>{action.emoji || '🎯'}</span>
                       {primaryStat && (
-                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
-                          {primaryStat.icon} {primaryStat.name}
+                        <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {primaryStat.name}
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                    <div style={{
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: 'var(--text-primary)',
+                      textDecoration: isCompleted ? 'line-through' : 'none',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
                       {action.name}
                     </div>
                   </div>
@@ -334,28 +344,6 @@ export default function HomeTab({
             })}
           </div>
         )}
-      </div>
-
-      {/* 3. D&D Daily Planner */}
-      <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>🎲</span>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                Pianificatore D&D
-              </h3>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)' }}>Pianifica le azioni di oggi per bonus XP</p>
-            </div>
-          </div>
-          <button
-            onClick={onOpenPlanner}
-            className="btn-primary"
-            style={{ padding: '6px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
-          >
-            🎲 Lancia D10
-          </button>
-        </div>
       </div>
 
       {/* 4. Sostentamento Summary */}
