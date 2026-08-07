@@ -182,7 +182,7 @@ export default function HomeTab({
   };
 
   // Calculate today's created/planned actions dynamically
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getGameDate(settings?.dayStartTime || 0);
 
   const plannerActions = (oneshots || []).filter(o => !o.locked && (o.fromDailyPlan || o.dailyPlanDate === todayStr));
   const createdTodayOneshots = (oneshots || []).filter(o => !o.locked && o.createdAt && o.createdAt.startsWith(todayStr));
@@ -199,6 +199,16 @@ export default function HomeTab({
 
   todayActionsList.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
+  const handleChartClick = (e) => {
+    const target = e.target;
+    if (!target) return;
+    const tagName = (target.tagName || '').toLowerCase();
+    const isStatClick = tagName === 'text' || tagName === 'circle' || (target.closest && target.closest('g'));
+    if (!isStatClick) {
+      setShowVisibilityModal(true);
+    }
+  };
+
   return (
     <section id="section-home" className="section active">
       {/* 1. Radar Chart Card (Minimalist Square - Long Press/Tap to Manage) */}
@@ -208,12 +218,7 @@ export default function HomeTab({
         onMouseUp={handleTouchEnd}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        onClick={(e) => {
-          const isStatClick = e.target.closest && (e.target.closest('text') || e.target.closest('circle[r="5"]'));
-          if (!isStatClick) {
-            setShowVisibilityModal(true);
-          }
-        }}
+        onClick={handleChartClick}
         style={{
           padding: '16px',
           marginBottom: '16px',
