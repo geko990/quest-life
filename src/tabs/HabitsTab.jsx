@@ -244,11 +244,11 @@ export default function HabitsTab({
 
       {/* Habits Wrapper (v3.3.0) */}
       <div className="habits-wrapper">
-        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '15px' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '8px' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
             📜 Abitudini <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--text-secondary)' }}>({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
           </h2>
-          <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
+          <div className="header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
             <button
               className="add-btn-circle"
               onClick={() => setShowPomodoro(!showPomodoro)}

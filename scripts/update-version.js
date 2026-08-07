@@ -48,6 +48,17 @@ fs.writeFileSync(path.join(rootDir, 'index.html'), cleanIndexHtml, 'utf8');
 const pkgPath = path.join(rootDir, 'package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
+const shouldBump = process.argv.includes('--bump');
+if (shouldBump) {
+  const parts = (pkg.version || '1.0.0').split('.');
+  if (parts.length === 3) {
+    parts[2] = (parseInt(parts[2], 10) + 1).toString();
+    pkg.version = parts.join('.');
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+    console.log(`[Version Updater] Auto-bumped version to v${pkg.version}`);
+  }
+}
+
 const version = pkg.version || '1.0.0';
 const now = new Date();
 const buildTime = now.toISOString();
