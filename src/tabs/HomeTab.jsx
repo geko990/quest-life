@@ -186,21 +186,12 @@ export default function HomeTab({
     );
   };
 
-  // Calculate today's created/planned actions dynamically
+  // ONLY calculate actions planned via the Daily Planner for today
   const todayStr = getGameDate(settings?.dayStartTime || 0);
 
-  const plannerActions = (oneshots || []).filter(o => !o.locked && (o.fromDailyPlan || o.dailyPlanDate === todayStr));
-  const createdTodayOneshots = (oneshots || []).filter(o => !o.locked && o.createdAt && o.createdAt.startsWith(todayStr));
-
-  const combinedTodayMap = new Map();
-  plannerActions.forEach(o => combinedTodayMap.set(o.id, o));
-  createdTodayOneshots.forEach(o => combinedTodayMap.set(o.id, o));
-
-  let todayActionsList = Array.from(combinedTodayMap.values());
-
-  if (todayActionsList.length === 0) {
-    todayActionsList = (oneshots || []).filter(o => !o.locked && !o.completed).slice(0, 4);
-  }
+  const todayActionsList = (oneshots || []).filter(
+    o => !o.locked && o.fromDailyPlan && o.dailyPlanDate === todayStr
+  );
 
   todayActionsList.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
