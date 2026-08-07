@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { getXpForLevel } from '../utils/helpers';
+import { getXpForLevel, getGameDate } from '../utils/helpers';
 
 export default function HomeTab({
   stats,
@@ -8,12 +8,17 @@ export default function HomeTab({
   player,
   health,
   pomodoro,
+  oneshots = [],
+  onToggleOneshot,
+  habits = [],
+  onToggleHabit,
   dailyActions = [],
   onToggleDailyAction,
   onOpenModal,
   onOpenPlanner,
   onOpenPomodoro,
-  onOpenStatDetail
+  onOpenStatDetail,
+  settings = {}
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const pressTimerRef = useRef(null);
