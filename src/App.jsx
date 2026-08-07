@@ -260,7 +260,8 @@ export default function App() {
   };
 
   // 7. XP Reward Handler
-  const handleRewardXp = (statId, amount, isHabitCompletion = false) => {
+  const handleRewardXp = (statId, amount, isHabitCompletion = false, itemTitle = '') => {
+    if (!amount || amount <= 0) return;
     // 1. Reward Stat XP
     setStats(prevStats =>
       prevStats.map(s => {
@@ -297,7 +298,7 @@ export default function App() {
     // Log XP change
     setXpLog(prev => [
       ...prev,
-      { date: todayStr, statId, amount, timestamp: Date.now() }
+      { date: todayStr, statId, amount, timestamp: Date.now(), title: itemTitle }
     ]);
 
     setPlayer(prev => {
@@ -1046,6 +1047,14 @@ export default function App() {
         onSave={handleSaveModal}
         onDelete={handleDeleteModal}
         stats={stats}
+        xpLog={xpLog}
+        settings={settings}
+        onEditStat={(statData) => {
+          setModalOpen(false);
+          setTimeout(() => {
+            handleOpenModal(statData.type || 'attribute', statData);
+          }, 50);
+        }}
       />
 
       {/* PERSONAL MOTTO MODAL EDIT */}
