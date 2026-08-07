@@ -206,7 +206,21 @@ export default function HomeTab({
   };
 
   return (
-    <section id="section-home" className="section active" style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', minHeight: 'calc(100vh - 170px)', justifyContent: 'space-between' }}>
+    <section
+      id="section-home"
+      className="section active"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden',
+        touchAction: 'none',
+        overscrollBehavior: 'none',
+        justifyContent: 'space-between'
+      }}
+    >
       {/* 1. Radar Chart Card (Enlarged to fill space) */}
       <div
         className="glass-panel"

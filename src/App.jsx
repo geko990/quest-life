@@ -956,8 +956,10 @@ export default function App() {
           flex: 1,
           minHeight: 0,
           width: '100%',
-          overflowY: 'auto',
-          padding: '16px 16px 28px 16px',
+          overflowY: activeTab === 'home' ? 'hidden' : 'auto',
+          touchAction: activeTab === 'home' ? 'none' : 'pan-y',
+          overscrollBehavior: 'none',
+          padding: activeTab === 'home' ? '8px 16px 12px 16px' : '16px 16px 28px 16px',
           boxSizing: 'border-box',
           WebkitOverflowScrolling: 'touch'
         }}

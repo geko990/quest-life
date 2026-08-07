@@ -11,6 +11,15 @@
     --text-main: var(--text-primary, #1a1a2e);
 }
 
+html,
+body,
+#root,
+.app-container,
+.content-area {
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+}
+
 *,
 *::before,
 *::after {
