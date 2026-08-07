@@ -76,9 +76,9 @@ export default function HomeTab({
       );
     }
 
-    const size = 260;
+    const size = 300;
     const center = size / 2;
-    const radius = 80;
+    const radius = 95;
     const N = visibleStats.length;
 
     const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
@@ -126,14 +126,14 @@ export default function HomeTab({
     }
 
     const labelItems = visibleStats.map((s, i) => {
-      const coords = getCoordinates(i, 1.25);
+      const coords = getCoordinates(i, 1.22);
       return (
         <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
-            y={coords.y + 7}
+            y={coords.y + 8}
             textAnchor="middle"
-            style={{ fontSize: '20px', userSelect: 'none' }}
+            style={{ fontSize: '22px', userSelect: 'none' }}
           >
             {s.icon}
           </text>
@@ -157,10 +157,10 @@ export default function HomeTab({
           key={`vertex-${s.id}`}
           cx={coords.x}
           cy={coords.y}
-          r="4.5"
+          r="5"
           fill="var(--accent-primary)"
           stroke="var(--bg-primary)"
-          strokeWidth="1.8"
+          strokeWidth="2"
           style={{ cursor: 'pointer' }}
           onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
         />
@@ -168,7 +168,7 @@ export default function HomeTab({
     });
 
     return (
-      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '230px', maxHeight: '210px', margin: '0 auto' }}>
+      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '280px', maxHeight: '255px', margin: '0 auto' }}>
         {gridCircles}
         {axisLines}
         {playerPoints && (
@@ -176,7 +176,7 @@ export default function HomeTab({
             points={playerPoints}
             fill="rgba(124, 58, 237, 0.28)"
             stroke="var(--accent-primary)"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinejoin="round"
           />
         )}
@@ -206,7 +206,7 @@ export default function HomeTab({
   };
 
   return (
-    <section id="section-home" className="section active">
+    <section id="section-home" className="section active" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {/* 1. Radar Chart Card (Minimalist Square - Long Press/Tap to Manage) */}
       <div
         className="glass-panel"
@@ -216,8 +216,7 @@ export default function HomeTab({
         onTouchEnd={handleTouchEnd}
         onClick={handleChartClick}
         style={{
-          padding: '10px 12px',
-          marginBottom: '10px',
+          padding: '12px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -234,7 +233,7 @@ export default function HomeTab({
       </div>
 
       {/* 2. Tessera "Azioni del Giorno" (Griglia 2x2) */}
-      <div className="glass-panel" style={{ padding: '10px 12px', marginBottom: '10px' }}>
+      <div className="glass-panel" style={{ padding: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '16px' }}>⚔️</span>
@@ -249,14 +248,14 @@ export default function HomeTab({
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               title="Pianifica azioni con il dado D10"
             >
               🎲 Pianifica
             </button>
             <button
               onClick={() => onOpenModal('oneshot')}
-              style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+              style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
               title="Aggiungi nuova missione"
             >
               + Nuova
