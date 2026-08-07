@@ -188,16 +188,61 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
 
   return (
     <div
-      className="modal active"
       onClick={onClose}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay active animate-fade-in"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99990,
+        background: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px'
+      }}
     >
       <div
-        className="modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: '420px', padding: '20px', maxHeight: '90vh', overflowY: 'auto' }}
+        className="modal w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
+        style={{
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)',
+          border: '1px solid var(--glass-border)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
+          width: '100%',
+          maxWidth: '400px',
+          padding: '24px',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          borderRadius: '24px',
+          position: 'relative'
+        }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        {/* Header with Close Button */}
+        <div style={{ position: 'relative', textAlign: 'center', marginBottom: '16px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            ✕
+          </button>
           <div style={{ fontSize: '28px', marginBottom: '4px' }}>🎲</div>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
             È IL TUO TURNO!
