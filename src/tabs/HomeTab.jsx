@@ -76,9 +76,9 @@ export default function HomeTab({
       );
     }
 
-    const size = 300;
+    const size = 360;
     const center = size / 2;
-    const radius = 95;
+    const radius = 115;
     const N = visibleStats.length;
 
     const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
@@ -131,9 +131,9 @@ export default function HomeTab({
         <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
-            y={coords.y + 8}
+            y={coords.y + 9}
             textAnchor="middle"
-            style={{ fontSize: '22px', userSelect: 'none' }}
+            style={{ fontSize: '26px', userSelect: 'none' }}
           >
             {s.icon}
           </text>
@@ -157,7 +157,7 @@ export default function HomeTab({
           key={`vertex-${s.id}`}
           cx={coords.x}
           cy={coords.y}
-          r="5"
+          r="5.5"
           fill="var(--accent-primary)"
           stroke="var(--bg-primary)"
           strokeWidth="2"
@@ -168,7 +168,7 @@ export default function HomeTab({
     });
 
     return (
-      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '280px', maxHeight: '255px', margin: '0 auto' }}>
+      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '340px', maxHeight: '310px', margin: '0 auto' }}>
         {gridCircles}
         {axisLines}
         {playerPoints && (
@@ -206,8 +206,8 @@ export default function HomeTab({
   };
 
   return (
-    <section id="section-home" className="section active" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {/* 1. Radar Chart Card (Minimalist Square - Long Press/Tap to Manage) */}
+    <section id="section-home" className="section active" style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', minHeight: 'calc(100vh - 170px)', justifyContent: 'space-between' }}>
+      {/* 1. Radar Chart Card (Enlarged to fill space) */}
       <div
         className="glass-panel"
         onMouseDown={handleTouchStart}
@@ -216,7 +216,8 @@ export default function HomeTab({
         onTouchEnd={handleTouchEnd}
         onClick={handleChartClick}
         style={{
-          padding: '12px',
+          padding: '8px 12px',
+          flex: '1.4',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
