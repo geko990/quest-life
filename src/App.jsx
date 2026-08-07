@@ -1048,6 +1048,9 @@ export default function App() {
         onDelete={handleDeleteModal}
         stats={stats}
         xpLog={xpLog}
+        oneshots={oneshots}
+        habits={habits}
+        quests={quests}
         settings={settings}
         onEditStat={(statData) => {
           setModalOpen(false);

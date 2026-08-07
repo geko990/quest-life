@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, settings, onEditStat }) {
+export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat }) {
   if (!isOpen) return null;
 
   const [form, setForm] = useState({});
