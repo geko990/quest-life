@@ -181,23 +181,39 @@ export default function HomeTab({
     );
   };
 
-  // Default 4 D&D Actions of the Day
-  const defaultActions = [
-    { id: 'act_main', type: 'Azione', emoji: '⚔️', title: 'Azione Principale', desc: 'Task o obiettivo principale del giorno' },
-    { id: 'act_bonus', type: 'Azione Bonus', emoji: '⚡', title: 'Azione Bonus', desc: 'Attività rapida o secondaria' },
-    { id: 'act_move', type: 'Movimento', emoji: '🏃', title: 'Movimento', desc: 'Attività fisica o passi' },
-    { id: 'act_react', type: 'Reazione', emoji: '🛡️', title: 'Reazione', desc: 'Gestione imprevisto o risposta' }
-  ];
+  // Calculate today's created/planned actions dynamically
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const plannerActions = (oneshots || []).filter(o => !o.locked && (o.fromDailyPlan || o.dailyPlanDate === todayStr));
+  const createdTodayOneshots = (oneshots || []).filter(o => !o.locked && o.createdAt && o.createdAt.startsWith(todayStr));
+
+  const combinedTodayMap = new Map();
+  plannerActions.forEach(o => combinedTodayMap.set(o.id, o));
+  createdTodayOneshots.forEach(o => combinedTodayMap.set(o.id, o));
+
+  let todayActionsList = Array.from(combinedTodayMap.values());
+
+  if (todayActionsList.length === 0) {
+    todayActionsList = (oneshots || []).filter(o => !o.locked && !o.completed).slice(0, 4);
+  }
+
+  todayActionsList.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
   return (
     <section id="section-home" className="section active">
-      {/* 1. Circular Radar Chart Card with Long Press Gesture */}
+      {/* 1. Radar Chart Card (Minimalist Square - Long Press/Tap to Manage) */}
       <div
         className="glass-panel"
         onMouseDown={handleTouchStart}
         onMouseUp={handleTouchEnd}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onClick={(e) => {
+          const isStatClick = e.target.closest && (e.target.closest('text') || e.target.closest('circle[r="5"]'));
+          if (!isStatClick) {
+            setShowVisibilityModal(true);
+          }
+        }}
         style={{
           padding: '16px',
           marginBottom: '16px',
@@ -209,30 +225,14 @@ export default function HomeTab({
           userSelect: 'none',
           cursor: 'pointer'
         }}
-        title="Tieni premuto per gestire visibilità attributi"
+        title="Tieni premuto o tocca per gestire visibilità e aggiungere attributi"
       >
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
-            📊 RADAR ABILITÀ (30GG)
-          </span>
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowVisibilityModal(true); }}
-            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '4px 10px', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}
-          >
-            ⚙️ Gestisci
-          </button>
-        </div>
-
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           {renderRadarChart()}
         </div>
-
-        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
-          💡 Tieni premuto sul grafico per mostrare/nascondere attributi o aggiungerne di nuovi
-        </div>
       </div>
 
-      {/* 2. Tessera "Azioni del Giorno" (Azione, Azione Bonus, Movimento, Reazione) */}
+      {/* 2. Tessera "Azioni del Giorno" (Dinamica con le azioni create giorno per giorno) */}
       <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -242,57 +242,97 @@ export default function HomeTab({
                 Azioni del Giorno
               </h3>
               <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)' }}>
-                I tuoi 4 slot tattici quotidiani (si resettano a fine giornata)
+                {todayActionsList.length > 0
+                  ? 'Le tue azioni pianificate e create per oggi'
+                  : 'Crea o pianifica le tue azioni quotidiane con il D10'}
               </p>
             </div>
           </div>
+
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={onOpenPlanner}
+              className="btn-primary"
+              style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              title="Pianifica azioni con il dado D10"
+            >
+              🎲 Pianifica
+            </button>
+            <button
+              onClick={() => onOpenModal('oneshot')}
+              style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+              title="Aggiungi nuova missione"
+            >
+              + Nuova
+            </button>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {defaultActions.map((action) => {
-            const isCompleted = (dailyActions || []).includes(action.id);
-            return (
-              <div
-                key={action.id}
-                onClick={() => onToggleDailyAction && onToggleDailyAction(action.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  background: 'var(--bg-secondary)',
-                  border: isCompleted ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                  padding: '12px 14px',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  opacity: isCompleted ? 0.75 : 1,
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {/* Checkbox */}
-                <div
-                  className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
-                  style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                ></div>
+        {todayActionsList.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '20px 12px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+            <div style={{ fontSize: '28px', marginBottom: '6px' }}>🎯</div>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
+              Nessuna azione creata per oggi
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              Pianifica le azioni del giorno con il dado D10 o crea una nuova missione!
+            </div>
+            <button
+              onClick={onOpenPlanner}
+              className="btn-primary"
+              style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+            >
+              🎲 Pianifica con D10 Ora
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {todayActionsList.map((action) => {
+              const primaryStat = stats.find(s => s.id === action.primaryTarget);
+              const isCompleted = !!action.completed;
 
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>{action.emoji}</span>
-                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
-                      {action.type}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
-                    {action.title}
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                    {action.desc}
+              return (
+                <div
+                  key={action.id}
+                  onClick={() => onToggleOneshot && onToggleOneshot(action.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: 'var(--bg-secondary)',
+                    border: isCompleted ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    opacity: isCompleted ? 0.6 : 1,
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {/* Checkbox */}
+                  <div
+                    className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
+                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
+                  ></div>
+
+                  {/* Content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{action.emoji || '🎯'}</span>
+                      {primaryStat && (
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
+                          {primaryStat.icon} {primaryStat.name}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                      {action.name}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* 3. D&D Daily Planner */}
