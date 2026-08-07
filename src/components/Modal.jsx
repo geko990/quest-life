@@ -989,12 +989,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions (Compact 3 Emoji Icons) */}
+          {/* Footer Actions (Floating Compact Emoji Icons without background bar) */}
           <div
-            className="px-5 py-3 flex justify-between items-center"
-            style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--bg-secondary)' }}
+            style={{
+              padding: '12px 20px 16px 20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: 'transparent',
+              borderTop: 'none'
+            }}
           >
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {editData && onDelete && (
                 <button
                   type="button"
@@ -1006,13 +1012,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   }}
                   title="Elimina"
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    background: 'rgba(239, 68, 68, 0.15)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: 'none',
                     color: '#ef4444',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   🗑️
@@ -1027,13 +1037,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   }}
                   title="Modifica"
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    background: 'var(--bg-card)',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    background: 'var(--bg-secondary)',
                     border: '1px solid var(--glass-border)',
                     color: 'var(--text-primary)',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   ✏️
@@ -1041,20 +1055,21 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
                 type="submit"
                 title="Salva"
                 style={{
-                  padding: '6px 16px',
-                  borderRadius: '10px',
-                  fontSize: '16px',
+                  padding: '8px 20px',
+                  borderRadius: '12px',
+                  fontSize: '18px',
                   fontWeight: 'bold',
                   background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
                   color: '#ffffff',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.25)'
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 💾
