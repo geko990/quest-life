@@ -147,6 +147,7 @@ export default function SettingsTab({
                 >
                   <option value="standard">Standard RPG</option>
                   <option value="fantasy">Fantasy (Pergamena / Legno)</option>
+                  <option value="dnd">D&D Paper Map</option>
                   <option value="futuristic">Cyberpunk Neon</option>
                   <option value="pirate">7th Sea / Pirate</option>
                 </select>
