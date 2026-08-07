@@ -339,6 +339,49 @@ export default function App() {
     }
   };
 
+  // 7b. XP Deduction Handler (when an item is unchecked / canceled)
+  const handleDeductXp = (statId, amount, isHabitCompletion = false) => {
+    if (!amount || amount <= 0) return;
+
+    // 1. Deduct Stat XP
+    setStats(prevStats =>
+      prevStats.map(s => {
+        if (s.id !== statId) return s;
+        let currentXp = s.xp;
+        let currentLvl = s.level;
+
+        let newXp = currentXp - amount;
+        while (newXp < 0 && currentLvl > 1) {
+          currentLvl -= 1;
+          const prevNeeded = getXpForLevel(currentLvl + 1);
+          newXp += prevNeeded;
+        }
+        if (currentLvl === 1 && newXp < 0) {
+          newXp = 0;
+        }
+        return { ...s, xp: newXp, level: currentLvl };
+      })
+    );
+
+    // 2. Deduct Player Total XP
+    setPlayer(prev => {
+      const newTotalXp = Math.max(0, prev.totalXp - amount);
+      const newLvl = calculateLevelFromXp(newTotalXp);
+      let monthlyPointsSub = isHabitCompletion ? 1 : 0;
+      const nextMonthlyPoints = Math.max(0, (prev.monthlyChallenge?.points || 0) - monthlyPointsSub);
+
+      return {
+        ...prev,
+        totalXp: newTotalXp,
+        level: newLvl,
+        monthlyChallenge: {
+          ...prev.monthlyChallenge,
+          points: nextMonthlyPoints
+        }
+      };
+    });
+  };
+
   const playLevelUpSound = () => {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -377,16 +420,16 @@ export default function App() {
       return { ...prev, [dateStr]: { ...dayLog, habits: list } };
     });
 
-    // Reward XP & update streaks if completed today
+    // Reward or Deduct XP & update streaks if completed today
     if (dateStr === todayStr) {
       const habit = habits.find(h => h.id === habitId);
       if (!habit) return;
 
+      const primaryXp = habit.difficulty * 4; // 1->5 stars awards 4/8/12/16/20 XP
+      const secondaryXp = Math.round(primaryXp * 0.33);
+
       if (!isCompleted) {
         // Complete habit: add streak, reward primary and secondary targets XP
-        const primaryXp = habit.difficulty * 4; // 1->5 stars awards 4/8/12/16/20 XP
-        const secondaryXp = Math.round(primaryXp * 0.33);
-
         handleRewardXp(habit.primaryTarget, primaryXp, true);
         if (habit.secondaryTarget) {
           handleRewardXp(habit.secondaryTarget, secondaryXp);
@@ -422,7 +465,12 @@ export default function App() {
           } catch(e){}
         }
       } else {
-        // Remove completion: decrement streak
+        // Uncheck habit: deduct XP & decrement streak
+        handleDeductXp(habit.primaryTarget, primaryXp, true);
+        if (habit.secondaryTarget) {
+          handleDeductXp(habit.secondaryTarget, secondaryXp);
+        }
+
         setHabits(prev =>
           prev.map(h => (h.id === habitId ? { ...h, streak: Math.max(0, h.streak - 1) } : h))
         );
@@ -434,23 +482,29 @@ export default function App() {
     const os = oneshots.find(o => o.id === id);
     if (!os) return;
 
+    const willBeCompleted = !os.completed;
+
     setOneshots(prev =>
-      prev.map(o => (o.id === id ? { ...o, completed: !o.completed } : o))
+      prev.map(o => (o.id === id ? { ...o, completed: willBeCompleted } : o))
     );
 
-    if (!os.completed) {
-      // Reward XP (oneshot awards difficulty * 8 XP!)
-      let xp = os.difficulty * 8;
-      
-      // Apply D10 Roll Bonus if created from Daily Planner
-      if (os.d10Roll) {
-        const bonusMultiplier = 1 + (os.d10Roll * 10) / 100;
-        xp = Math.round(xp * bonusMultiplier);
-      }
-      
+    // Calculate XP (oneshot awards difficulty * 8 XP!)
+    let xp = os.difficulty * 8;
+    if (os.d10Roll) {
+      const bonusMultiplier = 1 + (os.d10Roll * 10) / 100;
+      xp = Math.round(xp * bonusMultiplier);
+    }
+
+    if (willBeCompleted) {
       handleRewardXp(os.primaryTarget, xp);
       if (os.secondaryTarget) {
         handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33));
+      }
+    } else {
+      // Unchecking task: deduct XP!
+      handleDeductXp(os.primaryTarget, xp);
+      if (os.secondaryTarget) {
+        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33));
       }
     }
   };
@@ -466,12 +520,17 @@ export default function App() {
 
         // Check if all subquests are completed now
         const allDone = updatedSubs.length > 0 && updatedSubs.every(sq => sq.completed);
+        const wasDone = q.completed;
 
-        if (allDone && !q.completed) {
+        if (allDone && !wasDone) {
           // Reward massive Campaign Completion XP! (difficulty * 35 XP)
           const xpReward = q.difficulty * 35;
           handleRewardXp(q.primaryTarget, xpReward);
           alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP in ${stats.find(s => s.id === q.primaryTarget)?.name}!`);
+        } else if (!allDone && wasDone) {
+          // Deduct Campaign Completion XP if uncompleted
+          const xpReward = q.difficulty * 35;
+          handleDeductXp(q.primaryTarget, xpReward);
         }
 
         return { ...q, subquests: updatedSubs, completed: allDone };
