@@ -155,6 +155,9 @@ export default function App() {
     // Handle first login setup
     if (!player.lastAccessDate) {
       setPlayer(prev => ({ ...prev, lastAccessDate: todayStr }));
+      if (settings.enableDailyPlanner !== false) {
+        setShowPlannerModal(true);
+      }
       return;
     }
 
