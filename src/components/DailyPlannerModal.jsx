@@ -224,25 +224,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
           position: 'relative'
         }}
       >
-        {/* Header with Close Button */}
-        <div style={{ position: 'relative', textAlign: 'center', marginBottom: '16px' }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              fontSize: '20px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            ✕
-          </button>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           <div style={{ fontSize: '28px', marginBottom: '4px' }}>🎲</div>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
             È IL TUO TURNO!

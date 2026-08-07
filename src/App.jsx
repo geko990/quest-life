@@ -997,9 +997,8 @@ export default function App() {
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-sm bg-bg-main border border-border-color rounded-2xl shadow-2xl animate-scale-up"
           >
-            <div className="px-5 py-4 border-b border-border-color/50 flex justify-between items-center">
+            <div className="px-5 py-4 border-b border-border-color/50 flex justify-center items-center text-center">
               <h3 className="font-bold text-text-main text-base font-cinzel">✍️ Modifica Motto</h3>
-              <button onClick={() => setShowMottoModal(false)} className="text-text-secondary">✕</button>
             </div>
             <div className="p-5">
               <input

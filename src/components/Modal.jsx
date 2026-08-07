@@ -828,20 +828,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       >
         {/* Header */}
         <div
-          className="px-5 py-4 flex justify-between items-center"
+          className="px-5 py-4 flex justify-center items-center text-center"
           style={{ borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}
         >
           <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
             {getTitle()}
           </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ color: 'var(--text-secondary)' }}
-            className="hover:text-text-main font-bold text-lg cursor-pointer"
-          >
-            ✕
-          </button>
         </div>
 
         {/* Form */}

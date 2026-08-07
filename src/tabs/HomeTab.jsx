@@ -382,16 +382,10 @@ export default function HomeTab({
             style={{ width: '100%', maxWidth: '380px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '20px', boxShadow: '0 16px 48px rgba(0,0,0,0.4)', boxSizing: 'border-box' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', textAlign: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 📊 Gestisci Visibilità Grafico
               </h3>
-              <button
-                onClick={() => setShowVisibilityModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                ✕
-              </button>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
