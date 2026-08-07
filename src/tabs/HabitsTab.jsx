@@ -202,10 +202,17 @@ export default function HabitsTab({
   }
 
   const visibleHabits = getHabitsForDate(viewedDate);
-  const habitsToShow = visibleHabits.map(h => ({
-    ...h,
-    completed: isHabitCompletedOnDate(h.id, viewedDate)
-  }));
+  const habitsToShow = visibleHabits
+    .map(h => ({
+      ...h,
+      completed: isHabitCompletedOnDate(h.id, viewedDate)
+    }))
+    .sort((a, b) => {
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+      return 0;
+    });
 
   const formatTime = (secs) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
