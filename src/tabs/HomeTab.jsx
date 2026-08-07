@@ -76,9 +76,9 @@ export default function HomeTab({
       );
     }
 
-    const size = 340;
+    const size = 260;
     const center = size / 2;
-    const radius = 110;
+    const radius = 80;
     const N = visibleStats.length;
 
     const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
@@ -126,14 +126,14 @@ export default function HomeTab({
     }
 
     const labelItems = visibleStats.map((s, i) => {
-      const coords = getCoordinates(i, 1.24);
+      const coords = getCoordinates(i, 1.25);
       return (
         <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
           <text
             x={coords.x}
-            y={coords.y + 9}
+            y={coords.y + 7}
             textAnchor="middle"
-            style={{ fontSize: '26px', userSelect: 'none' }}
+            style={{ fontSize: '20px', userSelect: 'none' }}
           >
             {s.icon}
           </text>
@@ -157,10 +157,10 @@ export default function HomeTab({
           key={`vertex-${s.id}`}
           cx={coords.x}
           cy={coords.y}
-          r="5"
+          r="4.5"
           fill="var(--accent-primary)"
           stroke="var(--bg-primary)"
-          strokeWidth="2"
+          strokeWidth="1.8"
           style={{ cursor: 'pointer' }}
           onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
         />
@@ -168,7 +168,7 @@ export default function HomeTab({
     });
 
     return (
-      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '340px', maxHeight: '340px', margin: '0 auto' }}>
+      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '230px', maxHeight: '210px', margin: '0 auto' }}>
         {gridCircles}
         {axisLines}
         {playerPoints && (
@@ -176,7 +176,7 @@ export default function HomeTab({
             points={playerPoints}
             fill="rgba(124, 58, 237, 0.28)"
             stroke="var(--accent-primary)"
-            strokeWidth="3"
+            strokeWidth="2.5"
             strokeLinejoin="round"
           />
         )}
@@ -216,8 +216,8 @@ export default function HomeTab({
         onTouchEnd={handleTouchEnd}
         onClick={handleChartClick}
         style={{
-          padding: '16px',
-          marginBottom: '16px',
+          padding: '10px 12px',
+          marginBottom: '10px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -233,20 +233,15 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* 2. Tessera "Azioni del Giorno" (Dinamica con le azioni create giorno per giorno) */}
-      <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>⚔️</span>
+      {/* 2. Tessera "Azioni del Giorno" (Griglia 2x2) */}
+      <div className="glass-panel" style={{ padding: '10px 12px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '16px' }}>⚔️</span>
             <div>
-              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 Azioni del Giorno
               </h3>
-              <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)' }}>
-                {todayActionsList.length > 0
-                  ? 'Le tue azioni pianificate e create per oggi'
-                  : 'Crea o pianifica le tue azioni quotidiane con il D10'}
-              </p>
             </div>
           </div>
 
@@ -254,14 +249,14 @@ export default function HomeTab({
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               title="Pianifica azioni con il dado D10"
             >
               🎲 Pianifica
             </button>
             <button
               onClick={() => onOpenModal('oneshot')}
-              style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+              style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
               title="Aggiungi nuova missione"
             >
               + Nuova
@@ -270,24 +265,24 @@ export default function HomeTab({
         </div>
 
         {todayActionsList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px 12px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-            <div style={{ fontSize: '28px', marginBottom: '6px' }}>🎯</div>
-            <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
+          <div style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--bg-secondary)', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+            <div style={{ fontSize: '20px', marginBottom: '4px' }}>🎯</div>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
               Nessuna azione creata per oggi
             </div>
-            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-              Pianifica le azioni del giorno con il dado D10 o crea una nuova missione!
+            <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              Definisci le 4 azioni quotidiane con il D10 per XP bonus!
             </div>
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '8px 16px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '6px 14px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
             >
-              🎲 Pianifica con D10 Ora
+              🎲 Pianifica Azioni con D10
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {todayActionsList.map((action) => {
               const primaryStat = stats.find(s => s.id === action.primaryTarget);
               const isCompleted = !!action.completed;
@@ -299,11 +294,11 @@ export default function HomeTab({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
+                    gap: '8px',
                     background: 'var(--bg-secondary)',
                     border: isCompleted ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                    padding: '10px 12px',
-                    borderRadius: '12px',
+                    padding: '8px 10px',
+                    borderRadius: '10px',
                     cursor: 'pointer',
                     opacity: isCompleted ? 0.6 : 1,
                     transition: 'all 0.2s ease',
@@ -314,13 +309,13 @@ export default function HomeTab({
                   {/* Checkbox */}
                   <div
                     className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
-                    style={{ width: '20px', height: '20px', flexShrink: 0 }}
+                    style={{ width: '18px', height: '18px', flexShrink: 0 }}
                   ></div>
 
                   {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '12px' }}>{action.emoji || '🎯'}</span>
+                      <span style={{ fontSize: '11px' }}>{action.emoji || '🎯'}</span>
                       {primaryStat && (
                         <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {primaryStat.name}
@@ -328,7 +323,7 @@ export default function HomeTab({
                       )}
                     </div>
                     <div style={{
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 'bold',
                       color: 'var(--text-primary)',
                       textDecoration: isCompleted ? 'line-through' : 'none',
@@ -346,31 +341,31 @@ export default function HomeTab({
         )}
       </div>
 
-      {/* 4. Sostentamento Summary */}
+      {/* 3. Sostentamento Summary */}
       {health && (
-        <div className="glass-panel" style={{ padding: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+        <div className="glass-panel" style={{ padding: '10px 12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               🍎 Sostentamento Oggi
             </h3>
-            <span style={{ fontSize: '12px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+            <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
               {health.calories?.consumed || 0} / {health.calories?.target || 2000} kcal
             </span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', textAlign: 'center' }}>
-            <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '18px' }}>🔥</div>
-              <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--text-primary)' }}>{health.calories?.consumed || 0}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '6px 4px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ fontSize: '14px' }}>🔥</div>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.calories?.consumed || 0}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Calorie</div>
             </div>
-            <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '18px' }}>💧</div>
-              <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.target || 8}</div>
+            <div style={{ background: 'var(--bg-secondary)', padding: '6px 4px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ fontSize: '14px' }}>💧</div>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.target || 8}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bicchieri</div>
             </div>
-            <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '18px' }}>🚶</div>
-              <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--text-primary)' }}>{health.steps?.current || 0}</div>
+            <div style={{ background: 'var(--bg-secondary)', padding: '6px 4px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ fontSize: '14px' }}>🚶</div>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.steps?.current || 0}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Passi</div>
             </div>
           </div>
