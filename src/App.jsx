@@ -148,6 +148,18 @@ export default function App() {
     }
   }, [settings.theme, settings.accent, settings.accentColor, settings.mode, settings.themeMode]);
 
+  // Prevent contextmenu callout popups on long-press (except in inputs & textareas)
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      const tagName = (e.target?.tagName || '').toUpperCase();
+      if (tagName !== 'INPUT' && tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('contextmenu', handleContextMenu, { capture: true });
+    return () => window.removeEventListener('contextmenu', handleContextMenu, { capture: true });
+  }, []);
+
   // 6. Rollover check (Check if day rolled over)
   useEffect(() => {
     const todayStr = getGameDate(settings.dayStartTime);
