@@ -21,10 +21,62 @@ function notifyUpdateAvailable(newVersion) {
   });
 }
 
+let autoUpdateTimer = null;
+let userHasTouched = false;
+let isInitialLaunch = true;
+
+/**
+ * Setup 20-second initial launch auto-update timer if no touch occurs.
+ * Applies ONLY to the first activation (cold startup).
+ * If app goes to background or user touches screen, timer is cancelled permanently.
+ */
+function setupInitialAutoUpdateTimer() {
+  if (!isInitialLaunch) return;
+  isInitialLaunch = false;
+
+  const cancelTimer = () => {
+    if (autoUpdateTimer) {
+      clearTimeout(autoUpdateTimer);
+      autoUpdateTimer = null;
+    }
+    userHasTouched = true;
+    removeTouchListeners();
+  };
+
+  const removeTouchListeners = () => {
+    window.removeEventListener('touchstart', cancelTimer, { capture: true });
+    window.removeEventListener('pointerdown', cancelTimer, { capture: true });
+    window.removeEventListener('mousedown', cancelTimer, { capture: true });
+    window.removeEventListener('keydown', cancelTimer, { capture: true });
+  };
+
+  window.addEventListener('touchstart', cancelTimer, { capture: true, passive: true });
+  window.addEventListener('pointerdown', cancelTimer, { capture: true, passive: true });
+  window.addEventListener('mousedown', cancelTimer, { capture: true, passive: true });
+  window.addEventListener('keydown', cancelTimer, { capture: true, passive: true });
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      cancelTimer();
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibilityChange, { once: true });
+
+  autoUpdateTimer = setTimeout(async () => {
+    if (!userHasTouched && document.visibilityState === 'visible') {
+      console.log('[PWA] 20s initial launch timer expired with zero touches. Executing auto-update...');
+      removeTouchListeners();
+      await forceUpdateApp(false);
+    }
+  }, 20000);
+}
+
 /**
  * Initialize PWA Service Worker & update monitoring
  */
 export function initPWA() {
+  setupInitialAutoUpdateTimer();
+
   if (!('serviceWorker' in navigator)) {
     console.log('[PWA] ServiceWorker not supported');
     return;
