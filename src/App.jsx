@@ -118,29 +118,35 @@ export default function App() {
     }
   }, [player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings, fileHandle]);
 
-  // 5. Apply Theme classes to root HTML element
+  // 5. Apply Theme & Accent attributes to root HTML element
   useEffect(() => {
     const root = document.documentElement;
     const themeName = settings.theme || 'standard';
+    const activeAccent = settings.accent || settings.accentColor || 'violet';
 
     let isLightMode = false;
-    if (settings.themeMode === 'light' || settings.mode === 'light' || (settings.theme === 'light' && settings.themeMode !== 'dark')) {
+    if (settings.themeMode === 'light') {
       isLightMode = true;
     } else if (settings.themeMode === 'system') {
       isLightMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    } else if (settings.themeMode === 'dark') {
+      isLightMode = false;
+    } else if (settings.mode === 'light' || settings.theme === 'light') {
+      isLightMode = true;
     }
 
     const modeName = isLightMode ? 'light' : 'dark';
-    root.className = `theme-${themeName} accent-${settings.accent || 'violet'}`;
+    root.className = `theme-${themeName} accent-${activeAccent}`;
     root.setAttribute('data-theme', themeName);
     root.setAttribute('data-mode', modeName);
+    root.setAttribute('data-accent', activeAccent);
     
     // Set theme color metadata
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       meta.setAttribute('content', modeName === 'light' ? '#f1f5f9' : '#0b0b14');
     }
-  }, [settings.theme, settings.accent, settings.mode, settings.themeMode]);
+  }, [settings.theme, settings.accent, settings.accentColor, settings.mode, settings.themeMode]);
 
   // 6. Rollover check (Check if day rolled over)
   useEffect(() => {
