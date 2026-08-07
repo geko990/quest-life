@@ -1,11 +1,37 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats }) {
+export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, settings, onEditStat }) {
   if (!isOpen) return null;
 
   const [form, setForm] = useState({});
   const [subquests, setSubquests] = useState([]);
   const [newSubquestName, setNewSubquestName] = useState('');
+  const [selectedDayIndex, setSelectedDayIndex] = useState(6);
+
+  const getStatHistory7Days = (statId) => {
+    const today = new Date();
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLabel = i === 0 ? 'Oggi' : `${d.getDate()}/${d.getMonth() + 1}`;
+
+      const dayLogs = (xpLog || []).filter(
+        log => log.statId === statId && log.date === dateStr && log.amount > 0
+      );
+
+      const totalXp = dayLogs.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+      days.push({
+        dateStr,
+        dayLabel,
+        totalXp,
+        logs: dayLogs
+      });
+    }
+    return days;
+  };
 
   // Prepopulate form fields if editing or set defaults
   useEffect(() => {
@@ -686,32 +712,139 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           </>
         );
 
-      case 'stat_detail':
+      case 'stat_detail': {
         const statData = editData || {};
+        const history7Days = getStatHistory7Days(statData.id);
+        const maxDayXp = Math.max(20, ...history7Days.map(d => d.totalXp));
+
+        const lastXpEntry = (xpLog || [])
+          .filter(l => l.statId === statData.id && l.amount > 0)
+          .slice(-1)[0];
+
+        const selectedDay = selectedDayIndex !== null && selectedDayIndex >= 0 && selectedDayIndex < history7Days.length
+          ? history7Days[selectedDayIndex]
+          : null;
+
         return (
-          <div className="space-y-4 text-center">
-            <div className="w-16 h-16 mx-auto rounded-full bg-accent-primary/10 border-2 border-accent-primary flex items-center justify-center text-3xl shadow-lg">
+          <div className="space-y-3 text-center">
+            {/* Top Emoji (no circular frame) */}
+            <div style={{ fontSize: '46px', lineHeight: '1', margin: '4px 0 2px 0' }}>
               {statData.icon || '⭐'}
             </div>
+
+            {/* Stat Name & Description */}
             <div>
-              <h4 className="text-lg font-bold text-text-main font-cinzel">{statData.name}</h4>
-              <p className="text-xs text-text-secondary">{statData.description || 'Statistica del personaggio'}</p>
+              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {statData.name}
+              </h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.4' }}>
+                {statData.description || 'Statistica del personaggio'}
+              </p>
             </div>
-            <div className="bg-slate-950/40 p-3 rounded-xl border border-border-color/40 flex justify-around">
+
+            {/* Level & XP Line */}
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
               <div>
-                <span className="text-[10px] text-text-secondary uppercase block font-bold">Livello</span>
-                <span className="text-lg font-bold text-accent-primary">{statData.level || 1}</span>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>LIVELLO</span>
+                <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{statData.level || 1}</span>
               </div>
               <div>
-                <span className="text-[10px] text-text-secondary uppercase block font-bold">XP Accumulati</span>
-                <span className="text-lg font-bold text-amber-400">{statData.xp || 0}</span>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>XP ACCUMULATI</span>
+                <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>{statData.xp || 0}</span>
               </div>
             </div>
-            <p className="text-[11px] text-text-secondary/80 italic leading-relaxed">
-              Man mano che completi abitudini e missioni collegate a {statData.name}, guadagnerai XP ed aumenterai il livello di questa statistica!
-            </p>
+
+            {/* 7-Day Mini Bar Chart */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'left' }}>
+                📊 Ultimi 7 Giorni
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '65px', padding: '0 4px', gap: '6px' }}>
+                {history7Days.map((day, idx) => {
+                  const heightPx = Math.max(6, Math.round((day.totalXp / maxDayXp) * 50));
+                  const isSelected = selectedDayIndex === idx;
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedDayIndex(idx)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer'
+                      }}
+                      title={`${day.dayLabel}: +${day.totalXp} XP`}
+                    >
+                      <div style={{ fontSize: '8px', fontWeight: 'bold', color: day.totalXp > 0 ? 'var(--accent-primary)' : 'transparent', height: '10px' }}>
+                        {day.totalXp > 0 ? `+${day.totalXp}` : ''}
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          maxWidth: '22px',
+                          height: `${heightPx}px`,
+                          borderRadius: '4px',
+                          background: isSelected
+                            ? 'var(--accent-primary)'
+                            : day.totalXp > 0
+                            ? 'rgba(124, 58, 237, 0.45)'
+                            : 'var(--glass-border)',
+                          border: isSelected ? '1px solid var(--accent-primary)' : 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                      ></div>
+                      <div style={{ fontSize: '9px', color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: isSelected ? 'bold' : 'normal' }}>
+                        {day.dayLabel}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Tooltip Breakdown */}
+              {selectedDay && (
+                <div style={{ marginTop: '10px', padding: '8px 10px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '10px', fontSize: '10px', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    <span>📅 {selectedDay.dayLabel} ({selectedDay.dateStr})</span>
+                    <span style={{ color: 'var(--accent-primary)' }}>+{selectedDay.totalXp} XP</span>
+                  </div>
+                  {selectedDay.logs.length === 0 ? (
+                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Nessun XP guadagnato in questo giorno.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      {selectedDay.logs.map((l, lIdx) => (
+                        <div key={lIdx} style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                          <span>• {l.title || 'Attività completata'}</span>
+                          <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>+{l.amount} XP</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Last Task Row */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>⚡</span>
+              <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Ultimo XP Guadagnato</div>
+                {lastXpEntry ? (
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {lastXpEntry.title || 'Attività completata'} <span style={{ color: 'var(--accent-primary)' }}>(+{lastXpEntry.amount} XP)</span>
+                  </div>
+                ) : (
+                  <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Nessuna attività registrata di recente</div>
+                )}
+              </div>
+            </div>
           </div>
         );
+      }
 
       default:
         if (type?.startsWith('health_')) {
@@ -803,7 +936,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       food: 'Alimento nel database',
       exercise: 'Esercizio nel database',
       weight: 'Statistiche Peso',
-      stat_detail: 'Dettaglio Statistica',
+      stat_detail: '',
       pomodoro: 'Timer Pomodoro'
     };
     if (type?.startsWith('health_')) return 'Aggiorna Dati';
@@ -826,15 +959,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)'
         }}
       >
-        {/* Header */}
-        <div
-          className="px-5 py-4 flex justify-center items-center text-center"
-          style={{ borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}
-        >
-          <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
-            {getTitle()}
-          </h3>
-        </div>
+        {/* Header (Hidden for stat_detail) */}
+        {type !== 'stat_detail' && (
+          <div
+            className="px-5 py-4 flex justify-center items-center text-center"
+            style={{ borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}
+          >
+            <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
+              {getTitle()}
+            </h3>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSave}>
@@ -842,42 +977,81 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions */}
+          {/* Footer Actions (Emoji only: 🗑️, ✏️, 💾) */}
           <div
             className="px-5 py-3.5 flex justify-between items-center"
             style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--bg-secondary)' }}
           >
-            {editData && onDelete ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
-                    onDelete(editData.id || editData);
-                    onClose();
-                  }
-                }}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-white hover:bg-red-500/80 border border-red-500/30 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>🗑️</span>
-                <span>Elimina</span>
-              </button>
-            ) : <div></div>}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {editData && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                      onDelete(editData.id || editData);
+                      onClose();
+                    }
+                  }}
+                  title="Elimina"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  🗑️
+                </button>
+              )}
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)' }}
-                className="px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-              >
-                Annulla
-              </button>
+              {type === 'stat_detail' && onEditStat && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onEditStat) onEditStat(editData);
+                  }}
+                  title="Modifica"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--glass-border)',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ✏️
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
                 type="submit"
-                style={{ background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))', color: '#ffffff' }}
-                className="px-5 py-2 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 cursor-pointer"
+                title="Salva"
+                style={{
+                  padding: '8px 22px',
+                  borderRadius: '12px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
+                  color: '#ffffff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                }}
               >
-                Salva
+                💾
               </button>
             </div>
           </div>
