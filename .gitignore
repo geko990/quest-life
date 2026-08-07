@@ -17,4 +17,9 @@ npm-debug.log*
 node_modules/
 .node-bin/
 dist/
+.vite/
+
+# Temporary screenshots
+screenshot_*.png
+
 
