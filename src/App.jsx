@@ -783,6 +783,10 @@ export default function App() {
             player={player}
             health={health}
             pomodoro={pomodoro}
+            oneshots={oneshots}
+            onToggleOneshot={handleToggleOneshot}
+            habits={habits}
+            onToggleHabit={handleToggleHabit}
             dailyActions={dailyActions}
             onToggleDailyAction={handleToggleDailyAction}
             onOpenModal={handleOpenModal}
@@ -791,6 +795,7 @@ export default function App() {
             onOpenPlanner={() => setShowPlannerModal(true)}
             onOpenPomodoro={() => handleOpenModal('pomodoro')}
             onOpenStatDetail={(stat) => handleOpenModal('stat_detail', stat)}
+            settings={settings}
           />
         );
       case 'habits':
