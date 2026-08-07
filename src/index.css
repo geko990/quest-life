@@ -35,30 +35,30 @@
 
 /* --- STANDARD THEME --- */
 [data-theme="standard"][data-mode="light"] {
-    --bg-primary: #f8f9fc;
+    --bg-primary: #f1f5f9;
     --bg-secondary: #ffffff;
-    --bg-card: #f1f3f9;
-    --bg-main: #f8f9fc;
-    --text-primary: #1a1a2e;
-    --text-secondary: #4a4a6a;
-    --text-main: #1a1a2e;
-    --text-muted: #8888aa;
-    --glass-bg: rgba(255, 255, 255, 0.85);
+    --bg-card: #ffffff;
+    --bg-main: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --glass-bg: rgba(255, 255, 255, 0.95);
     --glass-border: rgba(0, 0, 0, 0.1);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="standard"][data-mode="dark"] {
     --bg-primary: #0f0f1a;
     --bg-secondary: #1a1a2e;
-    --bg-card: #252540;
+    --bg-card: #22223b;
     --bg-main: #0f0f1a;
-    --text-primary: #f0f0f5;
-    --text-secondary: #b0b0c0;
-    --text-main: #f0f0f5;
-    --text-muted: #6a6a8a;
-    --glass-bg: rgba(30, 30, 50, 0.85);
-    --glass-border: rgba(60, 60, 100, 0.5);
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --glass-bg: rgba(26, 26, 46, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.12);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -74,37 +74,35 @@
 
 [data-theme="fantasy"][data-mode="light"] {
     --bg-primary: #f5e6d3;
-    /* Parchment Light */
-    --bg-secondary: #e8dac3;
-    --bg-card: #f9f1e6;
-    --text-primary: #3e2723;
-    /* Dark Brown */
-    --text-secondary: #5d4037;
-    --text-muted: #8d6e63;
-    /* Accents removed to allow user selection */
-    --glass-bg: rgba(245, 230, 211, 0.9);
-    --glass-border: rgba(62, 39, 35, 0.2);
-    --glass-shadow: 0 4px 10px rgba(62, 39, 35, 0.2);
+    --bg-secondary: #ede0ce;
+    --bg-card: #fdf8f0;
+    --bg-main: #f5e6d3;
+    --text-primary: #2c1a0e;
+    --text-secondary: #4a3222;
+    --text-main: #2c1a0e;
+    --text-muted: #7a5e4b;
+    --glass-bg: rgba(253, 248, 240, 0.92);
+    --glass-border: rgba(74, 50, 34, 0.2);
+    --glass-shadow: 0 4px 14px rgba(44, 26, 14, 0.12);
 
-    /* Parchment Texture Pattern */
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
 [data-theme="fantasy"][data-mode="dark"] {
-    --bg-primary: #2d241f;
-    /* Dark Wood */
-    --bg-secondary: #3e322b;
-    --bg-card: #4a3b32;
-    --text-primary: #d7ccc8;
-    --text-secondary: #a1887f;
-    --text-muted: #6d4c41;
-    /* Accents removed */
-    --glass-bg: rgba(45, 36, 31, 0.9);
-    --glass-border: rgba(192, 160, 98, 0.2);
-    --glass-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    --bg-primary: #1c1512;
+    --bg-secondary: #261e18;
+    --bg-card: #332821;
+    --bg-main: #1c1512;
+    --text-primary: #f4eae0;
+    --text-secondary: #d1c0b0;
+    --text-main: #f4eae0;
+    --text-muted: #9c8a78;
+    --glass-bg: rgba(38, 30, 24, 0.9);
+    --glass-border: rgba(210, 180, 140, 0.18);
+    --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
-/* --- D&D THEME (Tabletop) --- */
+/* --- D&D THEME (Tabletop Paper Map) --- */
 [data-theme="dnd"] {
     --font-main: 'Patrick Hand', cursive;
     --radius-sm: 4px;
@@ -115,20 +113,18 @@
 }
 
 [data-theme="dnd"][data-mode="light"] {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f3f3f3;
-    /* Transparent White for Map Visibility (Increased Transparency) */
-    --bg-card: rgba(255, 255, 255, 0.40);
-    --text-primary: #1a1a1a;
-    --text-secondary: #424242;
-    --text-muted: #757575;
-    /* Accents removed */
-    --glass-bg: rgba(255, 255, 255, 0.50);
-    --glass-border: rgba(0, 0, 0, 0.5);
-    /* Strong borders */
-    --glass-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+    --bg-primary: #f4efe6;
+    --bg-secondary: #e9e3d5;
+    --bg-card: #ffffff;
+    --bg-main: #f4efe6;
+    --text-primary: #121212;
+    --text-secondary: #333333;
+    --text-main: #121212;
+    --text-muted: #666666;
+    --glass-bg: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(0, 0, 0, 0.15);
+    --glass-shadow: 2px 2px 0px rgba(0, 0, 0, 0.08);
 
-    /* Graph Paper Pattern - KEEP for fallback, but Map will overlay */
     background-size: 20px 20px;
     background-image:
         linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
@@ -136,21 +132,20 @@
 }
 
 [data-theme="dnd"][data-mode="dark"] {
-    --bg-primary: #212121;
-    --bg-secondary: #333333;
-    /* Transparent Dark for Map Visibility (Increased Transparency) */
-    --bg-card: rgba(44, 44, 44, 0.40);
-    --text-primary: #ffffff;
-    /* Pure white for contrast */
-    --text-secondary: #dddddd;
-    --text-muted: #aaaaaa;
-    /* Accents removed */
-    --glass-bg: rgba(33, 33, 33, 0.50);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --glass-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    --bg-primary: #12161a;
+    --bg-secondary: #1a2026;
+    --bg-card: #232c35;
+    --bg-main: #12161a;
+    --text-primary: #f0f4f8;
+    --text-secondary: #cbd5e1;
+    --text-main: #f0f4f8;
+    --text-muted: #64748b;
+    --glass-bg: rgba(26, 32, 38, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* --- FUTURISTIC THEME (Tron / Cyberpunk) --- */
+/* --- FUTURISTIC THEME (Cyberpunk / Neon) --- */
 [data-theme="futuristic"] {
     --font-main: 'Orbitron', sans-serif;
     --radius-sm: 0px;
@@ -160,36 +155,37 @@
     font-family: var(--font-main);
 }
 
-[data-theme="futuristic"][data-mode="dark"] {
-    --bg-primary: #050505;
-    --bg-secondary: #0a0a0a;
-    --bg-card: #000000;
-    --text-primary: #00e5ff;
-    --text-secondary: #00b8d4;
-    --text-muted: #006064;
-    /* Accents removed, but Neon Cyan text preserved */
-    --glass-bg: rgba(0, 0, 0, 0.8);
-    --glass-border: 1px solid rgba(0, 229, 255, 0.5);
-    --glass-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
-
-    /* Grid Pattern */
-    background-size: 40px 40px;
-    background-image:
-        linear-gradient(to right, rgba(0, 229, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
+[data-theme="futuristic"][data-mode="light"] {
+    --bg-primary: #e0f2fe;
+    --bg-secondary: #bae6fd;
+    --bg-card: #ffffff;
+    --bg-main: #e0f2fe;
+    --text-primary: #0369a1;
+    --text-secondary: #0284c7;
+    --text-main: #0369a1;
+    --text-muted: #38bdf8;
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(2, 132, 199, 0.3);
+    --glass-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
 }
 
-[data-theme="futuristic"][data-mode="light"] {
-    --bg-primary: #e0f7fa;
-    --bg-secondary: #b2ebf2;
-    --bg-card: #ffffff;
-    --text-primary: #006064;
-    --text-secondary: #00838f;
-    --text-muted: #4dd0e1;
-    /* Accents removed */
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: 1px solid rgba(0, 96, 100, 0.3);
-    --glass-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+[data-theme="futuristic"][data-mode="dark"] {
+    --bg-primary: #030712;
+    --bg-secondary: #0b1329;
+    --bg-card: #111c38;
+    --bg-main: #030712;
+    --text-primary: #38bdf8;
+    --text-secondary: #818cf8;
+    --text-main: #38bdf8;
+    --text-muted: #475569;
+    --glass-bg: rgba(11, 19, 41, 0.9);
+    --glass-border: rgba(56, 189, 248, 0.35);
+    --glass-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+
+    background-size: 40px 40px;
+    background-image:
+        linear-gradient(to right, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
 }
 
 /* --- PIRATE THEME (7th Sea) --- */
@@ -198,36 +194,32 @@
     font-family: var(--font-main);
 }
 
-[data-theme="pirate"][data-mode="dark"] {
-    --bg-primary: #001f3f;
-    /* Deep Ocean */
-    --bg-secondary: #00162b;
-    --bg-card: #002845;
-    --text-primary: #f0e6d2;
-    /* Bone White */
-    --text-secondary: #c5a059;
-    --text-muted: #607d8b;
-    /* Accents removed */
-    --accent-secondary: #ffd700;
-    /* Gold */
-    --glass-bg: rgba(0, 31, 63, 0.9);
-    --glass-border: rgba(197, 160, 89, 0.4);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+[data-theme="pirate"][data-mode="light"] {
+    --bg-primary: #f0f7ff;
+    --bg-secondary: #dbeafe;
+    --bg-card: #ffffff;
+    --bg-main: #f0f7ff;
+    --text-primary: #0f172a;
+    --text-secondary: #1e3a8a;
+    --text-main: #0f172a;
+    --text-muted: #3b82f6;
+    --glass-bg: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(30, 58, 138, 0.18);
+    --glass-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
 }
 
-[data-theme="pirate"][data-mode="light"] {
-    --bg-primary: #f0f8ff;
-    /* Alice Blue */
-    --bg-secondary: #e6f2ff;
-    --bg-card: #ffffff;
-    --text-primary: #013a63;
-    /* Navy Blue */
-    --text-secondary: #2c7da0;
-    --text-muted: #89c2d9;
-    /* Accents removed */
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(1, 58, 99, 0.2);
-    --glass-shadow: 0 4px 15px rgba(1, 58, 99, 0.15);
+[data-theme="pirate"][data-mode="dark"] {
+    --bg-primary: #071324;
+    --bg-secondary: #0f233d;
+    --bg-card: #173256;
+    --bg-main: #071324;
+    --text-primary: #f0f6fc;
+    --text-secondary: #93c5fd;
+    --text-main: #f0f6fc;
+    --text-muted: #60a5fa;
+    --glass-bg: rgba(15, 35, 61, 0.9);
+    --glass-border: rgba(147, 197, 253, 0.18);
+    --glass-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
 }
 
 /* Base Variables (overridden by themes above) */
@@ -447,7 +439,7 @@ body {
     font-size: 13px;
 }
 
-[data-theme="dark"] .streak-badge {
+[data-mode="dark"] .streak-badge {
     background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
     color: #fbbf24;
 }
@@ -1020,7 +1012,7 @@ body {
     background: var(--accent-light);
 }
 
-[data-theme="dark"] .accordion-header:hover {
+[data-mode="dark"] .accordion-header:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
