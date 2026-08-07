@@ -717,6 +717,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         const history7Days = getStatHistory7Days(statData.id);
         const maxDayXp = Math.max(20, ...history7Days.map(d => d.totalXp));
 
+        const getEntryTitle = (log) => {
+          if (log.title) return log.title;
+          const foundOneshot = (oneshots || []).find(o => o.primaryTarget === log.statId || o.secondaryTarget === log.statId);
+          if (foundOneshot) return foundOneshot.name;
+          const foundHabit = (habits || []).find(h => h.primaryTarget === log.statId || h.secondaryTarget === log.statId);
+          if (foundHabit) return foundHabit.name;
+          return 'Azione RPG';
+        };
+
         const lastXpEntry = (xpLog || [])
           .filter(l => l.statId === statData.id && l.amount > 0)
           .slice(-1)[0];
@@ -726,43 +735,46 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           : null;
 
         return (
-          <div className="space-y-3 text-center">
-            {/* Top Emoji (no circular frame) */}
-            <div style={{ fontSize: '46px', lineHeight: '1', margin: '4px 0 2px 0' }}>
-              {statData.icon || '⭐'}
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* TESSERA 1: Emoji, Nome, Descrizione, Livello e XP */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+              {/* Emoji in alto (senza cerchio) */}
+              <div style={{ fontSize: '42px', lineHeight: '1', marginBottom: '4px' }}>
+                {statData.icon || '⭐'}
+              </div>
 
-            {/* Stat Name & Description */}
-            <div>
-              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              {/* Nome e Descrizione */}
+              <h3 style={{ margin: '0 0 2px 0', fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {statData.name}
               </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.4' }}>
+              <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.4' }}>
                 {statData.description || 'Statistica del personaggio'}
               </p>
+
+              {/* Linea Livello e XP Accumulati */}
+              <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', background: 'var(--bg-card)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                <div>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>LIVELLO</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{statData.level || 1}</span>
+                </div>
+                <div style={{ width: '1px', height: '24px', background: 'var(--glass-border)' }}></div>
+                <div>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>XP ACCUMULATI</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>{statData.xp || 0}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Level & XP Line */}
-            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
-              <div>
-                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>LIVELLO</span>
-                <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{statData.level || 1}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>XP ACCUMULATI</span>
-                <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>{statData.xp || 0}</span>
-              </div>
-            </div>
-
-            {/* 7-Day Mini Bar Chart */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', textAlign: 'left' }}>
+            {/* TESSERA 2: Grafico 7 Giorni + Tooltip + Ultimo XP Guadagnato */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '10px', textAlign: 'left' }}>
                 📊 Ultimi 7 Giorni
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '65px', padding: '0 4px', gap: '6px' }}>
+              {/* Grafico a barre */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '60px', padding: '0 4px', gap: '6px', marginBottom: '10px' }}>
                 {history7Days.map((day, idx) => {
-                  const heightPx = Math.max(6, Math.round((day.totalXp / maxDayXp) * 50));
+                  const heightPx = Math.max(6, Math.round((day.totalXp / maxDayXp) * 45));
                   const isSelected = selectedDayIndex === idx;
 
                   return (
@@ -785,7 +797,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       <div
                         style={{
                           width: '100%',
-                          maxWidth: '22px',
+                          maxWidth: '20px',
                           height: `${heightPx}px`,
                           borderRadius: '4px',
                           background: isSelected
@@ -805,9 +817,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 })}
               </div>
 
-              {/* Tooltip Breakdown */}
+              {/* Tooltip con i titoli delle attività */}
               {selectedDay && (
-                <div style={{ marginTop: '10px', padding: '8px 10px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '10px', fontSize: '10px', textAlign: 'left' }}>
+                <div style={{ marginTop: '8px', padding: '8px 10px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '10px', fontSize: '10px', textAlign: 'left', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '4px' }}>
                     <span>📅 {selectedDay.dayLabel} ({selectedDay.dateStr})</span>
                     <span style={{ color: 'var(--accent-primary)' }}>+{selectedDay.totalXp} XP</span>
@@ -818,7 +830,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       {selectedDay.logs.map((l, lIdx) => (
                         <div key={lIdx} style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                          <span>• {l.title || 'Attività completata'}</span>
+                          <span>• {l.title || getEntryTitle(l)}</span>
                           <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>+{l.amount} XP</span>
                         </div>
                       ))}
@@ -826,20 +838,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   )}
                 </div>
               )}
-            </div>
 
-            {/* Last Task Row */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px' }}>⚡</span>
-              <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Ultimo XP Guadagnato</div>
-                {lastXpEntry ? (
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {lastXpEntry.title || 'Attività completata'} <span style={{ color: 'var(--accent-primary)' }}>(+{lastXpEntry.amount} XP)</span>
-                  </div>
-                ) : (
-                  <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Nessuna attività registrata di recente</div>
-                )}
+              {/* Ultimo XP Guadagnato */}
+              <div style={{ background: 'var(--bg-card)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '15px' }}>⚡</span>
+                <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Ultimo XP Guadagnato</div>
+                  {lastXpEntry ? (
+                    <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {lastXpEntry.title || getEntryTitle(lastXpEntry)} <span style={{ color: 'var(--accent-primary)' }}>(+{lastXpEntry.amount} XP)</span>
+                    </div>
+                  ) : (
+                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Nessuna attività registrata di recente</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -977,12 +989,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions (Emoji only: 🗑️, ✏️, 💾) */}
+          {/* Footer Actions (Compact 3 Emoji Icons) */}
           <div
-            className="px-5 py-3.5 flex justify-between items-center"
+            className="px-5 py-3 flex justify-between items-center"
             style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--bg-secondary)' }}
           >
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
               {editData && onDelete && (
                 <button
                   type="button"
@@ -994,16 +1006,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   }}
                   title="Elimina"
                   style={{
-                    padding: '8px 14px',
-                    borderRadius: '12px',
-                    fontSize: '18px',
+                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    fontSize: '15px',
                     background: 'rgba(239, 68, 68, 0.15)',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
                     color: '#ef4444',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    cursor: 'pointer'
                   }}
                 >
                   🗑️
@@ -1018,16 +1027,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   }}
                   title="Modifica"
                   style={{
-                    padding: '8px 14px',
-                    borderRadius: '12px',
-                    fontSize: '18px',
+                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    fontSize: '15px',
                     background: 'var(--bg-card)',
                     border: '1px solid var(--glass-border)',
                     color: 'var(--text-primary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    cursor: 'pointer'
                   }}
                 >
                   ✏️
@@ -1035,20 +1041,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <button
                 type="submit"
                 title="Salva"
                 style={{
-                  padding: '8px 22px',
-                  borderRadius: '12px',
-                  fontSize: '18px',
+                  padding: '6px 16px',
+                  borderRadius: '10px',
+                  fontSize: '16px',
                   fontWeight: 'bold',
                   background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
                   color: '#ffffff',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.25)'
                 }}
               >
                 💾
