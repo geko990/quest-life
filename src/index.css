@@ -4809,7 +4809,20 @@ textarea {
 }
 
 /* Modal - Centered Popup Style */
-/* Modal - Centered Popup Style */
+.modal select option,
+.quest-detail-content select option {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal input,
+.modal select,
+.modal textarea {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+}
+
 .modal,
 .quest-detail-content {
     background: var(--bg-card);
