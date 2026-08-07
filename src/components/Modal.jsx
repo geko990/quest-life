@@ -118,7 +118,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
                   maxLength="2"
                 />
               </div>
@@ -131,7 +131,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder={type === 'attribute' ? 'Forza, Destrezza...' : 'Scrittura, Disegno...'}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -143,7 +143,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 onChange={handleChange}
                 rows="3"
                 placeholder="A cosa serve questo attributo/abilità..."
-                className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
               ></textarea>
             </div>
             <div className="flex items-center gap-2 mb-2">
@@ -173,7 +173,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
                   maxLength="2"
                 />
               </div>
@@ -186,7 +186,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Leggere, Allenamento..."
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="frequency"
                   value={form.frequency || 'daily'}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   <option value="daily">Giornaliera</option>
                   <option value="weekly">Settimanale (1 volta)</option>
@@ -216,7 +216,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     value={form.freqTimes || 1}
                     onChange={handleNumberChange}
                     min="1"
-                    className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                    className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                   />
                 </div>
               )}
@@ -246,7 +246,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -259,7 +259,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -281,7 +281,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
                   maxLength="2"
                 />
               </div>
@@ -294,7 +294,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Preparare esame, Riparare rubinetto..."
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -336,7 +336,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -358,7 +358,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
                   maxLength="2"
                 />
               </div>
@@ -371,7 +371,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Imparare React, Scrivere un libro..."
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 onChange={handleChange}
                 rows="2"
                 placeholder="Spiega l'obiettivo finale di questa campagna..."
-                className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
               ></textarea>
             </div>
 
@@ -395,7 +395,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -408,7 +408,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -443,7 +443,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={newSubquestName}
                   onChange={(e) => setNewSubquestName(e.target.value)}
                   placeholder="Es: Finire capitolo 1..."
-                  className="flex-1 bg-slate-950/40 border border-border-color rounded px-3 py-2 text-xs focus:border-accent-primary focus:outline-none"
+                  className="flex-1 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-xs focus:border-accent-primary focus:outline-none"
                 />
                 <button
                   type="button"
@@ -482,7 +482,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
                   maxLength="2"
                 />
               </div>
@@ -495,7 +495,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Uova, Petto di Pollo..."
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -508,7 +508,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.baseGrams || 100}
                   onChange={handleNumberChange}
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
@@ -519,7 +519,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.baseCalories || 0}
                   onChange={handleNumberChange}
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
@@ -530,7 +530,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.baseProteins || 0}
                   onChange={handleNumberChange}
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -540,7 +540,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 name="category"
                 value={form.category || 'snack'}
                 onChange={handleChange}
-                className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
               >
                 <option value="breakfast">Colazione ☕</option>
                 <option value="lunch">Pranzo 🍚</option>
@@ -563,7 +563,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
                   maxLength="2"
                 />
               </div>
@@ -576,7 +576,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Push-ups, Corsa..."
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -589,7 +589,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.baseCount || 10}
                   onChange={handleNumberChange}
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
@@ -600,7 +600,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.baseCalories || 0}
                   onChange={handleNumberChange}
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
@@ -611,7 +611,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.xpReward || 5}
                   onChange={handleNumberChange}
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -621,7 +621,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 name="statId"
                 value={form.statId || ''}
                 onChange={handleChange}
-                className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
               >
                 {visibleStats.map(s => (
                   <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -644,7 +644,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleNumberChange}
                   step="0.1"
                   required
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
@@ -655,7 +655,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.target || ''}
                   onChange={handleNumberChange}
                   step="0.1"
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -668,7 +668,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.currentLean || ''}
                   onChange={handleNumberChange}
                   step="0.1"
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
@@ -679,7 +679,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.currentFat || ''}
                   onChange={handleNumberChange}
                   step="0.1"
-                  className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
+                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-sm focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -737,7 +737,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 value={form.value !== undefined ? form.value : ''}
                 onChange={handleNumberChange}
                 step={type === 'health_water' || type === 'health_water_goal' ? '0.1' : '1'}
-                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none"
               />
             </div>
           );
@@ -752,7 +752,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 name="targetStatId"
                 value={form.targetStatId || stats[0]?.id || 'int'}
                 onChange={handleChange}
-                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none"
               >
                 {visibleStats.map(s => (
                   <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -769,7 +769,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 min="1"
                 max="120"
                 required
-                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none font-bold"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none font-bold"
               />
             </div>
             <div>
@@ -782,7 +782,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 min="1"
                 max="500"
                 required
-                className="w-full bg-slate-950/40 border border-border-color rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none font-bold"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5 text-xs text-text-main focus:border-accent-primary focus:outline-none font-bold"
               />
             </div>
           </div>
@@ -813,18 +813,32 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay active animate-fade-in"
+      style={{ background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-bg-main border border-border-color rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
+        className="modal w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
+        style={{
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)',
+          border: '1px solid var(--glass-border)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)'
+        }}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border-color/50 flex justify-between items-center">
-          <h3 className="font-bold text-text-main text-base font-cinzel tracking-wide">{getTitle()}</h3>
+        <div
+          className="px-5 py-4 flex justify-between items-center"
+          style={{ borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}
+        >
+          <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
+            {getTitle()}
+          </h3>
           <button
+            type="button"
             onClick={onClose}
-            className="text-text-secondary hover:text-text-main font-bold text-lg"
+            style={{ color: 'var(--text-secondary)' }}
+            className="hover:text-text-main font-bold text-lg cursor-pointer"
           >
             ✕
           </button>
@@ -837,7 +851,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           </div>
 
           {/* Footer Actions */}
-          <div className="px-5 py-3.5 bg-slate-950/20 border-t border-border-color/40 flex justify-between items-center">
+          <div
+            className="px-5 py-3.5 flex justify-between items-center"
+            style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--bg-secondary)' }}
+          >
             {editData && onDelete ? (
               <button
                 type="button"
@@ -847,7 +864,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     onClose();
                   }
                 }}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-white hover:bg-red-500/80 border border-red-500/30 transition-all active:scale-95 flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-white hover:bg-red-500/80 border border-red-500/30 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
               >
                 <span>🗑️</span>
                 <span>Elimina</span>
@@ -858,13 +875,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-text-secondary hover:text-text-main border border-border-color hover:bg-slate-950/10 transition-colors"
+                style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--glass-border)' }}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Annulla
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-accent-primary to-accent-secondary hover:brightness-110 shadow-md transition-all active:scale-95"
+                style={{ background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))', color: '#ffffff' }}
+                className="px-5 py-2 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 cursor-pointer"
               >
                 Salva
               </button>
