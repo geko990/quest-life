@@ -989,92 +989,97 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions (Floating Compact Emoji Icons without background bar) */}
+          {/* Footer Actions (Centered Coherent 42x42 Emoji Buttons) */}
           <div
             style={{
               padding: '12px 20px 16px 20px',
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               alignItems: 'center',
+              gap: '12px',
               background: 'transparent',
               borderTop: 'none'
             }}
           >
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {editData && onDelete && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
-                      onDelete(editData.id || editData);
-                      onClose();
-                    }
-                  }}
-                  title="Elimina"
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '12px',
-                    fontSize: '18px',
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    border: 'none',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  🗑️
-                </button>
-              )}
-
-              {type === 'stat_detail' && onEditStat && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onEditStat) onEditStat(editData);
-                  }}
-                  title="Modifica"
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '12px',
-                    fontSize: '18px',
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--glass-border)',
-                    color: 'var(--text-primary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  ✏️
-                </button>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {editData && onDelete && (
               <button
-                type="submit"
-                title="Salva"
+                type="button"
+                onClick={() => {
+                  if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                    onDelete(editData.id || editData);
+                    onClose();
+                  }
+                }}
+                title="Elimina"
                 style={{
-                  padding: '8px 20px',
+                  width: '42px',
+                  height: '42px',
                   borderRadius: '12px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
-                  color: '#ffffff',
-                  border: 'none',
+                  fontSize: '15px',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#ef4444',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)',
-                  transition: 'all 0.2s ease'
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
                 }}
               >
-                💾
+                🗑️
               </button>
-            </div>
+            )}
+
+            {type === 'stat_detail' && onEditStat && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onEditStat) onEditStat(editData);
+                }}
+                title="Modifica"
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                }}
+              >
+                ✏️
+              </button>
+            )}
+
+            <button
+              type="submit"
+              title="Salva"
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
+                color: '#ffffff',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              💾
+            </button>
           </div>
         </form>
       </div>
