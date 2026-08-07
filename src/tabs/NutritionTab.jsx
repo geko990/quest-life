@@ -416,9 +416,8 @@ export default function NutritionTab({
       {showMealsModal && (
         <div className="modal active" onClick={() => setShowMealsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div className="modal-header">
+            <div className="modal-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
               <h3 className="modal-title">🍴 Registro Pasti e Allenamenti</h3>
-              <button className="close-btn" onClick={() => setShowMealsModal(false)}>✕</button>
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
@@ -494,9 +493,8 @@ export default function NutritionTab({
       {showHistoryModal && (
         <div className="modal active" onClick={() => setShowHistoryModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
-            <div className="modal-header">
+            <div className="modal-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
               <h3 className="modal-title">📊 Storico Dati Salute</h3>
-              <button className="close-btn" onClick={() => setShowHistoryModal(false)}>✕</button>
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
