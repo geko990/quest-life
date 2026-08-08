@@ -426,7 +426,7 @@ export default function HomeTab({
 
       {/* 3. Sostentamento Summary */}
       {health && (
-        <div className="glass-panel" style={{ padding: '10px 12px' }}>
+        <div className="glass-panel" style={{ padding: '10px 12px', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               🍎 Sostentamento Oggi
@@ -438,73 +438,105 @@ export default function HomeTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
             {/* 🔥 Calorie */}
             <div
-              onClick={() => handleAddCalories(100)}
-              title="Tocca per aggiungere +100 kcal"
+              onMouseDown={() => handleHealthPressStart('calories')}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddCalories(100))}
+              onTouchStart={() => handleHealthPressStart('calories')}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleHealthPressEnd(() => handleAddCalories(100));
+              }}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
                 borderRadius: '8px',
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
-                transition: 'transform 0.15s ease',
-                userSelect: 'none'
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
               }}
-              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
-              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-              onTouchStart={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
-              onTouchEnd={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
-              <div style={{ fontSize: '16px', marginBottom: '1px' }}>🔥</div>
+              <div style={{ fontSize: '14px' }}>🔥</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.calories?.consumed || 0}</div>
-              <div style={{ fontSize: '8px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold' }}>+100 kcal</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Calorie</div>
             </div>
 
             {/* 💧 Acqua */}
             <div
-              onClick={() => handleAddWater(1)}
-              title="Tocca per aggiungere 1 bicchiere d'acqua (200ml)"
+              onMouseDown={() => handleHealthPressStart('water')}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddWater(1))}
+              onTouchStart={() => handleHealthPressStart('water')}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleHealthPressEnd(() => handleAddWater(1));
+              }}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
                 borderRadius: '8px',
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
-                transition: 'transform 0.15s ease',
-                userSelect: 'none'
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
               }}
-              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
-              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-              onTouchStart={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
-              onTouchEnd={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
-              <div style={{ fontSize: '16px', marginBottom: '1px' }}>💧</div>
+              <div style={{ fontSize: '14px' }}>💧</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.target || 8}</div>
-              <div style={{ fontSize: '8px', color: '#06b6d4', fontWeight: 'bold' }}>+200ml</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bicchieri</div>
             </div>
 
             {/* 🚶 Passi */}
             <div
-              onClick={() => handleAddSteps(1000)}
-              title="Tocca per aggiungere +1000 passi"
+              onMouseDown={() => handleHealthPressStart('steps')}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
+              onTouchStart={() => handleHealthPressStart('steps')}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleHealthPressEnd(() => handleAddSteps(1000));
+              }}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
                 borderRadius: '8px',
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
-                transition: 'transform 0.15s ease',
-                userSelect: 'none'
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
               }}
-              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
-              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-              onTouchStart={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
-              onTouchEnd={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
-              <div style={{ fontSize: '16px', marginBottom: '1px' }}>🚶</div>
+              <div style={{ fontSize: '14px' }}>🚶</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.steps?.current || 0}</div>
-              <div style={{ fontSize: '8px', color: '#22c55e', fontWeight: 'bold' }}>+1000 Passi</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Passi</div>
             </div>
           </div>
+
+          {/* Longpress Tooltip Popup */}
+          {activeTooltip && (
+            <div
+              onClick={() => setActiveTooltip(null)}
+              style={{
+                marginTop: '8px',
+                padding: '8px 10px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--accent-primary)',
+                borderRadius: '10px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                color: 'var(--text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+                cursor: 'pointer'
+              }}
+            >
+              <span>
+                {activeTooltip === 'calories' && '🔥 Tap rapido: aggiunge +100 kcal consumate'}
+                {activeTooltip === 'water' && '💧 Tap rapido: aggiunge +1 bicchiere (200ml)'}
+                {activeTooltip === 'steps' && '🚶 Tap rapido: aggiunge +1000 passi'}
+              </span>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '6px' }}>✕</span>
+            </div>
+          )}
         </div>
       )}
 
