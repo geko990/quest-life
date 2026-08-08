@@ -719,10 +719,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         const getEntryTitle = (log) => {
           if (log.title) return log.title;
-          const foundOneshot = (oneshots || []).find(o => o.primaryTarget === log.statId || o.secondaryTarget === log.statId);
-          if (foundOneshot) return foundOneshot.name;
-          const foundHabit = (habits || []).find(h => h.primaryTarget === log.statId || h.secondaryTarget === log.statId);
-          if (foundHabit) return foundHabit.name;
+          if (log.source) return log.source;
           return 'Azione RPG';
         };
 

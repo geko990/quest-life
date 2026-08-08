@@ -431,9 +431,9 @@ export default function App() {
 
       if (!isCompleted) {
         // Complete habit: add streak, reward primary and secondary targets XP
-        handleRewardXp(habit.primaryTarget, primaryXp, true);
+        handleRewardXp(habit.primaryTarget, primaryXp, true, habit.name);
         if (habit.secondaryTarget) {
-          handleRewardXp(habit.secondaryTarget, secondaryXp);
+          handleRewardXp(habit.secondaryTarget, secondaryXp, false, habit.name);
         }
 
         // Increment Streak
@@ -469,7 +469,7 @@ export default function App() {
         // Uncheck habit: deduct XP & decrement streak
         handleDeductXp(habit.primaryTarget, primaryXp, true);
         if (habit.secondaryTarget) {
-          handleDeductXp(habit.secondaryTarget, secondaryXp);
+          handleDeductXp(habit.secondaryTarget, secondaryXp, false);
         }
 
         setHabits(prev =>
@@ -489,6 +489,19 @@ export default function App() {
       prev.map(o => (o.id === id ? { ...o, completed: willBeCompleted } : o))
     );
 
+    const todayStr = getGameDate(settings.dayStartTime);
+    setCompletionLog(prev => {
+      const dayLog = { habits: [], oneshots: [], quests: [], ...(prev[todayStr] || {}) };
+      const list = [...dayLog.oneshots];
+      const idx = list.indexOf(id);
+      if (willBeCompleted && idx === -1) {
+        list.push(id);
+      } else if (!willBeCompleted && idx !== -1) {
+        list.splice(idx, 1);
+      }
+      return { ...prev, [todayStr]: { ...dayLog, oneshots: list } };
+    });
+
     // Calculate XP (oneshot awards difficulty * 8 XP!)
     let xp = os.difficulty * 8;
     if (os.d10Roll) {
@@ -497,15 +510,15 @@ export default function App() {
     }
 
     if (willBeCompleted) {
-      handleRewardXp(os.primaryTarget, xp);
+      handleRewardXp(os.primaryTarget, xp, false, os.name);
       if (os.secondaryTarget) {
-        handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33));
+        handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name);
       }
     } else {
       // Unchecking task: deduct XP!
-      handleDeductXp(os.primaryTarget, xp);
+      handleDeductXp(os.primaryTarget, xp, false);
       if (os.secondaryTarget) {
-        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33));
+        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33), false);
       }
     }
   };
@@ -526,12 +539,12 @@ export default function App() {
         if (allDone && !wasDone) {
           // Reward massive Campaign Completion XP! (difficulty * 35 XP)
           const xpReward = q.difficulty * 35;
-          handleRewardXp(q.primaryTarget, xpReward);
+          handleRewardXp(q.primaryTarget, xpReward, false, q.name);
           alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP in ${stats.find(s => s.id === q.primaryTarget)?.name}!`);
         } else if (!allDone && wasDone) {
           // Deduct Campaign Completion XP if uncompleted
           const xpReward = q.difficulty * 35;
-          handleDeductXp(q.primaryTarget, xpReward);
+          handleDeductXp(q.primaryTarget, xpReward, false);
         }
 
         return { ...q, subquests: updatedSubs, completed: allDone };
@@ -1002,6 +1015,8 @@ export default function App() {
           player={player}
           setPlayer={setPlayer}
           stats={stats}
+          habits={habits}
+          oneshots={oneshots}
           completionLog={completionLog}
           xpLog={xpLog}
           settings={settings}

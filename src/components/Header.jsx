@@ -6,6 +6,8 @@ export default function Header({
   player,
   setPlayer,
   stats,
+  habits = [],
+  oneshots = [],
   completionLog,
   xpLog,
   settings,
@@ -13,6 +15,7 @@ export default function Header({
 }) {
   const [showProfile, setShowProfile] = useState(false);
   const [showStreak, setShowStreak] = useState(false);
+  const [selectedMedal, setSelectedMedal] = useState(null);
   const profileRef = useRef(null);
   const streakRef = useRef(null);
 
@@ -47,6 +50,112 @@ export default function Header({
       "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
     ];
     return monthNames[parseInt(month) - 1] || 'Mese';
+  };
+
+  // Medal summary calculation helper
+  const getMedalSummaryData = (medal) => {
+    if (!medal) return null;
+
+    let monthPrefix = '';
+    if (medal.id && medal.id.includes('-') && medal.id.length === 7) {
+      monthPrefix = medal.id;
+    } else if (medal.earnedDate && medal.earnedDate.length >= 7) {
+      monthPrefix = medal.earnedDate.substring(0, 7);
+    } else {
+      const d = new Date();
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      monthPrefix = `${yr}-${mo}`;
+    }
+
+    const [yearStr, monthNumStr] = monthPrefix.split('-');
+    const monthNames = [
+      "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+      "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+    ];
+    const monthName = monthNames[parseInt(monthNumStr || '1') - 1] || 'Mese';
+    const displayMonthYear = `${monthName} ${yearStr || ''}`.trim();
+
+    // 1. Month XP Logs & Total XP
+    const monthLogs = (xpLog || []).filter(
+      log => log.date && log.date.startsWith(monthPrefix) && log.amount > 0
+    );
+    const totalMonthXp = monthLogs.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+    // 2. Most Developed Attribute/Ability (Emoji & Stat Name)
+    const statXpMap = {};
+    monthLogs.forEach(log => {
+      if (log.statId) {
+        statXpMap[log.statId] = (statXpMap[log.statId] || 0) + log.amount;
+      }
+    });
+
+    let topStatId = null;
+    let maxStatXp = 0;
+    Object.entries(statXpMap).forEach(([sId, xp]) => {
+      if (xp > maxStatXp) {
+        maxStatXp = xp;
+        topStatId = sId;
+      }
+    });
+    const topStatObj = (stats || []).find(s => s.id === topStatId);
+
+    // 3. Most Respected Habit
+    const habitCountMap = {};
+    Object.keys(completionLog || {}).forEach(dateStr => {
+      if (dateStr.startsWith(monthPrefix)) {
+        const list = completionLog[dateStr]?.habits || [];
+        list.forEach(hId => {
+          habitCountMap[hId] = (habitCountMap[hId] || 0) + 1;
+        });
+      }
+    });
+
+    let topHabitId = null;
+    let maxHabitCount = 0;
+    Object.entries(habitCountMap).forEach(([hId, cnt]) => {
+      if (cnt > maxHabitCount) {
+        maxHabitCount = cnt;
+        topHabitId = hId;
+      }
+    });
+    const topHabitObj = (habits || []).find(h => h.id === topHabitId);
+
+    // 4. Top 10 Most Important Tasks (Highest Stars) Completed during Month
+    const completedOneshotIdsInMonth = new Set();
+    Object.keys(completionLog || {}).forEach(dateStr => {
+      if (dateStr.startsWith(monthPrefix)) {
+        const osList = completionLog[dateStr]?.oneshots || [];
+        osList.forEach(id => completedOneshotIdsInMonth.add(id));
+      }
+    });
+
+    const monthOneshots = (oneshots || []).filter(o => {
+      if (!o.completed) return false;
+      if (completedOneshotIdsInMonth.has(o.id)) return true;
+      if (o.dailyPlanDate && o.dailyPlanDate.startsWith(monthPrefix)) return true;
+      if (o.createdAt && o.createdAt.startsWith(monthPrefix)) return true;
+      return false;
+    });
+
+    monthOneshots.sort((a, b) => {
+      const starsA = a.difficulty || a.stars || 1;
+      const starsB = b.difficulty || b.stars || 1;
+      if (starsB !== starsA) return starsB - starsA;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+
+    const top10Tasks = monthOneshots.slice(0, 10);
+
+    return {
+      displayMonthYear,
+      totalMonthXp,
+      topStatObj,
+      maxStatXp,
+      topHabitObj,
+      maxHabitCount,
+      top10Tasks
+    };
   };
 
   return (
@@ -191,9 +300,14 @@ export default function Header({
                   player.monthlyChallenge?.medals?.map((medal, idx) => (
                     <div
                       key={idx}
-                      title={`${medal.name} - ${medal.earnedDate}`}
+                      title={`${medal.name} - Touch per il riepilogo mensile`}
                       className="medal-item"
-                      style={{ fontSize: '20px', cursor: 'help' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowProfile(false);
+                        setSelectedMedal(medal);
+                      }}
+                      style={{ fontSize: '24px', cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                       {medal.icon || '🏆'}
                     </div>
@@ -272,6 +386,190 @@ export default function Header({
           </div>
         </div>
       )}
+
+      {/* Medal Summary Modal */}
+      {selectedMedal && (() => {
+        const summary = getMedalSummaryData(selectedMedal);
+        if (!summary) return null;
+
+        return (
+          <div
+            onClick={() => setSelectedMedal(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99999,
+              background: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px'
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '100%',
+                maxWidth: '400px',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '24px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                padding: '20px',
+                boxSizing: 'border-box',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px'
+              }}
+            >
+              {/* Header */}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '48px', marginBottom: '4px' }}>
+                  {selectedMedal.icon || '🏅'}
+                </div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  {selectedMedal.name || `Medaglia di ${summary.displayMonthYear}`}
+                </h3>
+                <div style={{ fontSize: '11px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold', marginTop: '2px' }}>
+                  Sbloccata nel mese di {summary.displayMonthYear}
+                </div>
+              </div>
+
+              {/* Grid 1: Top Stat & Top Habit */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {/* 1. Attributo / Abilità maggiormente sviluppato */}
+                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    🎯 Top Attributo
+                  </div>
+                  <div style={{ fontSize: '28px', marginBottom: '2px' }}>
+                    {summary.topStatObj?.icon || '⭐'}
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {summary.topStatObj?.name || 'Nessuno'}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold', marginTop: '2px' }}>
+                    +{summary.maxStatXp} XP
+                  </div>
+                </div>
+
+                {/* 2. Abitudine più rispettata */}
+                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    📜 Top Abitudine
+                  </div>
+                  <div style={{ fontSize: '28px', marginBottom: '2px' }}>
+                    {summary.topHabitObj?.emoji || '📜'}
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {summary.topHabitObj?.name || 'Nessuna'}
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold', marginTop: '2px' }}>
+                    {summary.maxHabitCount > 0 ? `${summary.maxHabitCount} giorni ✓` : '0 giorni'}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. XP Totali Maturati nel Mese */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>⚡</span>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>XP Maturati nel Mese</div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>Esperienza totale accumulata</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
+                  +{summary.totalMonthXp} XP
+                </div>
+              </div>
+
+              {/* 4. Top 10 Task Più Importanti (Con più stelle) */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                    ⭐ Top 10 Task Completati
+                  </span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                    {summary.top10Tasks.length} completati
+                  </span>
+                </div>
+
+                {summary.top10Tasks.length === 0 ? (
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
+                    Nessuna missione completata registrata per questo mese.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {summary.top10Tasks.map((t, idx) => {
+                      const primaryStat = (stats || []).find(s => s.id === t.primaryTarget);
+                      const starsCount = t.difficulty || t.stars || 1;
+
+                      return (
+                        <div
+                          key={t.id || idx}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            background: 'var(--bg-primary)',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--glass-border)',
+                            gap: '8px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: '14px', flexShrink: 0 }}>{t.emoji || '🎯'}</span>
+                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {t.name}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '10px', color: '#f59e0b' }}>
+                              {'⭐'.repeat(starsCount)}
+                            </span>
+                            {primaryStat && (
+                              <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }} title={primaryStat.name}>
+                                {primaryStat.icon}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Close Button */}
+              <button
+                onClick={() => setSelectedMedal(null)}
+                className="btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  cursor: 'pointer',
+                  marginTop: '4px'
+                }}
+              >
+                Chiudi ✓
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 }
