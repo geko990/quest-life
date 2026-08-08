@@ -295,10 +295,12 @@ export default function App() {
 
     const todayStr = getGameDate(settings.dayStartTime);
 
+    const titleToSave = (itemTitle && itemTitle.trim() !== '') ? itemTitle.trim() : '';
+
     // Log XP change
     setXpLog(prev => [
       ...prev,
-      { date: todayStr, statId, amount, timestamp: Date.now(), title: itemTitle }
+      { date: todayStr, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave }
     ]);
 
     setPlayer(prev => {
