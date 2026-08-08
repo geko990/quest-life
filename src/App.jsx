@@ -343,7 +343,7 @@ export default function App() {
   };
 
   // 7b. XP Deduction Handler (when an item is unchecked / canceled)
-  const handleDeductXp = (statId, amount, isHabitCompletion = false) => {
+  const handleDeductXp = (statId, amount, isHabitCompletion = false, itemTitle = '') => {
     if (!amount || amount <= 0) return;
 
     // 1. Deduct Stat XP
@@ -382,6 +382,42 @@ export default function App() {
           points: nextMonthlyPoints
         }
       };
+    });
+
+    // 3. Remove log entry from xpLog
+    const todayStr = getGameDate(settings.dayStartTime);
+    setXpLog(prev => {
+      let targetIndex = -1;
+
+      // First search for an entry today matching statId AND title/source
+      if (itemTitle && itemTitle.trim() !== '') {
+        const cleanTitle = itemTitle.trim();
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const l = prev[i];
+          if (l.date === todayStr && l.statId === statId && (l.title === cleanTitle || l.source === cleanTitle)) {
+            targetIndex = i;
+            break;
+          }
+        }
+      }
+
+      // If not found by exact title, search for the last entry today matching statId
+      if (targetIndex === -1) {
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const l = prev[i];
+          if (l.date === todayStr && l.statId === statId) {
+            targetIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (targetIndex !== -1) {
+        const nextLog = [...prev];
+        nextLog.splice(targetIndex, 1);
+        return nextLog;
+      }
+      return prev;
     });
   };
 
@@ -468,10 +504,10 @@ export default function App() {
           } catch(e){}
         }
       } else {
-        // Uncheck habit: deduct XP & decrement streak
-        handleDeductXp(habit.primaryTarget, primaryXp, true);
+        // Uncheck habit: deduct XP & decrement streak & remove xpLog entry
+        handleDeductXp(habit.primaryTarget, primaryXp, true, habit.name);
         if (habit.secondaryTarget) {
-          handleDeductXp(habit.secondaryTarget, secondaryXp, false);
+          handleDeductXp(habit.secondaryTarget, secondaryXp, false, habit.name);
         }
 
         setHabits(prev =>
@@ -517,10 +553,10 @@ export default function App() {
         handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name);
       }
     } else {
-      // Unchecking task: deduct XP!
-      handleDeductXp(os.primaryTarget, xp, false);
+      // Unchecking task: deduct XP & remove xpLog entry!
+      handleDeductXp(os.primaryTarget, xp, false, os.name);
       if (os.secondaryTarget) {
-        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33), false);
+        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name);
       }
     }
   };
@@ -542,11 +578,17 @@ export default function App() {
           // Reward massive Campaign Completion XP! (difficulty * 35 XP)
           const xpReward = q.difficulty * 35;
           handleRewardXp(q.primaryTarget, xpReward, false, q.name);
+          if (q.secondaryTarget) {
+            handleRewardXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
+          }
           alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP in ${stats.find(s => s.id === q.primaryTarget)?.name}!`);
         } else if (!allDone && wasDone) {
           // Deduct Campaign Completion XP if uncompleted
           const xpReward = q.difficulty * 35;
-          handleDeductXp(q.primaryTarget, xpReward, false);
+          handleDeductXp(q.primaryTarget, xpReward, false, q.name);
+          if (q.secondaryTarget) {
+            handleDeductXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
+          }
         }
 
         return { ...q, subquests: updatedSubs, completed: allDone };
