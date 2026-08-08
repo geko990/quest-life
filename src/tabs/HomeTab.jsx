@@ -532,33 +532,51 @@ export default function HomeTab({
             </div>
           </div>
 
-          {/* Longpress Tooltip Popup */}
+          {/* Longpress Tooltip Popup (Floating foreground, 0px layout shift) */}
           {activeTooltip && (
-            <div
-              onClick={() => setActiveTooltip(null)}
-              style={{
-                marginTop: '8px',
-                padding: '8px 10px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--accent-primary)',
-                borderRadius: '10px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                color: 'var(--text-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
-                cursor: 'pointer'
-              }}
-            >
-              <span>
-                {activeTooltip === 'calories' && '🔥 Tap rapido: aggiunge +100 kcal consumate'}
-                {activeTooltip === 'water' && '💧 Tap rapido: aggiunge +1 bicchiere (200ml)'}
-                {activeTooltip === 'steps' && '🚶 Tap rapido: aggiunge +1000 passi'}
-              </span>
-              <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '6px' }}>✕</span>
-            </div>
+            <>
+              <div
+                onClick={() => setActiveTooltip(null)}
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  zIndex: 9998,
+                  background: 'transparent'
+                }}
+              />
+              <div
+                onClick={() => setActiveTooltip(null)}
+                style={{
+                  position: 'absolute',
+                  bottom: 'calc(100% + 8px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 9999,
+                  padding: '8px 14px',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--accent-primary)',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  color: 'var(--text-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>
+                  {activeTooltip === 'calories' && '🔥 Tap rapido: aggiunge +100 kcal consumate'}
+                  {activeTooltip === 'water' && '💧 Tap rapido: aggiunge +1 bicchiere (200ml)'}
+                  {activeTooltip === 'steps' && '🚶 Tap rapido: aggiunge +1000 passi'}
+                </span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>✕</span>
+              </div>
+            </>
           )}
         </div>
       )}
