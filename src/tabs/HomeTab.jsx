@@ -323,6 +323,10 @@ export default function HomeTab({
                   {/* Checkbox */}
                   <div
                     className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onToggleOneshot) onToggleOneshot(action.id);
+                    }}
                     style={{ width: '18px', height: '18px', flexShrink: 0 }}
                   ></div>
 

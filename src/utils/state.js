@@ -131,7 +131,12 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   state.oneshots = parsed.oneshots || [];
   state.quests = parsed.quests || [];
   state.completionLog = parsed.completionLog || {};
-  state.xpLog = parsed.xpLog || [];
+  state.xpLog = (parsed.xpLog || []).map(entry => {
+    if (!entry.title && entry.source) {
+      return { ...entry, title: entry.source };
+    }
+    return entry;
+  });
 
   if (state.completionLog) {
     Object.keys(state.completionLog).forEach(key => {
