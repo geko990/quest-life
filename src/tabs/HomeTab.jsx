@@ -22,7 +22,30 @@ export default function HomeTab({
   settings = {}
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState(null);
   const pressTimerRef = useRef(null);
+  const healthPressTimerRef = useRef(null);
+  const isHealthLongPressRef = useRef(false);
+
+  const handleHealthPressStart = (key) => {
+    isHealthLongPressRef.current = false;
+    if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
+    healthPressTimerRef.current = setTimeout(() => {
+      isHealthLongPressRef.current = true;
+      setActiveTooltip(key);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate(35); } catch(e){}
+      }
+    }, 450);
+  };
+
+  const handleHealthPressEnd = (action) => {
+    if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
+    if (!isHealthLongPressRef.current) {
+      action();
+    }
+    isHealthLongPressRef.current = false;
+  };
 
   // Quick-add handlers for health stats on Home Tab
   const handleAddWater = (amount = 1) => {
