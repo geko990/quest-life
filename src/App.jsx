@@ -914,6 +914,7 @@ export default function App() {
             xpLog={xpLog}
             player={player}
             health={health}
+            setHealth={setHealth}
             pomodoro={pomodoro}
             oneshots={oneshots}
             onToggleOneshot={handleToggleOneshot}
