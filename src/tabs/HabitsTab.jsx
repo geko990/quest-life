@@ -60,7 +60,7 @@ export default function HabitsTab({
   }, []);
 
   const handlePomodoroFinish = () => {
-    onRewardXp(pomodoro.targetStatId, pomodoro.xpPerSession);
+    onRewardXp(pomodoro.targetStatId, pomodoro.xpPerSession, false, 'Timer Pomodoro');
     if (settings.soundEnabled) {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();

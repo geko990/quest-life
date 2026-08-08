@@ -718,9 +718,29 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         const maxDayXp = Math.max(20, ...history7Days.map(d => d.totalXp));
 
         const getEntryTitle = (log) => {
-          if (log.title) return log.title;
-          if (log.source) return log.source;
-          return 'Azione RPG';
+          if (log.title && log.title.trim() !== '' && log.title !== 'Azione RPG') return log.title;
+          if (log.source && log.source.trim() !== '' && log.source !== 'Azione RPG') return log.source;
+
+          // Smart recovery for logs where title was not recorded:
+          const foundOneshot = (oneshots || []).find(o =>
+            o.primaryTarget === log.statId || o.secondaryTarget === log.statId
+          );
+          if (foundOneshot && foundOneshot.name) return foundOneshot.name;
+
+          const foundHabit = (habits || []).find(h =>
+            h.primaryTarget === log.statId || h.secondaryTarget === log.statId
+          );
+          if (foundHabit && foundHabit.name) return foundHabit.name;
+
+          const foundQuest = (quests || []).find(q =>
+            q.primaryTarget === log.statId || q.secondaryTarget === log.statId
+          );
+          if (foundQuest && foundQuest.name) return foundQuest.name;
+
+          const statObj = (stats || []).find(s => s.id === log.statId);
+          if (statObj && statObj.name) return `Attività ${statObj.name}`;
+
+          return 'Attività RPG';
         };
 
         const lastXpEntry = (xpLog || [])

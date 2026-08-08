@@ -114,7 +114,7 @@ export default function NutritionTab({
         burned: prev.calories.burned + exItem.baseCalories
       }
     }));
-    onRewardXp(exItem.statId, exItem.xpReward);
+    onRewardXp(exItem.statId, exItem.xpReward, false, exItem.name);
     alert(`🏋️ Allenamento completato! Hai guadagnato +${exItem.xpReward} XP in ${stats.find(s => s.id === exItem.statId)?.name || 'Forza'}!`);
   };
 
