@@ -7,6 +7,7 @@ export default function HomeTab({
   xpLog,
   player,
   health,
+  setHealth,
   pomodoro,
   oneshots = [],
   onToggleOneshot,
@@ -22,6 +23,70 @@ export default function HomeTab({
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const pressTimerRef = useRef(null);
+
+  // Quick-add handlers for health stats on Home Tab
+  const handleAddWater = (amount = 1) => {
+    if (!setHealth) return;
+    setHealth(prev => ({
+      ...prev,
+      water: {
+        ...prev.water,
+        consumed: (prev.water?.consumed || 0) + amount
+      }
+    }));
+    if (settings.soundEnabled) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      } catch (e) {}
+    }
+  };
+
+  const handleAddSteps = (amount = 1000) => {
+    if (!setHealth) return;
+    setHealth(prev => ({
+      ...prev,
+      steps: {
+        ...prev.steps,
+        current: (prev.steps?.current || 0) + amount
+      }
+    }));
+    if (settings.soundEnabled) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.frequency.setValueAtTime(500, ctx.currentTime);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      } catch (e) {}
+    }
+  };
+
+  const handleAddCalories = (amount = 100) => {
+    if (!setHealth) return;
+    setHealth(prev => ({
+      ...prev,
+      calories: {
+        ...prev.calories,
+        consumed: (prev.calories?.consumed || 0) + amount
+      }
+    }));
+    if (settings.soundEnabled) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.frequency.setValueAtTime(400, ctx.currentTime);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      } catch (e) {}
+    }
+  };
 
   // Calculate rolling 30-day XP per stat
   const getRollingXpByStats = (days = 30) => {
@@ -371,20 +436,73 @@ export default function HomeTab({
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
-            <div style={{ background: 'var(--bg-secondary)', padding: '6px 4px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-              <div style={{ fontSize: '14px' }}>🔥</div>
+            {/* 🔥 Calorie */}
+            <div
+              onClick={() => handleAddCalories(100)}
+              title="Tocca per aggiungere +100 kcal"
+              style={{
+                background: 'var(--bg-secondary)',
+                padding: '6px 4px',
+                borderRadius: '8px',
+                border: '1px solid var(--glass-border)',
+                cursor: 'pointer',
+                transition: 'transform 0.15s ease',
+                userSelect: 'none'
+              }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
+              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              onTouchStart={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
+              onTouchEnd={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <div style={{ fontSize: '16px', marginBottom: '1px' }}>🔥</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.calories?.consumed || 0}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Calorie</div>
+              <div style={{ fontSize: '8px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold' }}>+100 kcal</div>
             </div>
-            <div style={{ background: 'var(--bg-secondary)', padding: '6px 4px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-              <div style={{ fontSize: '14px' }}>💧</div>
+
+            {/* 💧 Acqua */}
+            <div
+              onClick={() => handleAddWater(1)}
+              title="Tocca per aggiungere 1 bicchiere d'acqua (200ml)"
+              style={{
+                background: 'var(--bg-secondary)',
+                padding: '6px 4px',
+                borderRadius: '8px',
+                border: '1px solid var(--glass-border)',
+                cursor: 'pointer',
+                transition: 'transform 0.15s ease',
+                userSelect: 'none'
+              }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
+              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              onTouchStart={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
+              onTouchEnd={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <div style={{ fontSize: '16px', marginBottom: '1px' }}>💧</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.target || 8}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bicchieri</div>
+              <div style={{ fontSize: '8px', color: '#06b6d4', fontWeight: 'bold' }}>+200ml</div>
             </div>
-            <div style={{ background: 'var(--bg-secondary)', padding: '6px 4px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-              <div style={{ fontSize: '14px' }}>🚶</div>
+
+            {/* 🚶 Passi */}
+            <div
+              onClick={() => handleAddSteps(1000)}
+              title="Tocca per aggiungere +1000 passi"
+              style={{
+                background: 'var(--bg-secondary)',
+                padding: '6px 4px',
+                borderRadius: '8px',
+                border: '1px solid var(--glass-border)',
+                cursor: 'pointer',
+                transition: 'transform 0.15s ease',
+                userSelect: 'none'
+              }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
+              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              onTouchStart={(e) => (e.currentTarget.style.transform = 'scale(0.94)')}
+              onTouchEnd={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <div style={{ fontSize: '16px', marginBottom: '1px' }}>🚶</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.steps?.current || 0}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Passi</div>
+              <div style={{ fontSize: '8px', color: '#22c55e', fontWeight: 'bold' }}>+1000 Passi</div>
             </div>
           </div>
         </div>
