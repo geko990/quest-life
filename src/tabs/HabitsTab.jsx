@@ -145,33 +145,12 @@ export default function HabitsTab({
 
   // Helper: get visible habits for date
   const getHabitsForDate = (dateStr) => {
-    const isPast = dateStr < todayStr;
-    const isToday = dateStr === todayStr;
-
     return habits.filter(h => {
       if (h.locked) return false;
 
       if (h.createdAt) {
         const createdDate = h.createdAt.split('T')[0];
         if (createdDate > dateStr) return false;
-      }
-
-      if (h.frequency && h.frequency !== 'daily') {
-        const isWeekly = h.frequency === 'weekly' || h.frequency === 'times_week';
-        const isMonthly = h.frequency === 'monthly' || h.frequency === 'times_month';
-        const periodId = isWeekly ? getWeekIdentifier(dateStr, settings.weekStart) :
-                          isMonthly ? getMonthIdentifier(dateStr) :
-                          getYearIdentifier(dateStr);
-
-        const completionsThisPeriod = countCompletionsInPeriod(h.id, h.frequency, periodId);
-        const targetCompletions = h.freqTimes || 1;
-        const isCompletedOnDate = completionLog[dateStr]?.habits?.includes(h.id);
-
-        if (isCompletedOnDate) return true;
-        if (completionsThisPeriod >= targetCompletions) return false;
-        if (isToday) return true;
-        if (dateStr > todayStr) return true;
-        if (isPast) return false;
       }
 
       return true;
