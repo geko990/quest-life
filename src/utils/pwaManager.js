@@ -26,6 +26,7 @@ export function onUpdateAvailable(callback) {
 }
 
 function notifyUpdateAvailable(newVersion) {
+  if (!newVersion || newVersion === APP_VERSION) return;
   updateAvailableCallbacks.forEach((cb) => {
     try {
       cb(newVersion);
@@ -53,9 +54,6 @@ export function initPWA() {
       refreshing = true;
       console.log('[PWA] Controller changed during update -> refreshing page');
       hardReloadPage();
-    } else {
-      console.log('[PWA] Controller changed in background -> notifying user via top banner');
-      notifyUpdateAvailable(APP_VERSION);
     }
   });
 
@@ -69,19 +67,6 @@ export function initPWA() {
 
         // Check for updates on startup
         reg.update().catch(() => {});
-
-        // Listen for new worker installed
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (!newWorker) return;
-
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[PWA] New version installed in background. Notifying user via top banner.');
-              notifyUpdateAvailable(APP_VERSION);
-            }
-          });
-        });
       })
       .catch((err) => {
         console.warn('[PWA] SW registration failed:', err);

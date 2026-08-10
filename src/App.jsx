@@ -72,8 +72,12 @@ export default function App() {
 
   useEffect(() => {
     onUpdateAvailable((newVersion) => {
-      if (newVersion) setLatestVersion(newVersion);
-      setUpdateAvailable(true);
+      if (newVersion && newVersion !== APP_VERSION) {
+        setLatestVersion(newVersion);
+        setUpdateAvailable(true);
+      } else {
+        setUpdateAvailable(false);
+      }
     });
   }, []);
 
@@ -1049,7 +1053,10 @@ export default function App() {
       {/* PWA Update Floating Banner */}
       {updateAvailable && (
         <div
-          onClick={() => forceUpdateApp(false)}
+          onClick={() => {
+            setUpdateAvailable(false);
+            forceUpdateApp(false);
+          }}
           style={{
             position: 'fixed',
             top: '12px',
