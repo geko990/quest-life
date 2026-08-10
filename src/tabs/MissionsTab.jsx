@@ -40,15 +40,22 @@ export default function MissionsTab({
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '8px' }}>
         <h2 style={{ margin: 0, fontSize: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>⚔️ Registro Missioni</h2>
         <div className="header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-          {settings.showDiceButton !== false && (
-            <button
-              className="add-btn-circle"
-              onClick={onOpenDailyPlanner}
-              title="È il tuo turno! (Daily Planner)"
-            >
-              🎲
-            </button>
-          )}
+          <button
+            className="add-btn-circle"
+            onClick={() => setShowCompletedOneshots(!showCompletedOneshots)}
+            title={showCompletedOneshots ? "Mostra missioni da completare" : "Mostra missioni completate"}
+            style={{
+              background: showCompletedOneshots ? 'var(--accent-gradient, #7c3aed)' : 'var(--bg-secondary)',
+              color: showCompletedOneshots ? '#ffffff' : 'var(--text-primary)',
+              border: showCompletedOneshots ? '1px solid rgba(255,255,255,0.3)' : '1px solid var(--glass-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '15px'
+            }}
+          >
+            ☑️
+          </button>
           <button
             className="add-btn-circle"
             onClick={() => onOpenModal(subTab === 'quest' ? 'quest' : 'oneshot')}
@@ -84,21 +91,6 @@ export default function MissionsTab({
       {/* SUB-TAB 1: MISSIONI SINGOLE (ONE-SHOTS) */}
       {subTab === 'oneshot' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Active / Completed Filter */}
-          <div style={{ display: 'flex', gap: '4px', maxWidth: '200px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-            <button
-              onClick={() => setShowCompletedOneshots(false)}
-              style={{ flex: 1, padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: !showCompletedOneshots ? 'var(--accent-primary)' : 'transparent', color: !showCompletedOneshots ? '#fff' : 'var(--text-secondary)' }}
-            >
-              Attive
-            </button>
-            <button
-              onClick={() => setShowCompletedOneshots(true)}
-              style={{ flex: 1, padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: showCompletedOneshots ? 'var(--accent-primary)' : 'transparent', color: showCompletedOneshots ? '#fff' : 'var(--text-secondary)' }}
-            >
-              Completate
-            </button>
-          </div>
 
           {/* Oneshot Cards List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

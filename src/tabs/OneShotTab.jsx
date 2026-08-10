@@ -26,15 +26,17 @@ export default function OneShotTab({
           💥 Missioni Singole
         </h2>
         <div className="flex gap-2">
-          {settings.showDiceButton !== false && (
-            <button
-              onClick={onOpenDailyPlanner}
-              className="w-9 h-9 rounded-full glass-panel flex items-center justify-center text-lg active:scale-95 transition-transform"
-              title="È il tuo turno! (Daily Planner)"
-            >
-              🎲
-            </button>
-          )}
+          <button
+            onClick={() => setShowCompleted(!showCompleted)}
+            className={`w-9 h-9 rounded-full flex items-center justify-center text-base active:scale-95 transition-all ${
+              showCompleted
+                ? 'bg-accent-gradient text-white shadow-md'
+                : 'glass-panel text-text-primary border border-border-color/40'
+            }`}
+            title={showCompleted ? "Mostra missioni da completare" : "Mostra missioni completate"}
+          >
+            ☑️
+          </button>
           <button
             onClick={() => onOpenModal('oneshot')}
             className="w-9 h-9 rounded-full bg-accent-gradient text-white flex items-center justify-center text-xl font-bold shadow-md active:scale-95 transition-transform"
@@ -42,30 +44,6 @@ export default function OneShotTab({
             +
           </button>
         </div>
-      </div>
-
-      {/* Filter Switches */}
-      <div className="flex justify-start bg-slate-950/20 p-1 rounded-lg border border-border-color/30 max-w-xs">
-        <button
-          onClick={() => setShowCompleted(false)}
-          className={`flex-1 text-center py-1.5 px-3 rounded text-xs font-semibold transition-all ${
-            !showCompleted
-              ? 'bg-accent-primary text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-main'
-          }`}
-        >
-          Attive
-        </button>
-        <button
-          onClick={() => setShowCompleted(true)}
-          className={`flex-1 text-center py-1.5 px-3 rounded text-xs font-semibold transition-all ${
-            showCompleted
-              ? 'bg-accent-primary text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-main'
-          }`}
-        >
-          Completate
-        </button>
       </div>
 
       {/* Oneshot List */}
