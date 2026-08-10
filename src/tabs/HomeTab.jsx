@@ -368,14 +368,6 @@ export default function HomeTab({
 
           <div style={{ display: 'flex', gap: '6px' }}>
             <button
-              onClick={onOpenPlanner}
-              className="btn-primary"
-              style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
-              title="Pianifica azioni con il dado D10"
-            >
-              🎲 Pianifica
-            </button>
-            <button
               onClick={() => onOpenModal('oneshot')}
               style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
               title="Aggiungi nuova missione"
