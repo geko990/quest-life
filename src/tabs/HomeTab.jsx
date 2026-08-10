@@ -367,20 +367,17 @@ export default function HomeTab({
         </div>
 
         {todayActionsList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--bg-secondary)', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-            <div style={{ fontSize: '20px', marginBottom: '4px' }}>🎯</div>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
-              Nessuna azione creata per oggi
-            </div>
-            <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+          <div style={{ textAlign: 'center', padding: '16px 12px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: '26px', marginBottom: '6px' }}>🎲</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
               Definisci le 4 azioni quotidiane con il D10 per XP bonus!
             </div>
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '6px 14px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
             >
-              🎲 Pianifica Azioni con D10
+              🎲 Pianifica la tua giornata
             </button>
           </div>
         ) : (

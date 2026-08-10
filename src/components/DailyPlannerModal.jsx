@@ -204,7 +204,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '16px'
+        padding: '10px 16px'
       }}
     >
       <div
@@ -218,7 +218,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
           width: '100%',
           maxWidth: '400px',
           padding: '24px',
-          maxHeight: '85vh',
+          maxHeight: '96dvh',
           overflowY: 'auto',
           borderRadius: '24px',
           position: 'relative'
