@@ -739,16 +739,37 @@ export default function App() {
     }
   };
 
+  const handleDeleteStat = (id) => {
+    setStats(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleDeleteHabit = (id) => {
+    setHabits(prev => prev.filter(h => h.id !== id));
+    setDailyActions(prev => prev.filter(aId => aId !== id));
+  };
+
+  const handleDeleteOneshot = (id) => {
+    setOneshots(prev => prev.filter(o => o.id !== id));
+    setDailyActions(prev => prev.filter(aId => aId !== id));
+  };
+
+  const handleDeleteQuest = (id) => {
+    setQuests(prev => prev.filter(q => q.id !== id));
+    setDailyActions(prev => prev.filter(aId => aId !== id));
+  };
+
   // Delete handler for global Edit Modal
-  const handleDeleteModal = (id) => {
-    if (modalType === 'attribute' || modalType === 'ability') {
-      handleDeleteStat(id);
-    } else if (modalType === 'habit') {
-      handleDeleteHabit(id);
-    } else if (modalType === 'oneshot') {
-      handleDeleteOneshot(id);
-    } else if (modalType === 'quest') {
-      handleDeleteQuest(id);
+  const handleDeleteModal = (idOrObj) => {
+    const targetId = typeof idOrObj === 'object' ? idOrObj.id : idOrObj;
+    const targetType = editData?.type || modalType;
+    if (targetType === 'attribute' || targetType === 'ability') {
+      handleDeleteStat(targetId);
+    } else if (targetType === 'habit') {
+      handleDeleteHabit(targetId);
+    } else if (targetType === 'oneshot') {
+      handleDeleteOneshot(targetId);
+    } else if (targetType === 'quest') {
+      handleDeleteQuest(targetId);
     }
   };
 
@@ -929,7 +950,7 @@ export default function App() {
             onToggleDailyAction={handleToggleDailyAction}
             completionLog={completionLog}
             onOpenModal={handleOpenModal}
-            onDeleteStat={(id) => setStats(prev => prev.filter(s => s.id !== id))}
+            onDeleteStat={handleDeleteStat}
             onEditStat={(data) => handleOpenModal(data.type, data)}
             onOpenPlanner={() => setShowPlannerModal(true)}
             onOpenPomodoro={() => handleOpenModal('pomodoro')}
@@ -945,7 +966,7 @@ export default function App() {
             setCompletionLog={setCompletionLog}
             onToggleHabit={handleToggleHabit}
             onOpenModal={handleOpenModal}
-            onDeleteHabit={(id) => setHabits(prev => prev.filter(h => h.id !== id))}
+            onDeleteHabit={handleDeleteHabit}
             onEditHabit={(data) => handleOpenModal('habit', data)}
             pomodoro={pomodoro}
             setPomodoro={setPomodoro}
@@ -961,11 +982,11 @@ export default function App() {
           <MissionsTab
             oneshots={oneshots}
             onToggleOneshot={handleToggleOneshot}
-            onDeleteOneshot={(id) => setOneshots(prev => prev.filter(o => o.id !== id))}
+            onDeleteOneshot={handleDeleteOneshot}
             onEditOneshot={(data) => handleOpenModal('oneshot', data)}
             quests={quests}
             onToggleSubquest={handleToggleSubquest}
-            onDeleteQuest={(id) => setQuests(prev => prev.filter(q => q.id !== id))}
+            onDeleteQuest={handleDeleteQuest}
             onEditQuest={(data) => handleOpenModal('quest', data)}
             onOpenModal={handleOpenModal}
             completionLog={completionLog}
