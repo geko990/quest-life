@@ -177,20 +177,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       case 'attribute':
       case 'ability':
         return (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
                 <input
                   type="text"
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Nome</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome</label>
                 <input
                   type="text"
                   name="name"
@@ -198,19 +198,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder={type === 'attribute' ? 'Forza, Destrezza...' : 'Scrittura, Disegno...'}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Descrizione</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">Descrizione</label>
               <textarea
                 name="description"
                 value={form.description || ''}
                 onChange={handleChange}
                 rows="3"
                 placeholder="A cosa serve questo attributo/abilità..."
-                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
               ></textarea>
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -231,21 +231,21 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
       case 'habit':
         return (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {/* Row 1: Emoji + Nome Abitudine */}
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
                 <input
                   type="text"
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Nome Abitudine</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome Abitudine</label>
                 <input
                   type="text"
                   name="name"
@@ -253,7 +253,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Leggere 10 min, Meditazione..."
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -262,12 +262,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {form.frequency?.startsWith('times_') ? (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">Frequenza</label>
+                  <label className="block text-xs text-text-secondary font-bold mb-1.5">Frequenza</label>
                   <select
                     name="frequency"
                     value={form.frequency || 'daily'}
                     onChange={handleChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   >
                     <option value="daily">Giornaliera</option>
                     <option value="weekly">Settimanale (1 volta)</option>
@@ -277,25 +277,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">Ripetizioni</label>
+                  <label className="block text-xs text-text-secondary font-bold mb-1.5">Ripetizioni</label>
                   <input
                     type="number"
                     name="freqTimes"
                     value={form.freqTimes || 1}
                     onChange={handleNumberChange}
                     min="1"
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
               </div>
             ) : (
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Frequenza</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Frequenza</label>
                 <select
                   name="frequency"
                   value={form.frequency || 'daily'}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="daily">Giornaliera</option>
                   <option value="weekly">Settimanale (1 volta)</option>
@@ -307,12 +307,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             )}
 
             {/* Row 3: Difficoltà */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-xl px-4 py-3 flex justify-between items-center">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-4 py-3 flex justify-between items-center">
               <div>
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 4} XP Bonus</div>
               </div>
-              <div className="flex gap-1.5 text-xl items-center pr-1">
+              <div className="flex gap-1.5 text-xl items-center pr-2">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span
                     key={star}
@@ -330,12 +330,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 4: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Primaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
                 <select
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -343,12 +343,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Secondaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Secondaria</label>
                 <select
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="">Nessuna</option>
                   {visibleStats.map(s => (
@@ -362,21 +362,21 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
       case 'oneshot':
         return (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {/* Row 1: Emoji + Nome Task */}
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
                 <input
                   type="text"
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Nome Task</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome Task</label>
                 <input
                   type="text"
                   name="name"
@@ -384,18 +384,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Rispondere alle email, Riparare rubinetto..."
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Row 2: Difficoltà Stelle */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-xl px-4 py-3 flex justify-between items-center">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-4 py-3 flex justify-between items-center">
               <div>
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 8} XP Bonus</div>
               </div>
-              <div className="flex gap-1.5 text-xl items-center pr-1">
+              <div className="flex gap-1.5 text-xl items-center pr-2">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span
                     key={star}
@@ -413,12 +413,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 3: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Primaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
                 <select
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -426,12 +426,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Secondaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Secondaria</label>
                 <select
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="">Nessuna</option>
                   {visibleStats.map(s => (
@@ -445,21 +445,21 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
       case 'quest':
         return (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {/* Row 1: Emoji + Nome Campagna */}
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
                 <input
                   type="text"
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Nome Campagna</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome Campagna</label>
                 <input
                   type="text"
                   name="name"
@@ -467,31 +467,31 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Imparare React, Scrivere un libro..."
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Row 2: Descrizione */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Descrizione</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">Descrizione</label>
               <textarea
                 name="description"
                 value={form.description || ''}
                 onChange={handleChange}
                 rows="2"
                 placeholder="Spiega l'obiettivo finale di questa campagna..."
-                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
               ></textarea>
             </div>
 
             {/* Row 3: Difficoltà */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-xl px-4 py-3 flex justify-between items-center">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-4 py-3 flex justify-between items-center">
               <div>
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 35} XP alla fine</div>
               </div>
-              <div className="flex gap-1.5 text-xl items-center pr-1">
+              <div className="flex gap-1.5 text-xl items-center pr-2">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span
                     key={star}
@@ -509,12 +509,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 4: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Primaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
                 <select
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -522,12 +522,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Secondaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Secondaria</label>
                 <select
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="">Nessuna</option>
                   {visibleStats.map(s => (
@@ -539,26 +539,26 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Subquests Section */}
             <div className="border-t border-[var(--glass-border)] pt-3 mt-0.5">
-              <label className="block text-xs text-text-secondary font-bold mb-1">Sotto-obiettivi (Milestones)</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">Sotto-obiettivi (Milestones)</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   value={newSubquestName}
                   onChange={(e) => setNewSubquestName(e.target.value)}
                   placeholder="Es: Finire capitolo 1..."
-                  className="flex-1 h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs focus:border-accent-primary focus:outline-none"
+                  className="flex-1 h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs focus:border-accent-primary focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={addSubquest}
-                  className="bg-accent-primary hover:bg-accent-primary/80 text-white text-xs px-3 py-1 rounded-xl font-bold"
+                  className="bg-accent-primary hover:bg-accent-primary/80 text-white text-xs px-4.5 py-1 rounded-2xl font-bold"
                 >
                   +
                 </button>
               </div>
               <ul className="max-h-36 overflow-y-auto space-y-1.5 no-scrollbar">
                 {subquests.map((sq) => (
-                  <li key={sq.id} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2 px-3 rounded-lg text-xs border border-[var(--glass-border)]">
+                  <li key={sq.id} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2.5 px-3.5 rounded-xl text-xs border border-[var(--glass-border)]">
                     <span className={sq.completed ? 'line-through text-text-secondary' : ''}>{sq.name}</span>
                     <button
                       type="button"
@@ -1054,7 +1054,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         {/* Header (Hidden for stat_detail) */}
         {activeT !== 'stat_detail' && (
           <div
-            className="px-5 pt-5 pb-1 flex justify-center items-center text-center"
+            className="px-6 pt-6 pb-2 flex justify-center items-center text-center"
             style={{ background: 'var(--bg-card)' }}
           >
             <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
@@ -1065,17 +1065,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         {/* Form */}
         <form onSubmit={handleSave} style={{ margin: 0 }}>
-          <div className="px-5 py-2 max-h-[70vh] overflow-y-auto no-scrollbar flex flex-col justify-start">
+          <div className="px-6 py-3 max-h-[72vh] overflow-y-auto no-scrollbar flex flex-col justify-start">
             {/* Top 3-way Creation Type Selector */}
             {isCreatableItem && (
-              <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '14px', gap: '4px' }}>
+              <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '14px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
                 <button
                   type="button"
                   onClick={() => handleTypeSwitch('habit')}
                   style={{
                     flex: 1,
-                    padding: '7px 4px',
-                    borderRadius: '8px',
+                    padding: '8px 4px',
+                    borderRadius: '10px',
                     fontSize: '11px',
                     fontWeight: 'bold',
                     border: 'none',
@@ -1092,8 +1092,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onClick={() => handleTypeSwitch('oneshot')}
                   style={{
                     flex: 1,
-                    padding: '7px 4px',
-                    borderRadius: '8px',
+                    padding: '8px 4px',
+                    borderRadius: '10px',
                     fontSize: '11px',
                     fontWeight: 'bold',
                     border: 'none',
@@ -1110,8 +1110,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onClick={() => handleTypeSwitch('quest')}
                   style={{
                     flex: 1,
-                    padding: '7px 4px',
-                    borderRadius: '8px',
+                    padding: '8px 4px',
+                    borderRadius: '10px',
                     fontSize: '11px',
                     fontWeight: 'bold',
                     border: 'none',
@@ -1129,14 +1129,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions (Centered Coherent 42x42 Emoji Buttons) */}
+          {/* Footer Actions (Centered Coherent 44x44 Emoji Buttons) */}
           <div
             style={{
-              padding: '6px 20px 16px 20px',
+              padding: '8px 24px 22px 24px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '12px',
+              gap: '14px',
               background: 'transparent',
               borderTop: 'none'
             }}
