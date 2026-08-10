@@ -3,6 +3,20 @@ import { APP_VERSION } from './constants';
 let swRegistration = null;
 let updateAvailableCallbacks = [];
 let isUpdating = false;
+let userHasTouched = false;
+
+/**
+ * Track user interaction (touch/click/key) so we know if user is actively using the app
+ */
+function trackUserInteraction() {
+  const handler = () => {
+    userHasTouched = true;
+  };
+  window.addEventListener('touchstart', handler, { capture: true, passive: true });
+  window.addEventListener('pointerdown', handler, { capture: true, passive: true });
+  window.addEventListener('mousedown', handler, { capture: true, passive: true });
+  window.addEventListener('keydown', handler, { capture: true, passive: true });
+}
 
 /**
  * Register listener for update availability
@@ -21,74 +35,27 @@ function notifyUpdateAvailable(newVersion) {
   });
 }
 
-let autoUpdateTimer = null;
-let userHasTouched = false;
-let isInitialLaunch = true;
-
-/**
- * Setup 20-second initial launch auto-update timer if no touch occurs.
- * Applies ONLY to the first activation (cold startup).
- * If app goes to background or user touches screen, timer is cancelled permanently.
- */
-function setupInitialAutoUpdateTimer() {
-  if (!isInitialLaunch) return;
-  isInitialLaunch = false;
-
-  const cancelTimer = () => {
-    if (autoUpdateTimer) {
-      clearTimeout(autoUpdateTimer);
-      autoUpdateTimer = null;
-    }
-    userHasTouched = true;
-    removeTouchListeners();
-  };
-
-  const removeTouchListeners = () => {
-    window.removeEventListener('touchstart', cancelTimer, { capture: true });
-    window.removeEventListener('pointerdown', cancelTimer, { capture: true });
-    window.removeEventListener('mousedown', cancelTimer, { capture: true });
-    window.removeEventListener('keydown', cancelTimer, { capture: true });
-  };
-
-  window.addEventListener('touchstart', cancelTimer, { capture: true, passive: true });
-  window.addEventListener('pointerdown', cancelTimer, { capture: true, passive: true });
-  window.addEventListener('mousedown', cancelTimer, { capture: true, passive: true });
-  window.addEventListener('keydown', cancelTimer, { capture: true, passive: true });
-
-  const handleVisibilityChange = () => {
-    if (document.visibilityState === 'hidden') {
-      cancelTimer();
-    }
-  };
-  document.addEventListener('visibilitychange', handleVisibilityChange, { once: true });
-
-  autoUpdateTimer = setTimeout(async () => {
-    if (!userHasTouched && document.visibilityState === 'visible') {
-      console.log('[PWA] 20s initial launch timer expired with zero touches. Executing auto-update...');
-      removeTouchListeners();
-      await forceUpdateApp(false);
-    }
-  }, 20000);
-}
-
 /**
  * Initialize PWA Service Worker & update monitoring
  */
 export function initPWA() {
-  setupInitialAutoUpdateTimer();
+  trackUserInteraction();
 
   if (!('serviceWorker' in navigator)) {
     console.log('[PWA] ServiceWorker not supported');
     return;
   }
 
-  // Reload page when new ServiceWorker becomes active controller
+  // Reload page ONLY if explicit user update or cold start update is in progress
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!refreshing && !isUpdating) {
+    if (!refreshing && isUpdating) {
       refreshing = true;
-      console.log('[PWA] Controller changed -> reloading page for updated assets');
+      console.log('[PWA] Controller changed during update -> refreshing page');
       hardReloadPage();
+    } else {
+      console.log('[PWA] Controller changed in background -> notifying user via top banner');
+      notifyUpdateAvailable(APP_VERSION);
     }
   });
 
@@ -100,7 +67,7 @@ export function initPWA() {
         swRegistration = reg;
         console.log(`[PWA] ServiceWorker registered (App v${APP_VERSION})`);
 
-        // Force check for updates on startup
+        // Check for updates on startup
         reg.update().catch(() => {});
 
         // Listen for new worker installed
@@ -110,7 +77,7 @@ export function initPWA() {
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[PWA] New version ready in background');
+              console.log('[PWA] New version installed in background. Notifying user via top banner.');
               notifyUpdateAvailable(APP_VERSION);
             }
           });
@@ -129,6 +96,16 @@ export function initPWA() {
         const data = await res.json();
         if (data.version && data.version !== APP_VERSION) {
           console.log(`[PWA] Version mismatch detected! Local: ${APP_VERSION}, Server: ${data.version}`);
+
+          // If app was JUST opened (cold startup) and user hasn't interacted/typed data yet:
+          // Automatically launch the new version so bugfixes apply seamlessly on launch!
+          if (!userHasTouched) {
+            console.log('[PWA] Cold start update detected before user interaction. Applying update immediately...');
+            await forceUpdateApp(false);
+            return;
+          }
+
+          // Otherwise (app is in active use): DO NOT auto-refresh while typing! Show purple banner.
           notifyUpdateAvailable(data.version);
 
           if (swRegistration) {
