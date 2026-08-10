@@ -368,17 +368,22 @@ export default function HomeTab({
 
         {todayActionsList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '16px 12px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontSize: '26px', marginBottom: '6px' }}>🎲</div>
-            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-              Definisci le 4 azioni quotidiane con il D10 per XP bonus!
-            </div>
+            {/* 1. Emoji dado (in alto) */}
+            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🎲</div>
+
+            {/* 2. Bottone "Pianifica la tua giornata" (in mezzo, senza emoji) */}
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', marginBottom: '8px' }}
             >
-              🎲 Pianifica la tua giornata
+              Pianifica la tua giornata
             </button>
+
+            {/* 3. Descrizione "Definisci le quattro azioni di oggi" */}
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+              Definisci le quattro azioni di oggi
+            </div>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
