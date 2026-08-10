@@ -309,11 +309,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 3: Difficoltà */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
-              <div className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 flex justify-between items-center">
-                <span className="text-xs text-text-muted font-semibold">
+              <div
+                className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
+                style={{ paddingLeft: '24px', paddingRight: '24px' }}
+              >
+                <span className="text-xs text-text-muted font-semibold" style={{ paddingLeft: '6px' }}>
                   {(form.difficulty || 3) * 4} XP Bonus
                 </span>
-                <div className="flex gap-1.5 text-xl items-center pr-1">
+                <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '6px' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
                       key={star}
@@ -394,11 +397,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 2: Difficoltà Stelle */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
-              <div className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 flex justify-between items-center">
-                <span className="text-xs text-text-muted font-semibold">
+              <div
+                className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
+                style={{ paddingLeft: '24px', paddingRight: '24px' }}
+              >
+                <span className="text-xs text-text-muted font-semibold" style={{ paddingLeft: '6px' }}>
                   {(form.difficulty || 3) * 8} XP Bonus
                 </span>
-                <div className="flex gap-1.5 text-xl items-center pr-1">
+                <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '6px' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
                       key={star}
@@ -492,11 +498,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 3: Difficoltà */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
-              <div className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 flex justify-between items-center">
-                <span className="text-xs text-text-muted font-semibold">
+              <div
+                className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
+                style={{ paddingLeft: '24px', paddingRight: '24px' }}
+              >
+                <span className="text-xs text-text-muted font-semibold" style={{ paddingLeft: '6px' }}>
                   {(form.difficulty || 3) * 35} XP alla fine
                 </span>
-                <div className="flex gap-1.5 text-xl items-center pr-1">
+                <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '6px' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
                       key={star}
