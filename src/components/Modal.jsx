@@ -307,26 +307,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             )}
 
             {/* Row 3: Difficoltà */}
-            <div
-              className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
-              style={{ padding: '14px 24px' }}
-            >
-              <div style={{ paddingLeft: '8px' }}>
-                <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
-                <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 4} XP Bonus</div>
-              </div>
-              <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '8px' }}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <span
-                    key={star}
-                    onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
-                    className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
-                      star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
+              <div className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 flex justify-between items-center">
+                <span className="text-xs text-text-muted font-semibold">
+                  {(form.difficulty || 3) * 4} XP Bonus
+                </span>
+                <div className="flex gap-1.5 text-xl items-center pr-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <span
+                      key={star}
+                      onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
+                      className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
+                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
+                      }`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -393,26 +392,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             </div>
 
             {/* Row 2: Difficoltà Stelle */}
-            <div
-              className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
-              style={{ padding: '14px 24px' }}
-            >
-              <div style={{ paddingLeft: '8px' }}>
-                <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
-                <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 8} XP Bonus</div>
-              </div>
-              <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '8px' }}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <span
-                    key={star}
-                    onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
-                    className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
-                      star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
+              <div className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 flex justify-between items-center">
+                <span className="text-xs text-text-muted font-semibold">
+                  {(form.difficulty || 3) * 8} XP Bonus
+                </span>
+                <div className="flex gap-1.5 text-xl items-center pr-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <span
+                      key={star}
+                      onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
+                      className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
+                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
+                      }`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -492,26 +490,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             </div>
 
             {/* Row 3: Difficoltà */}
-            <div
-              className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
-              style={{ padding: '14px 24px' }}
-            >
-              <div style={{ paddingLeft: '8px' }}>
-                <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
-                <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 35} XP alla fine</div>
-              </div>
-              <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '8px' }}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <span
-                    key={star}
-                    onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
-                    className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
-                      star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
+              <div className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 flex justify-between items-center">
+                <span className="text-xs text-text-muted font-semibold">
+                  {(form.difficulty || 3) * 35} XP alla fine
+                </span>
+                <div className="flex gap-1.5 text-xl items-center pr-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <span
+                      key={star}
+                      onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
+                      className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
+                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
+                      }`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
