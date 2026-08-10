@@ -359,15 +359,27 @@ export default function SettingsTab({
         </div>
 
         {/* Version Badge & Force Update */}
-        <div style={{ textAlign: 'center', padding: '16px 0 40px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '20px 0 40px 0', width: '100%' }}>
           <button
             onClick={() => forceUpdateApp(true)}
             className="btn-primary"
-            style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', marginBottom: '8px' }}
+            style={{
+              padding: '10px 24px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              margin: '0 auto 10px auto'
+            }}
           >
             🔄 Forza Aggiornamento PWA
           </button>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center' }}>
             RPG Life v{APP_VERSION} {BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })})` : ''}
           </div>
         </div>
