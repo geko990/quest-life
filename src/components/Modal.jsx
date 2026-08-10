@@ -3,10 +3,50 @@ import React, { useState, useEffect } from 'react';
 export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat }) {
   if (!isOpen) return null;
 
+  const [currentType, setCurrentType] = useState(type);
   const [form, setForm] = useState({});
   const [subquests, setSubquests] = useState([]);
   const [newSubquestName, setNewSubquestName] = useState('');
   const [selectedDayIndex, setSelectedDayIndex] = useState(6);
+
+  useEffect(() => {
+    setCurrentType(type);
+  }, [type]);
+
+  const handleTypeSwitch = (newType) => {
+    setCurrentType(newType);
+    if (newType === 'habit') {
+      setForm({
+        emoji: '📜',
+        name: form.name || '',
+        frequency: 'daily',
+        freqTimes: 1,
+        difficulty: form.difficulty || 3,
+        primaryTarget: form.primaryTarget || stats?.[0]?.id || 'str',
+        secondaryTarget: form.secondaryTarget || stats?.[1]?.id || 'con'
+      });
+    } else if (newType === 'oneshot') {
+      setForm({
+        emoji: '💥',
+        name: form.name || '',
+        difficulty: form.difficulty || 3,
+        primaryTarget: form.primaryTarget || stats?.[0]?.id || 'str',
+        secondaryTarget: form.secondaryTarget || stats?.[1]?.id || 'con',
+        completed: false
+      });
+    } else if (newType === 'quest') {
+      setForm({
+        emoji: '🏆',
+        name: form.name || '',
+        description: form.description || '',
+        difficulty: form.difficulty || 3,
+        primaryTarget: form.primaryTarget || stats?.[0]?.id || 'str',
+        secondaryTarget: form.secondaryTarget || stats?.[1]?.id || 'con',
+        completed: false
+      });
+      setSubquests([]);
+    }
+  };
 
   const getStatHistory7Days = (statId) => {
     const today = new Date();
@@ -41,10 +81,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         setSubquests([...editData.subquests]);
       }
     } else {
-      // Default initial states based on type
-      if (type === 'attribute' || type === 'ability') {
-        setForm({ emoji: '⭐', name: '', description: '', type: type, visible: true, level: 1, xp: 0 });
-      } else if (type === 'habit') {
+      // Default initial states based on currentType
+      const activeT = currentType || type;
+      if (activeT === 'attribute' || activeT === 'ability') {
+        setForm({ emoji: '⭐', name: '', description: '', type: activeT, visible: true, level: 1, xp: 0 });
+      } else if (activeT === 'habit') {
         setForm({
           emoji: '📜',
           name: '',
@@ -54,7 +95,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           primaryTarget: stats[0]?.id || 'str',
           secondaryTarget: stats[1]?.id || 'con'
         });
-      } else if (type === 'oneshot') {
+      } else if (activeT === 'oneshot') {
         setForm({
           emoji: '💥',
           name: '',
@@ -63,7 +104,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           secondaryTarget: stats[1]?.id || 'con',
           completed: false
         });
-      } else if (type === 'quest') {
+      } else if (activeT === 'quest') {
         setForm({
           emoji: '🏆',
           name: '',
@@ -74,17 +115,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           completed: false
         });
         setSubquests([]);
-      } else if (type === 'food') {
+      } else if (activeT === 'food') {
         setForm({ emoji: '🍎', name: '', baseGrams: 100, baseCalories: 100, baseProteins: 10, category: 'snack' });
-      } else if (type === 'exercise') {
+      } else if (activeT === 'exercise') {
         setForm({ emoji: '🏃', name: '', baseCount: 10, baseCalories: 50, xpReward: 10, statId: 'str' });
-      } else if (type === 'weight') {
+      } else if (activeT === 'weight') {
         setForm({ current: 75, target: 70, currentLean: 0, targetLean: 0, currentFat: 0, targetFat: 0 });
-      } else if (type.startsWith('health_')) {
+      } else if (activeT?.startsWith('health_')) {
         setForm({ value: 0 });
       }
     }
-  }, [type, editData, stats]);
+  }, [type, currentType, editData, stats]);
 
   const handleChange = (e) => {
     const { name, value, type: inputType, checked } = e.target;
@@ -104,10 +145,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (type === 'quest') {
-      onSave({ ...form, subquests });
+    const activeT = currentType || type;
+    if (activeT === 'quest') {
+      onSave({ ...form, _targetType: activeT, subquests });
     } else {
-      onSave(form);
+      onSave({ ...form, _targetType: activeT });
     }
     onClose();
   };
@@ -131,7 +173,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const renderFormFields = () => {
     const visibleStats = stats?.filter(s => s.visible) || [];
 
-    switch (type) {
+    switch (currentType || type) {
       case 'attribute':
       case 'ability':
         return (
@@ -939,12 +981,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   };
 
   const getTitle = () => {
-    const action = editData ? 'Modifica' : 'Imposta';
+    const activeT = currentType || type;
+    const action = editData ? 'Modifica' : 'Crea';
     const names = {
       attribute: 'Attributo',
       ability: 'Abilità',
       habit: 'Abitudine',
-      oneshot: 'Missione Singola',
+      oneshot: 'Task Singolo',
       quest: 'Campagna',
       food: 'Alimento nel database',
       exercise: 'Esercizio nel database',
@@ -952,9 +995,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       stat_detail: '',
       pomodoro: 'Timer Pomodoro'
     };
-    if (type?.startsWith('health_')) return 'Aggiorna Dati';
-    return `${action} ${names[type] || 'Elemento'}`;
+    if (activeT?.startsWith('health_')) return 'Aggiorna Dati';
+    return `${action} ${names[activeT] || 'Elemento'}`;
   };
+
+  const activeT = currentType || type;
+  const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
 
   return (
     <div
@@ -973,7 +1019,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         }}
       >
         {/* Header (Hidden for stat_detail) */}
-        {type !== 'stat_detail' && (
+        {activeT !== 'stat_detail' && (
           <div
             className="px-5 py-4 flex justify-center items-center text-center"
             style={{ borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}
@@ -987,6 +1033,66 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         {/* Form */}
         <form onSubmit={handleSave}>
           <div className="p-5 max-h-[70vh] overflow-y-auto no-scrollbar">
+            {/* Top 3-way Creation Type Selector */}
+            {isCreatableItem && (
+              <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleTypeSwitch('habit')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 4px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: activeT === 'habit' ? 'var(--accent-gradient, #7c3aed)' : 'transparent',
+                    color: activeT === 'habit' ? '#ffffff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  📜 Abitudine
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTypeSwitch('oneshot')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 4px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: activeT === 'oneshot' ? 'var(--accent-gradient, #7c3aed)' : 'transparent',
+                    color: activeT === 'oneshot' ? '#ffffff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  💥 Task Singolo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTypeSwitch('quest')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 4px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: activeT === 'quest' ? 'var(--accent-gradient, #7c3aed)' : 'transparent',
+                    color: activeT === 'quest' ? '#ffffff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🏆 Campagna
+                </button>
+              </div>
+            )}
+
             {renderFormFields()}
           </div>
 
