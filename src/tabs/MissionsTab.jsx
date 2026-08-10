@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
+import { getGameDate, getYesterdayGameDate } from '../utils/helpers';
 
 export default function MissionsTab({
   oneshots,
@@ -12,6 +13,7 @@ export default function MissionsTab({
   onDeleteQuest,
   onEditQuest,
   onOpenModal,
+  completionLog = {},
   stats,
   settings,
   onOpenDailyPlanner,
@@ -20,6 +22,11 @@ export default function MissionsTab({
   const [subTab, setSubTab] = useState('oneshot'); // 'oneshot' | 'quest' | 'catalog'
   const [showCompletedOneshots, setShowCompletedOneshots] = useState(false);
   const [expandedQuestId, setExpandedQuestId] = useState(null);
+  const [missionDate, setMissionDate] = useState('today');
+
+  const todayStr = getGameDate(settings?.dayStartTime);
+  const yesterdayStr = getYesterdayGameDate(settings?.dayStartTime);
+  const activeMissionDateStr = missionDate === 'yesterday' ? yesterdayStr : todayStr;
 
   const toggleQuestExpand = (questId) => {
     setExpandedQuestId(expandedQuestId === questId ? null : questId);
@@ -27,7 +34,8 @@ export default function MissionsTab({
 
   const filteredOneshots = oneshots.filter((o) => {
     if (o.locked) return false;
-    return showCompletedOneshots ? o.completed : !o.completed;
+    const isComp = (completionLog[activeMissionDateStr]?.oneshots?.includes(o.id)) || (activeMissionDateStr === todayStr && o.completed);
+    return showCompletedOneshots ? isComp : !isComp;
   });
 
   const activeQuests = quests.filter(q => !q.completed);
@@ -83,20 +91,40 @@ export default function MissionsTab({
       {/* SUB-TAB 1: MISSIONI SINGOLE (ONE-SHOTS) */}
       {subTab === 'oneshot' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Active / Completed Filter */}
-          <div style={{ display: 'flex', gap: '4px', maxWidth: '200px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-            <button
-              onClick={() => setShowCompletedOneshots(false)}
-              style={{ flex: 1, padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: !showCompletedOneshots ? 'var(--accent-primary)' : 'transparent', color: !showCompletedOneshots ? '#fff' : 'var(--text-secondary)' }}
-            >
-              Attive
-            </button>
-            <button
-              onClick={() => setShowCompletedOneshots(true)}
-              style={{ flex: 1, padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: showCompletedOneshots ? 'var(--accent-primary)' : 'transparent', color: showCompletedOneshots ? '#fff' : 'var(--text-secondary)' }}
-            >
-              Finito
-            </button>
+          {/* Active / Completed Filter & Date Selector */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <button
+                onClick={() => setShowCompletedOneshots(false)}
+                style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: !showCompletedOneshots ? 'var(--accent-primary)' : 'transparent', color: !showCompletedOneshots ? '#fff' : 'var(--text-secondary)' }}
+              >
+                Attive
+              </button>
+              <button
+                onClick={() => setShowCompletedOneshots(true)}
+                style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: showCompletedOneshots ? 'var(--accent-primary)' : 'transparent', color: showCompletedOneshots ? '#fff' : 'var(--text-secondary)' }}
+              >
+                Completate
+              </button>
+            </div>
+
+            {/* Date Selector */}
+            <div style={{ display: 'flex', gap: '2px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+              <button
+                type="button"
+                onClick={() => setMissionDate('today')}
+                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: missionDate === 'today' ? 'var(--accent-primary)' : 'transparent', color: missionDate === 'today' ? '#fff' : 'var(--text-secondary)' }}
+              >
+                Oggi
+              </button>
+              <button
+                type="button"
+                onClick={() => setMissionDate('yesterday')}
+                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: missionDate === 'yesterday' ? 'var(--accent-primary)' : 'transparent', color: missionDate === 'yesterday' ? '#fff' : 'var(--text-secondary)' }}
+              >
+                Ieri
+              </button>
+            </div>
           </div>
 
           {/* Oneshot Cards List */}
@@ -111,20 +139,21 @@ export default function MissionsTab({
               filteredOneshots.map((o) => {
                 const primaryStat = stats.find(s => s.id === o.primaryTarget);
                 const starsCount = o.difficulty || 1;
+                const isCompOnDate = (completionLog[activeMissionDateStr]?.oneshots?.includes(o.id)) || (activeMissionDateStr === todayStr && o.completed);
 
                 return (
                   <div
                     key={o.id}
-                    className={`task-card ${o.completed ? 'completed' : ''}`}
+                    className={`task-card ${isCompOnDate ? 'completed' : ''}`}
                     data-type="oneshot"
                     data-id={o.id}
                   >
                     <div className="swipe-content" onClick={() => onEditOneshot(o)}>
                       <div
-                        className={`card-checkbox ${o.completed ? 'checked' : ''}`}
+                        className={`card-checkbox ${isCompOnDate ? 'checked' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onToggleOneshot(o.id);
+                          onToggleOneshot(o.id, activeMissionDateStr);
                         }}
                       ></div>
                       <div className="card-content">

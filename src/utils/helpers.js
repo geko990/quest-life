@@ -18,6 +18,12 @@ export function getGameDate(dayStartTime = 0) {
     return formatISO(getGameDateObj(dayStartTime));
 }
 
+export function getYesterdayGameDate(dayStartTime = 0) {
+    const todayObj = getGameDateObj(dayStartTime);
+    const yesterdayObj = new Date(todayObj.getTime() - 86400000);
+    return formatISO(yesterdayObj);
+}
+
 export function getGameDateString(dayStartTime = 0) {
     return getGameDateObj(dayStartTime).toDateString();
 }

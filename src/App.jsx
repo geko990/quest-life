@@ -260,8 +260,11 @@ export default function App() {
   };
 
   // 7. XP Reward Handler
-  const handleRewardXp = (statId, amount, isHabitCompletion = false, itemTitle = '') => {
+  const handleRewardXp = (statId, amount, isHabitCompletion = false, itemTitle = '', logDate = null) => {
     if (!amount || amount <= 0) return;
+    const todayStr = getGameDate(settings.dayStartTime);
+    const effectiveDate = logDate || todayStr;
+
     // 1. Reward Stat XP
     setStats(prevStats =>
       prevStats.map(s => {
@@ -293,14 +296,12 @@ export default function App() {
       monthlyPointsAdd = 1;
     }
 
-    const todayStr = getGameDate(settings.dayStartTime);
-
     const titleToSave = (itemTitle && itemTitle.trim() !== '') ? itemTitle.trim() : '';
 
-    // Log XP change
+    // Log XP change with effectiveDate
     setXpLog(prev => [
       ...prev,
-      { date: todayStr, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave }
+      { date: effectiveDate, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave }
     ]);
 
     setPlayer(prev => {
@@ -310,14 +311,14 @@ export default function App() {
 
       // Check monthly medal milestone
       if (nextMonthlyPoints >= target && (prev.monthlyChallenge?.points || 0) < target) {
-        const monthId = getMonthIdentifier(todayStr);
+        const monthId = getMonthIdentifier(effectiveDate);
         const medalId = monthId;
         if (!medals.some(m => m.id === medalId)) {
           medals.push({
             id: medalId,
             name: `Medaglia di ${new Date().toLocaleString('it-IT', { month: 'long' })}`,
             icon: '🏅',
-            earnedDate: todayStr
+            earnedDate: effectiveDate
           });
           alert(`🏆 MEDAGLIA GUADAGNATA! Hai completato la sfida mensile!`);
         }
@@ -343,8 +344,10 @@ export default function App() {
   };
 
   // 7b. XP Deduction Handler (when an item is unchecked / canceled)
-  const handleDeductXp = (statId, amount, isHabitCompletion = false, itemTitle = '') => {
+  const handleDeductXp = (statId, amount, isHabitCompletion = false, itemTitle = '', logDate = null) => {
     if (!amount || amount <= 0) return;
+    const todayStr = getGameDate(settings.dayStartTime);
+    const effectiveDate = logDate || todayStr;
 
     // 1. Deduct Stat XP
     setStats(prevStats =>
@@ -385,27 +388,26 @@ export default function App() {
     });
 
     // 3. Remove log entry from xpLog
-    const todayStr = getGameDate(settings.dayStartTime);
     setXpLog(prev => {
       let targetIndex = -1;
 
-      // First search for an entry today matching statId AND title/source
+      // First search for an entry matching effectiveDate AND statId AND title/source
       if (itemTitle && itemTitle.trim() !== '') {
         const cleanTitle = itemTitle.trim();
         for (let i = prev.length - 1; i >= 0; i--) {
           const l = prev[i];
-          if (l.date === todayStr && l.statId === statId && (l.title === cleanTitle || l.source === cleanTitle)) {
+          if (l.date === effectiveDate && l.statId === statId && (l.title === cleanTitle || l.source === cleanTitle)) {
             targetIndex = i;
             break;
           }
         }
       }
 
-      // If not found by exact title, search for the last entry today matching statId
+      // If not found by exact title, search for the last entry matching effectiveDate AND statId
       if (targetIndex === -1) {
         for (let i = prev.length - 1; i >= 0; i--) {
           const l = prev[i];
-          if (l.date === todayStr && l.statId === statId) {
+          if (l.date === effectiveDate && l.statId === statId) {
             targetIndex = i;
             break;
           }
@@ -443,11 +445,12 @@ export default function App() {
   // 8. Toggling Item Completions
   const handleToggleHabit = (habitId, dateStr) => {
     const todayStr = getGameDate(settings.dayStartTime);
-    const isCompleted = completionLog[dateStr]?.habits?.includes(habitId);
+    const targetDate = dateStr || todayStr;
+    const isCompleted = completionLog[targetDate]?.habits?.includes(habitId);
 
     // Update Completion Log
     setCompletionLog(prev => {
-      const dayLog = { habits: [], oneshots: [], quests: [], ...(prev[dateStr] || {}) };
+      const dayLog = { habits: [], oneshots: [], quests: [], ...(prev[targetDate] || {}) };
       const list = [...dayLog.habits];
       const idx = list.indexOf(habitId);
       
@@ -456,80 +459,81 @@ export default function App() {
       } else {
         list.splice(idx, 1);
       }
-      return { ...prev, [dateStr]: { ...dayLog, habits: list } };
+      return { ...prev, [targetDate]: { ...dayLog, habits: list } };
     });
 
-    // Reward or Deduct XP & update streaks if completed today
-    if (dateStr === todayStr) {
-      const habit = habits.find(h => h.id === habitId);
-      if (!habit) return;
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit) return;
 
-      const primaryXp = habit.difficulty * 4; // 1->5 stars awards 4/8/12/16/20 XP
-      const secondaryXp = Math.round(primaryXp * 0.33);
+    const primaryXp = habit.difficulty * 4; // 1->5 stars awards 4/8/12/16/20 XP
+    const secondaryXp = Math.round(primaryXp * 0.33);
 
-      if (!isCompleted) {
-        // Complete habit: add streak, reward primary and secondary targets XP
-        handleRewardXp(habit.primaryTarget, primaryXp, true, habit.name);
-        if (habit.secondaryTarget) {
-          handleRewardXp(habit.secondaryTarget, secondaryXp, false, habit.name);
-        }
-
-        // Increment Streak
-        setHabits(prev =>
-          prev.map(h => (h.id === habitId ? { ...h, streak: h.streak + 1 } : h))
-        );
-
-        // Update player active streak
-        setPlayer(prev => {
-          const lastAction = prev.lastActionDate;
-          const yesterdayStr = formatISO(new Date(Date.now() - 86400000));
-          let nextStreak = prev.globalStreak;
-          if (lastAction !== todayStr) {
-            if (lastAction === yesterdayStr || prev.globalStreak === 0) {
-              nextStreak += 1;
-            }
-          }
-          return { ...prev, globalStreak: nextStreak, lastActionDate: todayStr };
-        });
-
-        // Small success audio beep
-        if (settings.soundEnabled) {
-          try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-            osc.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.08);
-          } catch(e){}
-        }
-      } else {
-        // Uncheck habit: deduct XP & decrement streak & remove xpLog entry
-        handleDeductXp(habit.primaryTarget, primaryXp, true, habit.name);
-        if (habit.secondaryTarget) {
-          handleDeductXp(habit.secondaryTarget, secondaryXp, false, habit.name);
-        }
-
-        setHabits(prev =>
-          prev.map(h => (h.id === habitId ? { ...h, streak: Math.max(0, h.streak - 1) } : h))
-        );
+    if (!isCompleted) {
+      // Complete habit: add streak, reward primary and secondary targets XP
+      handleRewardXp(habit.primaryTarget, primaryXp, true, habit.name, targetDate);
+      if (habit.secondaryTarget) {
+        handleRewardXp(habit.secondaryTarget, secondaryXp, false, habit.name, targetDate);
       }
+
+      // Increment Streak
+      setHabits(prev =>
+        prev.map(h => (h.id === habitId ? { ...h, streak: h.streak + 1 } : h))
+      );
+
+      // Update player active streak
+      setPlayer(prev => {
+        const lastAction = prev.lastActionDate;
+        const yesterdayStr = formatISO(new Date(Date.now() - 86400000));
+        let nextStreak = prev.globalStreak;
+        if (lastAction !== todayStr) {
+          if (lastAction === yesterdayStr || prev.globalStreak === 0) {
+            nextStreak += 1;
+          }
+        }
+        return { ...prev, globalStreak: nextStreak, lastActionDate: todayStr };
+      });
+
+      // Small success audio beep
+      if (settings.soundEnabled) {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+          osc.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.08);
+        } catch(e){}
+      }
+    } else {
+      // Uncheck habit: deduct XP & decrement streak & remove xpLog entry
+      handleDeductXp(habit.primaryTarget, primaryXp, true, habit.name, targetDate);
+      if (habit.secondaryTarget) {
+        handleDeductXp(habit.secondaryTarget, secondaryXp, false, habit.name, targetDate);
+      }
+
+      setHabits(prev =>
+        prev.map(h => (h.id === habitId ? { ...h, streak: Math.max(0, h.streak - 1) } : h))
+      );
     }
   };
 
-  const handleToggleOneshot = (id) => {
+  const handleToggleOneshot = (id, dateStr) => {
     const os = oneshots.find(o => o.id === id);
     if (!os) return;
 
-    const willBeCompleted = !os.completed;
+    const todayStr = getGameDate(settings.dayStartTime);
+    const targetDate = dateStr || todayStr;
+
+    // Check if completed on targetDate
+    const isCompletedOnTarget = (completionLog[targetDate]?.oneshots?.includes(id)) || (targetDate === todayStr && os.completed);
+    const willBeCompleted = !isCompletedOnTarget;
 
     setOneshots(prev =>
-      prev.map(o => (o.id === id ? { ...o, completed: willBeCompleted } : o))
+      prev.map(o => (o.id === id ? { ...o, completed: targetDate === todayStr ? willBeCompleted : o.completed } : o))
     );
 
-    const todayStr = getGameDate(settings.dayStartTime);
     setCompletionLog(prev => {
-      const dayLog = { habits: [], oneshots: [], quests: [], ...(prev[todayStr] || {}) };
+      const dayLog = { habits: [], oneshots: [], quests: [], ...(prev[targetDate] || {}) };
       const list = [...dayLog.oneshots];
       const idx = list.indexOf(id);
       if (willBeCompleted && idx === -1) {
@@ -537,7 +541,7 @@ export default function App() {
       } else if (!willBeCompleted && idx !== -1) {
         list.splice(idx, 1);
       }
-      return { ...prev, [todayStr]: { ...dayLog, oneshots: list } };
+      return { ...prev, [targetDate]: { ...dayLog, oneshots: list } };
     });
 
     // Calculate XP (oneshot awards difficulty * 8 XP!)
@@ -548,15 +552,15 @@ export default function App() {
     }
 
     if (willBeCompleted) {
-      handleRewardXp(os.primaryTarget, xp, false, os.name);
+      handleRewardXp(os.primaryTarget, xp, false, os.name, targetDate);
       if (os.secondaryTarget) {
-        handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name);
+        handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name, targetDate);
       }
     } else {
       // Unchecking task: deduct XP & remove xpLog entry!
-      handleDeductXp(os.primaryTarget, xp, false, os.name);
+      handleDeductXp(os.primaryTarget, xp, false, os.name, targetDate);
       if (os.secondaryTarget) {
-        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name);
+        handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name, targetDate);
       }
     }
   };
@@ -922,6 +926,7 @@ export default function App() {
             onToggleHabit={handleToggleHabit}
             dailyActions={dailyActions}
             onToggleDailyAction={handleToggleDailyAction}
+            completionLog={completionLog}
             onOpenModal={handleOpenModal}
             onDeleteStat={(id) => setStats(prev => prev.filter(s => s.id !== id))}
             onEditStat={(data) => handleOpenModal(data.type, data)}
@@ -962,6 +967,7 @@ export default function App() {
             onDeleteQuest={(id) => setQuests(prev => prev.filter(q => q.id !== id))}
             onEditQuest={(data) => handleOpenModal('quest', data)}
             onOpenModal={handleOpenModal}
+            completionLog={completionLog}
             stats={stats}
             settings={settings}
             onOpenDailyPlanner={() => setShowPlannerModal(true)}

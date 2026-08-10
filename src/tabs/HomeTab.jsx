@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { getXpForLevel, getGameDate } from '../utils/helpers';
+import { getXpForLevel, getGameDate, getYesterdayGameDate } from '../utils/helpers';
 
 export default function HomeTab({
   stats,
@@ -15,6 +15,7 @@ export default function HomeTab({
   onToggleHabit,
   dailyActions = [],
   onToggleDailyAction,
+  completionLog = {},
   onOpenModal,
   onOpenPlanner,
   onOpenPomodoro,
@@ -23,6 +24,7 @@ export default function HomeTab({
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [actionsDate, setActionsDate] = useState('today');
   const pressTimerRef = useRef(null);
   const healthPressTimerRef = useRef(null);
   const isHealthLongPressRef = useRef(false);
@@ -345,6 +347,23 @@ export default function HomeTab({
                 Azioni del Giorno
               </h3>
             </div>
+            {/* Today / Yesterday Toggle */}
+            <div style={{ display: 'flex', background: 'var(--bg-card)', padding: '2px', borderRadius: '6px', border: '1px solid var(--glass-border)', gap: '2px', marginLeft: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setActionsDate('today')}
+                style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: actionsDate === 'today' ? 'var(--accent-primary)' : 'transparent', color: actionsDate === 'today' ? '#fff' : 'var(--text-secondary)' }}
+              >
+                Oggi
+              </button>
+              <button
+                type="button"
+                onClick={() => setActionsDate('yesterday')}
+                style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: actionsDate === 'yesterday' ? 'var(--accent-primary)' : 'transparent', color: actionsDate === 'yesterday' ? '#fff' : 'var(--text-secondary)' }}
+              >
+                Ieri
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '6px' }}>
@@ -389,12 +408,15 @@ export default function HomeTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {todayActionsList.map((action) => {
               const primaryStat = stats.find(s => s.id === action.primaryTarget);
-              const isCompleted = !!action.completed;
+              const todayStr = getGameDate(settings.dayStartTime);
+              const yesterdayStr = getYesterdayGameDate(settings.dayStartTime);
+              const activeActionsDateStr = actionsDate === 'yesterday' ? yesterdayStr : todayStr;
+              const isCompleted = (completionLog[activeActionsDateStr]?.oneshots?.includes(action.id)) || (activeActionsDateStr === todayStr && !!action.completed);
 
               return (
                 <div
                   key={action.id}
-                  onClick={() => onToggleOneshot && onToggleOneshot(action.id)}
+                  onClick={() => onToggleOneshot && onToggleOneshot(action.id, activeActionsDateStr)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -415,7 +437,7 @@ export default function HomeTab({
                     className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onToggleOneshot) onToggleOneshot(action.id);
+                      if (onToggleOneshot) onToggleOneshot(action.id, activeActionsDateStr);
                     }}
                     style={{ width: '18px', height: '18px', flexShrink: 0 }}
                   ></div>
