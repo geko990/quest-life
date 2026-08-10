@@ -140,117 +140,120 @@ export default function MissionsTab({
 
       {/* SUB-TAB 2: CAMPAGNE (QUESTS) */}
       {subTab === 'quest' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-              Campagne Attive
-            </h3>
-            {activeQuests.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">🏆</div>
-                <div className="empty-state-text">Nessuna campagna attiva</div>
-                <div className="empty-state-hint">Attiva una sfida dal catalogo o creane una nuova</div>
-              </div>
-            ) : (
-              activeQuests.map((q) => {
-                const totalSub = q.subquests?.length || 0;
-                const completedSub = q.subquests?.filter(sq => sq.completed).length || 0;
-                const progressPct = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
-                const primaryStat = stats.find(s => s.id === q.primaryTarget);
-                const isExpanded = expandedQuestId === q.id;
-
-                return (
-                  <div
-                    key={q.id}
-                    className="glass-panel"
-                    style={{ overflow: 'hidden', border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)' }}
-                  >
-                    <div
-                      onClick={() => toggleQuestExpand(q.id)}
-                      style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '18px' }}>{q.emoji || '🏆'}</span>
-                          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{q.name}</h4>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                          {primaryStat && <span>{primaryStat.icon} {primaryStat.name}</span>}
-                          <span>{'⭐'.repeat(q.difficulty || 1)}</span>
-                          <span>{completedSub}/{totalSub} sotto-obiettivi</span>
-                        </div>
-                      </div>
-
-                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                        {isExpanded ? '▲' : '▼'}
-                      </span>
-                    </div>
-
-                    <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)' }}>
-                      <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--accent-gradient, #7c3aed)', transition: 'width 0.3s' }}></div>
-                    </div>
-
-                    {isExpanded && (
-                      <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--glass-border)', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {totalSub === 0 ? (
-                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
-                            Nessun sotto-obiettivo definito.
-                          </p>
-                        ) : (
-                          q.subquests.map((sq) => (
-                            <div
-                              key={sq.id}
-                              onClick={() => onToggleSubquest(q.id, sq.id)}
-                              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', cursor: 'pointer' }}
-                            >
-                              <div
-                                style={{
-                                  width: '16px',
-                                  height: '16px',
-                                  borderRadius: '4px',
-                                  border: '1px solid var(--glass-border)',
-                                  background: sq.completed ? 'var(--accent-primary)' : 'transparent',
-                                  color: '#fff',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '10px',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {sq.completed && '✓'}
-                              </div>
-                              <span style={{ fontSize: '12px', color: 'var(--text-primary)', textDecoration: sq.completed ? 'line-through' : 'none', opacity: sq.completed ? 0.6 : 1 }}>
-                                {sq.name}
-                              </span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {completedQuests.length > 0 && (
-            <div style={{ paddingTop: '16px', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: '#22c55e', textTransform: 'uppercase' }}>
-                Campagne Completate
-              </h3>
-              {completedQuests.map((q) => (
-                <div key={q.id} className="glass-panel" style={{ padding: '12px', opacity: 0.6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '20px' }}>🏆</span>
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: 'line-through' }}>{q.name}</h4>
-                      <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold' }}>Completata!</span>
-                    </div>
-                  </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {!showCompletedOneshots ? (
+            /* Active Quests */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {activeQuests.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">🏆</div>
+                  <div className="empty-state-text">Nessuna campagna attiva</div>
+                  <div className="empty-state-hint">Attiva una sfida dal catalogo o creane una nuova</div>
                 </div>
-              ))}
+              ) : (
+                activeQuests.map((q) => {
+                  const totalSub = q.subquests?.length || 0;
+                  const completedSub = q.subquests?.filter(sq => sq.completed).length || 0;
+                  const progressPct = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
+                  const primaryStat = stats.find(s => s.id === q.primaryTarget);
+                  const isExpanded = expandedQuestId === q.id;
+
+                  return (
+                    <div
+                      key={q.id}
+                      className="glass-panel"
+                      style={{ overflow: 'hidden', border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)' }}
+                    >
+                      <div
+                        onClick={() => toggleQuestExpand(q.id)}
+                        style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '18px' }}>{q.emoji || '🏆'}</span>
+                            <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{q.name}</h4>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', fontSize: '10px', color: 'var(--text-secondary)' }}>
+                            {primaryStat && <span>{primaryStat.icon} {primaryStat.name}</span>}
+                            <span>{'⭐'.repeat(q.difficulty || 1)}</span>
+                            <span>{completedSub}/{totalSub} sotto-obiettivi</span>
+                          </div>
+                        </div>
+
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                          {isExpanded ? '▲' : '▼'}
+                        </span>
+                      </div>
+
+                      <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)' }}>
+                        <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--accent-gradient, #7c3aed)', transition: 'width 0.3s' }}></div>
+                      </div>
+
+                      {isExpanded && (
+                        <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--glass-border)', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {totalSub === 0 ? (
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
+                              Nessun sotto-obiettivo definito.
+                            </p>
+                          ) : (
+                            q.subquests.map((sq) => (
+                              <div
+                                key={sq.id}
+                                onClick={() => onToggleSubquest(q.id, sq.id)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', cursor: 'pointer' }}
+                              >
+                                <div
+                                  style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--glass-border)',
+                                    background: sq.completed ? 'var(--accent-primary)' : 'transparent',
+                                    color: '#fff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '10px',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  {sq.completed && '✓'}
+                                </div>
+                                <span style={{ fontSize: '12px', color: 'var(--text-primary)', textDecoration: sq.completed ? 'line-through' : 'none', opacity: sq.completed ? 0.6 : 1 }}>
+                                  {sq.name}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            /* Completed Quests */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {completedQuests.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">🏆</div>
+                  <div className="empty-state-text">Nessuna campagna completata</div>
+                </div>
+              ) : (
+                completedQuests.map((q) => (
+                  <div key={q.id} className="glass-panel" style={{ padding: '12px', opacity: 0.6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '20px' }}>{q.emoji || '🏆'}</span>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: 'line-through' }}>{q.name}</h4>
+                        <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold' }}>Completata!</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -263,47 +266,74 @@ export default function MissionsTab({
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               ⚔️ Catalogo Sfide Preimpostate
             </h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>Scegli una sfida da 30 giorni o 7 giorni per iniziare subito</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>Scegli una sfida per iniziare subito</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {CHALLENGE_TEMPLATES.map((tmpl) => {
               const primaryStat = stats.find(s => s.id === tmpl.primaryStatId);
+              const cleanName = tmpl.name ? tmpl.name.replace(/^[\p{Emoji}\s]+/u, '').trim() : '';
+
               return (
                 <div
                   key={tmpl.id}
                   className="glass-panel"
-                  style={{ padding: '14px', borderLeft: `4px solid ${tmpl.color || 'var(--accent-primary)'}` }}
+                  style={{ padding: '14px', borderLeft: `4px solid ${tmpl.color || 'var(--accent-primary)'}`, display: 'flex', flexDirection: 'column', gap: '10px' }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '20px' }}>{tmpl.icon}</span>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{tmpl.name}</h4>
-                    </div>
-                    <span style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '2px 8px', borderRadius: '10px' }}>
-                      {tmpl.duration} GG
-                    </span>
-                  </div>
-                  <p style={{ margin: '8px 0', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                    {tmpl.description}
-                  </p>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {primaryStat && <span>{primaryStat.icon} {primaryStat.name}</span>}
-                      <span>{'⭐'.repeat(tmpl.stars || 3)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '12px',
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--glass-border)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '20px',
+                          flexShrink: 0
+                        }}
+                      >
+                        {tmpl.icon}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {cleanName || tmpl.name}
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', fontSize: '10px', color: 'var(--text-secondary)' }}>
+                          <span style={{ background: 'var(--bg-secondary)', padding: '1px 6px', borderRadius: '6px', fontWeight: 'bold' }}>{tmpl.duration} GG</span>
+                          {primaryStat && <span>• {primaryStat.icon} {primaryStat.name}</span>}
+                          <span>• {'⭐'.repeat(tmpl.stars || 3)}</span>
+                        </div>
+                      </div>
                     </div>
                     <button
                       onClick={() => {
                         onActivateChallenge(tmpl);
                         setSubTab('quest');
                       }}
-                      className="btn-primary"
-                      style={{ padding: '4px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                      style={{
+                        padding: '8px 14px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        borderRadius: '10px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: 'var(--accent-gradient, #7c3aed)',
+                        color: '#ffffff',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
+                      }}
                     >
                       Attiva Sfida
                     </button>
                   </div>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                    {tmpl.description}
+                  </p>
                 </div>
               );
             })}

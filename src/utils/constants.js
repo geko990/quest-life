@@ -1,5 +1,5 @@
-export const BUILD_TIME = '2026-08-10T13:16:18.574Z';
-export const APP_VERSION = '5.8.62';
+export const BUILD_TIME = '2026-08-10T13:29:32.893Z';
+export const APP_VERSION = '5.8.63';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -40,7 +40,7 @@ export const DB_STORE = 'handles';
 export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv1',
-        name: '💪 Flessioni Liv.1',
+        name: 'Flessioni Liv.1',
         description: 'Programma principianti: 30 giorni per arrivare a 30 flessioni. Recupero tra serie: 60s.',
         duration: 30,
         icon: '💪',
@@ -84,7 +84,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'pushup_lv2',
-        name: '💪 Flessioni Liv.2',
+        name: 'Flessioni Liv.2',
         description: 'Programma intermedio: 30 giorni per arrivare a 60 flessioni. Recupero tra serie: 45-60s.',
         duration: 30,
         icon: '💪',
@@ -126,7 +126,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'pushup_lv3',
-        name: '💪 Flessioni Liv.3',
+        name: 'Flessioni Liv.3',
         description: 'Programma avanzato: 30 giorni per superare i 100. Recupero minimo.',
         duration: 30,
         icon: '💪',
@@ -168,7 +168,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'situp_lv1',
-        name: '🍫 Sit-Ups Liv.1',
+        name: 'Sit-Ups Liv.1',
         description: 'Core base: 30 giorni per addominali d\'acciaio.',
         duration: 30,
         icon: '🍫',
@@ -210,7 +210,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'situp_lv2',
-        name: '🍫 Sit-Ups Liv.2',
+        name: 'Sit-Ups Liv.2',
         description: 'Core avanzato: 30 giorni di fuoco per veri atleti.',
         duration: 30,
         icon: '🍫',
@@ -252,7 +252,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'plank_30',
-        name: '🪵 Plank Challenge',
+        name: 'Plank Challenge',
         description: '30 Giorni di acciaio. Da 20s a 5 minuti di plank.',
         duration: 30,
         icon: '🪵',
@@ -286,7 +286,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'nutrition_maintain',
-        name: '🥗 Nutrizione Mantenimento',
+        name: 'Nutrizione Mantenimento',
         description: '30 giorni di alimentazione equilibrata. Proteine 1g/kg, 8 bicchieri acqua, pasti regolari.',
         duration: 30,
         icon: '🥗',
@@ -306,7 +306,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'nutrition_cut',
-        name: '🔥 Nutrizione Dimagrimento',
+        name: 'Nutrizione Dimagrimento',
         description: '30 giorni in deficit calorico (-500kcal). Proteine alte, 10k passi, niente alcol.',
         duration: 30,
         icon: '🔥',
@@ -326,7 +326,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'nutrition_bulk',
-        name: '🏋️ Nutrizione Massa',
+        name: 'Nutrizione Massa',
         description: '30 giorni in surplus calorico (+300kcal). Proteine 1.5g/kg, allenamento forza, pasto post-workout.',
         duration: 30,
         icon: '🏋️',
@@ -346,7 +346,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'no_smoke_7',
-        name: '🚭 Detox Sigarette (7gg)',
+        name: 'Detox Sigarette (7gg)',
         description: '7 giorni senza fumare. Una settimana per riprendere il controllo.',
         duration: 7,
         icon: '🚭',
@@ -363,7 +363,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'nofap_7',
-        name: '🚫 NoFap Week',
+        name: 'NoFap Week',
         description: '7 giorni di astinenza. Riprendi il controllo della tua energia.',
         duration: 7,
         icon: '🚫',
@@ -380,7 +380,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'no_junk_7',
-        name: '🍎 No Junk Food (7gg)',
+        name: 'No Junk Food (7gg)',
         description: '7 giorni senza cibo spazzatura. Disintossicati dagli zuccheri.',
         duration: 7,
         icon: '🍎',
@@ -397,7 +397,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'reading_7',
-        name: '📚 Campagna Lettura (7gg)',
+        name: 'Campagna Lettura (7gg)',
         description: 'Leggere ogni giorno per una settimana. Bastano 20 pagine.',
         duration: 7,
         icon: '📚',
@@ -414,7 +414,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'meditation_7',
-        name: '🧘 Campagna Meditazione (7gg)',
+        name: 'Campagna Meditazione (7gg)',
         description: '7 giorni di mindfulness. Ritrova la calma interiore.',
         duration: 7,
         icon: '🧘',
@@ -431,7 +431,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'cold_shower_30',
-        name: '🧊 Campagna Docce Fredde',
+        name: 'Campagna Docce Fredde',
         description: '30 giorni di docce fredde. Costruisci disciplina mentale e resilienza.',
         duration: 30,
         icon: '🧊',
@@ -448,7 +448,7 @@ export const CHALLENGE_TEMPLATES = [
     },
     {
         id: 'digital_detox_7',
-        name: '📱 Campagna Digital Detox',
+        name: 'Campagna Digital Detox',
         description: '7 giorni con uso limitato dello smartphone. Riconquista il tuo tempo.',
         duration: 7,
         icon: '📱',
