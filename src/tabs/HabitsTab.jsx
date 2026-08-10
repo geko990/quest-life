@@ -339,9 +339,7 @@ export default function HabitsTab({
                       className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (viewedDate === todayStr) {
-                          onToggleHabit(h.id, viewedDate);
-                        }
+                        onToggleHabit(h.id, viewedDate);
                       }}
                     ></div>
 
