@@ -198,7 +198,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder={type === 'attribute' ? 'Forza, Destrezza...' : 'Scrittura, Disegno...'}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 onChange={handleChange}
                 rows="3"
                 placeholder="A cosa serve questo attributo/abilità..."
-                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
               ></textarea>
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -253,7 +253,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Leggere 10 min, Meditazione..."
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     name="frequency"
                     value={form.frequency || 'daily'}
                     onChange={handleChange}
-                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   >
                     <option value="daily">Giornaliera</option>
                     <option value="weekly">Settimanale (1 volta)</option>
@@ -284,7 +284,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     value={form.freqTimes || 1}
                     onChange={handleNumberChange}
                     min="1"
-                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -295,7 +295,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="frequency"
                   value={form.frequency || 'daily'}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="daily">Giornaliera</option>
                   <option value="weekly">Settimanale (1 volta)</option>
@@ -307,7 +307,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             )}
 
             {/* Row 3: Difficoltà */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-4 py-3 flex justify-between items-center">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 py-3.5 flex justify-between items-center">
               <div>
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 4} XP Bonus</div>
@@ -335,7 +335,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -348,7 +348,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="">Nessuna</option>
                   {visibleStats.map(s => (
@@ -384,13 +384,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Rispondere alle email, Riparare rubinetto..."
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Row 2: Difficoltà Stelle */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-4 py-3 flex justify-between items-center">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 py-3.5 flex justify-between items-center">
               <div>
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 8} XP Bonus</div>
@@ -418,7 +418,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -431,7 +431,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="">Nessuna</option>
                   {visibleStats.map(s => (
@@ -467,7 +467,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleChange}
                   required
                   placeholder="Es: Imparare React, Scrivere un libro..."
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -481,12 +481,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 onChange={handleChange}
                 rows="2"
                 placeholder="Spiega l'obiettivo finale di questa campagna..."
-                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
               ></textarea>
             </div>
 
             {/* Row 3: Difficoltà */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-4 py-3 flex justify-between items-center">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 py-3.5 flex justify-between items-center">
               <div>
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 35} XP alla fine</div>
@@ -514,7 +514,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
@@ -527,7 +527,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   <option value="">Nessuna</option>
                   {visibleStats.map(s => (
@@ -546,7 +546,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={newSubquestName}
                   onChange={(e) => setNewSubquestName(e.target.value)}
                   placeholder="Es: Finire capitolo 1..."
-                  className="flex-1 h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs focus:border-accent-primary focus:outline-none"
+                  className="flex-1 h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs focus:border-accent-primary focus:outline-none"
                 />
                 <button
                   type="button"
@@ -558,7 +558,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
               <ul className="max-h-36 overflow-y-auto space-y-1.5 no-scrollbar">
                 {subquests.map((sq) => (
-                  <li key={sq.id} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2.5 px-3.5 rounded-xl text-xs border border-[var(--glass-border)]">
+                  <li key={sq.id} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2.5 px-4 rounded-xl text-xs border border-[var(--glass-border)]">
                     <span className={sq.completed ? 'line-through text-text-secondary' : ''}>{sq.name}</span>
                     <button
                       type="button"
