@@ -1132,7 +1132,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           {/* Footer Actions (Centered Coherent 44x44 Emoji Buttons) */}
           <div
             style={{
-              padding: '8px 24px 22px 24px',
+              padding: '12px 24px 28px 24px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',

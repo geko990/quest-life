@@ -4852,8 +4852,8 @@ textarea {
 .modal,
 .quest-detail-content {
     background: var(--bg-card);
-    width: 88%;
-    max-width: 350px;
+    width: 90%;
+    max-width: 360px;
     border-radius: 28px;
     padding: 0 !important;
     box-sizing: border-box;
