@@ -186,8 +186,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   name="emoji"
                   value={form.emoji || ''}
                   onChange={handleChange}
-                  className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
-                  maxLength="2"
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-xl focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div className="flex-1">
@@ -243,7 +242,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.emoji || ''}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-xl focus:border-accent-primary focus:outline-none"
-                  maxLength="2"
                 />
               </div>
               <div className="flex-1">
@@ -359,7 +357,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.emoji || ''}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-xl focus:border-accent-primary focus:outline-none"
-                  maxLength="2"
                 />
               </div>
               <div className="flex-1">
@@ -443,7 +440,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.emoji || ''}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-xl focus:border-accent-primary focus:outline-none"
-                  maxLength="2"
                 />
               </div>
               <div className="flex-1">
@@ -574,7 +570,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.emoji || ''}
                   onChange={handleChange}
                   className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
-                  maxLength="2"
                 />
               </div>
               <div className="flex-1">
@@ -655,7 +650,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.emoji || ''}
                   onChange={handleChange}
                   className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded px-3 py-2 text-center text-xl focus:border-accent-primary focus:outline-none"
-                  maxLength="2"
                 />
               </div>
               <div className="flex-1">
