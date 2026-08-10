@@ -308,11 +308,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Row 3: Difficoltà */}
             <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 py-3.5 flex justify-between items-center">
-              <div>
+              <div className="pl-1.5">
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 4} XP Bonus</div>
               </div>
-              <div className="flex gap-1.5 text-xl items-center pr-2">
+              <div className="flex gap-1.5 text-xl items-center pr-3">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span
                     key={star}
@@ -391,11 +391,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Row 2: Difficoltà Stelle */}
             <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 py-3.5 flex justify-between items-center">
-              <div>
+              <div className="pl-1.5">
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 8} XP Bonus</div>
               </div>
-              <div className="flex gap-1.5 text-xl items-center pr-2">
+              <div className="flex gap-1.5 text-xl items-center pr-3">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span
                     key={star}
@@ -487,11 +487,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Row 3: Difficoltà */}
             <div className="bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl px-5 py-3.5 flex justify-between items-center">
-              <div>
+              <div className="pl-1.5">
                 <label className="block text-xs text-text-secondary font-bold">Difficoltà</label>
                 <div className="text-[11px] text-text-muted font-medium mt-0.5">{(form.difficulty || 3) * 35} XP alla fine</div>
               </div>
-              <div className="flex gap-1.5 text-xl items-center pr-2">
+              <div className="flex gap-1.5 text-xl items-center pr-3">
                 {[1, 2, 3, 4, 5].map(star => (
                   <span
                     key={star}
