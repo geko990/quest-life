@@ -4852,9 +4852,9 @@ textarea {
 .modal,
 .quest-detail-content {
     background: var(--bg-card);
-    width: 92%;
-    max-width: 420px;
-    border-radius: 24px;
+    width: 88%;
+    max-width: 360px;
+    border-radius: 26px;
     padding: 0 !important;
     box-sizing: border-box;
     position: relative;
