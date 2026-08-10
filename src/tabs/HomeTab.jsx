@@ -337,49 +337,63 @@ export default function HomeTab({
       </div>
 
       {/* 2. Tessera "Azioni del Giorno" (Griglia 2x2) */}
-      <div className="glass-panel" style={{ padding: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '16px' }}>⚔️</span>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                Azioni del Giorno
-              </h3>
-            </div>
+      <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>⚔️</span>
+            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
+              Azioni del Giorno
+            </h3>
           </div>
 
           <div style={{ display: 'flex', gap: '6px' }}>
             <button
               onClick={() => onOpenModal('oneshot')}
-              style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
-              title="Aggiungi nuova missione"
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                border: 'none',
+                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
+                color: '#ffffff',
+                fontWeight: 'bold',
+                fontSize: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+                transition: 'transform 0.2s ease'
+              }}
+              className="active:scale-95"
+              title="Crea nuova abitudine, task o campagna"
             >
-              + Nuova
+              +
             </button>
           </div>
         </div>
 
         {todayActionsList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '16px 12px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', padding: '18px 14px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             {/* 1. Emoji dado (in alto) */}
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🎲</div>
+            <div style={{ fontSize: '32px', marginBottom: '8px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
 
             {/* 2. Bottone "Pianifica la tua giornata" (in mezzo, senza emoji) */}
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', marginBottom: '8px' }}
+              style={{ padding: '9px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', marginBottom: '8px', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
             >
               Pianifica la tua giornata
             </button>
 
             {/* 3. Descrizione "Definisci le quattro azioni di oggi" */}
-            <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '500' }}>
               Definisci le quattro azioni di oggi
             </div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {todayActionsList.map((action) => {
               const primaryStat = stats.find(s => s.id === action.primaryTarget);
               const isCompleted = !!action.completed;
@@ -391,16 +405,17 @@ export default function HomeTab({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    background: 'var(--bg-secondary)',
-                    border: isCompleted ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                    padding: '8px 10px',
-                    borderRadius: '10px',
+                    gap: '10px',
+                    background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
+                    border: isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)',
+                    padding: '10px 12px',
+                    borderRadius: '12px',
                     cursor: 'pointer',
-                    opacity: isCompleted ? 0.6 : 1,
+                    opacity: isCompleted ? 0.65 : 1,
                     transition: 'all 0.2s ease',
                     boxSizing: 'border-box',
-                    minWidth: 0
+                    minWidth: 0,
+                    boxShadow: isCompleted ? 'none' : '0 2px 6px rgba(0,0,0,0.03)'
                   }}
                 >
                   {/* Checkbox */}
@@ -410,13 +425,13 @@ export default function HomeTab({
                       e.stopPropagation();
                       if (onToggleOneshot) onToggleOneshot(action.id);
                     }}
-                    style={{ width: '18px', height: '18px', flexShrink: 0 }}
+                    style={{ width: '20px', height: '20px', flexShrink: 0 }}
                   ></div>
 
                   {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '11px' }}>{action.emoji || '🎯'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ fontSize: '12px' }}>{action.emoji || '🎯'}</span>
                       {primaryStat && (
                         <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {primaryStat.name}

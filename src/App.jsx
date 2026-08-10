@@ -639,8 +639,9 @@ export default function App() {
   // 9. Modal Add/Edit Handlers
   const handleSaveModal = (formData) => {
     const todayStr = getGameDate(settings.dayStartTime);
+    const targetType = formData._targetType || formData.type || modalType;
 
-    if (modalType === 'attribute' || modalType === 'ability') {
+    if (targetType === 'attribute' || targetType === 'ability') {
       if (editData) {
         setStats(prev => prev.map(s => (s.id === editData.id ? { ...s, ...formData } : s)));
       } else {
@@ -652,7 +653,7 @@ export default function App() {
         };
         setStats(prev => [...prev, newStat]);
       }
-    } else if (modalType === 'habit') {
+    } else if (targetType === 'habit') {
       if (editData) {
         setHabits(prev => prev.map(h => (h.id === editData.id ? { ...h, ...formData } : h)));
       } else {
@@ -665,7 +666,7 @@ export default function App() {
         };
         setHabits(prev => [...prev, newHabit]);
       }
-    } else if (modalType === 'oneshot') {
+    } else if (targetType === 'oneshot') {
       if (editData) {
         setOneshots(prev => prev.map(o => (o.id === editData.id ? { ...o, ...formData } : o)));
       } else {
@@ -677,7 +678,7 @@ export default function App() {
         };
         setOneshots(prev => [...prev, newOneshot]);
       }
-    } else if (modalType === 'quest') {
+    } else if (targetType === 'quest') {
       if (editData) {
         setQuests(prev => prev.map(q => (q.id === editData.id ? { ...q, ...formData } : q)));
       } else {
