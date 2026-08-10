@@ -4841,12 +4841,28 @@ textarea {
     color: var(--text-primary) !important;
 }
 
-.modal input,
+.modal input[type="text"],
+.modal input[type="number"],
+.modal input:not([type]),
 .modal select,
 .modal textarea {
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--glass-border);
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    box-sizing: border-box;
+}
+
+.modal select {
+    padding-left: 20px !important;
+    padding-right: 36px !important;
+}
+
+.modal input[name="emoji"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-align: center !important;
 }
 
 .modal,
