@@ -4870,6 +4870,7 @@ textarea {
     background: var(--bg-card);
     width: 90%;
     max-width: 360px;
+    aspect-ratio: 3 / 4;
     border-radius: 28px;
     padding: 0 !important;
     box-sizing: border-box;
@@ -4879,6 +4880,7 @@ textarea {
     border: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     max-height: 88vh;
     overflow: hidden;
     animation: popupScaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
