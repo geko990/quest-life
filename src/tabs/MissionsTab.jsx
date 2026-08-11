@@ -143,7 +143,7 @@ export default function MissionsTab({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {!showCompletedOneshots ? (
             /* Active Quests */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {activeQuests.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-state-icon">🏆</div>
@@ -157,39 +157,171 @@ export default function MissionsTab({
                   const progressPct = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
                   const primaryStat = stats.find(s => s.id === q.primaryTarget);
                   const isExpanded = expandedQuestId === q.id;
+                  const nextSubquest = q.subquests?.find(sq => !sq.completed);
 
                   return (
                     <div
                       key={q.id}
                       className="glass-panel"
-                      style={{ overflow: 'hidden', border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)' }}
+                      style={{ overflow: 'hidden', border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)', borderRadius: '16px' }}
                     >
+                      {/* Header Section */}
                       <div
-                        onClick={() => toggleQuestExpand(q.id)}
-                        style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}
+                        onClick={() => onOpenModal('quest_detail', q)}
+                        style={{ padding: '14px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}
+                        title="Clicca per aprire la finestra dettagli della campagna"
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '18px' }}>{q.emoji || '🏆'}</span>
-                            <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{q.name}</h4>
+                            <span style={{ fontSize: '20px', flexShrink: 0 }}>{q.emoji || '🏆'}</span>
+                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.name}</h4>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                            {primaryStat && <span>{primaryStat.icon} {primaryStat.name}</span>}
-                            <span>{'⭐'.repeat(q.difficulty || 1)}</span>
-                            <span>{completedSub}/{totalSub} sotto-obiettivi</span>
+                          {q.description && (
+                            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                              {q.description}
+                            </p>
+                          )}
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '10px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                            {primaryStat && (
+                              <span style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                                {primaryStat.icon} {primaryStat.name}
+                              </span>
+                            )}
+                            <span style={{ color: '#f59e0b' }}>{'★'.repeat(q.difficulty || 1)}</span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{completedSub}/{totalSub} sotto-obiettivi</span>
                           </div>
+
+                          {/* Reward Badge */}
+                          {q.reward && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', fontSize: '11px', color: '#f59e0b', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                              🎁 Premio: {q.reward}
+                            </div>
+                          )}
                         </div>
 
-                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                          {isExpanded ? '▲' : '▼'}
-                        </span>
+                        {/* Top-Right Card Actions */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenModal('quest_detail', q);
+                            }}
+                            title="Vedi finestra dettagli"
+                            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                          >
+                            🔍 Popup
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleQuestExpand(q.id);
+                            }}
+                            title="Espandi elenco sottotask"
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer', padding: '4px' }}
+                          >
+                            {isExpanded ? '▲' : '▼'}
+                          </button>
+                        </div>
                       </div>
 
+                      {/* Next Subtask Direct Action Tile on Card */}
+                      {nextSubquest ? (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSubquest(q.id, nextSubquest.id);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '9px 12px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '12px',
+                            border: '1.5px solid var(--accent-primary)',
+                            margin: '0 12px 12px 12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 8px rgba(124, 58, 237, 0.12)'
+                          }}
+                          title="Clicca per spuntare direttamente il prossimo sotto-obiettivo!"
+                        >
+                          <div
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '6px',
+                              border: '2px solid var(--accent-primary)',
+                              background: 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              color: '#ffffff',
+                              flexShrink: 0
+                            }}
+                          >
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>
+                              ⚡ PROSSIMO SOTTO-OBIETTIVO
+                            </span>
+                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                              {nextSubquest.name}
+                            </span>
+                          </div>
+                        </div>
+                      ) : totalSub > 0 && completedSub === totalSub ? (
+                        <div
+                          style={{
+                            margin: '0 12px 12px 12px',
+                            padding: '8px 12px',
+                            background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(16,185,129,0.25) 100%)',
+                            border: '1px solid rgba(34,197,94,0.4)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e' }}>
+                            🏆 Tutti i sotto-obiettivi completati!
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditQuest(q);
+                          }}
+                          style={{
+                            margin: '0 12px 12px 12px',
+                            padding: '8px 12px',
+                            background: 'var(--bg-secondary)',
+                            border: '1px border-dashed var(--glass-border)',
+                            borderRadius: '12px',
+                            textAlign: 'center',
+                            fontSize: '11px',
+                            color: 'var(--text-secondary)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          + Aggiungi milestones / sotto-obiettivi
+                        </div>
+                      )}
+
+                      {/* Progress Bar */}
                       <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)' }}>
                         <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--accent-gradient, #7c3aed)', transition: 'width 0.3s' }}></div>
                       </div>
 
+                      {/* Accordion list of all subquests */}
                       {isExpanded && (
                         <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--glass-border)', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {totalSub === 0 ? (
@@ -243,14 +375,32 @@ export default function MissionsTab({
                 </div>
               ) : (
                 completedQuests.map((q) => (
-                  <div key={q.id} className="glass-panel" style={{ padding: '12px', opacity: 0.6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '20px' }}>{q.emoji || '🏆'}</span>
+                  <div
+                    key={q.id}
+                    className="glass-panel"
+                    style={{ padding: '12px 16px', opacity: 0.85, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    onClick={() => onOpenModal('quest_detail', q)}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '22px' }}>{q.emoji || '🏆'}</span>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: 'line-through' }}>{q.name}</h4>
+                        <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: 'line-through' }}>{q.name}</h4>
                         <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold' }}>Completata!</span>
+                        {q.reward && (
+                          <div style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>🎁 Premio sbloccato: {q.reward}</div>
+                        )}
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenModal('quest_detail', q);
+                      }}
+                      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      🔍 Dettagli
+                    </button>
                   </div>
                 ))
               )}

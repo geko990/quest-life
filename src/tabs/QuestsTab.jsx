@@ -29,13 +29,14 @@ export default function QuestsTab({
     const progressPct = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
     const primaryStat = stats.find(s => s.id === q.primaryTarget);
     const isExpanded = expandedQuestId === q.id;
+    const nextSubquest = q.subquests?.find(sq => !sq.completed);
 
     return (
       <div
         key={q.id}
-        className={`glass-panel overflow-hidden border transition-all duration-300 ${
+        className={`glass-panel overflow-hidden border transition-all duration-300 rounded-2xl ${
           isFinishedList
-            ? 'opacity-60 border-green-500/20 bg-green-500/5'
+            ? 'opacity-75 border-green-500/20 bg-green-500/5'
             : isExpanded
             ? 'border-accent-primary shadow-lg ring-1 ring-accent-primary/20 scale-[1.01]'
             : 'border-border-color hover:border-accent-primary/50'
@@ -43,8 +44,9 @@ export default function QuestsTab({
       >
         {/* Header Section */}
         <div
-          onClick={() => toggleQuestExpand(q.id)}
+          onClick={() => onOpenModal('quest_detail', q)}
           className="p-4 cursor-pointer flex justify-between items-start gap-3 select-none"
+          title="Clicca per aprire la finestra dettagli della campagna"
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -58,7 +60,7 @@ export default function QuestsTab({
             {/* Badges / Stats */}
             <div className="flex items-center gap-2 mt-2 text-[10px] text-text-secondary flex-wrap">
               {primaryStat && (
-                <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                <span className="bg-slate-950/30 px-1.5 py-0.5 rounded flex items-center gap-0.5 font-bold">
                   {primaryStat.icon} {primaryStat.name}
                 </span>
               )}
@@ -70,38 +72,59 @@ export default function QuestsTab({
                 {completedSub}/{totalSub} obiettivi
               </span>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            {!isFinishedList && (
-              <div className="flex gap-2.5 opacity-0 group-hover:opacity-100 md:opacity-100 transition-opacity">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditQuest(q);
-                  }}
-                  className="text-text-secondary hover:text-accent-primary text-xs"
-                  title="Modifica"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteQuest(q.id);
-                  }}
-                  className="text-text-secondary hover:text-red-500 text-xs"
-                  title="Elimina"
-                >
-                  🗑️
-                </button>
+            {q.reward && (
+              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-amber-500 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                🎁 Premio: {q.reward}
               </div>
             )}
-            <span className="text-xs text-text-secondary">
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenModal('quest_detail', q);
+              }}
+              className="text-text-main bg-bg-main/60 hover:bg-bg-main border border-border-color text-[10px] font-bold px-2 py-1 rounded"
+              title="Vedi finestra dettagli"
+            >
+              🔍 Popup
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleQuestExpand(q.id);
+              }}
+              className="text-xs text-text-secondary p-1"
+              title="Espandi sottotask"
+            >
               {isExpanded ? '▲' : '▼'}
-            </span>
+            </button>
           </div>
         </div>
+
+        {/* Next Subtask Direct Action on Card */}
+        {!isFinishedList && nextSubquest && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSubquest(q.id, nextSubquest.id);
+            }}
+            className="mx-3 mb-3 p-2.5 bg-bg-main/60 hover:bg-bg-main border border-accent-primary/50 rounded-xl cursor-pointer flex items-center gap-2.5 transition-colors shadow-sm"
+          >
+            <div className="w-5 h-5 rounded-md border-2 border-accent-primary flex items-center justify-center text-[10px] text-white font-bold flex-shrink-0">
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-[9px] font-bold text-accent-primary uppercase tracking-wider block">
+                ⚡ PROSSIMO SOTTO-OBIETTIVO
+              </span>
+              <span className="text-xs font-bold text-text-main truncate block">
+                {nextSubquest.name}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="w-full h-1 bg-slate-950/30">
