@@ -367,8 +367,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
       case 'oneshot':
         return (
-          <div className="flex flex-col gap-4">
-            {/* Row 1: Emoji + Nome Task */}
+          <div className="flex flex-col gap-3.5">
+            {/* Tessera 1: Emoji + Nome Task */}
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
@@ -394,7 +394,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             </div>
 
-            {/* Row 2: Difficoltà Stelle */}
+            {/* Tessera 2: Data Entro Cui Ultimare (Scadenza) */}
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">📅 Ultimare Entro (Scadenza)</label>
+              <input
+                type="date"
+                name="dueDate"
+                value={form.dueDate || ''}
+                onChange={handleChange}
+                className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+              />
+            </div>
+
+            {/* Tessera 3: Difficoltà Stelle */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
               <div
@@ -420,7 +432,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             </div>
 
-            {/* Row 3: Stat Primaria & Secondaria */}
+            {/* Tessera 4: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
