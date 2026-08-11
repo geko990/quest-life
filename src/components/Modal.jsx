@@ -1229,7 +1229,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         {/* Header (Hidden for stat_detail) */}
         {activeT !== 'stat_detail' && (
           <div
-            className="px-6 pt-6 pb-2 flex justify-center items-center text-center shrink-0"
+            className="px-7 pt-6 pb-2 flex justify-center items-center text-center shrink-0"
             style={{ background: 'var(--bg-card)' }}
           >
             <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
@@ -1240,7 +1240,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         {/* Form */}
         <form onSubmit={handleSave} style={{ margin: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'space-between' }}>
-          <div className="px-6 py-2 overflow-y-auto no-scrollbar flex flex-col justify-start flex-1" style={{ gap: '14px' }}>
+          <div className="px-7 py-2 overflow-y-auto no-scrollbar flex flex-col justify-start flex-1" style={{ gap: '14px' }}>
             {/* Top 3-way Creation Type Selector */}
             {isCreatableItem && (
               <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '14px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
@@ -1307,7 +1307,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           {/* Footer Actions (Centered Coherent 44x44 Emoji Buttons) */}
           <div
             style={{
-              padding: '12px 24px 24px 24px',
+              padding: '12px 28px 24px 28px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
