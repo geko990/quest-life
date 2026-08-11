@@ -612,36 +612,38 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         const secondaryStat = stats?.find(s => s.id === currentQuest.secondaryTarget);
 
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {/* Header Tessera */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '18px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-              <div style={{ fontSize: '42px', lineHeight: '1', marginBottom: '6px' }}>
-                {currentQuest.emoji || '🏆'}
-              </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+              {currentQuest.emoji && currentQuest.emoji !== '🏆' && (
+                <div style={{ fontSize: '36px', lineHeight: '1', marginBottom: '4px' }}>
+                  {currentQuest.emoji}
+                </div>
+              )}
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {currentQuest.name}
               </h3>
 
               {/* Stars & XP */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <span style={{ fontSize: '14px', color: '#f59e0b' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#f59e0b' }}>
                   {'★'.repeat(currentQuest.difficulty || 1)}
                   <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - (currentQuest.difficulty || 1))}</span>
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
                   +{(currentQuest.difficulty || 3) * 35} XP
                 </span>
               </div>
 
               {/* Stats badges */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 {primaryStat && (
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '10px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
                     {primaryStat.icon} {primaryStat.name} (Primaria)
                   </span>
                 )}
                 {secondaryStat && (
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '10px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
                     {secondaryStat.icon} {secondaryStat.name} (Secondaria)
                   </span>
                 )}
@@ -650,74 +652,74 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Descrizione Tessera */}
             {currentQuest.description && (
-              <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
                   📝 Descrizione Campagna
                 </div>
-                <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
                   {currentQuest.description}
                 </p>
               </div>
             )}
 
             {/* Premio Tessera */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.2) 100%)', padding: '12px 14px', borderRadius: '16px', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.2) 100%)', padding: '10px 14px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
+              <div style={{ fontSize: '9px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span>🎁 Premio al completamento</span>
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {currentQuest.reward ? currentQuest.reward : <span style={{ fontStyle: 'italic', fontWeight: 'normal', fontSize: '11px', color: 'var(--text-secondary)' }}>Nessun premio impostato. Clicca ✏️ per aggiungerne uno!</span>}
               </div>
             </div>
 
             {/* Subquests / Milestones Progress Tessera */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                   🚩 Milestones ({completedSub}/{totalSub})
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
                   {progressPct}%
                 </span>
               </div>
 
               {/* Progress bar */}
-              <div style={{ width: '100%', height: '6px', background: 'var(--bg-card)', borderRadius: '3px', overflow: 'hidden', marginBottom: '10px' }}>
+              <div style={{ width: '100%', height: '5px', background: 'var(--bg-card)', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
                 <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--accent-gradient, #7c3aed)', transition: 'width 0.3s ease' }}></div>
               </div>
 
               {/* Subquest Checklist */}
               {totalSub === 0 ? (
-                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '6px 0' }}>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '4px 0' }}>
                   Nessun sotto-obiettivo definito per questa campagna.
                 </p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '150px', overflowY: 'auto' }} className="no-scrollbar">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '130px', overflowY: 'auto' }} className="no-scrollbar">
                   {currentQuest.subquests?.map((sq) => (
                     <div
                       key={sq.id}
                       onClick={() => onToggleSubquest && onToggleSubquest(currentQuest.id, sq.id)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
                     >
                       <div
                         style={{
-                          width: '18px',
-                          height: '18px',
-                          borderRadius: '5px',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '4px',
                           border: sq.completed ? 'none' : '1.5px solid var(--glass-border)',
                           background: sq.completed ? '#22c55e' : 'transparent',
                           color: '#ffffff',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '11px',
+                          fontSize: '10px',
                           fontWeight: 'bold',
                           flexShrink: 0
                         }}
                       >
                         {sq.completed && '✓'}
                       </div>
-                      <span style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-primary)', textDecoration: sq.completed ? 'line-through' : 'none', opacity: sq.completed ? 0.6 : 1, flex: 1 }}>
+                      <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-primary)', textDecoration: sq.completed ? 'line-through' : 'none', opacity: sq.completed ? 0.6 : 1, flex: 1 }}>
                         {sq.name}
                       </span>
                     </div>
@@ -1206,10 +1208,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: '3 / 4',
-          maxWidth: '360px',
+          aspectRatio: activeT === 'quest_detail' ? 'auto' : '3 / 4',
+          maxWidth: activeT === 'quest_detail' ? '400px' : '360px',
           width: '90%',
-          maxHeight: '88vh'
+          maxHeight: activeT === 'quest_detail' ? '92vh' : '88vh'
         }}
       >
         {/* Header (Hidden for stat_detail) */}
@@ -1333,11 +1335,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </button>
             )}
 
-            {type === 'stat_detail' && onEditStat && (
+            {(type === 'stat_detail' || activeT === 'quest_detail') && (
               <button
                 type="button"
                 onClick={() => {
-                  if (onEditStat) onEditStat(editData);
+                  if (activeT === 'quest_detail') {
+                    handleTypeSwitch('quest');
+                  } else if (onEditStat) {
+                    onEditStat(editData);
+                  }
                 }}
                 title="Modifica"
                 style={{
@@ -1360,41 +1366,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </button>
             )}
 
-            {activeT === 'quest_detail' && (
-              <button
-                type="button"
-                onClick={() => {
-                  handleTypeSwitch('quest');
-                }}
-                title="Modifica Campagna"
-                style={{
-                  height: '42px',
-                  padding: '0 16px',
-                  borderRadius: '12px',
-                  fontSize: '13px',
-                  fontWeight: 'bold',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--glass-border)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                }}
-              >
-                ✏️ Modifica
-              </button>
-            )}
-
             <button
               type="submit"
-              title={activeT === 'quest_detail' ? 'Chiudi' : 'Salva'}
+              title="Salva / Chiudi"
               style={{
-                width: activeT === 'quest_detail' ? 'auto' : '42px',
+                width: '42px',
                 height: '42px',
-                padding: activeT === 'quest_detail' ? '0 20px' : '0',
                 borderRadius: '12px',
                 fontSize: '15px',
                 fontWeight: 'bold',
@@ -1405,12 +1382,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
                 boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
                 transition: 'all 0.2s ease'
               }}
             >
-              {activeT === 'quest_detail' ? '✓ Chiudi' : '💾'}
+              💾
             </button>
           </div>
         </form>
