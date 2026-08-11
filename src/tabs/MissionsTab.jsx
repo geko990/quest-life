@@ -127,6 +127,11 @@ export default function MissionsTab({
                         <div className="card-meta">
                           <span className="card-stars">{'⭐'.repeat(starsCount)}</span>
                           {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon} {primaryStat.name}</span>}
+                          {o.dueDate && (
+                            <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.1)', padding: '1px 6px', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                              📅 {new Date(o.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
