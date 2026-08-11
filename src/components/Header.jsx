@@ -267,8 +267,11 @@ export default function Header({
 
               {/* Medal Progress */}
               <div style={{ marginTop: '15px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 'bold' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 'bold' }}>
                   MEDAGLIE MENSILI ({getMonthName(player.monthlyChallenge?.currentMonth)})
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                  🎯 Solo Task Singoli, Milestones e Campagne
                 </div>
                 <div className="popup-xp-bar">
                   <div

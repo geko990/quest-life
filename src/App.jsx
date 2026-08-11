@@ -264,7 +264,7 @@ export default function App() {
   };
 
   // 7. XP Reward Handler
-  const handleRewardXp = (statId, amount, isHabitCompletion = false, itemTitle = '', logDate = null) => {
+  const handleRewardXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null) => {
     if (!amount || amount <= 0) return;
     const todayStr = getGameDate(settings.dayStartTime);
     const effectiveDate = logDate || todayStr;
@@ -293,12 +293,8 @@ export default function App() {
     const newLvl = calculateLevelFromXp(newTotalXp);
     const leveledUp = newLvl > player.level;
 
-    // Monthly challenge points
-    let monthlyPointsAdd = 0;
-    if (isHabitCompletion) {
-      // 1 point per star difficulty completed
-      monthlyPointsAdd = 1;
-    }
+    // Monthly challenge points (EXCLUDE habits, INCLUDE task singoli, milestones, e campagne)
+    let monthlyPointsAdd = countsForMonthlyMedal ? 1 : 0;
 
     const titleToSave = (itemTitle && itemTitle.trim() !== '') ? itemTitle.trim() : '';
 
@@ -348,7 +344,7 @@ export default function App() {
   };
 
   // 7b. XP Deduction Handler (when an item is unchecked / canceled)
-  const handleDeductXp = (statId, amount, isHabitCompletion = false, itemTitle = '', logDate = null) => {
+  const handleDeductXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null) => {
     if (!amount || amount <= 0) return;
     const todayStr = getGameDate(settings.dayStartTime);
     const effectiveDate = logDate || todayStr;
@@ -377,7 +373,7 @@ export default function App() {
     setPlayer(prev => {
       const newTotalXp = Math.max(0, prev.totalXp - amount);
       const newLvl = calculateLevelFromXp(newTotalXp);
-      let monthlyPointsSub = isHabitCompletion ? 1 : 0;
+      let monthlyPointsSub = countsForMonthlyMedal ? 1 : 0;
       const nextMonthlyPoints = Math.max(0, (prev.monthlyChallenge?.points || 0) - monthlyPointsSub);
 
       return {
@@ -556,13 +552,13 @@ export default function App() {
     }
 
     if (willBeCompleted) {
-      handleRewardXp(os.primaryTarget, xp, false, os.name, targetDate);
+      handleRewardXp(os.primaryTarget, xp, true, os.name, targetDate);
       if (os.secondaryTarget) {
         handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name, targetDate);
       }
     } else {
       // Unchecking task: deduct XP & remove xpLog entry!
-      handleDeductXp(os.primaryTarget, xp, false, os.name, targetDate);
+      handleDeductXp(os.primaryTarget, xp, true, os.name, targetDate);
       if (os.secondaryTarget) {
         handleDeductXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name, targetDate);
       }
@@ -574,26 +570,37 @@ export default function App() {
       prevQuests.map(q => {
         if (q.id !== questId) return q;
 
+        const subItem = q.subquests.find(sq => sq.id === subId);
+        const subWasDone = subItem?.completed;
+        const subWillBeDone = !subWasDone;
+
         const updatedSubs = q.subquests.map(sq =>
-          sq.id === subId ? { ...sq, completed: !sq.completed } : sq
+          sq.id === subId ? { ...sq, completed: subWillBeDone } : sq
         );
+
+        // Milestone reward/deduct: awards 10 XP + 1 monthly medal point
+        if (subWillBeDone) {
+          handleRewardXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone');
+        } else {
+          handleDeductXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone');
+        }
 
         // Check if all subquests are completed now
         const allDone = updatedSubs.length > 0 && updatedSubs.every(sq => sq.completed);
         const wasDone = q.completed;
 
         if (allDone && !wasDone) {
-          // Reward massive Campaign Completion XP! (difficulty * 35 XP)
+          // Reward massive Campaign Completion XP! (difficulty * 35 XP) + 1 monthly medal point
           const xpReward = q.difficulty * 35;
-          handleRewardXp(q.primaryTarget, xpReward, false, q.name);
+          handleRewardXp(q.primaryTarget, xpReward, true, q.name);
           if (q.secondaryTarget) {
             handleRewardXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
           }
-          alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP in ${stats.find(s => s.id === q.primaryTarget)?.name}!`);
+          alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP!`);
         } else if (!allDone && wasDone) {
           // Deduct Campaign Completion XP if uncompleted
           const xpReward = q.difficulty * 35;
-          handleDeductXp(q.primaryTarget, xpReward, false, q.name);
+          handleDeductXp(q.primaryTarget, xpReward, true, q.name);
           if (q.secondaryTarget) {
             handleDeductXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
           }
