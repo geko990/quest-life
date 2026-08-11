@@ -736,8 +736,9 @@ export default function App() {
         setHealth(prev => ({ ...prev, steps: { ...prev.steps, current: formData.value } }));
       } else if (field === 'protein') {
         setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, goal: formData.value } }));
-      } else if (field === 'water') {
-        // value is goal in cups
+      } else if (field === 'proteins') {
+        setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, consumed: formData.value } }));
+      } else if (field === 'water' || field === 'water_goal') {
         setHealth(prev => ({ ...prev, water: { ...prev.water, goal: formData.value } }));
       }
     }
