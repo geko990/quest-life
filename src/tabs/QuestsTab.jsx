@@ -50,7 +50,9 @@ export default function QuestsTab({
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-xl flex-shrink-0">{q.emoji || '🏆'}</span>
+              {q.emoji && q.emoji !== '🏆' && (
+                <span className="text-xl flex-shrink-0">{q.emoji}</span>
+              )}
               <h4 className="text-xs font-bold text-text-main truncate">{q.name}</h4>
             </div>
             {q.description && (
@@ -81,16 +83,6 @@ export default function QuestsTab({
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenModal('quest_detail', q);
-              }}
-              className="text-text-main bg-bg-main/60 hover:bg-bg-main border border-border-color text-[10px] font-bold px-2 py-1 rounded"
-              title="Vedi finestra dettagli"
-            >
-              🔍 Popup
-            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();

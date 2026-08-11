@@ -173,7 +173,9 @@ export default function MissionsTab({
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '20px', flexShrink: 0 }}>{q.emoji || '🏆'}</span>
+                            {q.emoji && q.emoji !== '🏆' && (
+                              <span style={{ fontSize: '20px', flexShrink: 0 }}>{q.emoji}</span>
+                            )}
                             <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.name}</h4>
                           </div>
 
@@ -207,21 +209,10 @@ export default function MissionsTab({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onOpenModal('quest_detail', q);
-                            }}
-                            title="Vedi finestra dettagli"
-                            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
-                          >
-                            🔍 Popup
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
                               toggleQuestExpand(q.id);
                             }}
                             title="Espandi elenco sottotask"
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer', padding: '4px' }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '14px', cursor: 'pointer', padding: '4px' }}
                           >
                             {isExpanded ? '▲' : '▼'}
                           </button>
