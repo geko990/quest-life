@@ -104,8 +104,12 @@ export function initPWA() {
   };
 
   checkVersion();
-  const interval = setInterval(checkVersion, 30000);
   window.addEventListener('focus', checkVersion);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkVersion();
+    }
+  });
 }
 
 /**
