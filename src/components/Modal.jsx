@@ -947,7 +947,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Current Weight + Body Fat % + Lean % inputs */}
             <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">⚖️ Peso Corporeo Attuale (kg)</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">Peso Corporeo Attuale (kg)</label>
                 <input
                   type="number"
                   name="current"
@@ -1459,7 +1459,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="block text-xs text-text-secondary font-bold">👟 Passi Fatti Finora Oggi:</label>
+                  <label className="block text-xs text-text-secondary font-bold">Passi Fatti Finora Oggi:</label>
                   <input
                     type="number"
                     name="value"
@@ -1496,12 +1496,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             return (
               <div className="flex flex-col gap-3.5">
-                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex justify-between items-center">
-                  <div>
+                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex justify-between items-center text-center">
+                  <div className="w-full">
                     <span className="block text-[10px] text-text-muted font-bold uppercase">Totale Proteine Oggi</span>
                     <span className="text-base font-bold text-yellow-500">{editData?.proteinsCurrent || totalProteinsLogged}g / {editData?.proteinsGoal || 100}g</span>
                   </div>
-                  <span className="text-2xl">🍗</span>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -1713,20 +1712,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         {/* Header (Hidden for stat_detail) */}
         {activeT !== 'stat_detail' && (
           <div
-            className="px-5 py-3.5 flex justify-between items-center shrink-0 border-b border-[var(--glass-border)]"
+            className="px-6 py-4 flex justify-center items-center text-center shrink-0 border-b border-[var(--glass-border)]"
             style={{ background: 'var(--bg-card)' }}
           >
-            <h3 className="font-bold text-sm tracking-wide margin-0" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="font-bold text-base tracking-wide margin-0 flex items-center justify-center gap-2" style={{ color: 'var(--text-primary)' }}>
               {getTitle()}
             </h3>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
-              title="Chiudi"
-            >
-              ✕
-            </button>
           </div>
         )}
 
