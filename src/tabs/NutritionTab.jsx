@@ -412,10 +412,11 @@ export default function NutritionTab({
                 </div>
 
                 {/* 3) Bruciate Card (Clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
+                {/* 3) Bruciate Card (Clean layout, no +100🔥 legend, clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
                 <div
                   onClick={() => setShowExercisesModal(true)}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Clicca per aprire la lista allenamenti"
+                  title="Apri registro allenamenti"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
@@ -437,7 +438,7 @@ export default function NutritionTab({
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
-                      title="Toccca la fiamma per aggiungere +100 kcal bruciate"
+                      title="Tocca la fiamma per aggiungere +100 kcal bruciate"
                     >
                       🔥
                     </button>
@@ -446,7 +447,6 @@ export default function NutritionTab({
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f97316' }}>{caloriesBurned} kcal</div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '10px', color: '#f97316', fontWeight: 'bold' }}>+100🔥</span>
                 </div>
               </div>
             </div>
@@ -456,46 +456,49 @@ export default function NutritionTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
             {/* Steps card */}
             <div
-              onClick={() => onOpenModal('health_steps')}
+              onClick={() => onOpenModal('health_steps', { currentSteps: stepsCurrent, goalSteps: stepsGoal })}
               className="glass-panel"
               style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Passi</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '6px 0 2px 0' }}>
-                  <span style={{ fontSize: '16px' }}>👟</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '6px 0 2px 0' }}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      quickAddSteps(1000);
+                    }}
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '8px',
+                      padding: '2px 5px',
+                      fontSize: '15px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Tocca la scarpa per aggiungere +1.000 passi"
+                  >
+                    👟
+                  </button>
                   <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stepsCurrent.toLocaleString()}</span>
                 </div>
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>Obiettivo: {stepsGoal.toLocaleString()}</div>
               </div>
 
               <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
+                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${stepsPct}%`, background: 'var(--accent-primary)', transition: 'width 0.3s' }}></div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => quickAddSteps(1000)}
-                    style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', fontSize: '9px', fontWeight: 'bold', padding: '3px 0', cursor: 'pointer' }}
-                    title="Aggiungi 1.000 passi"
-                  >
-                    +1k
-                  </button>
-                  <button
-                    onClick={() => quickAddSteps(5000)}
-                    style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', fontSize: '9px', fontWeight: 'bold', padding: '3px 0', cursor: 'pointer' }}
-                    title="Aggiungi 5.000 passi"
-                  >
-                    +5k
-                  </button>
                 </div>
               </div>
             </div>
 
             {/* Protein card */}
             <div
-              onClick={() => onOpenModal('health_protein')}
+              onClick={() => onOpenModal('health_protein', { proteinsCurrent, proteinsGoal, meals: health.meals })}
               className="glass-panel"
               style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
@@ -510,65 +513,53 @@ export default function NutritionTab({
               </div>
 
               <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
+                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${proteinsPct}%`, background: '#eab308', transition: 'width 0.3s' }}></div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => quickAddProteins(10)}
-                    style={{ flex: 1, background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', borderRadius: '6px', fontSize: '9px', fontWeight: 'bold', padding: '3px 0', cursor: 'pointer' }}
-                    title="Aggiungi 10g proteine"
-                  >
-                    +10g
-                  </button>
-                  <button
-                    onClick={() => quickAddProteins(25)}
-                    style={{ flex: 1, background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', borderRadius: '6px', fontSize: '9px', fontWeight: 'bold', padding: '3px 0', cursor: 'pointer' }}
-                    title="Aggiungi 25g proteine"
-                  >
-                    +25g
-                  </button>
                 </div>
               </div>
             </div>
 
             {/* Water card */}
             <div
-              onClick={() => onOpenModal('health_water_goal')}
+              onClick={() => onOpenModal('health_water', { waterCurrent, waterGoal })}
               className="glass-panel"
               style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Acqua</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', margin: '6px 0 2px 0' }}>
-                  <span style={{ fontSize: '16px' }}>🥛</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{waterCurrent * 0.25}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0 2px 0' }}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      quickAddWater(1);
+                    }}
+                    style={{
+                      background: 'rgba(6, 182, 212, 0.15)',
+                      border: '1px solid rgba(6, 182, 212, 0.3)',
+                      borderRadius: '8px',
+                      padding: '2px 5px',
+                      fontSize: '15px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Tocca il bicchiere per aggiungere 0.2L (+1 bicchiere)"
+                  >
+                    🥛
+                  </button>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{(waterCurrent * 0.2).toFixed(1)}</span>
                   <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>L</span>
                 </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{waterCurrent}/{waterGoal} bicchieri</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {waterCurrent}/{waterGoal} bicchieri (0.2L)
+                </div>
               </div>
 
               <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
+                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${waterPct}%`, background: '#06b6d4', transition: 'width 0.3s' }}></div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => quickAddWater(-1)}
-                    style={{ flex: 1, background: 'rgba(6, 182, 212, 0.15)', border: '1px solid rgba(6, 182, 212, 0.3)', color: '#06b6d4', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', padding: '3px 0', cursor: 'pointer' }}
-                    title="Rimuovi 1 bicchiere"
-                  >
-                    -1
-                  </button>
-                  <button
-                    onClick={() => quickAddWater(1)}
-                    style={{ flex: 1, background: 'rgba(6, 182, 212, 0.15)', border: '1px solid rgba(6, 182, 212, 0.3)', color: '#06b6d4', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', padding: '3px 0', cursor: 'pointer' }}
-                    title="Aggiungi 1 bicchiere (250ml)"
-                  >
-                    +1
-                  </button>
                 </div>
               </div>
             </div>

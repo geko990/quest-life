@@ -1396,14 +1396,157 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         if (type?.startsWith('health_')) {
           const field = type.split('_')[1];
+
+          // 1) Passi Modal (health_steps)
+          if (field === 'steps') {
+            const goalSteps = editData?.goalSteps || 10000;
+            const currentVal = form.value !== undefined ? form.value : (editData?.currentSteps !== undefined ? editData.currentSteps : 0);
+            return (
+              <div className="flex flex-col gap-4">
+                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 text-center">
+                  <span className="text-[10px] text-text-muted font-bold uppercase">Obiettivo Passi Giornalieri</span>
+                  <span className="text-base font-bold text-accent-primary">
+                    {goalSteps.toLocaleString()} passi
+                  </span>
+                  <span className="text-[9px] text-text-muted italic mt-0.5">🔒 Gli obiettivi sono modificabili solo dalla finestra "Obiettivi"</span>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="block text-xs text-text-secondary font-bold">👟 Passi Fatti Finora Oggi:</label>
+                  <input
+                    type="number"
+                    name="value"
+                    value={currentVal}
+                    onChange={handleNumberChange}
+                    placeholder="Es: 6500"
+                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-sm font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+            );
+          }
+
+          // 2) Proteine Modal (health_protein / health_proteins)
+          if (field === 'protein' || field === 'proteins') {
+            const mealsObj = editData?.meals || {};
+            const allLoggedFoods = [];
+            const categoryNames = {
+              breakfast: '☕ Colazione',
+              lunch: '🍝 Pranzo',
+              dinner: '🥩 Cena',
+              snack: '🍎 Snack'
+            };
+
+            Object.entries(mealsObj).forEach(([catKey, items]) => {
+              if (Array.isArray(items)) {
+                items.forEach(item => {
+                  allLoggedFoods.push({ ...item, catName: categoryNames[catKey] || catKey });
+                });
+              }
+            });
+
+            const totalProteinsLogged = allLoggedFoods.reduce((acc, curr) => acc + (curr.proteins || 0), 0);
+
+            return (
+              <div className="flex flex-col gap-3.5">
+                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex justify-between items-center">
+                  <div>
+                    <span className="block text-[10px] text-text-muted font-bold uppercase">Totale Proteine Oggi</span>
+                    <span className="text-base font-bold text-yellow-500">{editData?.proteinsCurrent || totalProteinsLogged}g / {editData?.proteinsGoal || 100}g</span>
+                  </div>
+                  <span className="text-2xl">🍗</span>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-bold text-text-primary">📋 Alimenti Consumati & Apporto Proteico:</span>
+                  {allLoggedFoods.length === 0 ? (
+                    <div className="p-4 text-center rounded-2xl bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-xs text-text-muted italic">
+                      Nessun alimento registrato oggi nel diario nutrizionale.
+                      <br />
+                      Aggiungi cibi dal Registro Pasti per vedere l'apporto proteico automatico!
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                      {allLoggedFoods.map((food, idx) => (
+                        <div key={idx} className="flex justify-between items-center p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--glass-border)]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{food.emoji || '🍎'}</span>
+                            <div>
+                              <div className="text-xs font-bold text-text-primary">{food.name}</div>
+                              <div className="text-[10px] text-text-muted">{food.catName} ({food.grams || 100}g)</div>
+                            </div>
+                          </div>
+                          <div className="text-xs font-bold text-yellow-500">+{food.proteins || 0}g prot.</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          // 3) Acqua Modal (health_water / health_water_goal)
+          if (field === 'water' || field === 'water_goal') {
+            const currentGlasses = form.value !== undefined ? form.value : (editData?.waterCurrent !== undefined ? editData.waterCurrent : 0);
+            const goalGlasses = editData?.waterGoal || 8;
+            const currentLiters = (currentGlasses * 0.2).toFixed(1);
+            const goalLiters = (goalGlasses * 0.2).toFixed(1);
+
+            return (
+              <div className="flex flex-col gap-4">
+                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 items-center text-center">
+                  <span className="text-[10px] text-text-muted font-bold uppercase">Idratazione Giornaliera</span>
+                  <div className="text-xl font-bold text-cyan-400">
+                    {currentLiters}L / {goalLiters}L
+                  </div>
+                  <span className="text-xs text-text-secondary font-semibold">
+                    ({currentGlasses} di {goalGlasses} bicchieri da 0.2L)
+                  </span>
+                </div>
+
+                {/* Inline -1 and +1 glass buttons inside popup! */}
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextVal = Math.max(0, Number(currentGlasses) - 1);
+                      setForm(prev => ({ ...prev, value: nextVal }));
+                    }}
+                    className="flex-1 py-3 bg-[var(--bg-secondary)] border border-cyan-500/30 text-cyan-400 rounded-xl font-bold text-xs hover:bg-cyan-500/10 cursor-pointer transition-all"
+                  >
+                    -1 Bicchiere (-0.2L)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextVal = Number(currentGlasses) + 1;
+                      setForm(prev => ({ ...prev, value: nextVal }));
+                    }}
+                    className="flex-1 py-3 bg-cyan-500 text-white rounded-xl font-bold text-xs hover:brightness-110 cursor-pointer shadow-md transition-all"
+                  >
+                    +1 Bicchiere (+0.2L)
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-1.5 mt-1">
+                  <label className="block text-xs text-text-secondary font-bold">Oppure modifica manualmente i bicchieri (0.2L l'uno):</label>
+                  <input
+                    type="number"
+                    name="value"
+                    value={currentGlasses}
+                    onChange={handleNumberChange}
+                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+            );
+          }
+
+          // Generic Fallback for other health_ fields
           const labels = {
             consumed: 'Aggiungi Calorie Cibo',
-            burned: 'Aggiungi Calorie Allenamento',
-            steps: 'Passi Effettuati',
-            water: 'Litri d\'Acqua Bevuti',
-            proteins: 'Proteine Consumate (g)',
-            protein: 'Obiettivo Proteine (g)',
-            water_goal: 'Obiettivo Acqua (L)'
+            burned: 'Aggiungi Calorie Allenamento'
           };
           return (
             <div className="flex flex-col gap-2">
@@ -1415,7 +1558,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 name="value"
                 value={form.value !== undefined ? form.value : ''}
                 onChange={handleNumberChange}
-                step={type === 'health_water' || type === 'health_water_goal' ? '0.1' : '1'}
                 className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
               />
             </div>

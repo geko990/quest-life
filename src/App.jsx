@@ -750,7 +750,7 @@ export default function App() {
       } else if (field === 'proteins') {
         setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, consumed: formData.value } }));
       } else if (field === 'water' || field === 'water_goal') {
-        setHealth(prev => ({ ...prev, water: { ...prev.water, goal: formData.value } }));
+        setHealth(prev => ({ ...prev, water: { ...prev.water, consumed: Number(formData.value !== undefined ? formData.value : prev.water.consumed) } }));
       }
     }
   };
