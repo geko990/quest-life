@@ -1456,10 +1456,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: activeT === 'quest_detail' ? 'auto' : '3 / 4',
-          maxWidth: activeT === 'quest_detail' ? '400px' : '360px',
-          width: '90%',
-          maxHeight: activeT === 'quest_detail' ? '92vh' : '88vh'
+          aspectRatio: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? 'auto' : '3 / 4',
+          maxWidth: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '440px' : '360px',
+          width: '92%',
+          maxHeight: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '94vh' : '88vh'
         }}
       >
         {/* Header (Hidden for stat_detail) */}
