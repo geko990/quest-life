@@ -1309,22 +1309,23 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     ))}
                   </div>
 
-                  {/* Centered Button: Less wide, taller, rectangular with rounded corners */}
-                  <div className="flex justify-center my-1">
+                  {/* Centered Button: Taller and more prominent */}
+                  <div className="flex justify-center my-1.5">
                     <button
                       type="button"
                       onClick={calculateTdee}
-                      className="py-3 px-6 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:brightness-110 active:scale-95"
+                      className="py-3.5 px-6 rounded-xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:brightness-110 active:scale-95 border border-white/20"
                       style={{
-                        background: 'var(--accent-primary)',
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
                         color: '#ffffff',
-                        boxShadow: '0 4px 15px rgba(124, 58, 237, 0.35)',
-                        minWidth: '210px',
-                        maxWidth: '250px'
+                        boxShadow: '0 6px 20px rgba(124, 58, 237, 0.45)',
+                        minWidth: '220px',
+                        maxWidth: '260px',
+                        minHeight: '50px'
                       }}
                     >
-                      <span>⚡</span>
-                      <span>Calcola & Applica Obiettivi</span>
+                      <span className="text-base">⚡</span>
+                      <span className="tracking-wide">Calcola & Applica Obiettivi</span>
                     </button>
                   </div>
 
