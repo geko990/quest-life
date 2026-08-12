@@ -1629,13 +1629,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       stat_detail: '',
       pomodoro: 'Timer Pomodoro'
     };
-    if (activeT === 'quest_detail') return 'Dettaglio Campagna';
-    if (activeT?.startsWith('health_')) return 'Aggiorna Dati';
+    if (activeT === 'quest_detail') return '🏆 Dettaglio Campagna';
+    if (activeT === 'health_goals' || activeT === 'health_goal') return '🚩 Obiettivi di Salute';
+    if (activeT === 'health_steps') return '👟 Registro Passi';
+    if (activeT === 'health_protein' || activeT === 'health_proteins') return '🍗 Apporto Proteico';
+    if (activeT === 'health_water' || activeT === 'health_water_goal') return '🥛 Registro Acqua';
+    if (activeT?.startsWith('health_')) return '📊 Aggiorna Dati';
     return `${action} ${names[activeT] || 'Elemento'}`;
   };
 
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
+  const isExpandedModal = ['quest_detail', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal'].includes(activeT);
 
   return (
     <div
@@ -1651,21 +1656,29 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? 'auto' : '3 / 4',
-          maxWidth: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '440px' : '360px',
+          aspectRatio: isExpandedModal ? 'auto' : '3 / 4',
+          maxWidth: isExpandedModal ? '440px' : '360px',
           width: '92%',
-          maxHeight: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '94vh' : '88vh'
+          maxHeight: isExpandedModal ? '94vh' : '88vh'
         }}
       >
         {/* Header (Hidden for stat_detail) */}
         {activeT !== 'stat_detail' && (
           <div
-            className="px-7 pt-6 pb-2 flex justify-center items-center text-center shrink-0"
+            className="px-5 py-3.5 flex justify-between items-center shrink-0 border-b border-[var(--glass-border)]"
             style={{ background: 'var(--bg-card)' }}
           >
-            <h3 className="font-bold text-base font-cinzel tracking-wide" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="font-bold text-sm tracking-wide margin-0" style={{ color: 'var(--text-primary)' }}>
               {getTitle()}
             </h3>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
+              title="Chiudi"
+            >
+              ✕
+            </button>
           </div>
         )}
 
