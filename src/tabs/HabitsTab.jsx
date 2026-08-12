@@ -221,7 +221,45 @@ export default function HabitsTab({
                 className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'active' : ''}`}
               >
                 <div className="calendar-day-name">{dayNames[day.getDay()]}</div>
-                <div className="calendar-day-number">{day.getDate()}</div>
+                <div className="calendar-day-number" style={{ position: 'relative' }}>
+                  {/* SVG Circular Completion Ring */}
+                  <svg
+                    width="44"
+                    height="44"
+                    style={{
+                      position: 'absolute',
+                      top: '-2px',
+                      left: '-2px',
+                      transform: 'rotate(-90deg)',
+                      pointerEvents: 'none'
+                    }}
+                  >
+                    <circle
+                      cx="22"
+                      cy="22"
+                      r="18"
+                      fill="transparent"
+                      stroke="var(--glass-border)"
+                      strokeWidth="3"
+                      opacity="0.4"
+                    />
+                    {completionPct > 0 && (
+                      <circle
+                        cx="22"
+                        cy="22"
+                        r="18"
+                        fill="transparent"
+                        stroke={completionPct === 100 ? '#10b981' : 'var(--accent-primary)'}
+                        strokeWidth="3"
+                        strokeDasharray={2 * Math.PI * 18}
+                        strokeDashoffset={2 * Math.PI * 18 * (1 - completionPct / 100)}
+                        strokeLinecap="round"
+                        style={{ transition: 'stroke-dashoffset 0.4s ease, stroke 0.3s ease' }}
+                      />
+                    )}
+                  </svg>
+                  <span style={{ position: 'relative', zIndex: 2 }}>{day.getDate()}</span>
+                </div>
               </div>
             );
           })}
