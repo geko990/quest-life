@@ -144,15 +144,33 @@ export default function NutritionTab({
 
   // Add exercise directly
   const handleLogExercise = (exItem) => {
+    const newWorkout = {
+      id: Date.now().toString(),
+      name: exItem.name,
+      emoji: exItem.emoji,
+      baseCalories: exItem.baseCalories,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        burned: prev.calories.burned + exItem.baseCalories
-      }
+        burned: (prev.calories.burned || 0) + exItem.baseCalories
+      },
+      workouts: [...(prev.workouts || []), newWorkout]
     }));
     onRewardXp(exItem.statId, exItem.xpReward, false, exItem.name);
-    alert(`🏋️ Allenamento completato! +${exItem.xpReward} XP guadagnati!`);
+  };
+
+  const removeLoggedExercise = (workoutId, baseCalories) => {
+    setHealth(prev => ({
+      ...prev,
+      calories: {
+        ...prev.calories,
+        burned: Math.max(0, (prev.calories.burned || 0) - baseCalories)
+      },
+      workouts: (prev.workouts || []).filter(w => w.id !== workoutId)
+    }));
   };
 
   // Shopping list items toggling
@@ -830,7 +848,28 @@ export default function NutritionTab({
                           <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{food.emoji} {food.name}</div>
                           <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Dose: {food.baseGrams}g • Kcal: {food.baseCalories} • P: {food.baseProteins}g</div>
                         </div>
-                        <button onClick={() => handleAddMealFood(food)} className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Aggiungi</button>
+                        <button
+                          onClick={() => handleAddMealFood(food)}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: 'var(--accent-primary)',
+                            color: '#ffffff',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
+                          }}
+                          title="Aggiungi pasto oggi"
+                        >
+                          +
+                        </button>
                       </div>
                     ))
                   )}
@@ -858,54 +897,110 @@ export default function NutritionTab({
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                  Seleziona dal Database Allenamenti
+              {/* Logged Workouts Today Section */}
+              <div style={{ marginBottom: '16px' }}>
+                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
+                  Allenamenti Registrati Oggi
                 </h4>
-                <button
-                  onClick={() => {
-                    setShowExercisesModal(false);
-                    onOpenModal('exercise');
-                  }}
-                  style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  ➕ Nuovo Esercizio
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {(!health.workouts || health.workouts.length === 0) ? (
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
+                      Nessun allenamento registrato oggi.
+                    </p>
+                  ) : (
+                    health.workouts.map((w) => (
+                      <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                          {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{w.baseCalories} kcal</span>
+                          <button
+                            onClick={() => removeLoggedExercise(w.id, w.baseCalories)}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                            title="Rimuovi allenamento"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
 
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="🔎 Cerca allenamento per nome..."
-                style={{
-                  width: '100%',
-                  height: '34px',
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '8px',
-                  padding: '0 10px',
-                  fontSize: '11px',
-                  marginBottom: '10px',
-                  outline: 'none'
-                }}
-              />
+              {/* Workout Database Section */}
+              <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
+                    Seleziona dal Database Allenamenti
+                  </h4>
+                  <button
+                    onClick={() => {
+                      setShowExercisesModal(false);
+                      onOpenModal('exercise');
+                    }}
+                    style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    ➕ Nuovo Esercizio
+                  </button>
+                </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {filteredExerciseDatabase.length === 0 ? (
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
-                ) : (
-                  filteredExerciseDatabase.map((ex) => (
-                    <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                      <div>
-                        <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{ex.emoji} {ex.name}</div>
-                        <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal</div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="🔎 Cerca allenamento per nome..."
+                  style={{
+                    width: '100%',
+                    height: '34px',
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '8px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    marginBottom: '10px',
+                    outline: 'none'
+                  }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {filteredExerciseDatabase.length === 0 ? (
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
+                  ) : (
+                    filteredExerciseDatabase.map((ex) => (
+                      <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{ex.emoji} {ex.name}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal</div>
+                        </div>
+                        <button
+                          onClick={() => handleLogExercise(ex)}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: 'var(--accent-primary)',
+                            color: '#ffffff',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
+                          }}
+                          title="Registra esercizio oggi"
+                        >
+                          +
+                        </button>
                       </div>
-                      <button onClick={() => handleLogExercise(ex)} className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Esegui</button>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
