@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
+export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [] }) {
   const [slots, setSlots] = useState({
-    action: { name: '', stars: 3, statId: 'int', secondaryStatId: '' },
-    bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '' },
-    movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '' },
-    reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '' }
+    action: { name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
+    bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
+    movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
+    reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
   });
 
   const [isRolling, setIsRolling] = useState(false);
@@ -15,10 +15,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   useEffect(() => {
     if (isOpen) {
       setSlots({
-        action: { name: '', stars: 3, statId: 'int', secondaryStatId: '' },
-        bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '' },
-        movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '' },
-        reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '' }
+        action: { name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
+        bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
+        movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
+        reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
       });
       setIsRolling(false);
       setDiceResult(null);
@@ -27,6 +27,24 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const uncompletedOneshots = (oneshots || []).filter(o => !o.completed);
+  const activeCampaignMilestones = (quests || [])
+    .filter(q => !q.completed)
+    .map(q => {
+      const nextSub = (q.subquests || []).find(s => !s.completed);
+      if (!nextSub) return null;
+      return {
+        id: `quest-${q.id}-${nextSub.id}`,
+        questId: q.id,
+        subquestId: nextSub.id,
+        name: `${q.emoji || '🏆'} ${q.title}: ${nextSub.name}`,
+        rawName: nextSub.name,
+        difficulty: nextSub.difficulty || 2,
+        statId: q.primaryTarget || 'int'
+      };
+    })
+    .filter(Boolean);
 
   const handleSlotChange = (slotKey, field, value) => {
     setSlots(prev => ({
@@ -104,6 +122,65 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
         <div style={{ fontSize: '11px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase' }}>
           {theme.title}
         </div>
+
+        {/* Dropdown to pick existing task or campaign milestone */}
+        {(uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0) && (
+          <select
+            onChange={(e) => {
+              const val = e.target.value;
+              if (!val) return;
+              if (val.startsWith('oneshot-')) {
+                const targetId = val.replace('oneshot-', '');
+                const found = uncompletedOneshots.find(o => o.id === targetId);
+                if (found) {
+                  handleSlotChange(key, 'name', found.name);
+                  handleSlotChange(key, 'oneshotId', found.id);
+                  if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
+                  if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
+                }
+              } else if (val.startsWith('quest-')) {
+                const found = activeCampaignMilestones.find(m => m.id === val);
+                if (found) {
+                  handleSlotChange(key, 'name', found.rawName || found.name);
+                  handleSlotChange(key, 'oneshotId', null);
+                  if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
+                  if (found.statId) handleSlotChange(key, 'statId', found.statId);
+                }
+              }
+            }}
+            style={{
+              width: '100%',
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '8px',
+              padding: '5px 8px',
+              fontSize: '11px',
+              color: 'var(--text-secondary)',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          >
+            <option value="">📋 Attingi da Task o Campagne...</option>
+            {uncompletedOneshots.length > 0 && (
+              <optgroup label="💥 Task Singoli in Sospeso">
+                {uncompletedOneshots.map(o => (
+                  <option key={o.id} value={`oneshot-${o.id}`}>
+                    {o.emoji || '💥'} {o.name} {o.scheduledCount ? `(programmato ${o.scheduledCount}x)` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {activeCampaignMilestones.length > 0 && (
+              <optgroup label="🏆 Prossimo Obiettivo Campagne">
+                {activeCampaignMilestones.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        )}
 
         <input
           type="text"

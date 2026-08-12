@@ -470,6 +470,16 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
             </div>
+
+            {/* Tessera 5: Conteggio Inserimenti in Pianificazione Giornaliera */}
+            {(editData?.scheduledCount > 0 || form.scheduledCount > 0) && (
+              <div style={{ padding: '10px 14px', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '16px' }}>📌</span>
+                <span>
+                  Finito {editData?.scheduledCount || form.scheduledCount} {(editData?.scheduledCount || form.scheduledCount) === 1 ? 'volta' : 'volte'} tra le missioni del giorno
+                </span>
+              </div>
+            )}
           </div>
         );
 

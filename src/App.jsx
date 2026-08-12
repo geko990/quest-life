@@ -589,24 +589,48 @@ export default function App() {
       reaction: '🛡️'
     };
 
+    const updatedOneshotIds = new Set();
+
     Object.entries(slots).forEach(([key, slot]) => {
       const name = slot.name.trim();
       if (!name) return;
 
-      newOneshots.push({
-        id: 'dp-' + Date.now() + '-' + key,
-        name: name,
-        emoji: slotIcons[key],
-        difficulty: slot.stars,
-        primaryTarget: slot.statId,
-        secondaryTarget: null,
-        completed: false,
-        locked: false,
-        fromDailyPlan: true,
-        dailyPlanDate: todayStr,
-        d10Roll: d10Roll,
-        createdAt: new Date().toISOString()
-      });
+      if (slot.oneshotId) {
+        updatedOneshotIds.add(slot.oneshotId);
+        setOneshots(prev => prev.map(o => {
+          if (o.id === slot.oneshotId) {
+            return {
+              ...o,
+              name: name,
+              difficulty: slot.stars || o.difficulty,
+              primaryTarget: slot.statId || o.primaryTarget,
+              scheduledCount: (o.scheduledCount || 0) + 1,
+              fromDailyPlan: true,
+              dailyPlanDate: todayStr,
+              d10Roll: d10Roll,
+              locked: false,
+              completed: false
+            };
+          }
+          return o;
+        }));
+      } else {
+        newOneshots.push({
+          id: 'dp-' + Date.now() + '-' + key,
+          name: name,
+          emoji: slotIcons[key],
+          difficulty: slot.stars,
+          primaryTarget: slot.statId,
+          secondaryTarget: null,
+          completed: false,
+          locked: false,
+          fromDailyPlan: true,
+          dailyPlanDate: todayStr,
+          d10Roll: d10Roll,
+          scheduledCount: 1,
+          createdAt: new Date().toISOString()
+        });
+      }
     });
 
     if (newOneshots.length > 0) {
@@ -1187,6 +1211,8 @@ export default function App() {
         onClose={() => setShowPlannerModal(false)}
         onSave={handleSaveDailyPlan}
         stats={stats}
+        oneshots={oneshots}
+        quests={quests}
       />
     </div>
   );
