@@ -1154,9 +1154,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         );
       }
 
-      default:
-        if (type === 'health_goals' || type === 'health_goal') {
-          return (
+      case 'health_goals':
+      case 'health_goal':
+        return (
             <div className="flex flex-col gap-4">
               {/* Daily Goals Section Header */}
               <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-2">
@@ -1339,10 +1339,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             </div>
           );
-        }
 
-        if (type?.startsWith('health_')) {
-          const field = type.split('_')[1];
+      default:
+        const currentActiveT = currentType || type;
+        if (currentActiveT?.startsWith('health_')) {
+          const field = currentActiveT.split('_')[1];
           const labels = {
             consumed: 'Aggiungi Calorie Cibo',
             burned: 'Aggiungi Calorie Allenamento',
