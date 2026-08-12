@@ -1124,47 +1124,54 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       default:
         if (type === 'health_goals' || type === 'health_goal') {
           const calculateTdee = () => {
-            const weight = parseFloat(form.targetWeight || form.calcWeight || 75) || 75;
-            const height = parseFloat(form.calcHeight || 175) || 175;
-            const age = parseFloat(form.calcAge || 28) || 28;
+            const currentWeight = parseFloat(form.currentWeight !== undefined ? form.currentWeight : editData?.currentWeight || form.calcWeight || 75) || 75;
+            const fatPct = parseFloat(form.calcFatPct !== undefined ? form.calcFatPct : editData?.currentFat || 0);
+            const height = parseFloat(form.calcHeight !== undefined ? form.calcHeight : 175) || 175;
+            const age = parseFloat(form.calcAge !== undefined ? form.calcAge : 28) || 28;
             const gender = form.calcGender || 'male';
             const activity = parseFloat(form.calcActivity || 1.375) || 1.375;
             const goalType = form.calcGoalType || 'lose';
 
-            // Mifflin-St Jeor Formula
-            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-            if (gender === 'male') {
-              bmr += 5;
+            let bmr = 0;
+            let methodUsed = '';
+
+            // If Fat % is provided (> 0 and < 60), use Katch-McArdle Formula based on Lean Body Mass
+            if (fatPct > 0 && fatPct < 60) {
+              const lbm = currentWeight * (1 - fatPct / 100);
+              bmr = 370 + (21.6 * lbm);
+              methodUsed = `Katch-McArdle (Massa Magra ${lbm.toFixed(1)}kg)`;
             } else {
-              bmr -= 161;
+              // Otherwise use Mifflin-St Jeor Formula
+              bmr = (10 * currentWeight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
+              methodUsed = 'Mifflin-St Jeor';
             }
 
             const tdee = Math.round(bmr * activity);
 
             let targetCalories = tdee;
-            let targetProtein = Math.round(weight * 1.6);
+            let targetProtein = Math.round(currentWeight * 1.6);
             let targetWater = 8;
             let targetSteps = 10000;
             let goalDescription = '';
 
             if (goalType === 'lose') {
               targetCalories = Math.round(tdee * 0.82);
-              targetProtein = Math.round(weight * 2.0);
+              targetProtein = Math.round(currentWeight * 2.0);
               targetWater = 10;
               targetSteps = 10000;
-              goalDescription = `📉 Dimagrimento: TDEE ${tdee} kcal → Target ${targetCalories} kcal (Deficit 18%) • ${targetProtein}g Proteine (2.0g/kg)`;
+              goalDescription = `📉 Dimagrimento: TDEE ${tdee} kcal (${methodUsed}) → Target ${targetCalories} kcal (Deficit 18%) • ${targetProtein}g Proteine (2.0g/kg)`;
             } else if (goalType === 'gain') {
               targetCalories = Math.round(tdee * 1.12);
-              targetProtein = Math.round(weight * 2.0);
+              targetProtein = Math.round(currentWeight * 2.0);
               targetWater = 9;
               targetSteps = 8000;
-              goalDescription = `🏋️ Massa Muscolare: TDEE ${tdee} kcal → Target ${targetCalories} kcal (Surplus +12%) • ${targetProtein}g Proteine (2.0g/kg)`;
+              goalDescription = `🏋️ Massa Muscolare: TDEE ${tdee} kcal (${methodUsed}) → Target ${targetCalories} kcal (Surplus +12%) • ${targetProtein}g Proteine (2.0g/kg)`;
             } else {
               targetCalories = tdee;
-              targetProtein = Math.round(weight * 1.6);
+              targetProtein = Math.round(currentWeight * 1.6);
               targetWater = 8;
               targetSteps = 10000;
-              goalDescription = `⚖️ Mantenimento: Target ${targetCalories} kcal • ${targetProtein}g Proteine (1.6g/kg)`;
+              goalDescription = `⚖️ Tonificazione: Target ${targetCalories} kcal (${methodUsed}) • ${targetProtein}g Proteine (1.6g/kg)`;
             }
 
             setForm(prev => ({
@@ -1178,84 +1185,156 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           };
 
           return (
-            <div className="flex flex-col gap-4">
-              <p className="text-xs text-text-secondary font-medium">
-                Imposta i tuoi traguardi quotidiani di salute oppure usa il calcolatore rapido di fabbisogno calorico.
-              </p>
+            <div className="flex flex-col gap-3.5">
+              {/* Daily Goals Output Section Header */}
+              <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1.5">
+                <span className="text-xs font-bold text-text-primary uppercase tracking-wider">🎯 Obiettivi Giornalieri Risultanti</span>
+                <span className="text-[10px] text-text-muted">Personalizza o calcola sotto</span>
+              </div>
 
               {/* Goal Inputs Grid */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">🚩 Calorie Obiettivo (kcal)</label>
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🚩 Calorie Target (kcal)</label>
                   <input
                     type="number"
                     name="calorieGoal"
                     value={form.calorieGoal !== undefined ? form.calorieGoal : 1600}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">🍗 Proteine Obiettivo (g)</label>
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🍗 Proteine Target (g)</label>
                   <input
                     type="number"
                     name="proteinGoal"
                     value={form.proteinGoal !== undefined ? form.proteinGoal : 100}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">🥛 Acqua Obiettivo (Bicchieri)</label>
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🥛 Acqua (Bicchieri)</label>
                   <input
                     type="number"
                     name="waterGoal"
                     value={form.waterGoal !== undefined ? form.waterGoal : 8}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
                   <input
                     type="number"
                     name="stepGoal"
                     value={form.stepGoal !== undefined ? form.stepGoal : 10000}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">⚖️ Peso Corporeo Target (kg)</label>
-                <input
-                  type="number"
-                  name="targetWeight"
-                  step="0.1"
-                  value={form.targetWeight !== undefined ? form.targetWeight : 70}
-                  onChange={handleNumberChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
-
-              {/* Integrated BMR / TDEE & Goal Calculator */}
+              {/* Integrated BMR / TDEE & Goal Calculator Card */}
               <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-3 mt-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-text-primary">⚡ Calcolatore Fabbisogno TDEE</span>
-                  <button
-                    type="button"
-                    onClick={calculateTdee}
-                    className="text-xs font-bold px-3 py-1.5 rounded-xl border border-[var(--glass-border)] transition-all"
-                    style={{ background: 'var(--accent-primary)', color: '#ffffff' }}
-                  >
-                    Calcola & Applica
-                  </button>
+                <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1.5">
+                  <span className="text-xs font-bold text-text-primary">⚡ Calcolatore Fabbisogno TDEE & Composizione</span>
                 </div>
 
-                {/* 3 Situations Goal Selector */}
+                {/* 1) First Row: Sesso, Età, Altezza */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Sesso</label>
+                    <select
+                      name="calcGender"
+                      value={form.calcGender || 'male'}
+                      onChange={handleChange}
+                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-1.5 border border-[var(--glass-border)]"
+                    >
+                      <option value="male">Uomo</option>
+                      <option value="female">Donna</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Età (anni)</label>
+                    <input
+                      type="number"
+                      name="calcAge"
+                      value={form.calcAge !== undefined ? form.calcAge : 28}
+                      onChange={handleNumberChange}
+                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Altezza (cm)</label>
+                    <input
+                      type="number"
+                      name="calcHeight"
+                      value={form.calcHeight !== undefined ? form.calcHeight : 175}
+                      onChange={handleNumberChange}
+                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                    />
+                  </div>
+                </div>
+
+                {/* 2) Second Row: Peso Attuale, Massa Grassa %, Peso Target */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Peso Attuale (kg)</label>
+                    <input
+                      type="number"
+                      name="currentWeight"
+                      step="0.1"
+                      value={form.currentWeight !== undefined ? form.currentWeight : 75}
+                      onChange={handleNumberChange}
+                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Massa Grassa %</label>
+                    <input
+                      type="number"
+                      name="calcFatPct"
+                      step="0.1"
+                      placeholder="Es: 15%"
+                      value={form.calcFatPct !== undefined ? form.calcFatPct : ''}
+                      onChange={handleNumberChange}
+                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Peso Target (kg)</label>
+                    <input
+                      type="number"
+                      name="targetWeight"
+                      step="0.1"
+                      value={form.targetWeight !== undefined ? form.targetWeight : 70}
+                      onChange={handleNumberChange}
+                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                    />
+                  </div>
+                </div>
+
+                {/* 3) Third Row: Stile di Vita (FULL READABLE TEXT) */}
                 <div>
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1.5">🎯 Scegli il tuo fine:</label>
+                  <label className="block text-[10px] text-text-muted mb-0.5 font-bold">🏃 Stile di Vita & Attività Fisica:</label>
+                  <select
+                    name="calcActivity"
+                    value={form.calcActivity || 1.375}
+                    onChange={handleChange}
+                    className="w-full h-9 bg-[var(--bg-card)] text-text-primary text-[11px] font-bold rounded-xl px-3 border border-[var(--glass-border)]"
+                  >
+                    <option value="1.2">Sedentario (Poco o nessun esercizio)</option>
+                    <option value="1.375">Attività Leggera (1 - 3 allenamenti / settimana)</option>
+                    <option value="1.55">Attività Moderata (3 - 5 allenamenti / settimana)</option>
+                    <option value="1.725">Attività Intensa (6 - 7 allenamenti / settimana)</option>
+                  </select>
+                </div>
+
+                {/* 4) 3 Situations Goal Selector */}
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-1.5">🎯 Scegli il tuo fine:</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { id: 'lose', label: '📉 Dimagrimento', desc: 'Deficit' },
@@ -1280,54 +1359,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   </div>
                 </div>
 
-                {/* Body Parameters */}
-                <div className="grid grid-cols-4 gap-2 pt-1 border-t border-[var(--glass-border)]">
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-semibold">Sesso</label>
-                    <select
-                      name="calcGender"
-                      value={form.calcGender || 'male'}
-                      onChange={handleChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] rounded-lg px-1 border border-[var(--glass-border)]"
-                    >
-                      <option value="male">Uomo</option>
-                      <option value="female">Donna</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-semibold">Età</label>
-                    <input
-                      type="number"
-                      name="calcAge"
-                      value={form.calcAge !== undefined ? form.calcAge : 28}
-                      onChange={handleNumberChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] rounded-lg px-2 border border-[var(--glass-border)] font-semibold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-semibold">Altezza (cm)</label>
-                    <input
-                      type="number"
-                      name="calcHeight"
-                      value={form.calcHeight !== undefined ? form.calcHeight : 175}
-                      onChange={handleNumberChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] rounded-lg px-2 border border-[var(--glass-border)] font-semibold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-semibold">Stile di Vita</label>
-                    <select
-                      name="calcActivity"
-                      value={form.calcActivity || 1.375}
-                      onChange={handleChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] rounded-lg px-1 border border-[var(--glass-border)]"
-                    >
-                      <option value="1.2">Sedentario</option>
-                      <option value="1.375">Leggero</option>
-                      <option value="1.55">Moderato</option>
-                      <option value="1.725">Intenso</option>
-                    </select>
-                  </div>
+                {/* 5) Prominent Bottom-Center Calcola & Applica Button */}
+                <div className="flex justify-center mt-1">
+                  <button
+                    type="button"
+                    onClick={calculateTdee}
+                    className="w-full py-2.5 px-6 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    style={{ background: 'var(--accent-primary)', color: '#ffffff', boxShadow: '0 4px 15px rgba(124, 58, 237, 0.35)' }}
+                  >
+                    <span>⚡</span>
+                    <span>Calcola & Applica Obiettivi</span>
+                  </button>
                 </div>
 
                 {/* Calculated Summary Feedback Banner */}
