@@ -224,12 +224,13 @@ export default function HabitsTab({
                 <div className="calendar-day-number" style={{ position: 'relative' }}>
                   {/* SVG Circular Completion Ring */}
                   <svg
-                    width="44"
-                    height="44"
+                    viewBox="0 0 44 44"
                     style={{
                       position: 'absolute',
-                      top: '-2px',
-                      left: '-2px',
+                      top: '-4px',
+                      left: '-4px',
+                      width: '44px',
+                      height: '44px',
                       transform: 'rotate(-90deg)',
                       pointerEvents: 'none'
                     }}
@@ -237,22 +238,22 @@ export default function HabitsTab({
                     <circle
                       cx="22"
                       cy="22"
-                      r="18"
-                      fill="transparent"
+                      r="19"
+                      fill="none"
                       stroke="var(--glass-border)"
-                      strokeWidth="3"
-                      opacity="0.4"
+                      strokeWidth="2.5"
+                      opacity="0.3"
                     />
                     {completionPct > 0 && (
                       <circle
                         cx="22"
                         cy="22"
-                        r="18"
-                        fill="transparent"
+                        r="19"
+                        fill="none"
                         stroke={completionPct === 100 ? '#10b981' : 'var(--accent-primary)'}
-                        strokeWidth="3"
-                        strokeDasharray={2 * Math.PI * 18}
-                        strokeDashoffset={2 * Math.PI * 18 * (1 - completionPct / 100)}
+                        strokeWidth="2.5"
+                        strokeDasharray={2 * Math.PI * 19}
+                        strokeDashoffset={2 * Math.PI * 19 * (1 - completionPct / 100)}
                         strokeLinecap="round"
                         style={{ transition: 'stroke-dashoffset 0.4s ease, stroke 0.3s ease' }}
                       />

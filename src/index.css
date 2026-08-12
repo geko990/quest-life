@@ -1348,12 +1348,15 @@ body {
     font-size: 14px;
     position: relative;
     background: var(--bg-primary);
-    transition: all 0.2s;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .calendar-day.active .calendar-day-number {
-    border: 2px solid var(--accent-primary);
+    border-color: var(--accent-primary);
     background: var(--accent-light);
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
 }
 
 .calendar-day.today .calendar-day-number {
