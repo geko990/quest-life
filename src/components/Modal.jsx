@@ -1186,63 +1186,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
           return (
             <div className="flex flex-col gap-3.5">
-              {/* Daily Goals Output Section Header */}
-              <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1.5">
-                <span className="text-xs font-bold text-text-primary uppercase tracking-wider">🎯 Obiettivi Giornalieri Risultanti</span>
-                <span className="text-[10px] text-text-muted">Personalizza o calcola sotto</span>
-              </div>
-
-              {/* Goal Inputs Grid */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🚩 Calorie Target (kcal)</label>
-                  <input
-                    type="number"
-                    name="calorieGoal"
-                    value={form.calorieGoal !== undefined ? form.calorieGoal : 1600}
-                    onChange={handleNumberChange}
-                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🍗 Proteine Target (g)</label>
-                  <input
-                    type="number"
-                    name="proteinGoal"
-                    value={form.proteinGoal !== undefined ? form.proteinGoal : 100}
-                    onChange={handleNumberChange}
-                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🥛 Acqua (Bicchieri)</label>
-                  <input
-                    type="number"
-                    name="waterGoal"
-                    value={form.waterGoal !== undefined ? form.waterGoal : 8}
-                    onChange={handleNumberChange}
-                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
-                  <input
-                    type="number"
-                    name="stepGoal"
-                    value={form.stepGoal !== undefined ? form.stepGoal : 10000}
-                    onChange={handleNumberChange}
-                    className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Integrated BMR / TDEE & Goal Calculator Card */}
-              <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-3 mt-1">
+              {/* TOP SECTION: Integrated BMR / TDEE & Goal Calculator Card */}
+              <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1.5">
-                  <span className="text-xs font-bold text-text-primary">⚡ Calcolatore Fabbisogno TDEE & Composizione</span>
+                  <span className="text-xs font-bold text-text-primary">⚡ 1. Fabbisogno TDEE & Composizione</span>
+                  <span className="text-[10px] text-text-muted font-medium">Inserisci i tuoi dati</span>
                 </div>
 
-                {/* 1) First Row: Sesso, Età, Altezza */}
+                {/* 1) Sesso, Età, Altezza */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Sesso</label>
@@ -1278,7 +1229,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   </div>
                 </div>
 
-                {/* 2) Second Row: Peso Attuale, Massa Grassa %, Peso Target */}
+                {/* 2) Peso Attuale, Massa Grassa %, Peso Target */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Peso Attuale (kg)</label>
@@ -1316,7 +1267,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   </div>
                 </div>
 
-                {/* 3) Third Row: Stile di Vita (FULL READABLE TEXT) */}
+                {/* 3) Stile di Vita & Attività */}
                 <div>
                   <label className="block text-[10px] text-text-muted mb-0.5 font-bold">🏃 Stile di Vita & Attività Fisica:</label>
                   <select
@@ -1332,9 +1283,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   </select>
                 </div>
 
-                {/* 4) 3 Situations Goal Selector */}
-                <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-1.5">🎯 Scegli il tuo fine:</label>
+                {/* 4) MIDDLE SECTION: 3 Situations Goal Selector & Calculate Button */}
+                <div className="pt-2 border-t border-[var(--glass-border)] flex flex-col gap-2.5">
+                  <label className="block text-[10px] text-text-secondary font-bold">🎯 2. Scegli il tuo fine & Calcola:</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { id: 'lose', label: '📉 Dimagrimento', desc: 'Deficit' },
@@ -1345,7 +1296,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                         key={g.id}
                         type="button"
                         onClick={() => setForm(prev => ({ ...prev, calcGoalType: g.id }))}
-                        className="flex flex-col items-center justify-center p-2 rounded-xl border text-[11px] font-bold transition-all"
+                        className="flex flex-col items-center justify-center p-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer"
                         style={{
                           background: (form.calcGoalType || 'lose') === g.id ? 'var(--accent-primary)' : 'var(--bg-card)',
                           color: (form.calcGoalType || 'lose') === g.id ? '#ffffff' : 'var(--text-secondary)',
@@ -1357,27 +1308,79 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       </button>
                     ))}
                   </div>
-                </div>
 
-                {/* 5) Prominent Bottom-Center Calcola & Applica Button */}
-                <div className="flex justify-center mt-1">
-                  <button
-                    type="button"
-                    onClick={calculateTdee}
-                    className="w-full py-2.5 px-6 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    style={{ background: 'var(--accent-primary)', color: '#ffffff', boxShadow: '0 4px 15px rgba(124, 58, 237, 0.35)' }}
-                  >
-                    <span>⚡</span>
-                    <span>Calcola & Applica Obiettivi</span>
-                  </button>
-                </div>
-
-                {/* Calculated Summary Feedback Banner */}
-                {form.tdeeSummary && (
-                  <div className="p-2.5 rounded-xl bg-accent-primary/10 border border-accent-primary/30 text-accent-primary text-[10px] font-bold text-center">
-                    {form.tdeeSummary}
+                  {/* Centered Button */}
+                  <div className="flex justify-center mt-1">
+                    <button
+                      type="button"
+                      onClick={calculateTdee}
+                      className="w-full py-2.5 px-6 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      style={{ background: 'var(--accent-primary)', color: '#ffffff', boxShadow: '0 4px 15px rgba(124, 58, 237, 0.35)' }}
+                    >
+                      <span>⚡</span>
+                      <span>Calcola & Applica Obiettivi</span>
+                    </button>
                   </div>
-                )}
+
+                  {/* Calculated Summary Feedback Banner */}
+                  {form.tdeeSummary && (
+                    <div className="p-2.5 rounded-xl bg-accent-primary/10 border border-accent-primary/30 text-accent-primary text-[10px] font-bold text-center">
+                      {form.tdeeSummary}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* BOTTOM SECTION: Daily Goals Result Boxes (Modificabili anche manualmente) */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1">
+                  <span className="text-xs font-bold text-text-primary uppercase tracking-wider">🎯 3. Obiettivi Giornalieri Risultanti</span>
+                  <span className="text-[10px] text-text-muted font-medium">Modificabili anche manualmente</span>
+                </div>
+
+                {/* Goal Inputs Grid */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">🚩 Calorie Target (kcal)</label>
+                    <input
+                      type="number"
+                      name="calorieGoal"
+                      value={form.calorieGoal !== undefined ? form.calorieGoal : 1600}
+                      onChange={handleNumberChange}
+                      className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">🍗 Proteine Target (g)</label>
+                    <input
+                      type="number"
+                      name="proteinGoal"
+                      value={form.proteinGoal !== undefined ? form.proteinGoal : 100}
+                      onChange={handleNumberChange}
+                      className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">🥛 Acqua (Bicchieri)</label>
+                    <input
+                      type="number"
+                      name="waterGoal"
+                      value={form.waterGoal !== undefined ? form.waterGoal : 8}
+                      onChange={handleNumberChange}
+                      className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
+                    <input
+                      type="number"
+                      name="stepGoal"
+                      value={form.stepGoal !== undefined ? form.stepGoal : 10000}
+                      onChange={handleNumberChange}
+                      className="w-full h-9 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           );
