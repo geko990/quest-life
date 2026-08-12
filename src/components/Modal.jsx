@@ -1176,6 +1176,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             setForm(prev => ({
               ...prev,
+              calcGoalType: goalType,
               calorieGoal: targetCalories,
               proteinGoal: targetProtein,
               waterGoal: targetWater,
