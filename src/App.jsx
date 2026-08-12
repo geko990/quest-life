@@ -700,8 +700,15 @@ export default function App() {
       }));
     } else if (modalType?.startsWith('health_')) {
       const field = modalType.split('_')[1];
-      if (field === 'goal') {
-        setHealth(prev => ({ ...prev, calories: { ...prev.calories, goal: formData.value } }));
+      if (field === 'goal' || field === 'goals') {
+        setHealth(prev => ({
+          ...prev,
+          calories: { ...prev.calories, goal: Number(formData.calorieGoal !== undefined ? formData.calorieGoal : formData.value) || prev.calories.goal },
+          proteins: { ...prev.proteins, goal: Number(formData.proteinGoal) || prev.proteins.goal },
+          water: { ...prev.water, goal: Number(formData.waterGoal) || prev.water.goal },
+          steps: { ...prev.steps, goal: Number(formData.stepGoal) || prev.steps.goal },
+          weight: { ...prev.weight, target: Number(formData.targetWeight) || prev.weight.target }
+        }));
       } else if (field === 'consumed') {
         setHealth(prev => ({ ...prev, calories: { ...prev.calories, consumed: prev.calories.consumed + formData.value } }));
       } else if (field === 'burned') {
