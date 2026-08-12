@@ -411,10 +411,13 @@ export default function NutritionTab({
 
               {/* Calorie Stats Info & Goal Launcher */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: '150px' }}>
-                {/* 1) Obiettivo Card (Clean layout, no extra configure text) */}
+                {/* 1) Obiettivo Card (Clean layout, opens goal modal) */}
                 <div
-                  onClick={handleOpenGoalsModal}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenGoalsModal();
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)', pointerEvents: 'auto' }}
                   title="Configura obiettivi e calcola fabbisogno TDEE"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
