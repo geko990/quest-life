@@ -1659,7 +1659,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     }
   };
 
-  const getTitle = () => {
+  const getHeaderInfo = () => {
     const activeT = currentType || type;
     const action = editData ? 'Modifica' : 'Crea';
     const names = {
@@ -1675,19 +1675,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       stat_detail: '',
       pomodoro: 'Timer Pomodoro'
     };
-    if (activeT === 'quest_detail') return '🏆 Dettaglio Campagna';
-    if (activeT === 'health_goals' || activeT === 'health_goal') return '🚩 Obiettivi di Salute';
-    if (activeT === 'health_steps') return '👟 Registro Passi';
-    if (activeT === 'health_protein' || activeT === 'health_proteins') return '🍗 Apporto Proteico';
-    if (activeT === 'health_water' || activeT === 'health_water_goal') return '🥛 Registro Acqua';
-    if (activeT === 'weight') return '⚖️ Statistiche Peso & Composizione';
-    if (activeT?.startsWith('health_')) return '📊 Aggiorna Dati';
-    return `${action} ${names[activeT] || 'Elemento'}`;
+    if (activeT === 'quest_detail') return { emoji: '🏆', title: 'Dettaglio Campagna' };
+    if (activeT === 'health_goals' || activeT === 'health_goal') return { emoji: '🚩', title: 'Obiettivi di Salute' };
+    if (activeT === 'health_steps') return { emoji: '👟', title: 'Registro Passi' };
+    if (activeT === 'health_protein' || activeT === 'health_proteins') return { emoji: '🍗', title: 'Apporto Proteico' };
+    if (activeT === 'health_water' || activeT === 'health_water_goal') return { emoji: '🥛', title: 'Registro Acqua' };
+    if (activeT === 'weight') return { emoji: '⚖️', title: 'Statistiche Peso & Composizione' };
+    if (activeT?.startsWith('health_')) return { emoji: '📊', title: 'Aggiorna Dati' };
+    return { emoji: null, title: `${action} ${names[activeT] || 'Elemento'}` };
   };
 
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
   const isExpandedModal = ['quest_detail', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
+  const headerObj = getHeaderInfo();
 
   return (
     <div
@@ -1712,11 +1713,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         {/* Header (Hidden for stat_detail) */}
         {activeT !== 'stat_detail' && (
           <div
-            className="px-6 py-4 flex justify-center items-center text-center shrink-0 border-b border-[var(--glass-border)]"
-            style={{ background: 'var(--bg-card)' }}
+            className="modal-header"
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}
           >
-            <h3 className="font-bold text-base tracking-wide margin-0 flex items-center justify-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              {getTitle()}
+            <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {headerObj.emoji && <span style={{ fontSize: '20px' }}>{headerObj.emoji}</span>}
+              {headerObj.title}
             </h3>
           </div>
         )}
