@@ -158,22 +158,101 @@ export default function Header({
     };
   };
 
+  // 7-Day Mood & Activity Calculation Helper
+  const get7DayActivity = () => {
+    const days = [];
+    const todayObj = new Date();
+    let totalCompleted7Days = 0;
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(todayObj);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+      const dayName = dayNames[d.getDay()];
+
+      const dayLog = completionLog?.[dateStr] || {};
+      const habitsCount = (dayLog.habits || []).length;
+      const oneshotsCount = (dayLog.oneshots || []).length;
+      const questsCount = (dayLog.quests || []).length;
+      const count = habitsCount + oneshotsCount + questsCount;
+
+      totalCompleted7Days += count;
+
+      days.push({
+        dateStr,
+        dayName,
+        isToday: i === 0,
+        count
+      });
+    }
+
+    // Determine Mood & Encouragement level based on 7-day total
+    let moodEmoji = '🌱';
+    let moodTitle = 'Nuovo Inizio!';
+    let moodDesc = 'Prenditi il tuo tempo. Ogni giorno offre una nuova opportunità per fare anche solo un piccolo passo, senza alcuna ansia.';
+    let moodTag = 'Tranquillo';
+    let moodColor = '#a855f7';
+
+    if (totalCompleted7Days >= 21) {
+      moodEmoji = '🥳';
+      moodTitle = 'Super Inarrestabile!';
+      moodDesc = 'Stai completando tantissimi traguardi! La tua energia è straordinaria, continua a festeggiare i tuoi successi!';
+      moodTag = 'A Festa';
+      moodColor = '#f59e0b';
+    } else if (totalCompleted7Days >= 12) {
+      moodEmoji = '😄';
+      moodTitle = 'In Gran Forma!';
+      moodDesc = 'Stai mantenendo un ottimo ritmo di completamento. Ottimo lavoro, stai procedendo alla grande!';
+      moodTag = 'Attivo';
+      moodColor = '#3b82f6';
+    } else if (totalCompleted7Days >= 5) {
+      moodEmoji = '🙂';
+      moodTitle = 'Buon Ritmo!';
+      moodDesc = 'Stai procedendo con i tuoi tempi in modo sereno e costante. Ogni singola azione completata ha un grande valore!';
+      moodTag = 'Costante';
+      moodColor = '#10b981';
+    } else {
+      moodEmoji = '🌱';
+      moodTitle = 'Nuovo Inizio!';
+      moodDesc = 'Zero ansia o pressione! Il bello del gioco è fare un piccolo passo quando ti senti pronto. Sei sulla strada giusta!';
+      moodTag = 'Relax';
+      moodColor = '#8b5cf6';
+    }
+
+    const maxDayCount = Math.max(1, ...days.map(d => d.count));
+
+    return {
+      days,
+      totalCompleted7Days,
+      moodEmoji,
+      moodTitle,
+      moodDesc,
+      moodTag,
+      moodColor,
+      maxDayCount
+    };
+  };
+
+  const activity7Days = get7DayActivity();
+
   return (
     <>
       {/* App Header (Original v3.3.0) */}
       <header className="app-header">
-        {/* Streak Icon (Redesigned) */}
+        {/* Engagement Mood Widget (Replaces strict streak) */}
         <div
-          className={`header-streak ${isStreakActive ? '' : 'grayscale'}`}
+          className="header-streak"
           id="headerStreak"
           onClick={() => setShowStreak(!showStreak)}
-          title="Visualizza la tua serie attiva"
+          title="Visualizza il tuo stato di impegno negli ultimi 7 giorni"
+          style={{ cursor: 'pointer' }}
         >
-          <div className="streak-circle">
-            <span className="streak-emoji">🔥</span>
+          <div className="streak-circle" style={{ background: 'var(--bg-secondary)', border: `1px solid ${activity7Days.moodColor}` }}>
+            <span className="streak-emoji" style={{ fontSize: '18px' }}>{activity7Days.moodEmoji}</span>
           </div>
-          <div className="streak-badge-count">
-            <span id="globalStreak">{player.globalStreak || 0}</span>
+          <div className="streak-badge-count" style={{ background: activity7Days.moodColor }}>
+            <span id="globalStreak">{activity7Days.totalCompleted7Days}</span>
           </div>
         </div>
 
@@ -337,7 +416,7 @@ export default function Header({
         </div>
       )}
 
-      {/* Streak Popup */}
+      {/* Engagement Mood Popup (Replaces old strict streak) */}
       {showStreak && (
         <div
           style={{ position: 'fixed', inset: 0, zIndex: 9990, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
@@ -352,7 +431,7 @@ export default function Header({
               top: '65px',
               left: '16px',
               width: 'calc(100vw - 32px)',
-              maxWidth: '320px',
+              maxWidth: '330px',
               background: 'var(--bg-card)',
               border: '1px solid var(--glass-border)',
               borderRadius: '20px',
@@ -362,29 +441,60 @@ export default function Header({
               boxSizing: 'border-box'
             }}
           >
+            {/* Top Info Header */}
             <div className="popup-header-info">
-              <div className="popup-avatar-frame" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
-                <span className="popup-emoji">🔥</span>
+              <div className="popup-avatar-frame" style={{ background: activity7Days.moodColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span className="popup-emoji" style={{ fontSize: '24px' }}>{activity7Days.moodEmoji}</span>
               </div>
               <div className="popup-details">
-                <h3 className="popup-name">Serie Attiva</h3>
+                <h3 className="popup-name">{activity7Days.moodTitle}</h3>
                 <div className="popup-level-info">
-                  <span className="popup-level">
-                    <span id="popupStreakCount">{player.globalStreak || 0}</span> Giorni
+                  <span className="popup-level" style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>
+                    {activity7Days.totalCompleted7Days} azioni negli ultimi 7 giorni
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="popup-motto-container">
-              <div className="freeze-info" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span className="freeze-icon">❄️</span>
-                <span className="freeze-count" id="popupFreezeCount">{player.streakFreezes || 0}</span>
-                <span className="freeze-max">/ 2 congelamenti rimanenti</span>
-              </div>
-              <p className="freeze-desc" style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0 }}>
-                I congelamenti salvano la tua serie se salti un giorno. Si ripristinano il 1° giorno del mese.
+            {/* Encouragement Description */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '12px', margin: '12px 0', border: '1px solid var(--glass-border)' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-primary)', margin: 0, lineHeight: 1.4 }}>
+                {activity7Days.moodDesc}
               </p>
+            </div>
+
+            {/* 7-Day Activity Chart */}
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Andamento 7 Giorni</span>
+                <span style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>Media: {(activity7Days.totalCompleted7Days / 7).toFixed(1)}/gg</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '70px', padding: '0 4px', gap: '6px' }}>
+                {activity7Days.days.map((d, idx) => {
+                  const heightPct = Math.max(12, Math.min(100, (d.count / activity7Days.maxDayCount) * 100));
+                  return (
+                    <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', color: d.count > 0 ? 'var(--text-primary)' : 'var(--text-muted)', marginBottom: '2px' }}>
+                        {d.count > 0 ? d.count : ''}
+                      </span>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: `${heightPct}%`,
+                          borderRadius: '6px 6px 4px 4px',
+                          background: d.isToday ? activity7Days.moodColor : d.count > 0 ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                          opacity: d.count > 0 ? 1 : 0.4,
+                          transition: 'height 0.3s ease'
+                        }}
+                      ></div>
+                      <span style={{ fontSize: '9px', color: d.isToday ? activity7Days.moodColor : 'var(--text-secondary)', marginTop: '4px', fontWeight: d.isToday ? 'bold' : 'normal' }}>
+                        {d.dayName}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
