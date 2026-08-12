@@ -1427,6 +1427,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       pomodoro: 'Timer Pomodoro'
     };
     if (activeT === 'quest_detail') return 'Dettaglio Campagna';
+    if (activeT === 'health_goals' || activeT === 'health_goal') return '🎯 Obiettivi Salute & Calcolatore TDEE';
     if (activeT?.startsWith('health_')) return 'Aggiorna Dati';
     return `${action} ${names[activeT] || 'Elemento'}`;
   };
