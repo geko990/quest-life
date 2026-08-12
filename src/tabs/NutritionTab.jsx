@@ -12,10 +12,15 @@ export default function NutritionTab({
   const [activeMainTab, setActiveMainTab] = useState('health'); // 'health' | 'shopping'
   const [activeInventoryTab, setActiveInventoryTab] = useState('food'); // 'food' | 'home'
   const [showMealsModal, setShowMealsModal] = useState(false);
+  const [showExercisesModal, setShowExercisesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeMealCategory, setActiveMealCategory] = useState('lunch');
   const [newShopItemName, setNewShopItemName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Quick logs separated
+  const foodQuickLogs = (health.quickLogs || []).filter(l => l.type === 'water' || l.type === 'proteins' || l.type === 'calories');
+  const workoutQuickLogs = (health.quickLogs || []).filter(l => l.type === 'burned' || l.type === 'steps');
 
   // Calorie calculations
   const calorieGoal = health.calories.goal || 1600;
@@ -436,14 +441,11 @@ export default function NutritionTab({
                   </div>
                 </div>
 
-                {/* 3) Bruciate Card (Clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
+                {/* 3) Bruciate Card (Clicking 🔥 adds +100 kcal, clicking row opens exercise registry popup) */}
                 <div
-                  onClick={() => {
-                    setActiveMealCategory('exercises');
-                    setShowMealsModal(true);
-                  }}
+                  onClick={() => setShowExercisesModal(true)}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Clicca per aprire la lista allenamenti"
+                  title="Clicca per aprire la finestra Registro Allenamenti"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
@@ -788,64 +790,60 @@ export default function NutritionTab({
         </div>
       )}
 
-      {/* MEALS AND EXERCISES LOGS POPUP MODAL */}
+      {/* 1) REGISTRO PASTI (DEDICATED FLOATING MODAL POPUP) */}
       {showMealsModal && (
         <div className="modal active" onClick={() => setShowMealsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 className="modal-title">🍴 Registro Pasti, Allenamenti e Inserimenti</h3>
+              <h3 className="modal-title">🍴 Registro Pasti e Nutrizione</h3>
               <button onClick={() => setShowMealsModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}>✕</button>
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
               {/* Category tabs */}
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
-                {['breakfast', 'lunch', 'dinner', 'snack', 'cheat', 'exercises'].map((cat) => (
+                {['breakfast', 'lunch', 'dinner', 'snack', 'cheat'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setActiveMealCategory(cat)}
                     style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: activeMealCategory === cat ? 'var(--accent-primary)' : 'var(--bg-secondary)', color: activeMealCategory === cat ? '#fff' : 'var(--text-secondary)' }}
                   >
-                    {cat === 'breakfast' ? '☕ Colazione' : cat === 'lunch' ? '🍚 Pranzo' : cat === 'dinner' ? '🍗 Cena' : cat === 'snack' ? '🍌 Spuntino' : cat === 'cheat' ? '🍕 Sgarro' : '🏋️ Esercizi'}
+                    {cat === 'breakfast' ? '☕ Colazione' : cat === 'lunch' ? '🍚 Pranzo' : cat === 'dinner' ? '🍗 Cena' : cat === 'snack' ? '🍌 Spuntino' : '🍕 Sgarro'}
                   </button>
                 ))}
               </div>
 
               {/* Logged Items for Active Category */}
               <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>Loggati oggi</h4>
-                {activeMealCategory === 'exercises' ? (
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>Gli allenamenti registrati bruciano calorie e donano XP al tuo personaggio!</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {(!health.meals[activeMealCategory] || health.meals[activeMealCategory].length === 0) ? (
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo inserito in questo pasto.</p>
-                    ) : (
-                      health.meals[activeMealCategory].map((item) => (
-                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                          <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams}g)</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
-                            <button onClick={() => removeLoggedFood(activeMealCategory, item.id, item.calories, item.proteins)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-                          </div>
+                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>Loggati oggi in questo pasto</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {(!health.meals[activeMealCategory] || health.meals[activeMealCategory].length === 0) ? (
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo inserito in questo pasto.</p>
+                  ) : (
+                    health.meals[activeMealCategory].map((item) => (
+                      <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams}g)</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
+                          <button onClick={() => removeLoggedFood(activeMealCategory, item.id, item.calories, item.proteins)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
                         </div>
-                      ))
-                    )}
-                  </div>
-                )}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
 
-              {/* QUICK LOGS SLOTS SECTION (Allows removing any quick addition e.g. +25g protein, +1k steps, +1 glass water, +100 burned) */}
-              {health.quickLogs && health.quickLogs.length > 0 && (
+              {/* QUICK LOGS SLOTS FOR FOOD / WATER / PROTEINS */}
+              {foodQuickLogs.length > 0 && (
                 <div style={{ marginBottom: '16px', paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                      ⚡ Slot Inserimenti Rapidi Oggi
+                      ⚡ Slot Inserimenti Rapidi Nutrizione
                     </h4>
                     <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Tocca ✕ per annullare</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {health.quickLogs.map((log) => (
+                    {foodQuickLogs.map((log) => (
                       <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', fontSize: '11px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{log.label}</span>
@@ -864,20 +862,20 @@ export default function NutritionTab({
                 </div>
               )}
 
-              {/* Database Search Filter & List */}
+              {/* Food Database Search & List */}
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                    Seleziona dal Database
+                    Seleziona dal Database Alimenti
                   </h4>
                   <button
                     onClick={() => {
                       setShowMealsModal(false);
-                      onOpenModal(activeMealCategory === 'exercises' ? 'exercise' : 'food');
+                      onOpenModal('food');
                     }}
                     style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    ➕ Nuovo {activeMealCategory === 'exercises' ? 'Esercizio' : 'Cibo'}
+                    ➕ Nuovo Cibo
                   </button>
                 </div>
 
@@ -885,7 +883,7 @@ export default function NutritionTab({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="🔎 Cerca per nome..."
+                  placeholder="🔎 Cerca cibo per nome..."
                   style={{
                     width: '100%',
                     height: '34px',
@@ -900,39 +898,117 @@ export default function NutritionTab({
                   }}
                 />
 
-                {activeMealCategory === 'exercises' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {filteredExerciseDatabase.length === 0 ? (
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
-                    ) : (
-                      filteredExerciseDatabase.map((ex) => (
-                        <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                          <div>
-                            <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{ex.emoji} {ex.name}</div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal</div>
-                          </div>
-                          <button onClick={() => handleLogExercise(ex)} className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Esegui</button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {filteredFoodDatabase.length === 0 ? (
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo trovato.</p>
+                  ) : (
+                    filteredFoodDatabase.map((food) => (
+                      <div key={food.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{food.emoji} {food.name}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Dose: {food.baseGrams}g • Kcal: {food.baseCalories} • P: {food.baseProteins}g</div>
                         </div>
-                      ))
-                    )}
+                        <button onClick={() => handleAddMealFood(food)} className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Aggiungi</button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2) REGISTRO ALLENAMENTI (DEDICATED FLOATING MODAL POPUP) */}
+      {showExercisesModal && (
+        <div className="modal active" onClick={() => setShowExercisesModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="modal-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 className="modal-title">🏋️ Registro Allenamenti e Calorie Bruciate</h3>
+              <button onClick={() => setShowExercisesModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+              {/* QUICK LOGS SLOTS FOR WORKOUTS / BURNED / STEPS */}
+              {workoutQuickLogs.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
+                      ⚡ Slot Inserimenti Allenamento / Bruciate Oggi
+                    </h4>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Tocca ✕ per annullare</span>
                   </div>
-                ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {filteredFoodDatabase.length === 0 ? (
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo trovato.</p>
-                    ) : (
-                      filteredFoodDatabase.map((food) => (
-                        <div key={food.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                          <div>
-                            <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{food.emoji} {food.name}</div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Dose: {food.baseGrams}g • Kcal: {food.baseCalories} • P: {food.baseProteins}g</div>
-                          </div>
-                          <button onClick={() => handleAddMealFood(food)} className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Aggiungi</button>
+                    {workoutQuickLogs.map((log) => (
+                      <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{log.label}</span>
+                          <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>({log.time})</span>
                         </div>
-                      ))
-                    )}
+                        <button
+                          onClick={() => removeQuickLog(log)}
+                          style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', fontWeight: 'bold', cursor: 'pointer', fontSize: '11px', borderRadius: '6px', padding: '2px 8px' }}
+                          title="Rimuovi questo inserimento"
+                        >
+                          ✕ Rimuovi
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
+
+              {/* Workout Database Search & List */}
+              <div style={{ paddingTop: workoutQuickLogs.length > 0 ? '12px' : '0', borderTop: workoutQuickLogs.length > 0 ? '1px solid var(--glass-border)' : 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
+                    Seleziona dal Database Allenamenti
+                  </h4>
+                  <button
+                    onClick={() => {
+                      setShowExercisesModal(false);
+                      onOpenModal('exercise');
+                    }}
+                    style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    ➕ Nuovo Esercizio
+                  </button>
+                </div>
+
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="🔎 Cerca allenamento per nome..."
+                  style={{
+                    width: '100%',
+                    height: '34px',
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '8px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    marginBottom: '10px',
+                    outline: 'none'
+                  }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {filteredExerciseDatabase.length === 0 ? (
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
+                  ) : (
+                    filteredExerciseDatabase.map((ex) => (
+                      <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{ex.emoji} {ex.name}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal</div>
+                        </div>
+                        <button onClick={() => handleLogExercise(ex)} className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Esegui</button>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
