@@ -420,6 +420,7 @@ export default function NutritionTab({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setHealth(prev => ({
@@ -428,13 +429,12 @@ export default function NutritionTab({
                         }));
                       }}
                       style={{
-                        background: 'rgba(249, 115, 22, 0.15)',
-                        border: '1px solid rgba(249, 115, 22, 0.3)',
-                        borderRadius: '8px',
-                        fontSize: '15px',
-                        padding: '3px 7px',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        fontSize: '16px',
                         cursor: 'pointer',
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
@@ -462,7 +462,7 @@ export default function NutritionTab({
             >
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Passi</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '6px 0 2px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0 2px 0' }}>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -470,13 +470,12 @@ export default function NutritionTab({
                       quickAddSteps(1000);
                     }}
                     style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid var(--glass-border)',
-                      borderRadius: '8px',
-                      padding: '2px 5px',
-                      fontSize: '15px',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      fontSize: '16px',
                       cursor: 'pointer',
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}
@@ -535,13 +534,12 @@ export default function NutritionTab({
                       quickAddWater(1);
                     }}
                     style={{
-                      background: 'rgba(6, 182, 212, 0.15)',
-                      border: '1px solid rgba(6, 182, 212, 0.3)',
-                      borderRadius: '8px',
-                      padding: '2px 5px',
-                      fontSize: '15px',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      fontSize: '16px',
                       cursor: 'pointer',
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}
