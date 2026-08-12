@@ -222,11 +222,7 @@ export default function HomeTab({
             x={coords.x}
             y={coords.y + 9}
             textAnchor="middle"
-            style={{ fontSize: '26px', userSelect: 'none', cursor: 'pointer', pointerEvents: 'all' }}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onOpenStatDetail) onOpenStatDetail(s);
-            }}
+            style={{ fontSize: '26px', userSelect: 'none' }}
           >
             {s.icon}
           </text>
@@ -250,15 +246,12 @@ export default function HomeTab({
           key={`vertex-${s.id}`}
           cx={coords.x}
           cy={coords.y}
-          r="8"
+          r="5.5"
           fill="var(--accent-primary)"
           stroke="var(--bg-primary)"
           strokeWidth="2"
-          style={{ cursor: 'pointer', pointerEvents: 'all' }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onOpenStatDetail) onOpenStatDetail(s);
-          }}
+          style={{ cursor: 'pointer' }}
+          onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
         />
       );
     });
@@ -601,7 +594,7 @@ export default function HomeTab({
       {/* Stat Visibility & Management Modal */}
       {showVisibilityModal && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 99990, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
           onClick={() => setShowVisibilityModal(false)}
         >
           <div
