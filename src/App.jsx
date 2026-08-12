@@ -216,40 +216,7 @@ export default function App() {
       };
     });
 
-    // Apply Penalties and reset streaks for missed daily habits
-    if (settings.enableDailyPenalties) {
-      let xpLost = 0;
-      const yesterdayLog = completionLog[lastDate]?.habits || [];
-
-      const updatedHabits = habits.map(h => {
-        if (h.locked) return h;
-        
-        // Check if daily habit was missed yesterday
-        if (h.frequency === 'daily') {
-          const completed = yesterdayLog.includes(h.id);
-          if (!completed) {
-            // Apply streak reset & penalty
-            xpLost += h.difficulty * 2;
-            return { ...h, streak: 0 };
-          }
-        }
-        return h;
-      });
-
-      if (xpLost > 0) {
-        // Deduct player XP
-        setPlayer(prev => ({
-          ...prev,
-          totalXp: Math.max(0, prev.totalXp - xpLost),
-          level: calculateLevelFromXp(Math.max(0, prev.totalXp - xpLost))
-        }));
-        alert(`⚠️ NUOVO GIORNO: Hai saltato delle abitudini quotidiane ieri. Hai perso -${xpLost} XP e le relative serie si sono azzerate!`);
-      }
-
-      setHabits(updatedHabits);
-    }
-
-    // Update last access date
+    // Update last access date smoothly (no habit streak resets or XP penalties)
     setPlayer(prev => ({ ...prev, lastAccessDate: todayStr }));
 
     // Reset pomodoro session count
