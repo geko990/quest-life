@@ -229,7 +229,12 @@ export default function NutritionTab({
       currentWeight: weightCurrent,
       currentFat: fatPct,
       currentLean: leanPct,
-      calcGoalType: health.calcGoalType || 'lose'
+      calcGoalType: health.calcGoalType || 'lose',
+      calcGender: health.calcGender || 'male',
+      calcAge: health.calcAge !== undefined ? health.calcAge : 28,
+      calcHeight: health.calcHeight !== undefined ? health.calcHeight : 175,
+      calcActivity: health.calcActivity !== undefined ? health.calcActivity : 1.375,
+      calcFatPct: health.calcFatPct !== undefined ? health.calcFatPct : (fatPct || '')
     });
   };
 

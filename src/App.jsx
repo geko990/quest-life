@@ -728,6 +728,11 @@ export default function App() {
         setHealth(prev => ({
           ...prev,
           calcGoalType: formData.calcGoalType || prev.calcGoalType || 'lose',
+          calcGender: formData.calcGender || prev.calcGender || 'male',
+          calcAge: formData.calcAge !== undefined ? Number(formData.calcAge) : (prev.calcAge || 28),
+          calcHeight: formData.calcHeight !== undefined ? Number(formData.calcHeight) : (prev.calcHeight || 175),
+          calcActivity: formData.calcActivity !== undefined ? Number(formData.calcActivity) : (prev.calcActivity || 1.375),
+          calcFatPct: formData.calcFatPct !== undefined ? formData.calcFatPct : (prev.calcFatPct || ''),
           calories: { ...prev.calories, goal: Number(formData.calorieGoal !== undefined ? formData.calorieGoal : formData.value) || prev.calories.goal },
           proteins: { ...prev.proteins, goal: Number(formData.proteinGoal) || prev.proteins.goal },
           water: { ...prev.water, goal: Number(formData.waterGoal) || prev.water.goal },
