@@ -158,11 +158,11 @@ export default function Header({
     };
   };
 
-  // 7-Day Mood & Activity Calculation Helper
+  // 7-Day Habits Mood & Activity Calculation Helper (Focuses on Habits)
   const get7DayActivity = () => {
     const days = [];
     const todayObj = new Date();
-    let totalCompleted7Days = 0;
+    let totalHabits7Days = 0;
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date(todayObj);
@@ -173,49 +173,45 @@ export default function Header({
 
       const dayLog = completionLog?.[dateStr] || {};
       const habitsCount = (dayLog.habits || []).length;
-      const oneshotsCount = (dayLog.oneshots || []).length;
-      const questsCount = (dayLog.quests || []).length;
-      const count = habitsCount + oneshotsCount + questsCount;
-
-      totalCompleted7Days += count;
+      totalHabits7Days += habitsCount;
 
       days.push({
         dateStr,
         dayName,
         isToday: i === 0,
-        count
+        count: habitsCount
       });
     }
 
-    // Determine Mood & Encouragement level based on 7-day total
+    // Determine Mood & Encouragement level based on 7-day habits completed
     let moodEmoji = '🌱';
     let moodTitle = 'Nuovo Inizio!';
-    let moodDesc = 'Prenditi il tuo tempo. Ogni giorno offre una nuova opportunità per fare anche solo un piccolo passo, senza alcuna ansia.';
+    let moodDesc = 'Prenditi il tuo tempo. Le abitudini sono qui per aiutarti quando vuoi tu, senza alcuna ansia o pressione.';
     let moodTag = 'Tranquillo';
-    let moodColor = '#a855f7';
+    let moodColor = '#8b5cf6';
 
-    if (totalCompleted7Days >= 21) {
+    if (totalHabits7Days >= 14) {
       moodEmoji = '🥳';
-      moodTitle = 'Super Inarrestabile!';
-      moodDesc = 'Stai completando tantissimi traguardi! La tua energia è straordinaria, continua a festeggiare i tuoi successi!';
-      moodTag = 'A Festa';
+      moodTitle = 'Costanza Straordinaria!';
+      moodDesc = 'Stai mantenendo una regolarità fantastica con le tue abitudini quotidiane! Continua così!';
+      moodTag = 'Super Costante';
       moodColor = '#f59e0b';
-    } else if (totalCompleted7Days >= 12) {
+    } else if (totalHabits7Days >= 7) {
       moodEmoji = '😄';
-      moodTitle = 'In Gran Forma!';
-      moodDesc = 'Stai mantenendo un ottimo ritmo di completamento. Ottimo lavoro, stai procedendo alla grande!';
+      moodTitle = 'Ottimo Ritmo!';
+      moodDesc = 'Stai seguendo con successo le tue abitudini principali. Ottimo lavoro, stai procedendo benissimo!';
       moodTag = 'Attivo';
       moodColor = '#3b82f6';
-    } else if (totalCompleted7Days >= 5) {
+    } else if (totalHabits7Days >= 3) {
       moodEmoji = '🙂';
-      moodTitle = 'Buon Ritmo!';
-      moodDesc = 'Stai procedendo con i tuoi tempi in modo sereno e costante. Ogni singola azione completata ha un grande valore!';
+      moodTitle = 'Passo Sereno!';
+      moodDesc = 'Ti stai prendendo cura delle tue abitudini con calma e senza fretta. Ogni singola abitudine conta!';
       moodTag = 'Costante';
       moodColor = '#10b981';
     } else {
       moodEmoji = '🌱';
       moodTitle = 'Nuovo Inizio!';
-      moodDesc = 'Zero ansia o pressione! Il bello del gioco è fare un piccolo passo quando ti senti pronto. Sei sulla strada giusta!';
+      moodDesc = 'Zero ansia né pressione. Il bello delle abitudini è riprenderle con serenità quando ti senti pronto!';
       moodTag = 'Relax';
       moodColor = '#8b5cf6';
     }
@@ -224,7 +220,7 @@ export default function Header({
 
     return {
       days,
-      totalCompleted7Days,
+      totalCompleted7Days: totalHabits7Days,
       moodEmoji,
       moodTitle,
       moodDesc,
@@ -240,19 +236,29 @@ export default function Header({
     <>
       {/* App Header (Original v3.3.0) */}
       <header className="app-header">
-        {/* Engagement Mood Widget (Replaces strict streak) */}
+        {/* Engagement Mood Widget (Focused on Habits, Clean Emoji without visible number) */}
         <div
           className="header-streak"
           id="headerStreak"
           onClick={() => setShowStreak(!showStreak)}
-          title="Visualizza il tuo stato di impegno negli ultimi 7 giorni"
+          title="Visualizza lo stato di regolarità delle tue abitudini negli ultimi 7 giorni"
           style={{ cursor: 'pointer' }}
         >
-          <div className="streak-circle" style={{ background: 'var(--bg-secondary)', border: `1px solid ${activity7Days.moodColor}` }}>
-            <span className="streak-emoji" style={{ fontSize: '18px' }}>{activity7Days.moodEmoji}</span>
-          </div>
-          <div className="streak-badge-count" style={{ background: activity7Days.moodColor }}>
-            <span id="globalStreak">{activity7Days.totalCompleted7Days}</span>
+          <div
+            className="streak-circle"
+            style={{
+              background: 'var(--bg-secondary)',
+              border: `2px solid ${activity7Days.moodColor}`,
+              boxShadow: `0 0 10px ${activity7Days.moodColor}40`,
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <span className="streak-emoji" style={{ fontSize: '20px' }}>{activity7Days.moodEmoji}</span>
           </div>
         </div>
 
@@ -450,7 +456,7 @@ export default function Header({
                 <h3 className="popup-name">{activity7Days.moodTitle}</h3>
                 <div className="popup-level-info">
                   <span className="popup-level" style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>
-                    {activity7Days.totalCompleted7Days} azioni negli ultimi 7 giorni
+                    {activity7Days.totalCompleted7Days} abitudini nei 7 giorni
                   </span>
                 </div>
               </div>
@@ -466,7 +472,7 @@ export default function Header({
             {/* 7-Day Activity Chart */}
             <div style={{ marginTop: '12px' }}>
               <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>Andamento 7 Giorni</span>
+                <span>Regolarità Abitudini (7 gg)</span>
                 <span style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>Media: {(activity7Days.totalCompleted7Days / 7).toFixed(1)}/gg</span>
               </div>
 
