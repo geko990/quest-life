@@ -50,15 +50,65 @@ export default function NutritionTab({
   const leanPct = health.weight.currentLean || 0;
   const fatPct = health.weight.currentFat || 0;
 
-  // Quick Action Helpers
-  const quickAddWater = (delta = 1) => {
-    setHealth(prev => ({
-      ...prev,
-      water: {
-        ...prev.water,
-        consumed: Math.max(0, Math.min(prev.water.goal * 3, (prev.water.consumed || 0) + delta))
+  // Quick Action Helpers & Slots Tracking
+  const createLogItem = (type, label, amount) => ({
+    id: 'qlog_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    type,
+    label,
+    amount,
+    time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+  });
+
+  const removeQuickLog = (logItem) => {
+    setHealth(prev => {
+      const updatedLogs = (prev.quickLogs || []).filter(l => l.id !== logItem.id);
+      let updatedState = { ...prev, quickLogs: updatedLogs };
+
+      if (logItem.type === 'water') {
+        updatedState.water = {
+          ...prev.water,
+          consumed: Math.max(0, (prev.water.consumed || 0) - logItem.amount)
+        };
+      } else if (logItem.type === 'proteins') {
+        updatedState.proteins = {
+          ...prev.proteins,
+          consumed: Math.max(0, (prev.proteins.consumed || 0) - logItem.amount)
+        };
+      } else if (logItem.type === 'steps') {
+        updatedState.steps = {
+          ...prev.steps,
+          current: Math.max(0, (prev.steps.current || 0) - logItem.amount)
+        };
+      } else if (logItem.type === 'calories') {
+        updatedState.calories = {
+          ...prev.calories,
+          consumed: Math.max(0, (prev.calories.consumed || 0) - logItem.amount)
+        };
+      } else if (logItem.type === 'burned') {
+        updatedState.calories = {
+          ...prev.calories,
+          burned: Math.max(0, (prev.calories.burned || 0) - logItem.amount)
+        };
       }
-    }));
+      return updatedState;
+    });
+  };
+
+  const quickAddWater = (delta = 1) => {
+    setHealth(prev => {
+      const newLogs = [...(prev.quickLogs || [])];
+      if (delta > 0) {
+        newLogs.push(createLogItem('water', '🥛 +1 Bicchiere (250ml)', 1));
+      }
+      return {
+        ...prev,
+        water: {
+          ...prev.water,
+          consumed: Math.max(0, Math.min(prev.water.goal * 3, (prev.water.consumed || 0) + delta))
+        },
+        quickLogs: newLogs
+      };
+    });
   };
 
   const quickAddSteps = (amount) => {
@@ -67,7 +117,8 @@ export default function NutritionTab({
       steps: {
         ...prev.steps,
         current: Math.max(0, (prev.steps.current || 0) + amount)
-      }
+      },
+      quickLogs: [...(prev.quickLogs || []), createLogItem('steps', `👟 +${amount.toLocaleString()} Passi`, amount)]
     }));
   };
 
@@ -77,17 +128,19 @@ export default function NutritionTab({
       proteins: {
         ...prev.proteins,
         consumed: Math.max(0, (prev.proteins.consumed || 0) + amount)
-      }
+      },
+      quickLogs: [...(prev.quickLogs || []), createLogItem('proteins', `🍗 +${amount}g Proteine`, amount)]
     }));
   };
 
-  const quickAddCalories = (amount) => {
+  const quickAddBurnedCalories = (amount = 100) => {
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        consumed: Math.max(0, (prev.calories.consumed || 0) + amount)
-      }
+        burned: Math.max(0, (prev.calories.burned || 0) + amount)
+      },
+      quickLogs: [...(prev.quickLogs || []), createLogItem('burned', `🔥 +${amount} kcal Bruciate`, amount)]
     }));
   };
 
@@ -396,10 +449,7 @@ export default function NutritionTab({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setHealth(prev => ({
-                          ...prev,
-                          calories: { ...prev.calories, burned: (prev.calories.burned || 0) + 100 }
-                        }));
+                        quickAddBurnedCalories(100);
                       }}
                       style={{
                         background: 'rgba(249, 115, 22, 0.15)',
@@ -412,7 +462,7 @@ export default function NutritionTab({
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
-                      title="Toccca la fiamma per aggiungere +100 kcal bruciate"
+                      title="Tocca la fiamma per aggiungere +100 kcal bruciate al volo"
                     >
                       🔥
                     </button>
@@ -421,7 +471,6 @@ export default function NutritionTab({
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f97316' }}>{caloriesBurned} kcal</div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '10px', color: '#f97316', fontWeight: 'bold' }}>+100🔥</span>
                 </div>
               </div>
             </div>
@@ -449,6 +498,7 @@ export default function NutritionTab({
                   <div style={{ height: '100%', width: `${stepsPct}%`, background: 'var(--accent-primary)', transition: 'width 0.3s' }}></div>
                 </div>
 
+                {/* Quick Fast Action Pills */}
                 <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }} onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => quickAddSteps(1000)}
@@ -489,6 +539,7 @@ export default function NutritionTab({
                   <div style={{ height: '100%', width: `${proteinsPct}%`, background: '#eab308', transition: 'width 0.3s' }}></div>
                 </div>
 
+                {/* Quick Fast Action Pills */}
                 <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }} onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => quickAddProteins(10)}
@@ -529,6 +580,7 @@ export default function NutritionTab({
                   <div style={{ height: '100%', width: `${waterPct}%`, background: '#06b6d4', transition: 'width 0.3s' }}></div>
                 </div>
 
+                {/* Quick 1-Tap Water Controls */}
                 <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }} onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => quickAddWater(-1)}
@@ -741,7 +793,7 @@ export default function NutritionTab({
         <div className="modal active" onClick={() => setShowMealsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 className="modal-title">🍴 Registro Pasti e Allenamenti</h3>
+              <h3 className="modal-title">🍴 Registro Pasti, Allenamenti e Inserimenti</h3>
               <button onClick={() => setShowMealsModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}>✕</button>
             </div>
 
@@ -782,6 +834,35 @@ export default function NutritionTab({
                   </div>
                 )}
               </div>
+
+              {/* QUICK LOGS SLOTS SECTION (Allows removing any quick addition e.g. +25g protein, +1k steps, +1 glass water, +100 burned) */}
+              {health.quickLogs && health.quickLogs.length > 0 && (
+                <div style={{ marginBottom: '16px', paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
+                      ⚡ Slot Inserimenti Rapidi Oggi
+                    </h4>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Tocca ✕ per annullare</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {health.quickLogs.map((log) => (
+                      <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{log.label}</span>
+                          <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>({log.time})</span>
+                        </div>
+                        <button
+                          onClick={() => removeQuickLog(log)}
+                          style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', fontWeight: 'bold', cursor: 'pointer', fontSize: '11px', borderRadius: '6px', padding: '2px 8px' }}
+                          title="Rimuovi questo inserimento"
+                        >
+                          ✕ Rimuovi
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Database Search Filter & List */}
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>

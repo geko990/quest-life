@@ -149,6 +149,41 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         [name]: isNaN(num) ? '' : value
       }));
     }
+  const handleCalculateTdee = () => {
+    const weight = parseFloat(form.calcWeight || form.targetWeight) || 75;
+    const height = parseFloat(form.calcHeight) || 175;
+    const age = parseFloat(form.calcAge) || 28;
+    const gender = form.calcGender || 'male';
+    const activity = parseFloat(form.calcActivity) || 1.375;
+    const goalType = form.calcGoalType || 'maintenance';
+
+    let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+    if (gender === 'male') {
+      bmr += 5;
+    } else {
+      bmr -= 161;
+    }
+
+    const tdeeBase = bmr * activity;
+    let targetCal = tdeeBase;
+    let proteinMultiplier = 1.6;
+
+    if (goalType === 'loss') {
+      targetCal = tdeeBase * 0.85;
+      proteinMultiplier = 2.0;
+    } else if (goalType === 'gain') {
+      targetCal = tdeeBase * 1.15;
+      proteinMultiplier = 1.8;
+    } else {
+      targetCal = tdeeBase;
+      proteinMultiplier = 1.6;
+    }
+
+    setForm(prev => ({
+      ...prev,
+      calorieGoal: Math.round(targetCal),
+      proteinGoal: Math.round(weight * proteinMultiplier)
+    }));
   };
 
   const handleSave = (e) => {
@@ -1113,151 +1148,184 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
       default:
         if (type === 'health_goals' || type === 'health_goal') {
-          const calculateTdee = () => {
-            const weight = parseFloat(form.calcWeight) || 75;
-            const height = parseFloat(form.calcHeight) || 175;
-            const age = parseFloat(form.calcAge) || 28;
-            const gender = form.calcGender || 'male';
-            const activity = parseFloat(form.calcActivity) || 1.375;
-
-            // Mifflin-St Jeor Formula
-            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-            if (gender === 'male') {
-              bmr += 5;
-            } else {
-              bmr -= 161;
-            }
-
-            const tdee = Math.round(bmr * activity);
-            const suggestedProtein = Math.round(weight * 1.6); // 1.6g/kg
-
-            setForm(prev => ({
-              ...prev,
-              calorieGoal: tdee,
-              proteinGoal: suggestedProtein
-            }));
-          };
-
           return (
             <div className="flex flex-col gap-4">
-              <p className="text-xs text-text-secondary font-medium">
-                Imposta i tuoi traguardi quotidiani di salute oppure usa il calcolatore rapido di fabbisogno calorico.
-              </p>
+              {/* Daily Goals Section Header */}
+              <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-2">
+                <span className="text-xs font-bold text-text-primary uppercase tracking-wider">🎯 Obiettivi Giornalieri</span>
+                <span className="text-[10px] text-text-muted">Modifica direttamente i valori</span>
+              </div>
 
               {/* Goal Inputs Grid */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">🚩 Calorie Obiettivo (kcal)</label>
+                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🚩 Calorie Obiettivo (kcal)</label>
                   <input
                     type="number"
                     name="calorieGoal"
-                    value={form.calorieGoal !== undefined ? form.calorieGoal : 1600}
+                    value={form.calorieGoal !== undefined ? form.calorieGoal : ''}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    placeholder="1600"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">🍗 Proteine Obiettivo (g)</label>
+
+                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🍗 Proteine Obiettivo (g)</label>
                   <input
                     type="number"
                     name="proteinGoal"
-                    value={form.proteinGoal !== undefined ? form.proteinGoal : 100}
+                    value={form.proteinGoal !== undefined ? form.proteinGoal : ''}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    placeholder="100"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">🥛 Acqua Obiettivo (Bicchieri)</label>
+
+                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🥛 Acqua (Bicchieri da 250ml)</label>
                   <input
                     type="number"
                     name="waterGoal"
-                    value={form.waterGoal !== undefined ? form.waterGoal : 8}
+                    value={form.waterGoal !== undefined ? form.waterGoal : ''}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    placeholder="8"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
+
+                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
+                  <label className="block text-[11px] text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
                   <input
                     type="number"
                     name="stepGoal"
-                    value={form.stepGoal !== undefined ? form.stepGoal : 10000}
+                    value={form.stepGoal !== undefined ? form.stepGoal : ''}
                     onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                    placeholder="10000"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">⚖️ Peso Corporeo Target (kg)</label>
+              <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
+                <label className="block text-[11px] text-text-secondary font-bold mb-1">⚖️ Peso Corporeo Target (kg)</label>
                 <input
                   type="number"
                   name="targetWeight"
                   step="0.1"
-                  value={form.targetWeight !== undefined ? form.targetWeight : 70}
+                  value={form.targetWeight !== undefined ? form.targetWeight : ''}
                   onChange={handleNumberChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  placeholder="70"
+                  className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 />
               </div>
 
-              {/* Integrated BMR / TDEE Calculator */}
-              <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2 mt-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-text-primary">⚡ Calcolatore Fabbisogno TDEE</span>
+              {/* Integrated Smart BMR / TDEE Calculator */}
+              <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-3 mt-1">
+                <div className="flex justify-between items-center border-b border-[var(--glass-border)] pb-2">
+                  <div>
+                    <span className="text-xs font-bold text-text-primary block">⚡ Calcolatore Fabbisogno TDEE</span>
+                    <span className="text-[10px] text-text-muted">Calcola l'apporto in base al tuo obiettivo</span>
+                  </div>
                   <button
                     type="button"
-                    onClick={calculateTdee}
-                    className="text-xs font-bold text-accent-primary bg-[var(--bg-card)] px-3 py-1 rounded-lg border border-[var(--glass-border)] hover:opacity-90"
+                    onClick={handleCalculateTdee}
+                    className="text-xs font-bold text-white bg-[var(--accent-primary)] px-3 py-1.5 rounded-xl shadow-md hover:opacity-90 transition-opacity"
                   >
                     Calcola & Applica
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5">Sesso</label>
-                    <select
-                      name="calcGender"
-                      value={form.calcGender || 'male'}
-                      onChange={handleChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] rounded-lg px-1 border border-[var(--glass-border)]"
+
+                {/* 3 Goal Situations Selector */}
+                <div>
+                  <label className="block text-[10px] font-bold text-text-secondary mb-1.5 uppercase">1. Scegli il tuo Obiettivo</label>
+                  <div className="grid grid-cols-3 gap-1.5 bg-[var(--bg-card)] p-1 rounded-xl border border-[var(--glass-border)]">
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, calcGoalType: 'loss' }))}
+                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all ${
+                        (form.calcGoalType || 'maintenance') === 'loss'
+                          ? 'bg-accent-primary text-white shadow-sm'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
                     >
-                      <option value="male">Uomo</option>
-                      <option value="female">Donna</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5">Età</label>
-                    <input
-                      type="number"
-                      name="calcAge"
-                      value={form.calcAge || 28}
-                      onChange={handleNumberChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] rounded-lg px-2 border border-[var(--glass-border)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5">Altezza (cm)</label>
-                    <input
-                      type="number"
-                      name="calcHeight"
-                      value={form.calcHeight || 175}
-                      onChange={handleNumberChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] rounded-lg px-2 border border-[var(--glass-border)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5">Attività</label>
-                    <select
-                      name="calcActivity"
-                      value={form.calcActivity || 1.375}
-                      onChange={handleChange}
-                      className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] rounded-lg px-1 border border-[var(--glass-border)]"
+                      📉 Dimagrire
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, calcGoalType: 'maintenance' }))}
+                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all ${
+                        (form.calcGoalType || 'maintenance') === 'maintenance'
+                          ? 'bg-accent-primary text-white shadow-sm'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
                     >
-                      <option value="1.2">Sedentario</option>
-                      <option value="1.375">Leggero</option>
-                      <option value="1.55">Moderato</option>
-                      <option value="1.725">Intenso</option>
-                    </select>
+                      ⚖️ Tonificare
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, calcGoalType: 'gain' }))}
+                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all ${
+                        (form.calcGoalType || 'maintenance') === 'gain'
+                          ? 'bg-accent-primary text-white shadow-sm'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
+                    >
+                      🏋️ Massa
+                    </button>
+                  </div>
+                </div>
+
+                {/* Physical Data Inputs */}
+                <div>
+                  <label className="block text-[10px] font-bold text-text-secondary mb-1.5 uppercase">2. Parametri Fisici</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-[9px] text-text-muted mb-0.5">Sesso</label>
+                      <select
+                        name="calcGender"
+                        value={form.calcGender || 'male'}
+                        onChange={handleChange}
+                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] font-semibold rounded-lg px-1 border border-[var(--glass-border)]"
+                      >
+                        <option value="male">Uomo</option>
+                        <option value="female">Donna</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-text-muted mb-0.5">Età</label>
+                      <input
+                        type="number"
+                        name="calcAge"
+                        value={form.calcAge !== undefined ? form.calcAge : 28}
+                        onChange={handleNumberChange}
+                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-text-muted mb-0.5">Altezza (cm)</label>
+                      <input
+                        type="number"
+                        name="calcHeight"
+                        value={form.calcHeight !== undefined ? form.calcHeight : 175}
+                        onChange={handleNumberChange}
+                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-text-muted mb-0.5">Attività</label>
+                      <select
+                        name="calcActivity"
+                        value={form.calcActivity || 1.375}
+                        onChange={handleChange}
+                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[9px] font-semibold rounded-lg px-1 border border-[var(--glass-border)]"
+                      >
+                        <option value="1.2">Sedentario</option>
+                        <option value="1.375">Leggero</option>
+                        <option value="1.55">Moderato</option>
+                        <option value="1.725">Intenso</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1565,4 +1633,5 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       </div>
     </div>
   );
+}
 }
