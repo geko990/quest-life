@@ -228,7 +228,8 @@ export default function NutritionTab({
       targetWeight,
       currentWeight: weightCurrent,
       currentFat: fatPct,
-      currentLean: leanPct
+      currentLean: leanPct,
+      calcGoalType: health.calcGoalType || 'lose'
     });
   };
 

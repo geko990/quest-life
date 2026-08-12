@@ -727,6 +727,7 @@ export default function App() {
       if (field === 'goal' || field === 'goals') {
         setHealth(prev => ({
           ...prev,
+          calcGoalType: formData.calcGoalType || prev.calcGoalType || 'lose',
           calories: { ...prev.calories, goal: Number(formData.calorieGoal !== undefined ? formData.calorieGoal : formData.value) || prev.calories.goal },
           proteins: { ...prev.proteins, goal: Number(formData.proteinGoal) || prev.proteins.goal },
           water: { ...prev.water, goal: Number(formData.waterGoal) || prev.water.goal },
