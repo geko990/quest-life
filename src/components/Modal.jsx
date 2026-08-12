@@ -137,10 +137,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: parseFloat(value) || 0
-    }));
+    if (value === '' || value === null || value === undefined) {
+      setForm(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    } else {
+      const num = parseFloat(value);
+      setForm(prev => ({
+        ...prev,
+        [name]: isNaN(num) ? '' : value
+      }));
+    }
   };
 
   const handleSave = (e) => {

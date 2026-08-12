@@ -353,6 +353,7 @@ export default function NutritionTab({
 
               {/* Calorie Stats Info & Goal Launcher */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: '150px' }}>
+                {/* 1) Obiettivo Card (Clean layout, no extra configure text) */}
                 <div
                   onClick={handleOpenGoalsModal}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
@@ -365,12 +366,13 @@ export default function NutritionTab({
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{calorieGoal} kcal</div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>✏️ Configura</span>
                 </div>
 
+                {/* 2) Cibo Consumato Card (Opens meals registry to log or pick from memory) */}
                 <div
                   onClick={() => setShowMealsModal(true)}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  title="Apri registro pasti per inserire o scegliere cibi dalla memoria"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '15px' }}>🍴</span>
@@ -379,35 +381,47 @@ export default function NutritionTab({
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{caloriesConsumed} kcal</div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => quickAddCalories(100)}
-                      style={{ background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#3b82f6', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', cursor: 'pointer' }}
-                      title="Aggiungi 100 kcal"
-                    >
-                      +100
-                    </button>
-                    <button
-                      onClick={() => quickAddCalories(250)}
-                      style={{ background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#3b82f6', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', cursor: 'pointer' }}
-                      title="Aggiungi 250 kcal"
-                    >
-                      +250
-                    </button>
-                  </div>
                 </div>
 
+                {/* 3) Bruciate Card (Clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
                 <div
-                  onClick={() => onOpenModal('health_burned')}
+                  onClick={() => {
+                    setActiveMealCategory('exercises');
+                    setShowMealsModal(true);
+                  }}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  title="Clicca per aprire la lista allenamenti"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '15px' }}>🔥</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHealth(prev => ({
+                          ...prev,
+                          calories: { ...prev.calories, burned: (prev.calories.burned || 0) + 100 }
+                        }));
+                      }}
+                      style={{
+                        background: 'rgba(249, 115, 22, 0.15)',
+                        border: '1px solid rgba(249, 115, 22, 0.3)',
+                        borderRadius: '8px',
+                        fontSize: '15px',
+                        padding: '3px 7px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      title="Toccca la fiamma per aggiungere +100 kcal bruciate"
+                    >
+                      🔥
+                    </button>
                     <div>
                       <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bruciate</div>
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f97316' }}>{caloriesBurned} kcal</div>
                     </div>
                   </div>
+                  <span style={{ fontSize: '10px', color: '#f97316', fontWeight: 'bold' }}>+100🔥</span>
                 </div>
               </div>
             </div>
