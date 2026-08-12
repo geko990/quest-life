@@ -225,7 +225,10 @@ export default function NutritionTab({
       proteinGoal: proteinsGoal,
       waterGoal,
       stepGoal: stepsGoal,
-      targetWeight
+      targetWeight,
+      currentWeight: weightCurrent,
+      currentFat: fatPct,
+      currentLean: leanPct
     });
   };
 
