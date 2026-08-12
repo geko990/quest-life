@@ -1141,7 +1141,8 @@ export default function App() {
       {showMottoModal && (
         <div
           onClick={() => setShowMottoModal(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+          style={{ zIndex: 99999 }}
         >
           <div
             onClick={(e) => e.stopPropagation()}

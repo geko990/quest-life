@@ -795,7 +795,10 @@ export default function NutritionTab({
 
       {/* 1) REGISTRO PASTI (DEDICATED FLOATING MODAL POPUP) */}
       {showMealsModal && (
-        <div className="modal active" onClick={() => setShowMealsModal(false)}>
+        <div
+          onClick={() => setShowMealsModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="modal-title">🍴 Registro Pasti e Nutrizione</h3>
@@ -924,7 +927,10 @@ export default function NutritionTab({
 
       {/* 2) REGISTRO ALLENAMENTI (DEDICATED FLOATING MODAL POPUP) */}
       {showExercisesModal && (
-        <div className="modal active" onClick={() => setShowExercisesModal(false)}>
+        <div
+          onClick={() => setShowExercisesModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="modal-title">🏋️ Registro Allenamenti e Calorie Bruciate</h3>
@@ -1020,7 +1026,10 @@ export default function NutritionTab({
 
       {/* HISTORY STATS MODAL (RICH ENHANCED VIEW) */}
       {showHistoryModal && (
-        <div className="modal active" onClick={() => setShowHistoryModal(false)}>
+        <div
+          onClick={() => setShowHistoryModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="modal-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="modal-title">📊 Storico Dati Salute (30 Giorni)</h3>
