@@ -137,52 +137,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
-    if (value === '' || value === null || value === undefined) {
-      setForm(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    } else {
-      const num = parseFloat(value);
-      setForm(prev => ({
-        ...prev,
-        [name]: isNaN(num) ? '' : value
-      }));
-    }
-  const handleCalculateTdee = () => {
-    const weight = parseFloat(form.calcWeight || form.targetWeight) || 75;
-    const height = parseFloat(form.calcHeight) || 175;
-    const age = parseFloat(form.calcAge) || 28;
-    const gender = form.calcGender || 'male';
-    const activity = parseFloat(form.calcActivity) || 1.375;
-    const goalType = form.calcGoalType || 'maintenance';
-
-    let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-    if (gender === 'male') {
-      bmr += 5;
-    } else {
-      bmr -= 161;
-    }
-
-    const tdeeBase = bmr * activity;
-    let targetCal = tdeeBase;
-    let proteinMultiplier = 1.6;
-
-    if (goalType === 'loss') {
-      targetCal = tdeeBase * 0.85;
-      proteinMultiplier = 2.0;
-    } else if (goalType === 'gain') {
-      targetCal = tdeeBase * 1.15;
-      proteinMultiplier = 1.8;
-    } else {
-      targetCal = tdeeBase;
-      proteinMultiplier = 1.6;
-    }
-
     setForm(prev => ({
       ...prev,
-      calorieGoal: Math.round(targetCal),
-      proteinGoal: Math.round(weight * proteinMultiplier)
+      [name]: parseFloat(value) || 0
     }));
   };
 
@@ -1025,15 +982,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* TESSERA 1: Emoji, Nome, Descrizione, Livello e XP */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center', position: 'relative' }}>
-              <button
-                type="button"
-                onClick={onClose}
-                style={{ position: 'absolute', top: '10px', right: '12px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}
-                title="Chiudi"
-              >
-                ✕
-              </button>
+            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
               {/* Emoji in alto (senza cerchio) */}
               <div style={{ fontSize: '42px', lineHeight: '1', marginBottom: '4px' }}>
                 {statData.icon || '⭐'}
@@ -1154,197 +1103,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         );
       }
 
-      case 'health_goals':
-      case 'health_goal':
-        return (
-            <div className="flex flex-col gap-4">
-              {/* Daily Goals Section Header */}
-              <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-2">
-                <span className="text-xs font-bold text-text-primary uppercase tracking-wider">🎯 Obiettivi Giornalieri</span>
-                <span className="text-[10px] text-text-muted">Modifica direttamente i valori</span>
-              </div>
-
-              {/* Goal Inputs Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🚩 Calorie Obiettivo (kcal)</label>
-                  <input
-                    type="number"
-                    name="calorieGoal"
-                    value={form.calorieGoal !== undefined ? form.calorieGoal : ''}
-                    onChange={handleNumberChange}
-                    placeholder="1600"
-                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-
-                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🍗 Proteine Obiettivo (g)</label>
-                  <input
-                    type="number"
-                    name="proteinGoal"
-                    value={form.proteinGoal !== undefined ? form.proteinGoal : ''}
-                    onChange={handleNumberChange}
-                    placeholder="100"
-                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-
-                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">🥛 Acqua (Bicchieri da 250ml)</label>
-                  <input
-                    type="number"
-                    name="waterGoal"
-                    value={form.waterGoal !== undefined ? form.waterGoal : ''}
-                    onChange={handleNumberChange}
-                    placeholder="8"
-                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-
-                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
-                  <label className="block text-[11px] text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
-                  <input
-                    type="number"
-                    name="stepGoal"
-                    value={form.stepGoal !== undefined ? form.stepGoal : ''}
-                    onChange={handleNumberChange}
-                    placeholder="10000"
-                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)]">
-                <label className="block text-[11px] text-text-secondary font-bold mb-1">⚖️ Peso Corporeo Target (kg)</label>
-                <input
-                  type="number"
-                  name="targetWeight"
-                  step="0.1"
-                  value={form.targetWeight !== undefined ? form.targetWeight : ''}
-                  onChange={handleNumberChange}
-                  placeholder="70"
-                  className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-lg px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
-
-              {/* Integrated Smart BMR / TDEE Calculator */}
-              <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-3 mt-1">
-                <div className="flex justify-between items-center border-b border-[var(--glass-border)] pb-2">
-                  <div>
-                    <span className="text-xs font-bold text-text-primary block">⚡ Calcolatore Fabbisogno TDEE</span>
-                    <span className="text-[10px] text-text-muted">Calcola l'apporto in base al tuo obiettivo</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCalculateTdee}
-                    className="text-xs font-bold text-white bg-[var(--accent-primary)] px-3 py-1.5 rounded-xl shadow-md hover:opacity-90 transition-opacity"
-                  >
-                    Calcola & Applica
-                  </button>
-                </div>
-
-                {/* 3 Goal Situations Selector */}
-                <div>
-                  <label className="block text-[10px] font-bold text-text-secondary mb-1.5 uppercase">1. Scegli il tuo Obiettivo</label>
-                  <div className="grid grid-cols-3 gap-1.5 bg-[var(--bg-card)] p-1 rounded-xl border border-[var(--glass-border)]">
-                    <button
-                      type="button"
-                      onClick={() => setForm(prev => ({ ...prev, calcGoalType: 'loss' }))}
-                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all ${
-                        (form.calcGoalType || 'maintenance') === 'loss'
-                          ? 'bg-accent-primary text-white shadow-sm'
-                          : 'text-text-secondary hover:text-text-primary'
-                      }`}
-                    >
-                      📉 Dimagrire
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setForm(prev => ({ ...prev, calcGoalType: 'maintenance' }))}
-                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all ${
-                        (form.calcGoalType || 'maintenance') === 'maintenance'
-                          ? 'bg-accent-primary text-white shadow-sm'
-                          : 'text-text-secondary hover:text-text-primary'
-                      }`}
-                    >
-                      ⚖️ Tonificare
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setForm(prev => ({ ...prev, calcGoalType: 'gain' }))}
-                      className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all ${
-                        (form.calcGoalType || 'maintenance') === 'gain'
-                          ? 'bg-accent-primary text-white shadow-sm'
-                          : 'text-text-secondary hover:text-text-primary'
-                      }`}
-                    >
-                      🏋️ Massa
-                    </button>
-                  </div>
-                </div>
-
-                {/* Physical Data Inputs */}
-                <div>
-                  <label className="block text-[10px] font-bold text-text-secondary mb-1.5 uppercase">2. Parametri Fisici</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    <div>
-                      <label className="block text-[9px] text-text-muted mb-0.5">Sesso</label>
-                      <select
-                        name="calcGender"
-                        value={form.calcGender || 'male'}
-                        onChange={handleChange}
-                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] font-semibold rounded-lg px-1 border border-[var(--glass-border)]"
-                      >
-                        <option value="male">Uomo</option>
-                        <option value="female">Donna</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-text-muted mb-0.5">Età</label>
-                      <input
-                        type="number"
-                        name="calcAge"
-                        value={form.calcAge !== undefined ? form.calcAge : 28}
-                        onChange={handleNumberChange}
-                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-text-muted mb-0.5">Altezza (cm)</label>
-                      <input
-                        type="number"
-                        name="calcHeight"
-                        value={form.calcHeight !== undefined ? form.calcHeight : 175}
-                        onChange={handleNumberChange}
-                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[10px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-text-muted mb-0.5">Attività</label>
-                      <select
-                        name="calcActivity"
-                        value={form.calcActivity || 1.375}
-                        onChange={handleChange}
-                        className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[9px] font-semibold rounded-lg px-1 border border-[var(--glass-border)]"
-                      >
-                        <option value="1.2">Sedentario</option>
-                        <option value="1.375">Leggero</option>
-                        <option value="1.55">Moderato</option>
-                        <option value="1.725">Intenso</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-
       default:
-        const currentActiveT = currentType || type;
-        if (currentActiveT?.startsWith('health_')) {
-          const field = currentActiveT.split('_')[1];
+        if (type?.startsWith('health_')) {
+          const field = type.split('_')[1];
           const labels = {
+            goal: 'Obiettivo Calorie Giornaliero',
             consumed: 'Aggiungi Calorie Cibo',
             burned: 'Aggiungi Calorie Allenamento',
             steps: 'Passi Effettuati',
@@ -1436,7 +1199,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       pomodoro: 'Timer Pomodoro'
     };
     if (activeT === 'quest_detail') return 'Dettaglio Campagna';
-    if (activeT === 'health_goals' || activeT === 'health_goal') return '🎯 Obiettivi Salute & Calcolatore TDEE';
     if (activeT?.startsWith('health_')) return 'Aggiorna Dati';
     return `${action} ${names[activeT] || 'Elemento'}`;
   };
@@ -1447,8 +1209,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 flex items-center justify-center p-4 modal-overlay active animate-fade-in"
-      style={{ zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay active animate-fade-in"
+      style={{ background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -1458,10 +1220,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? 'auto' : '3 / 4',
-          maxWidth: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '420px' : '360px',
-          width: '92%',
-          maxHeight: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '92vh' : '88vh'
+          aspectRatio: activeT === 'quest_detail' ? 'auto' : '3 / 4',
+          maxWidth: activeT === 'quest_detail' ? '400px' : '360px',
+          width: '90%',
+          maxHeight: activeT === 'quest_detail' ? '92vh' : '88vh'
         }}
       >
         {/* Header (Hidden for stat_detail) */}
@@ -1643,5 +1405,4 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       </div>
     </div>
   );
-}
 }

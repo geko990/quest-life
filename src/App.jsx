@@ -700,15 +700,8 @@ export default function App() {
       }));
     } else if (modalType?.startsWith('health_')) {
       const field = modalType.split('_')[1];
-      if (field === 'goal' || field === 'goals') {
-        setHealth(prev => ({
-          ...prev,
-          calories: { ...prev.calories, goal: Number(formData.calorieGoal !== undefined ? formData.calorieGoal : formData.value) || prev.calories.goal },
-          proteins: { ...prev.proteins, goal: Number(formData.proteinGoal) || prev.proteins.goal },
-          water: { ...prev.water, goal: Number(formData.waterGoal) || prev.water.goal },
-          steps: { ...prev.steps, goal: Number(formData.stepGoal) || prev.steps.goal },
-          weight: { ...prev.weight, target: Number(formData.targetWeight) || prev.weight.target }
-        }));
+      if (field === 'goal') {
+        setHealth(prev => ({ ...prev, calories: { ...prev.calories, goal: formData.value } }));
       } else if (field === 'consumed') {
         setHealth(prev => ({ ...prev, calories: { ...prev.calories, consumed: prev.calories.consumed + formData.value } }));
       } else if (field === 'burned') {
@@ -1141,8 +1134,7 @@ export default function App() {
       {showMottoModal && (
         <div
           onClick={() => setShowMottoModal(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-          style={{ zIndex: 99999 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}

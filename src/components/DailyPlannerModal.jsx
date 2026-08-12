@@ -197,7 +197,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats }) {
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 99999,
+        zIndex: 99990,
         background: 'rgba(0, 0, 0, 0.65)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
