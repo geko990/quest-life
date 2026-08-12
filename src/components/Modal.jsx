@@ -1025,7 +1025,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* TESSERA 1: Emoji, Nome, Descrizione, Livello e XP */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center', position: 'relative' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{ position: 'absolute', top: '10px', right: '12px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}
+                title="Chiudi"
+              >
+                ✕
+              </button>
               {/* Emoji in alto (senza cerchio) */}
               <div style={{ fontSize: '42px', lineHeight: '1', marginBottom: '4px' }}>
                 {statData.icon || '⭐'}
@@ -1449,10 +1457,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: activeT === 'quest_detail' ? 'auto' : '3 / 4',
-          maxWidth: activeT === 'quest_detail' ? '400px' : '360px',
-          width: '90%',
-          maxHeight: activeT === 'quest_detail' ? '92vh' : '88vh'
+          aspectRatio: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? 'auto' : '3 / 4',
+          maxWidth: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '420px' : '360px',
+          width: '92%',
+          maxHeight: ['quest_detail', 'stat_detail', 'health_goals', 'health_goal'].includes(activeT) ? '92vh' : '88vh'
         }}
       >
         {/* Header (Hidden for stat_detail) */}

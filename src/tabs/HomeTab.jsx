@@ -222,7 +222,11 @@ export default function HomeTab({
             x={coords.x}
             y={coords.y + 9}
             textAnchor="middle"
-            style={{ fontSize: '26px', userSelect: 'none' }}
+            style={{ fontSize: '26px', userSelect: 'none', cursor: 'pointer', pointerEvents: 'all' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenStatDetail) onOpenStatDetail(s);
+            }}
           >
             {s.icon}
           </text>
@@ -246,12 +250,15 @@ export default function HomeTab({
           key={`vertex-${s.id}`}
           cx={coords.x}
           cy={coords.y}
-          r="5.5"
+          r="8"
           fill="var(--accent-primary)"
           stroke="var(--bg-primary)"
           strokeWidth="2"
-          style={{ cursor: 'pointer' }}
-          onClick={() => onOpenStatDetail && onOpenStatDetail(s)}
+          style={{ cursor: 'pointer', pointerEvents: 'all' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onOpenStatDetail) onOpenStatDetail(s);
+          }}
         />
       );
     });
