@@ -718,9 +718,19 @@ export default function App() {
       };
       setInventory(prev => ({ ...prev, home: [...prev.home, newItem] }));
     } else if (modalType === 'weight') {
+      const curW = formData.current !== undefined ? Number(formData.current) : undefined;
+      const fatP = formData.currentFat !== undefined ? Number(formData.currentFat) : undefined;
+      const leanP = formData.currentLean !== undefined ? Number(formData.currentLean) : undefined;
+
       setHealth(prev => ({
         ...prev,
-        weight: { ...prev.weight, ...formData }
+        weight: {
+          ...prev.weight,
+          current: curW !== undefined ? curW : prev.weight.current,
+          currentFat: fatP !== undefined ? fatP : prev.weight.currentFat,
+          currentLean: leanP !== undefined ? leanP : prev.weight.currentLean
+        },
+        calcFatPct: fatP !== undefined ? fatP : prev.calcFatPct
       }));
     } else if (modalType?.startsWith('health_')) {
       const field = modalType.split('_')[1];

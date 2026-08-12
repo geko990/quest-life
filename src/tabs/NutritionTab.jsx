@@ -567,7 +567,14 @@ export default function NutritionTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
             {/* Weight card */}
             <div
-              onClick={() => onOpenModal('weight')}
+              onClick={() => onOpenModal('weight', {
+                current: weightCurrent,
+                target: targetWeight,
+                currentFat: fatPct,
+                currentLean: leanPct,
+                calorieGoal,
+                proteinGoal: proteinsGoal
+              })}
               className="glass-panel"
               style={{ padding: '12px', cursor: 'pointer' }}
             >

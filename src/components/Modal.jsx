@@ -919,60 +919,107 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           </div>
         );
 
-      case 'weight':
+      case 'weight': {
+        const curW = form.current !== undefined ? form.current : (editData?.current || 75);
+        const tgtW = editData?.target || form.target || 70;
+        const fatP = form.currentFat !== undefined ? form.currentFat : (editData?.currentFat || 0);
+        const leanP = form.currentLean !== undefined ? form.currentLean : (editData?.currentLean || (fatP > 0 ? (100 - Number(fatP)).toFixed(1) : 0));
+
+        const fatKg = (Number(curW) && Number(fatP)) ? ((Number(curW) * Number(fatP)) / 100).toFixed(1) : null;
+        const leanKg = (Number(curW) && Number(leanP)) ? ((Number(curW) * Number(leanP)) / 100).toFixed(1) : null;
+
         return (
-          <div className="flex flex-col gap-3">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-4">
+            {/* Communication with 'Obiettivi' info card */}
+            <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 text-center">
+              <span className="text-[10px] text-text-muted font-bold uppercase">Obiettivo Peso Target</span>
+              <span className="text-base font-bold text-pink-500">
+                {tgtW} kg
+              </span>
+              <span className="text-[9px] text-text-muted italic mt-0.5">🔒 Il peso target è modificabile dalla finestra "Obiettivi"</span>
+              
+              <div className="mt-1 pt-1.5 border-t border-[var(--glass-border)] flex justify-around text-[10px] text-text-secondary font-semibold">
+                <span>🎯 Calorie: <b className="text-text-primary">{editData?.calorieGoal || 1600} kcal</b></span>
+                <span>🍗 Proteine: <b className="text-yellow-500">{editData?.proteinGoal || 100}g</b></span>
+              </div>
+            </div>
+
+            {/* Current Weight + Body Fat % + Lean % inputs */}
+            <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Peso Attuale (kg)</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">⚖️ Peso Corporeo Attuale (kg)</label>
                 <input
                   type="number"
                   name="current"
-                  value={form.current || ''}
+                  value={curW}
                   onChange={handleNumberChange}
                   step="0.1"
                   required
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  placeholder="Es: 75.5"
+                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-sm font-bold focus:border-accent-primary focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Peso Obiettivo (kg)</label>
-                <input
-                  type="number"
-                  name="target"
-                  value={form.target || ''}
-                  onChange={handleNumberChange}
-                  step="0.1"
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-text-secondary font-bold mb-1">💧 Massa Grassa (%)</label>
+                  <input
+                    type="number"
+                    name="currentFat"
+                    value={fatP}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setForm(prev => {
+                        const num = Number(val);
+                        const autoLean = (num > 0 && num <= 100) ? (100 - num).toFixed(1) : prev.currentLean;
+                        return {
+                          ...prev,
+                          currentFat: val,
+                          currentLean: autoLean
+                        };
+                      });
+                    }}
+                    step="0.1"
+                    placeholder="Es: 15.0"
+                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-text-secondary font-bold mb-1">💪 Massa Magra (%)</label>
+                  <input
+                    type="number"
+                    name="currentLean"
+                    value={leanP}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setForm(prev => {
+                        const num = Number(val);
+                        const autoFat = (num > 0 && num <= 100) ? (100 - num).toFixed(1) : prev.currentFat;
+                        return {
+                          ...prev,
+                          currentLean: val,
+                          currentFat: autoFat
+                        };
+                      });
+                    }}
+                    step="0.1"
+                    placeholder="Es: 85.0"
+                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Massa Magra (%)</label>
-                <input
-                  type="number"
-                  name="currentLean"
-                  value={form.currentLean || ''}
-                  onChange={handleNumberChange}
-                  step="0.1"
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Massa Grassa (%)</label>
-                <input
-                  type="number"
-                  name="currentFat"
-                  value={form.currentFat || ''}
-                  onChange={handleNumberChange}
-                  step="0.1"
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
+
+              {/* Calculated Kg Breakdown */}
+              {(fatKg || leanKg) && (
+                <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)] flex justify-around text-center text-xs">
+                  {leanKg && <div><span className="text-[10px] text-text-muted block">Massa Magra</span><b className="text-text-primary">{leanKg} kg</b></div>}
+                  {fatKg && <div><span className="text-[10px] text-text-muted block">Massa Grassa</span><b className="text-pink-400">{fatKg} kg</b></div>}
+                </div>
+              )}
             </div>
           </div>
         );
+      }
 
       case 'stat_detail': {
         const statData = editData || {};
@@ -1634,13 +1681,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     if (activeT === 'health_steps') return '👟 Registro Passi';
     if (activeT === 'health_protein' || activeT === 'health_proteins') return '🍗 Apporto Proteico';
     if (activeT === 'health_water' || activeT === 'health_water_goal') return '🥛 Registro Acqua';
+    if (activeT === 'weight') return '⚖️ Statistiche Peso & Composizione';
     if (activeT?.startsWith('health_')) return '📊 Aggiorna Dati';
     return `${action} ${names[activeT] || 'Elemento'}`;
   };
 
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
-  const isExpandedModal = ['quest_detail', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal'].includes(activeT);
+  const isExpandedModal = ['quest_detail', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
 
   return (
     <div
