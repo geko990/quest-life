@@ -868,15 +868,44 @@ export default function App() {
   };
 
   // Import / Export
-  const handleExport = () => {
-    const fullStateObj = {
-      player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings
-    };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullStateObj, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `rpg-life-backup-${new Date().toISOString().split('T')[0]}.json`);
-    dlAnchorElem.click();
+  const handleExport = async () => {
+    try {
+      const fullStateObj = {
+        player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings
+      };
+      const jsonStr = JSON.stringify(fullStateObj, null, 2);
+      const filename = `rpg-life-backup-${new Date().toISOString().split('T')[0]}.json`;
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+
+      // iOS Web Share API support (opens native Share sheet to save directly to Files)
+      if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/json' })] })) {
+        try {
+          const file = new File([blob], filename, { type: 'application/json' });
+          await navigator.share({
+            files: [file],
+            title: 'RPG Life Backup',
+            text: 'Backup file di RPG Life'
+          });
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') return;
+        }
+      }
+
+      // Standard Blob URL download
+      const url = URL.createObjectURL(blob);
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.href = url;
+      dlAnchorElem.download = filename;
+      document.body.appendChild(dlAnchorElem);
+      dlAnchorElem.click();
+      setTimeout(() => {
+        document.body.removeChild(dlAnchorElem);
+        URL.revokeObjectURL(url);
+      }, 1000);
+    } catch (err) {
+      alert(`⚠️ Errore durante l'esportazione: ${err.message}`);
+    }
   };
 
   const handleImport = () => {
@@ -1065,6 +1094,7 @@ export default function App() {
             player={player}
             setPlayer={setPlayer}
             xpLog={xpLog}
+            stats={stats}
             fileHandle={fileHandle}
             onLinkDatabase={handleLinkDatabase}
             onReconnectDatabase={handleReconnectDatabase}
@@ -1073,6 +1103,7 @@ export default function App() {
             onFixData={handleFixData}
             onRepairStreaks={handleRepairStreaks}
             onReset={handleReset}
+            onApplyPresetDay={handleApplyPresetDay}
           />
         );
       default:
