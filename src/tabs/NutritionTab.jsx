@@ -798,24 +798,6 @@ export default function NutritionTab({
               ))
             )}
           </div>
-
-          {/* Action Footer Buttons */}
-          {activeInventory.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--glass-border)' }}>
-              <button
-                onClick={() => clearCompletedInventory(activeInventoryTab)}
-                style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
-              >
-                🧹 Rimuovi Spuntati
-              </button>
-              <button
-                onClick={() => clearAllInventory(activeInventoryTab)}
-                style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}
-              >
-                🗑️ Svuota Lista
-              </button>
-            </div>
-          )}
         </div>
       )}
 
