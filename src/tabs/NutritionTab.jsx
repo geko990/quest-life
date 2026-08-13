@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function NutritionTab({
+  activeTab,
   health,
   setHealth,
   inventory,
@@ -10,6 +11,13 @@ export default function NutritionTab({
   onRewardXp
 }) {
   const [activeMainTab, setActiveMainTab] = useState('health'); // 'health' | 'shopping'
+
+  // Reset to 'health' (Diario Salute) whenever opening or clicking the Salute tab
+  useEffect(() => {
+    if (activeTab === 'nutrition') {
+      setActiveMainTab('health');
+    }
+  }, [activeTab]);
   const [activeInventoryTab, setActiveInventoryTab] = useState('food'); // 'food' | 'home'
   const [showMealsModal, setShowMealsModal] = useState(false);
   const [showExercisesModal, setShowExercisesModal] = useState(false);
@@ -335,55 +343,35 @@ export default function NutritionTab({
 
   return (
     <section id="section-nutrition" className="section active">
-      {/* Tab Header with Sub-Tab Navigation (Salute vs Lista Spesa) */}
+      {/* Tab Header with Circle Switcher (🛒 in Health / 🍎 in Shopping) */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           {activeMainTab === 'health' ? '🍎 Diario Salute' : '🛒 Lista della Spesa'}
         </h2>
 
-        {/* Sub-tab Navigation Pills */}
-        <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-          <button
-            onClick={() => setActiveMainTab('health')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              border: 'none',
-              cursor: 'pointer',
-              background: activeMainTab === 'health' ? 'var(--accent-primary)' : 'transparent',
-              color: activeMainTab === 'health' ? '#ffffff' : 'var(--text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              transition: 'all 0.2s'
-            }}
-            title="Apri Diario Salute"
-          >
-            🍎 Salute
-          </button>
-          <button
-            onClick={() => setActiveMainTab('shopping')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              border: 'none',
-              cursor: 'pointer',
-              background: activeMainTab === 'shopping' ? 'var(--accent-primary)' : 'transparent',
-              color: activeMainTab === 'shopping' ? '#ffffff' : 'var(--text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              transition: 'all 0.2s'
-            }}
-            title="Apri Lista della Spesa"
-          >
-            🛒 Spesa
-          </button>
-        </div>
+        {/* Top-Right Circular Switcher Button */}
+        <button
+          onClick={() => setActiveMainTab(activeMainTab === 'health' ? 'shopping' : 'health')}
+          style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-primary)',
+            fontSize: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+            transition: 'all 0.2s ease',
+            flexShrink: 0
+          }}
+          title={activeMainTab === 'health' ? 'Apri Lista della Spesa' : 'Torna al Diario Salute'}
+        >
+          {activeMainTab === 'health' ? '🛒' : '🍎'}
+        </button>
       </div>
 
       {/* TAB 1: DIARIO SALUTE */}

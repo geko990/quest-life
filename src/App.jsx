@@ -1047,6 +1047,7 @@ export default function App() {
       case 'nutrition':
         return (
           <NutritionTab
+            activeTab={activeTab}
             health={health}
             setHealth={setHealth}
             inventory={inventory}
