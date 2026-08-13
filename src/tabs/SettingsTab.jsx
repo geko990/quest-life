@@ -3,9 +3,9 @@ import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
 import { forceUpdateApp, checkAppUpdate } from '../utils/helpers';
 
 export default function SettingsTab({
-  settings,
+  settings = {},
   setSettings,
-  player,
+  player = {},
   setPlayer,
   xpLog = [],
   stats = [],
@@ -23,16 +23,46 @@ export default function SettingsTab({
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
 
+  const safeSettings = settings || {};
+  const safePlayer = player || {};
+  const safeXpLog = Array.isArray(xpLog) ? xpLog : [];
+  const safePresetDays = Array.isArray(safeSettings.presetDays) ? safeSettings.presetDays : [
+    {
+      id: 'preset_work',
+      name: 'Giorno Lavorativo',
+      emoji: '💼',
+      description: 'Routine per giornate di lavoro concentrato',
+      slots: {
+        action: { name: 'Completare le task prioritarie', stars: 3, statId: 'int' },
+        bonus: { name: 'Pianificare riunioni e scadenze', stars: 2, statId: 'wis' },
+        movement: { name: 'Passeggiata rigenerante 20 min', stars: 2, statId: 'str' },
+        reaction: { name: 'Rispondere a email e messaggi', stars: 1, statId: 'int' }
+      }
+    },
+    {
+      id: 'preset_fit',
+      name: 'Giorno Allenamento',
+      emoji: '🏋️',
+      description: 'Routine focalizzata su fitness e recupero',
+      slots: {
+        action: { name: 'Sessione di Allenamento Completa', stars: 4, statId: 'str' },
+        bonus: { name: 'Preparazione pasti bilanciati', stars: 2, statId: 'con' },
+        movement: { name: '10.000 passi quotidiani', stars: 3, statId: 'str' },
+        reaction: { name: 'Stretching e mobilizzazione', stars: 1, statId: 'dex' }
+      }
+    }
+  ];
+
   const toggleGroup = (groupName) => {
     setExpandedGroup(expandedGroup === groupName ? null : groupName);
   };
 
   const updateSetting = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    if (setSettings) setSettings(prev => ({ ...(prev || {}), [key]: value }));
   };
 
   const updatePlayerName = (name) => {
-    setPlayer(prev => ({ ...prev, name: name.trim() || 'Avventuriero' }));
+    if (setPlayer) setPlayer(prev => ({ ...(prev || {}), name: (name || '').trim() || 'Avventuriero' }));
   };
 
   const handleOpenNewPreset = () => {
@@ -57,26 +87,26 @@ export default function SettingsTab({
   };
 
   const handleSavePreset = (presetData) => {
-    if (!presetData.name.trim()) {
+    if (!presetData || !presetData.name || !presetData.name.trim()) {
       alert('Inserisci un nome per la Giornata Tipo!');
       return;
     }
-    const existing = settings.presetDays || [];
+    const existing = safePresetDays;
     let updated = [];
     if (presetData.id) {
       updated = existing.map(p => p.id === presetData.id ? presetData : p);
     } else {
       updated = [...existing, { ...presetData, id: `preset_${Date.now()}` }];
     }
-    setSettings(prev => ({ ...prev, presetDays: updated }));
+    if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
     setShowPresetModal(false);
     setEditingPreset(null);
   };
 
   const handleDeletePreset = (id) => {
     if (window.confirm('Vuoi davvero eliminare questa Giornata Tipo?')) {
-      const updated = (settings.presetDays || []).filter(p => p.id !== id);
-      setSettings(prev => ({ ...prev, presetDays: updated }));
+      const updated = safePresetDays.filter(p => p && p.id !== id);
+      if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
     }
   };
 
@@ -109,7 +139,7 @@ export default function SettingsTab({
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Nome Giocatore</label>
                 <input
                   type="text"
-                  defaultValue={player.name}
+                  defaultValue={safePlayer.name || 'Avventuriero'}
                   onBlur={(e) => updatePlayerName(e.target.value)}
                   placeholder="Inserisci il tuo nome..."
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '13px' }}
@@ -120,7 +150,7 @@ export default function SettingsTab({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Inizio nuovo giorno</label>
                 <select
-                  value={settings.dayStartTime}
+                  value={safeSettings.dayStartTime !== undefined ? safeSettings.dayStartTime : 0}
                   onChange={(e) => updateSetting('dayStartTime', parseInt(e.target.value))}
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 >
@@ -140,13 +170,13 @@ export default function SettingsTab({
                 <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
                   <button
                     onClick={() => updateSetting('weekStart', 'monday')}
-                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: settings.weekStart === 'monday' ? 'var(--accent-primary)' : 'transparent', color: settings.weekStart === 'monday' ? '#fff' : 'var(--text-secondary)' }}
+                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: safeSettings.weekStart === 'monday' ? 'var(--accent-primary)' : 'transparent', color: safeSettings.weekStart === 'monday' ? '#fff' : 'var(--text-secondary)' }}
                   >
                     Lun
                   </button>
                   <button
                     onClick={() => updateSetting('weekStart', 'sunday')}
-                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: settings.weekStart === 'sunday' ? 'var(--accent-primary)' : 'transparent', color: settings.weekStart === 'sunday' ? '#fff' : 'var(--text-secondary)' }}
+                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: safeSettings.weekStart === 'sunday' ? 'var(--accent-primary)' : 'transparent', color: safeSettings.weekStart === 'sunday' ? '#fff' : 'var(--text-secondary)' }}
                   >
                     Dom
                   </button>
@@ -161,7 +191,7 @@ export default function SettingsTab({
                 </div>
                 <input
                   type="checkbox"
-                  checked={settings.enablePenalties !== false}
+                  checked={safeSettings.enablePenalties !== false}
                   onChange={(e) => updateSetting('enablePenalties', e.target.checked)}
                   style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
                 />
@@ -219,12 +249,12 @@ export default function SettingsTab({
                   padding: '4px 2px 12px 2px'
                 }}
               >
-                {(settings.presetDays || []).length === 0 ? (
+                {safePresetDays.length === 0 ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontStyle: 'italic', width: '100%' }}>
                     Nessuna Giornata Tipo creata. Tocca ➕ Nuova Routine per aggiungere la tua prima routine!
                   </div>
                 ) : (
-                  (settings.presetDays || []).map((preset) => (
+                  safePresetDays.map((preset) => (
                     <div
                       key={preset.id}
                       style={{
@@ -338,7 +368,7 @@ export default function SettingsTab({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Stile Tema</label>
                 <select
-                  value={settings.theme || 'standard'}
+                  value={safeSettings.theme || 'standard'}
                   onChange={(e) => updateSetting('theme', e.target.value)}
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 >
@@ -358,7 +388,7 @@ export default function SettingsTab({
                     <button
                       key={m}
                       onClick={() => updateSetting('themeMode', m)}
-                      style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: (settings.themeMode || 'dark') === m ? 'var(--accent-primary)' : 'transparent', color: (settings.themeMode || 'dark') === m ? '#fff' : 'var(--text-secondary)' }}
+                      style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: (safeSettings.themeMode || 'dark') === m ? 'var(--accent-primary)' : 'transparent', color: (safeSettings.themeMode || 'dark') === m ? '#fff' : 'var(--text-secondary)' }}
                     >
                       {m === 'dark' ? 'Scuro' : m === 'light' ? 'Chiaro' : 'Auto'}
                     </button>
@@ -370,7 +400,7 @@ export default function SettingsTab({
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Colore Dettagli (Accent)</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
                   {ACCENT_COLORS.map((c) => {
-                    const activeColor = settings.accent || settings.accentColor || 'violet';
+                    const activeColor = safeSettings.accent || safeSettings.accentColor || 'violet';
                     const isSelected = activeColor === c;
                     
                     const hexMap = {
@@ -536,12 +566,12 @@ export default function SettingsTab({
 
           {expandedGroup === 'history' && (
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {(xpLog || []).length === 0 ? (
+              {safeXpLog.length === 0 ? (
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
                   Nessuna impresa registrata di recente.
                 </p>
               ) : (
-                (xpLog || []).slice(-15).reverse().map((log, idx) => {
+                safeXpLog.slice(-15).reverse().map((log, idx) => {
                   if (!log) return null;
                   const title = log.title || log.reason || log.name || log.source || 'Attività completata';
                   let dateStr = '';
