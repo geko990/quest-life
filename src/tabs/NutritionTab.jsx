@@ -1111,17 +1111,18 @@ export default function NutritionTab({
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '500px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+            style={{ maxWidth: '500px', width: '92%', maxHeight: '82vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
           >
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
+            {/* Fixed Top Header */}
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '20px' }}>📊</span> Storico Dati Salute (30 Giorni)
               </h3>
             </div>
 
-            <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
-              {/* Summary Stats Cards Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+            {/* Fixed Top Summary Average Cards */}
+            <div style={{ flexShrink: 0, padding: '14px 16px 8px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
                   <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Calorie</div>
                   <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{avgCalories} kcal/gg</div>
@@ -1139,21 +1140,24 @@ export default function NutritionTab({
                   <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#06b6d4' }}>{avgWater} L/gg</div>
                 </div>
               </div>
+            </div>
 
+            {/* Scrollable Single Days Table Section */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px 16px', minHeight: 0 }}>
               {historyList.length === 0 ? (
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '24px 0' }}>
                   Nessun dato storico salvato nei giorni precedenti. I dati di ciascuna giornata si archiviano automaticamente al cambio del giorno!
                 </p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
-                  <thead>
+                  <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
                     <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                      <th style={{ padding: '8px 6px' }}>Data</th>
-                      <th style={{ padding: '8px 6px' }}>Calorie</th>
-                      <th style={{ padding: '8px 6px' }}>Passi</th>
-                      <th style={{ padding: '8px 6px' }}>Proteine</th>
-                      <th style={{ padding: '8px 6px' }}>Acqua</th>
-                      <th style={{ padding: '8px 6px' }}>Peso</th>
+                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Data</th>
+                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Calorie</th>
+                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Passi</th>
+                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Proteine</th>
+                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Acqua</th>
+                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Peso</th>
                     </tr>
                   </thead>
                   <tbody>

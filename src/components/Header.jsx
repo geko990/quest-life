@@ -533,89 +533,91 @@ export default function Header({
                 width: '100%',
                 maxWidth: '400px',
                 maxHeight: '85vh',
-                overflowY: 'auto',
                 background: 'var(--bg-card)',
                 color: 'var(--text-primary)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '24px',
                 boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                padding: '20px',
+                padding: '16px 18px',
                 boxSizing: 'border-box',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '14px'
+                gap: '10px',
+                overflow: 'hidden'
               }}
             >
-              {/* Header */}
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '4px' }}>
-                  {selectedMedal.icon || '🏅'}
+              {/* Fixed Top Section: Header & Top Stats */}
+              <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', marginBottom: '2px' }}>
+                    {selectedMedal.icon || '🏅'}
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                    {selectedMedal.name || `Medaglia di ${summary.displayMonthYear}`}
+                  </h3>
+                  <div style={{ fontSize: '10px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold', marginTop: '1px' }}>
+                    Sbloccata nel mese di {summary.displayMonthYear}
+                  </div>
                 </div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  {selectedMedal.name || `Medaglia di ${summary.displayMonthYear}`}
-                </h3>
-                <div style={{ fontSize: '11px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold', marginTop: '2px' }}>
-                  Sbloccata nel mese di {summary.displayMonthYear}
+
+                {/* Grid 1: Top Stat & Top Habit */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {/* 1. Attributo / Abilità maggiormente sviluppato */}
+                  <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>
+                      🎯 Top Attributo
+                    </div>
+                    <div style={{ fontSize: '24px', marginBottom: '2px' }}>
+                      {summary.topStatObj?.icon || '⭐'}
+                    </div>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {summary.topStatObj?.name || 'Nessuno'}
+                    </div>
+                    <div style={{ fontSize: '9px', color: 'var(--accent-primary)', fontWeight: 'bold', marginTop: '1px' }}>
+                      +{summary.maxStatXp} XP
+                    </div>
+                  </div>
+
+                  {/* 2. Abitudine più rispettata */}
+                  <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>
+                      📜 Top Abitudine
+                    </div>
+                    <div style={{ fontSize: '24px', marginBottom: '2px' }}>
+                      {summary.topHabitObj?.emoji || '📜'}
+                    </div>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {summary.topHabitObj?.name || 'Nessuna'}
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#22c55e', fontWeight: 'bold', marginTop: '1px' }}>
+                      {summary.maxHabitCount > 0 ? `${summary.maxHabitCount} gg ✓` : '0 gg'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. XP Totali Maturati nel Mese */}
+                <div style={{ background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '18px' }}>⚡</span>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>XP Maturati nel Mese</div>
+                      <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>Esperienza totale accumulata</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
+                    +{summary.totalMonthXp} XP
+                  </div>
                 </div>
               </div>
 
-              {/* Grid 1: Top Stat & Top Habit */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {/* 1. Attributo / Abilità maggiormente sviluppato */}
-                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                    🎯 Top Attributo
-                  </div>
-                  <div style={{ fontSize: '28px', marginBottom: '2px' }}>
-                    {summary.topStatObj?.icon || '⭐'}
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {summary.topStatObj?.name || 'Nessuno'}
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold', marginTop: '2px' }}>
-                    +{summary.maxStatXp} XP
-                  </div>
-                </div>
-
-                {/* 2. Abitudine più rispettata */}
-                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                    📜 Top Abitudine
-                  </div>
-                  <div style={{ fontSize: '28px', marginBottom: '2px' }}>
-                    {summary.topHabitObj?.emoji || '📜'}
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {summary.topHabitObj?.name || 'Nessuna'}
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold', marginTop: '2px' }}>
-                    {summary.maxHabitCount > 0 ? `${summary.maxHabitCount} giorni ✓` : '0 giorni'}
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. XP Totali Maturati nel Mese */}
-              <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>⚡</span>
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>XP Maturati nel Mese</div>
-                    <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>Esperienza totale accumulata</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
-                  +{summary.totalMonthXp} XP
-                </div>
-              </div>
-
-              {/* 4. Top 10 Task Più Importanti (Con più stelle) */}
-              <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+              {/* 4. Top 10 Task Section (Title fixed, list scrollable) */}
+              <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
+                <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                     ⭐ Top 10 Task Completati
                   </span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
                     {summary.top10Tasks.length} completati
                   </span>
                 </div>
@@ -625,7 +627,7 @@ export default function Header({
                     Nessuna missione completata registrata per questo mese.
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', minHeight: 0, paddingRight: '2px' }}>
                     {summary.top10Tasks.map((t, idx) => {
                       const primaryStat = (stats || []).find(s => s.id === t.primaryTarget);
                       const starsCount = t.difficulty || t.stars || 1;
@@ -636,23 +638,23 @@ export default function Header({
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
+                            justify: 'space-between',
                             background: 'var(--bg-primary)',
-                            padding: '8px 10px',
+                            padding: '7px 9px',
                             borderRadius: '8px',
                             border: '1px solid var(--glass-border)',
                             gap: '8px'
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                            <span style={{ fontSize: '14px', flexShrink: 0 }}>{t.emoji || '🎯'}</span>
+                            <span style={{ fontSize: '13px', flexShrink: 0 }}>{t.emoji || '🎯'}</span>
                             <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {t.name}
                             </span>
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                            <span style={{ fontSize: '10px', color: '#f59e0b' }}>
+                            <span style={{ fontSize: '9px', color: '#f59e0b' }}>
                               {'⭐'.repeat(starsCount)}
                             </span>
                             {primaryStat && (
@@ -673,17 +675,17 @@ export default function Header({
                 onClick={() => setSelectedMedal(null)}
                 className="btn-primary"
                 style={{
+                  flexShrink: 0,
                   width: '100%',
                   padding: '10px',
                   borderRadius: '12px',
-                  fontSize: '12px',
                   fontWeight: 'bold',
+                  fontSize: '12px',
                   border: 'none',
-                  cursor: 'pointer',
-                  marginTop: '4px'
+                  cursor: 'pointer'
                 }}
               >
-                Chiudi ✓
+                Chiudi
               </button>
             </div>
           </div>
