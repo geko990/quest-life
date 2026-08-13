@@ -699,15 +699,30 @@ export default function App() {
         workDuration: formData.workDuration || prev.workDuration,
         xpPerSession: formData.xpPerSession || prev.xpPerSession
       }));
-    } else if (modalType === 'food') {
-      // Add shopping list food item
-      const newItem = {
-        id: 'shop_' + Date.now(),
-        emoji: formData.emoji || '🍚',
-        name: formData.name,
-        completed: false
+    } else if (modalType === 'food' || targetType === 'food') {
+      const newFoodItem = {
+        id: editData?.id || ('fd_' + Date.now()),
+        emoji: formData.emoji || '🍏',
+        name: formData.name || 'Cibo',
+        baseGrams: formData.baseGrams !== undefined ? Number(formData.baseGrams) : 100,
+        baseCalories: formData.baseCalories !== undefined ? Number(formData.baseCalories) : 0,
+        baseProteins: formData.baseProteins !== undefined ? Number(formData.baseProteins) : 0,
+        pieceCalories: formData.pieceCalories !== '' && formData.pieceCalories !== undefined ? Number(formData.pieceCalories) : null,
+        pieceProteins: formData.pieceProteins !== '' && formData.pieceProteins !== undefined ? Number(formData.pieceProteins) : null,
+        category: formData.category || 'snack'
       };
-      setInventory(prev => ({ ...prev, food: [...prev.food, newItem] }));
+
+      setHealth(prev => {
+        const existingDb = prev.foodDatabase || [];
+        const isEdit = existingDb.some(f => f.id === newFoodItem.id);
+        const updatedDb = isEdit
+          ? existingDb.map(f => (f.id === newFoodItem.id ? newFoodItem : f))
+          : [...existingDb, newFoodItem];
+        return {
+          ...prev,
+          foodDatabase: updatedDb
+        };
+      });
     } else if (modalType === 'home') {
       // Add shopping list house item
       const newItem = {
@@ -796,6 +811,13 @@ export default function App() {
       handleDeleteOneshot(targetId);
     } else if (targetType === 'quest') {
       handleDeleteQuest(targetId);
+    } else if (targetType === 'food' || modalType === 'food') {
+      if (targetId) {
+        setHealth(prev => ({
+          ...prev,
+          foodDatabase: (prev.foodDatabase || []).filter(f => f.id !== targetId)
+        }));
+      }
     }
   };
 

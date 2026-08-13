@@ -909,20 +909,41 @@ export default function NutritionTab({
                     <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo trovato.</p>
                   ) : (
                     filteredFoodDatabase.map((food) => (
-                      <div key={food.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                      <div
+                        key={food.id}
+                        onClick={() => {
+                          setShowMealsModal(false);
+                          onOpenModal('food', food);
+                        }}
+                        style={{
+                          display: 'flex',
+                          justify: 'space-between',
+                          alignItems: 'center',
+                          padding: '8px 10px',
+                          background: 'var(--bg-secondary)',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s'
+                        }}
+                        title="Tocca per modificare le informazioni di questo cibo"
+                      >
                         <div>
                           <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{food.emoji} {food.name}</div>
                           <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                            Dose: {food.baseGrams}g ({food.baseCalories} kcal, {food.baseProteins}g P)
+                            Valori per {food.baseGrams || 100}g: {food.baseCalories} kcal, {food.baseProteins}g P
                             {food.pieceCalories && (
                               <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                                {' • '}1 Pz ({food.pieceCalories} kcal, {food.pieceProteins || 0}g P)
+                                {' • '}Valori per pezzo: {food.pieceCalories} kcal, {food.pieceProteins || 0}g P
                               </span>
                             )}
                           </div>
                         </div>
                         <button
-                          onClick={() => handleOpenPortionModal(food)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenPortionModal(food);
+                          }}
                           style={{
                             width: '28px',
                             height: '28px',
@@ -939,7 +960,7 @@ export default function NutritionTab({
                             flexShrink: 0,
                             boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
                           }}
-                          title="Aggiungi pasto (scegli quantità)"
+                          title="Aggiungi al pasto di oggi"
                         >
                           +
                         </button>
@@ -1184,10 +1205,10 @@ export default function NutritionTab({
             <form onSubmit={handleConfirmAddMealFood} style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {/* Reference Info Card */}
               <div style={{ background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)', fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '3px', textAlign: 'center' }}>
-                <span>Per {selectedFoodForPortion.baseGrams || 100}g: <b>{selectedFoodForPortion.baseCalories} kcal</b> • <b>{selectedFoodForPortion.baseProteins}g P</b></span>
+                <span>Valori per {selectedFoodForPortion.baseGrams || 100}g: <b>{selectedFoodForPortion.baseCalories} kcal</b> • <b>{selectedFoodForPortion.baseProteins}g P</b></span>
                 {selectedFoodForPortion.pieceCalories && (
                   <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                    Per 1 Pezzo: <b>{selectedFoodForPortion.pieceCalories} kcal</b> • <b>{selectedFoodForPortion.pieceProteins || 0}g P</b>
+                    Valori per pezzo: <b>{selectedFoodForPortion.pieceCalories} kcal</b> • <b>{selectedFoodForPortion.pieceProteins || 0}g P</b>
                   </span>
                 )}
               </div>
