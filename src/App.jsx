@@ -17,6 +17,42 @@ import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForL
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
 
+class TabErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Tab Render Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-primary)' }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>⚠️ Si è verificato un problema di caricamento</h3>
+          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+            {this.state.error?.toString() || 'Errore di rendering'}
+          </p>
+          <button
+            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            className="btn-primary"
+            style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px', border: 'none', cursor: 'pointer' }}
+          >
+            🔄 Ripristina Schermata
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   // 1. Initial State Loading
   const getLoadedState = () => {
@@ -1195,7 +1231,9 @@ export default function App() {
           WebkitOverflowScrolling: 'touch'
         }}
       >
-        {renderActiveTab()}
+        <TabErrorBoundary key={activeTab}>
+          {renderActiveTab()}
+        </TabErrorBoundary>
       </main>
 
       {/* Lower bottom navigation */}
