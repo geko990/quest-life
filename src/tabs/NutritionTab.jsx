@@ -310,14 +310,28 @@ export default function NutritionTab({
     !searchQuery || ex.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // History stats averages
+  // History stats averages (excluding 0 / unlogged days)
   const historyList = health.history || [];
-  const avgCalories = historyList.length > 0
-    ? Math.round(historyList.reduce((acc, curr) => acc + (curr.consumed || 0), 0) / historyList.length)
-    : caloriesConsumed;
-  const avgSteps = historyList.length > 0
-    ? Math.round(historyList.reduce((acc, curr) => acc + (curr.steps || 0), 0) / historyList.length)
-    : stepsCurrent;
+
+  const validStepDays = historyList.filter(h => Number(h.steps) > 0);
+  const avgSteps = validStepDays.length > 0
+    ? Math.round(validStepDays.reduce((acc, curr) => acc + Number(curr.steps), 0) / validStepDays.length)
+    : (stepsCurrent > 0 ? stepsCurrent : 0);
+
+  const validCalorieDays = historyList.filter(h => Number(h.consumed) > 0);
+  const avgCalories = validCalorieDays.length > 0
+    ? Math.round(validCalorieDays.reduce((acc, curr) => acc + Number(curr.consumed), 0) / validCalorieDays.length)
+    : (caloriesConsumed > 0 ? caloriesConsumed : 0);
+
+  const validProteinDays = historyList.filter(h => Number(h.proteins) > 0);
+  const avgProteins = validProteinDays.length > 0
+    ? Math.round(validProteinDays.reduce((acc, curr) => acc + Number(curr.proteins), 0) / validProteinDays.length)
+    : (proteinsCurrent > 0 ? proteinsCurrent : 0);
+
+  const validWaterDays = historyList.filter(h => Number(h.water) > 0);
+  const avgWater = validWaterDays.length > 0
+    ? ((validWaterDays.reduce((acc, curr) => acc + Number(curr.water), 0) * 0.2) / validWaterDays.length).toFixed(1)
+    : ((waterCurrent * 0.2) || 0).toFixed(1);
 
   return (
     <section id="section-nutrition" className="section active">
@@ -1120,15 +1134,23 @@ export default function NutritionTab({
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
-              {/* Summary Stats Card */}
-              <div className="grid grid-cols-2 gap-2 mb-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+              {/* Summary Stats Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+                <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
                   <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Calorie</div>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#3b82f6' }}>{avgCalories} kcal/gg</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{avgCalories} kcal/gg</div>
                 </div>
-                <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
                   <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Passi</div>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{avgSteps.toLocaleString()} passi/gg</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{avgSteps.toLocaleString()} passi/gg</div>
+                </div>
+                <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Proteine</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#eab308' }}>{avgProteins} g/gg</div>
+                </div>
+                <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Acqua</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#06b6d4' }}>{avgWater} L/gg</div>
                 </div>
               </div>
 
@@ -1155,7 +1177,7 @@ export default function NutritionTab({
                         <td style={{ padding: '8px 6px', color: '#3b82f6' }}>{h.consumed}/{h.burned}</td>
                         <td style={{ padding: '8px 6px', color: 'var(--accent-primary)' }}>{(h.steps || 0).toLocaleString()}</td>
                         <td style={{ padding: '8px 6px', color: '#eab308' }}>{h.proteins || 0}g</td>
-                        <td style={{ padding: '8px 6px', color: '#06b6d4' }}>{(h.water || 0) * 0.25}L</td>
+                        <td style={{ padding: '8px 6px', color: '#06b6d4' }}>{((h.water || 0) * 0.2).toFixed(1)}L</td>
                         <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{h.weight ? `${h.weight} kg` : '--'}</td>
                       </tr>
                     ))}
