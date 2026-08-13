@@ -8,6 +8,7 @@ export default function SettingsTab({
   player,
   setPlayer,
   xpLog = [],
+  stats = [],
   fileHandle,
   onLinkDatabase,
   onReconnectDatabase,
@@ -15,9 +16,12 @@ export default function SettingsTab({
   onImport,
   onFixData,
   onRepairStreaks,
-  onReset
+  onReset,
+  onApplyPresetDay
 }) {
   const [expandedGroup, setExpandedGroup] = useState('profile');
+  const [showPresetModal, setShowPresetModal] = useState(false);
+  const [editingPreset, setEditingPreset] = useState(null);
 
   const toggleGroup = (groupName) => {
     setExpandedGroup(expandedGroup === groupName ? null : groupName);
@@ -29,6 +33,51 @@ export default function SettingsTab({
 
   const updatePlayerName = (name) => {
     setPlayer(prev => ({ ...prev, name: name.trim() || 'Avventuriero' }));
+  };
+
+  const handleOpenNewPreset = () => {
+    setEditingPreset({
+      id: '',
+      name: '',
+      emoji: '📅',
+      description: '',
+      slots: {
+        action: { name: '', stars: 3, statId: 'int' },
+        bonus: { name: '', stars: 2, statId: 'wis' },
+        movement: { name: '', stars: 2, statId: 'str' },
+        reaction: { name: '', stars: 1, statId: 'dex' }
+      }
+    });
+    setShowPresetModal(true);
+  };
+
+  const handleEditPreset = (preset) => {
+    setEditingPreset(JSON.parse(JSON.stringify(preset)));
+    setShowPresetModal(true);
+  };
+
+  const handleSavePreset = (presetData) => {
+    if (!presetData.name.trim()) {
+      alert('Inserisci un nome per la Giornata Tipo!');
+      return;
+    }
+    const existing = settings.presetDays || [];
+    let updated = [];
+    if (presetData.id) {
+      updated = existing.map(p => p.id === presetData.id ? presetData : p);
+    } else {
+      updated = [...existing, { ...presetData, id: `preset_${Date.now()}` }];
+    }
+    setSettings(prev => ({ ...prev, presetDays: updated }));
+    setShowPresetModal(false);
+    setEditingPreset(null);
+  };
+
+  const handleDeletePreset = (id) => {
+    if (window.confirm('Vuoi davvero eliminare questa Giornata Tipo?')) {
+      const updated = (settings.presetDays || []).filter(p => p.id !== id);
+      setSettings(prev => ({ ...prev, presetDays: updated }));
+    }
   };
 
   return (
@@ -121,7 +170,155 @@ export default function SettingsTab({
           )}
         </div>
 
-        {/* Group 2: Aspect & Theme */}
+        {/* Group 2: Giornate Tipo (Routine Preimpostate) */}
+        <div className="glass-panel" style={{ overflow: 'hidden' }}>
+          <div
+            onClick={() => toggleGroup('presetDays')}
+            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              🗓️ Giornate Tipo (Routine Preimpostate)
+            </h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {expandedGroup === 'presetDays' ? '▲' : '▼'}
+            </span>
+          </div>
+
+          {expandedGroup === 'presetDays' && (
+            <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                  Scorri a destra ↔️ per esplorare le tue routine:
+                </span>
+                <button
+                  onClick={handleOpenNewPreset}
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: 'var(--accent-primary)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  ➕ Nuova Routine
+                </button>
+              </div>
+
+              {/* Horizontal Swipeable Carousel Container */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  overflowX: 'auto',
+                  scrollSnapType: 'x mandatory',
+                  WebkitOverflowScrolling: 'touch',
+                  padding: '4px 2px 12px 2px'
+                }}
+              >
+                {(settings.presetDays || []).length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontStyle: 'italic', width: '100%' }}>
+                    Nessuna Giornata Tipo creata. Tocca ➕ Nuova Routine per aggiungere la tua prima routine!
+                  </div>
+                ) : (
+                  (settings.presetDays || []).map((preset) => (
+                    <div
+                      key={preset.id}
+                      style={{
+                        flexShrink: 0,
+                        width: '260px',
+                        scrollSnapAlign: 'start',
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '16px',
+                        padding: '14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justify: 'space-between',
+                        gap: '10px'
+                      }}
+                    >
+                      {/* Card Content */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{preset.emoji || '📅'}</span> {preset.name}
+                          </h4>
+                        </div>
+                        {preset.description && (
+                          <p style={{ margin: '0 0 8px 0', fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.3' }}>
+                            {preset.description}
+                          </p>
+                        )}
+
+                        {/* Routine Slots List */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '6px' }}>
+                          {['action', 'bonus', 'movement', 'reaction'].map((slotKey) => {
+                            const slot = preset.slots?.[slotKey];
+                            const labels = { action: '🎯 Azione', bonus: '⚡ Bonus', movement: '🚶 Movimento', reaction: '🛡️ Reazione' };
+                            if (!slot || !slot.name) return null;
+                            return (
+                              <div key={slotKey} style={{ background: 'var(--bg-card)', padding: '5px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', fontSize: '10px' }}>
+                                <div style={{ color: 'var(--text-secondary)', fontWeight: 'bold', fontSize: '8px' }}>{labels[slotKey]}</div>
+                                <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {slot.name}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Card Actions */}
+                      <div style={{ display: 'flex', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                        <button
+                          onClick={() => onApplyPresetDay && onApplyPresetDay(preset)}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            borderRadius: '8px',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            background: 'var(--accent-primary)',
+                            color: '#ffffff',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}
+                          title="Applica questa routine a oggi"
+                        >
+                          ⚡ Applica Oggi
+                        </button>
+                        <button
+                          onClick={() => handleEditPreset(preset)}
+                          style={{ padding: '8px 10px', borderRadius: '8px', fontSize: '11px', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
+                          title="Modifica"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeletePreset(preset.id)}
+                          style={{ padding: '8px 10px', borderRadius: '8px', fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}
+                          title="Elimina"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Group 3: Aspect & Theme */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('theme')}
@@ -228,7 +425,7 @@ export default function SettingsTab({
           )}
         </div>
 
-        {/* Group 3: File Database Local */}
+        {/* Group 4: File Database Local */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('storage')}
@@ -272,7 +469,7 @@ export default function SettingsTab({
           )}
         </div>
 
-        {/* Group 4: Data Management & Backup */}
+        {/* Group 5: Data Management & Backup */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('data')}
@@ -323,14 +520,14 @@ export default function SettingsTab({
           )}
         </div>
 
-        {/* Group 5: Storico Imprese Recenti */}
+        {/* Group 6: Storico Imprese Recenti (Last 15 items) */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('history')}
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              📜 Storico Imprese Recenti
+              📜 Storico Imprese Recenti (Ultime 15)
             </h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'history' ? '▲' : '▼'}
@@ -344,15 +541,22 @@ export default function SettingsTab({
                   Nessuna impresa registrata di recente.
                 </p>
               ) : (
-                (xpLog || []).slice(-10).reverse().map((log, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>✨</span>
-                      <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{log.reason || 'Attività completata'}</span>
+                (xpLog || []).slice(-15).reverse().map((log, idx) => {
+                  const title = log.title || log.reason || log.name || log.source || 'Attività completata';
+                  const dateStr = log.date ? new Date(log.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                  return (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                        <span>✨</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
+                          {dateStr && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{dateStr}</span>}
+                        </div>
+                      </div>
+                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>+{log.amount} XP</span>
                     </div>
-                    <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>+{log.amount} XP</span>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
@@ -384,6 +588,98 @@ export default function SettingsTab({
           </div>
         </div>
       </div>
+
+      {/* CREATE / EDIT PRESET DAY MODAL */}
+      {showPresetModal && editingPreset && (
+        <div
+          onClick={() => { setShowPresetModal(false); setEditingPreset(null); }}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '440px', width: '92%', maxHeight: '82vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+          >
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
+              <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🗓️</span> {editingPreset.id ? 'Modifica Giornata Tipo' : 'Crea Giornata Tipo'}
+              </h3>
+            </div>
+
+            <div style={{ padding: '16px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Preset Name & Emoji */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={editingPreset.emoji || '📅'}
+                  onChange={(e) => setEditingPreset(prev => ({ ...prev, emoji: e.target.value }))}
+                  style={{ width: '45px', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', fontSize: '16px' }}
+                  maxLength={2}
+                />
+                <input
+                  type="text"
+                  placeholder="Nome Giornata Tipo (es. 🏋️ Giorno Allenamento)"
+                  value={editingPreset.name}
+                  onChange={(e) => setEditingPreset(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
+                />
+              </div>
+
+              {/* Description */}
+              <input
+                type="text"
+                placeholder="Descrizione opzionale (es. Routine per i giorni di palestra)"
+                value={editingPreset.description || ''}
+                onChange={(e) => setEditingPreset(prev => ({ ...prev, description: e.target.value }))}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '11px' }}
+              />
+
+              {/* 4 Action Slots */}
+              <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>
+                Routine delle 4 Attività del Giorno:
+              </div>
+
+              {[
+                { key: 'action', label: '🎯 Azione (Principale)' },
+                { key: 'bonus', label: '⚡ Bonus (Strategico)' },
+                { key: 'movement', label: '🚶 Movimento (Fisico)' },
+                { key: 'reaction', label: '🛡️ Reazione (Abitudine / Manutenzione)' }
+              ].map(({ key, label }) => {
+                const slot = editingPreset.slots?.[key] || { name: '', stars: 2, statId: 'int' };
+                return (
+                  <div key={key} style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{label}</div>
+                    <input
+                      type="text"
+                      placeholder={`Nome ${label.split(' ')[1]}...`}
+                      value={slot.name || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditingPreset(prev => ({
+                          ...prev,
+                          slots: {
+                            ...prev.slots,
+                            [key]: { ...prev.slots[key], name: val }
+                          }
+                        }));
+                      }}
+                      style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '6px 10px', color: 'var(--text-primary)', fontSize: '11px' }}
+                    />
+                  </div>
+                );
+              })}
+
+              <button
+                onClick={() => handleSavePreset(editingPreset)}
+                className="btn-primary"
+                style={{ marginTop: '8px', width: '100%', padding: '10px', borderRadius: '10px', fontWeight: 'bold', fontSize: '12px', border: 'none', cursor: 'pointer' }}
+              >
+                💾 Salva Giornata Tipo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

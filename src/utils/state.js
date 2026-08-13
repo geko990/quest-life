@@ -99,10 +99,35 @@ export function getInitialState() {
       weekStart: 'sunday',
       enableDailyPenalties: true,
       animatedBackground: true,
-      soundEnabled: true,
       enableDailyPlanner: true,
       enableWeeklyRecap: true,
-      showDiceButton: true
+      showDiceButton: true,
+      presetDays: [
+        {
+          id: 'preset_work',
+          name: 'Giorno Lavorativo',
+          emoji: '💼',
+          description: 'Routine per giornate di lavoro concentrato',
+          slots: {
+            action: { name: 'Completare le task prioritarie', stars: 3, statId: 'int' },
+            bonus: { name: 'Pianificare riunioni e scadenze', stars: 2, statId: 'wis' },
+            movement: { name: 'Passeggiata rigenerante 20 min', stars: 2, statId: 'str' },
+            reaction: { name: 'Rispondere a email e messaggi', stars: 1, statId: 'int' }
+          }
+        },
+        {
+          id: 'preset_fit',
+          name: 'Giorno Allenamento',
+          emoji: '🏋️',
+          description: 'Routine focalizzata su fitness e recupero',
+          slots: {
+            action: { name: 'Sessione di Allenamento Completa', stars: 4, statId: 'str' },
+            bonus: { name: 'Preparazione pasti bilanciati', stars: 2, statId: 'con' },
+            movement: { name: '10.000 passi quotidiani', stars: 3, statId: 'str' },
+            reaction: { name: 'Stretching e mobilizzazione', stars: 1, statId: 'dex' }
+          }
+        }
+      ]
     }
   };
 }
