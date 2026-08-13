@@ -123,81 +123,103 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           {theme.title}
         </div>
 
-        {/* Dropdown to pick existing task or campaign milestone */}
-        {(uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0) && (
-          <select
-            onChange={(e) => {
-              const val = e.target.value;
-              if (!val) return;
-              if (val.startsWith('oneshot-')) {
-                const targetId = val.replace('oneshot-', '');
-                const found = uncompletedOneshots.find(o => o.id === targetId);
-                if (found) {
-                  handleSlotChange(key, 'name', found.name);
-                  handleSlotChange(key, 'oneshotId', found.id);
-                  if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
-                  if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
-                }
-              } else if (val.startsWith('quest-')) {
-                const found = activeCampaignMilestones.find(m => m.id === val);
-                if (found) {
-                  handleSlotChange(key, 'name', found.rawName || found.name);
-                  handleSlotChange(key, 'oneshotId', null);
-                  if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
-                  if (found.statId) handleSlotChange(key, 'statId', found.statId);
-                }
-              }
-            }}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <input
+            type="text"
+            value={slot.name}
+            onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
+            placeholder={placeholder}
             style={{
-              width: '100%',
+              flex: 1,
               background: 'var(--bg-primary)',
               border: '1px solid var(--glass-border)',
               borderRadius: '8px',
-              padding: '5px 8px',
-              fontSize: '11px',
-              color: 'var(--text-secondary)',
-              outline: 'none',
+              padding: '7px 10px',
+              fontSize: '12px',
+              color: 'var(--text-primary)',
               boxSizing: 'border-box'
             }}
-          >
-            <option value="">📋 Attingi da Task o Campagne...</option>
-            {uncompletedOneshots.length > 0 && (
-              <optgroup label="💥 Task Singoli in Sospeso">
-                {uncompletedOneshots.map(o => (
-                  <option key={o.id} value={`oneshot-${o.id}`}>
-                    {o.emoji || '💥'} {o.name} {o.scheduledCount ? `(programmato ${o.scheduledCount}x)` : ''}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-            {activeCampaignMilestones.length > 0 && (
-              <optgroup label="🏆 Prossimo Obiettivo Campagne">
-                {activeCampaignMilestones.map(m => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-          </select>
-        )}
+          />
 
-        <input
-          type="text"
-          value={slot.name}
-          onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
-          placeholder={placeholder}
-          style={{
-            width: '100%',
-            background: 'var(--bg-primary)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '8px',
-            padding: '8px 10px',
-            fontSize: '12px',
-            color: 'var(--text-primary)',
-            boxSizing: 'border-box'
-          }}
-        />
+          {/* Integrated 📋 Button right next to input bar */}
+          {(uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0) && (
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', shrink: 0 }}>
+              <select
+                value=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) return;
+                  if (val.startsWith('oneshot-')) {
+                    const targetId = val.replace('oneshot-', '');
+                    const found = uncompletedOneshots.find(o => o.id === targetId);
+                    if (found) {
+                      handleSlotChange(key, 'name', found.name);
+                      handleSlotChange(key, 'oneshotId', found.id);
+                      if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
+                      if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
+                    }
+                  } else if (val.startsWith('quest-')) {
+                    const found = activeCampaignMilestones.find(m => m.id === val);
+                    if (found) {
+                      handleSlotChange(key, 'name', found.rawName || found.name);
+                      handleSlotChange(key, 'oneshotId', null);
+                      if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
+                      if (found.statId) handleSlotChange(key, 'statId', found.statId);
+                    }
+                  }
+                  e.target.value = "";
+                }}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  opacity: 0,
+                  cursor: 'pointer',
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 2
+                }}
+              >
+                <option value="">📋 Attingi da Task o Campagne...</option>
+                {uncompletedOneshots.length > 0 && (
+                  <optgroup label="💥 Task Singoli in Sospeso">
+                    {uncompletedOneshots.map(o => (
+                      <option key={o.id} value={`oneshot-${o.id}`}>
+                        {o.emoji || '💥'} {o.name} {o.scheduledCount ? `(programmato ${o.scheduledCount}x)` : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {activeCampaignMilestones.length > 0 && (
+                  <optgroup label="🏆 Prossimo Obiettivo Campagne">
+                    {activeCampaignMilestones.map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+              <button
+                type="button"
+                style={{
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--glass-border)',
+                  borderRadius: '8px',
+                  padding: '6px 8px',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--text-primary)'
+                }}
+                title="Attingi da Task o Campagne"
+              >
+                📋
+              </button>
+            </div>
+          )}
+        </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
           {/* Stars */}
@@ -294,7 +316,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
           width: '100%',
           maxWidth: '400px',
-          padding: '24px',
+          padding: '16px 18px',
           maxHeight: '96dvh',
           overflowY: 'auto',
           borderRadius: '24px',
@@ -302,17 +324,17 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          <div style={{ fontSize: '28px', marginBottom: '4px' }}>🎲</div>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          <div style={{ fontSize: '24px', marginBottom: '2px' }}>🎲</div>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
             È IL TUO TURNO!
           </h2>
-          <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+          <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             Pianifica le tue azioni per oggi
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
           {renderSlot('action', 'Es: Completare il report')}
           {renderSlot('bonus', 'Es: Chiamare il medico')}
           {renderSlot('movement', 'Es: Passeggiata 30min')}
