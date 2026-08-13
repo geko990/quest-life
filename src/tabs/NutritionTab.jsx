@@ -91,17 +91,68 @@ export default function NutritionTab({
       }
     }));
   };
+  const [selectedFoodForPortion, setSelectedFoodForPortion] = useState(null);
+  const [portionInputValue, setPortionInputValue] = useState('');
+  const [portionUnit, setPortionUnit] = useState('gram'); // 'gram' | 'piece'
 
-  // Log food items
-  const handleAddMealFood = (foodItem) => {
+  // Open portion prompt modal (pre-filled with last used quantity & unit)
+  const handleOpenPortionModal = (food) => {
+    const memory = (health.foodMemory && health.foodMemory[food.id]) || {};
+    const defaultUnit = memory.unit || (food.pieceCalories ? 'piece' : 'gram');
+    const defaultQty = memory.qty !== undefined ? memory.qty : (defaultUnit === 'piece' ? 1 : (food.baseGrams || 100));
+
+    setSelectedFoodForPortion(food);
+    setPortionUnit(defaultUnit);
+    setPortionInputValue(String(defaultQty));
+  };
+
+  // Confirm portion and log food item
+  const handleConfirmAddMealFood = (e) => {
+    if (e) e.preventDefault();
+    if (!selectedFoodForPortion) return;
+
+    let rawVal = (portionInputValue || '').trim().toLowerCase();
+    let unit = portionUnit;
+    let numVal = parseFloat(rawVal);
+
+    if (rawVal.endsWith('p') || rawVal.endsWith('pz') || rawVal.includes('pez')) {
+      unit = 'piece';
+      numVal = parseFloat(rawVal) || 1;
+    } else if (rawVal.endsWith('g') || rawVal.endsWith('gr')) {
+      unit = 'gram';
+      numVal = parseFloat(rawVal) || 100;
+    }
+
+    if (isNaN(numVal) || numVal <= 0) {
+      numVal = unit === 'piece' ? 1 : (selectedFoodForPortion.baseGrams || 100);
+    }
+
+    let calculatedCal = 0;
+    let calculatedProt = 0;
+    let portionLabel = '';
+
+    if (unit === 'piece') {
+      const pieceCal = selectedFoodForPortion.pieceCalories || selectedFoodForPortion.baseCalories;
+      const pieceProt = selectedFoodForPortion.pieceProteins || selectedFoodForPortion.baseProteins;
+      calculatedCal = Math.round(numVal * pieceCal);
+      calculatedProt = Math.round(numVal * pieceProt * 10) / 10;
+      portionLabel = `${numVal} pz`;
+    } else {
+      const baseG = selectedFoodForPortion.baseGrams || 100;
+      calculatedCal = Math.round((numVal / baseG) * selectedFoodForPortion.baseCalories);
+      calculatedProt = Math.round(((numVal / baseG) * selectedFoodForPortion.baseProteins) * 10) / 10;
+      portionLabel = `${numVal}g`;
+    }
+
     const updatedMeals = { ...health.meals };
     const newLoggedFood = {
       id: 'meal_food_' + Date.now(),
-      name: foodItem.name,
-      emoji: foodItem.emoji,
-      calories: foodItem.baseCalories,
-      proteins: foodItem.baseProteins,
-      grams: foodItem.baseGrams
+      foodId: selectedFoodForPortion.id,
+      name: selectedFoodForPortion.name,
+      emoji: selectedFoodForPortion.emoji,
+      calories: calculatedCal,
+      proteins: calculatedProt,
+      grams: portionLabel
     };
 
     if (!updatedMeals[activeMealCategory]) {
@@ -113,14 +164,23 @@ export default function NutritionTab({
       ...prev,
       calories: {
         ...prev.calories,
-        consumed: prev.calories.consumed + foodItem.baseCalories
+        consumed: (prev.calories.consumed || 0) + calculatedCal
       },
       proteins: {
         ...prev.proteins,
-        consumed: prev.proteins.consumed + foodItem.baseProteins
+        consumed: (prev.proteins.consumed || 0) + calculatedProt
       },
-      meals: updatedMeals
+      meals: updatedMeals,
+      foodMemory: {
+        ...(prev.foodMemory || {}),
+        [selectedFoodForPortion.id]: {
+          qty: numVal,
+          unit: unit
+        }
+      }
     }));
+
+    setSelectedFoodForPortion(null);
   };
 
   const removeLoggedFood = (category, itemId, calories, proteins) => {
@@ -852,10 +912,17 @@ export default function NutritionTab({
                       <div key={food.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
                         <div>
                           <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{food.emoji} {food.name}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Dose: {food.baseGrams}g • Kcal: {food.baseCalories} • P: {food.baseProteins}g</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            Dose: {food.baseGrams}g ({food.baseCalories} kcal, {food.baseProteins}g P)
+                            {food.pieceCalories && (
+                              <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+                                {' • '}1 Pz ({food.pieceCalories} kcal, {food.pieceProteins || 0}g P)
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <button
-                          onClick={() => handleAddMealFood(food)}
+                          onClick={() => handleOpenPortionModal(food)}
                           style={{
                             width: '28px',
                             height: '28px',
@@ -872,7 +939,7 @@ export default function NutritionTab({
                             flexShrink: 0,
                             boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
                           }}
-                          title="Aggiungi pasto oggi"
+                          title="Aggiungi pasto (scegli quantità)"
                         >
                           +
                         </button>
@@ -1075,6 +1142,180 @@ export default function NutritionTab({
                 </table>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* PORTION PROMPT MODAL (WITH LAST-USED VALUE MEMORY) */}
+      {selectedFoodForPortion && (
+        <div
+          onClick={() => setSelectedFoodForPortion(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100000,
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '380px',
+              width: '92%',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '24px',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>{selectedFoodForPortion.emoji || '🍎'}</span> {selectedFoodForPortion.name}
+              </h3>
+            </div>
+
+            <form onSubmit={handleConfirmAddMealFood} style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Reference Info Card */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)', fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '3px', textAlign: 'center' }}>
+                <span>Per {selectedFoodForPortion.baseGrams || 100}g: <b>{selectedFoodForPortion.baseCalories} kcal</b> • <b>{selectedFoodForPortion.baseProteins}g P</b></span>
+                {selectedFoodForPortion.pieceCalories && (
+                  <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+                    Per 1 Pezzo: <b>{selectedFoodForPortion.pieceCalories} kcal</b> • <b>{selectedFoodForPortion.pieceProteins || 0}g P</b>
+                  </span>
+                )}
+              </div>
+
+              {/* Unit Selector Toggle */}
+              <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--glass-border)', gap: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => setPortionUnit('gram')}
+                  style={{
+                    flex: 1,
+                    padding: '7px 0',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: portionUnit === 'gram' ? 'var(--accent-primary)' : 'transparent',
+                    color: portionUnit === 'gram' ? '#fff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  ⚖️ Grammi (g)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPortionUnit('piece')}
+                  style={{
+                    flex: 1,
+                    padding: '7px 0',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: portionUnit === 'piece' ? 'var(--accent-primary)' : 'transparent',
+                    color: portionUnit === 'piece' ? '#fff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  🧩 Pezzi (p)
+                </button>
+              </div>
+
+              {/* Input quantity */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    Quantità ({portionUnit === 'piece' ? 'pezzi' : 'grammi'}):
+                  </label>
+                  {(health.foodMemory && health.foodMemory[selectedFoodForPortion.id]) && (
+                    <span style={{ fontSize: '9px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+                      ⚡ Ricordato dall'ultima volta
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={portionInputValue}
+                  onChange={(e) => setPortionInputValue(e.target.value)}
+                  placeholder={portionUnit === 'piece' ? 'Es: 1 oppure 2' : 'Es: 100 oppure 150'}
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    height: '42px',
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '12px',
+                    padding: '0 14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Live Calculation Preview */}
+              {(() => {
+                let num = parseFloat(portionInputValue);
+                if (isNaN(num) || num <= 0) num = 0;
+                let previewCal = 0;
+                let previewProt = 0;
+                if (portionUnit === 'piece') {
+                  const pCal = selectedFoodForPortion.pieceCalories || selectedFoodForPortion.baseCalories;
+                  const pProt = selectedFoodForPortion.pieceProteins || selectedFoodForPortion.baseProteins;
+                  previewCal = Math.round(num * pCal);
+                  previewProt = Math.round(num * pProt * 10) / 10;
+                } else {
+                  const bG = selectedFoodForPortion.baseGrams || 100;
+                  previewCal = Math.round((num / bG) * selectedFoodForPortion.baseCalories);
+                  previewProt = Math.round(((num / bG) * selectedFoodForPortion.baseProteins) * 10) / 10;
+                }
+
+                return (
+                  <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-around', textAlign: 'center', fontSize: '12px' }}>
+                    <div style={{ flex: 1, textAlign: 'center' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Calorie Totali</span>
+                      <b style={{ color: 'var(--text-primary)', fontSize: '13px' }}>🔥 {previewCal} kcal</b>
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'center' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Proteine Totali</span>
+                      <b style={{ color: '#eab308', fontSize: '13px' }}>🍗 {previewProt}g</b>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Confirm Button */}
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
+                  color: '#ffffff',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '12px',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(124, 58, 237, 0.4)',
+                  marginTop: '4px'
+                }}
+              >
+                🍴 Aggiungi al Pasto
+              </button>
+            </form>
           </div>
         </div>
       )}

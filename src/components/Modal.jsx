@@ -788,43 +788,78 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Grammi Base</label>
-                <input
-                  type="number"
-                  name="baseGrams"
-                  value={form.baseGrams || 100}
-                  onChange={handleNumberChange}
-                  required
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Calorie Base</label>
-                <input
-                  type="number"
-                  name="baseCalories"
-                  value={form.baseCalories || 0}
-                  onChange={handleNumberChange}
-                  required
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Proteine (g)</label>
-                <input
-                  type="number"
-                  name="baseProteins"
-                  value={form.baseProteins || 0}
-                  onChange={handleNumberChange}
-                  required
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
+
+            {/* Valori per 100g */}
+            <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
+              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Valori Nutrizionali per 100g</span>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Grammi Base</label>
+                  <input
+                    type="number"
+                    name="baseGrams"
+                    value={form.baseGrams !== undefined ? form.baseGrams : 100}
+                    onChange={handleNumberChange}
+                    required
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal per 100g</label>
+                  <input
+                    type="number"
+                    name="baseCalories"
+                    value={form.baseCalories !== undefined ? form.baseCalories : 0}
+                    onChange={handleNumberChange}
+                    required
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine (g)</label>
+                  <input
+                    type="number"
+                    name="baseProteins"
+                    value={form.baseProteins !== undefined ? form.baseProteins : 0}
+                    onChange={handleNumberChange}
+                    required
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
+
+            {/* Valori per Pezzo / Porzione (Opzionale) */}
+            <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
+              <span className="text-[10px] font-bold text-accent-primary uppercase tracking-wider">🧩 Valori per Pezzo / Porzione (Opzionale)</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal per 1 Pezzo</label>
+                  <input
+                    type="number"
+                    name="pieceCalories"
+                    value={form.pieceCalories !== undefined ? form.pieceCalories : ''}
+                    onChange={handleNumberChange}
+                    placeholder="Es: 78"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine (g) per 1 Pezzo</label>
+                  <input
+                    type="number"
+                    name="pieceProteins"
+                    value={form.pieceProteins !== undefined ? form.pieceProteins : ''}
+                    onChange={handleNumberChange}
+                    placeholder="Es: 6.5"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Categoria Pasto</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1">Categoria Pasto Predefinita</label>
               <select
                 name="category"
                 value={form.category || 'snack'}
