@@ -237,7 +237,7 @@ export default function SettingsTab({
                         padding: '14px',
                         display: 'flex',
                         flexDirection: 'column',
-                        justify: 'space-between',
+                        justifyContent: 'space-between',
                         gap: '10px'
                       }}
                     >
@@ -542,8 +542,19 @@ export default function SettingsTab({
                 </p>
               ) : (
                 (xpLog || []).slice(-15).reverse().map((log, idx) => {
+                  if (!log) return null;
                   const title = log.title || log.reason || log.name || log.source || 'Attività completata';
-                  const dateStr = log.date ? new Date(log.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                  let dateStr = '';
+                  if (log.date) {
+                    try {
+                      const d = new Date(log.date);
+                      if (!isNaN(d.getTime())) {
+                        dateStr = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                      }
+                    } catch (e) {
+                      dateStr = '';
+                    }
+                  }
                   return (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
@@ -553,7 +564,7 @@ export default function SettingsTab({
                           {dateStr && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{dateStr}</span>}
                         </div>
                       </div>
-                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>+{log.amount} XP</span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>+{log.amount || 0} XP</span>
                     </div>
                   );
                 })
