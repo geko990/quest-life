@@ -382,15 +382,10 @@ export default function HomeTab({
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
-              style={{ padding: '9px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', marginBottom: '8px', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
+              style={{ padding: '9px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
             >
               Pianifica la tua giornata
             </button>
-
-            {/* 3. Descrizione "Definisci le quattro azioni di oggi" */}
-            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '500' }}>
-              Definisci le quattro azioni di oggi
-            </div>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
