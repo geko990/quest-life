@@ -890,7 +890,6 @@ export default function NutritionTab({
                   </h4>
                   <button
                     onClick={() => {
-                      setShowMealsModal(false);
                       onOpenModal('food');
                     }}
                     style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -926,12 +925,11 @@ export default function NutritionTab({
                       <div
                         key={food.id}
                         onClick={() => {
-                          setShowMealsModal(false);
                           onOpenModal('food', food);
                         }}
                         style={{
                           display: 'flex',
-                          justify: 'space-between',
+                          justifyContent: 'space-between',
                           alignItems: 'center',
                           padding: '8px 10px',
                           background: 'var(--bg-secondary)',
