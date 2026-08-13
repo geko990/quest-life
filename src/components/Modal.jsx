@@ -1729,7 +1729,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     <div
       onClick={onClose}
       className="fixed inset-0 flex items-center justify-center p-4 modal-overlay active animate-fade-in"
-      style={{ zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+      style={{ zIndex: 100005, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
