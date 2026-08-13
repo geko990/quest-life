@@ -151,6 +151,9 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
   if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
   if (state.settings.enableDailyPenalties === undefined) state.settings.enableDailyPenalties = true;
+  if (!Array.isArray(state.settings.presetDays)) {
+    state.settings.presetDays = defaults.settings.presetDays;
+  }
 
   state.habits = parsed.habits || [];
   state.oneshots = parsed.oneshots || [];
