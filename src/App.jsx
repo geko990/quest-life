@@ -1035,6 +1035,28 @@ export default function App() {
     }
   };
 
+  const handleApplyPresetDay = (preset) => {
+    if (!preset || !preset.slots) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    setHealth(prev => ({
+      ...prev,
+      dailyActions: {
+        ...(prev.dailyActions || {}),
+        [todayStr]: {
+          ...(prev.dailyActions?.[todayStr] || {}),
+          action: preset.slots.action?.name || '',
+          bonus: preset.slots.bonus?.name || '',
+          movement: preset.slots.movement?.name || '',
+          reaction: preset.slots.reaction?.name || '',
+          presetName: preset.name
+        }
+      }
+    }));
+
+    alert(`⚡ Routine "${preset.name || 'Giornata Tipo'}" applicata per oggi! 🎉`);
+  };
+
   // Form open helpers
   const handleOpenModal = (type, data = null) => {
     setModalType(type);
