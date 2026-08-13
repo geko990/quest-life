@@ -670,23 +670,6 @@ export default function Header({
                 )}
               </div>
 
-              {/* Bottom Close Button */}
-              <button
-                onClick={() => setSelectedMedal(null)}
-                className="btn-primary"
-                style={{
-                  flexShrink: 0,
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '12px',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                Chiudi
-              </button>
             </div>
           </div>
         );
