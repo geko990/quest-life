@@ -22,7 +22,7 @@ export default function NutritionTab({
   const [showMealsModal, setShowMealsModal] = useState(false);
   const [showExercisesModal, setShowExercisesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [activeMealCategory, setActiveMealCategory] = useState('lunch');
+  const [activeMealCategory, setActiveMealCategory] = useState('all');
   const [newShopItemName, setNewShopItemName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -152,31 +152,39 @@ export default function NutritionTab({
       portionLabel = `${numVal}g`;
     }
 
-    const updatedMeals = { ...health.meals };
+    const targetCat = (activeMealCategory && activeMealCategory !== 'all')
+      ? activeMealCategory
+      : (selectedFoodForPortion.category || 'snack');
+
     const newLoggedFood = {
-      id: 'meal_food_' + Date.now(),
+      id: 'meal_food_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
       foodId: selectedFoodForPortion.id,
       name: selectedFoodForPortion.name,
       emoji: selectedFoodForPortion.emoji,
       calories: calculatedCal,
       proteins: calculatedProt,
-      grams: portionLabel
+      grams: portionLabel,
+      category: targetCat
     };
 
-    if (!updatedMeals[activeMealCategory]) {
-      updatedMeals[activeMealCategory] = [];
-    }
-    updatedMeals[activeMealCategory].push(newLoggedFood);
+    const updatedMeals = {
+      ...health.meals,
+      [targetCat]: [...(health.meals[targetCat] || []), newLoggedFood]
+    };
+
+    const allMealItems = Object.values(updatedMeals).flat();
+    const newTotalCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+    const newTotalProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
 
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        consumed: (prev.calories.consumed || 0) + calculatedCal
+        consumed: newTotalCal
       },
       proteins: {
         ...prev.proteins,
-        consumed: (prev.proteins.consumed || 0) + calculatedProt
+        consumed: newTotalProt
       },
       meals: updatedMeals,
       foodMemory: {
@@ -191,22 +199,34 @@ export default function NutritionTab({
     setSelectedFoodForPortion(null);
   };
 
-  const removeLoggedFood = (category, itemId, calories, proteins) => {
-    const updatedCategoryMeals = (health.meals[category] || []).filter(item => item.id !== itemId);
+  const removeLoggedFood = (category, itemId) => {
+    const updatedMeals = { ...health.meals };
+
+    if (category && updatedMeals[category]) {
+      updatedMeals[category] = updatedMeals[category].filter(item => item.id !== itemId);
+    } else {
+      ['breakfast', 'lunch', 'dinner', 'snack', 'cheat'].forEach(cat => {
+        if (updatedMeals[cat]) {
+          updatedMeals[cat] = updatedMeals[cat].filter(item => item.id !== itemId);
+        }
+      });
+    }
+
+    const allMealItems = Object.values(updatedMeals).flat();
+    const newTotalCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+    const newTotalProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
+
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        consumed: Math.max(0, prev.calories.consumed - calories)
+        consumed: newTotalCal
       },
       proteins: {
         ...prev.proteins,
-        consumed: Math.max(0, prev.proteins.consumed - proteins)
+        consumed: newTotalProt
       },
-      meals: {
-        ...prev.meals,
-        [category]: updatedCategoryMeals
-      }
+      meals: updatedMeals
     }));
   };
 
@@ -408,9 +428,9 @@ export default function NutritionTab({
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
               {/* Calorie Progress Ring */}
               <div
-                onClick={() => onOpenModal('health_consumed')}
+                onClick={() => setShowMealsModal(true)}
                 style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                title="Clicca per aggiungere calorie cibo"
+                title="Apri registro pasti"
               >
                 <svg width="130" height="130" viewBox="0 0 140 140">
                   <circle
@@ -821,34 +841,102 @@ export default function NutritionTab({
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
               {/* Category tabs */}
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
-                {['breakfast', 'lunch', 'dinner', 'snack', 'cheat'].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveMealCategory(cat)}
-                    style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: activeMealCategory === cat ? 'var(--accent-primary)' : 'var(--bg-secondary)', color: activeMealCategory === cat ? '#fff' : 'var(--text-secondary)' }}
-                  >
-                    {cat === 'breakfast' ? '☕ Colazione' : cat === 'lunch' ? '🍚 Pranzo' : cat === 'dinner' ? '🍗 Cena' : cat === 'snack' ? '🍌 Spuntino' : '🍕 Sgarro'}
-                  </button>
-                ))}
+                {[
+                  { id: 'all', label: '🌟 Tutti' },
+                  { id: 'breakfast', label: '☕ Colazione' },
+                  { id: 'lunch', label: '🍚 Pranzo' },
+                  { id: 'dinner', label: '🍗 Cena' },
+                  { id: 'snack', label: '🍌 Spuntino' },
+                  { id: 'cheat', label: '🍕 Sgarro' }
+                ].map((cat) => {
+                  const count = cat.id === 'all'
+                    ? Object.values(health.meals || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
+                    : ((health.meals && health.meals[cat.id]) ? health.meals[cat.id].length : 0);
+
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveMealCategory(cat.id)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        background: activeMealCategory === cat.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                        color: activeMealCategory === cat.id ? '#fff' : 'var(--text-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <span>{cat.label}</span>
+                      <span style={{
+                        background: activeMealCategory === cat.id ? 'rgba(255, 255, 255, 0.25)' : 'var(--glass-border)',
+                        padding: '1px 5px',
+                        borderRadius: '10px',
+                        fontSize: '9px'
+                      }}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Logged Items for Active Category */}
+              {/* Logged Items for Active Category / All */}
               <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>Loggati oggi in questo pasto</h4>
+                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
+                  {activeMealCategory === 'all' ? 'Alimenti consumati oggi (Tutti)' : 'Loggati oggi in questo pasto'}
+                </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {(!health.meals[activeMealCategory] || health.meals[activeMealCategory].length === 0) ? (
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo inserito in questo pasto.</p>
-                  ) : (
-                    health.meals[activeMealCategory].map((item) => (
+                  {(() => {
+                    const catLabels = { breakfast: 'Colazione', lunch: 'Pranzo', dinner: 'Cena', snack: 'Spuntino', cheat: 'Sgarro' };
+                    let itemsToDisplay = [];
+                    if (activeMealCategory === 'all') {
+                      Object.entries(health.meals || {}).forEach(([catKey, items]) => {
+                        if (Array.isArray(items)) {
+                          items.forEach(item => {
+                            itemsToDisplay.push({ ...item, catKey, catLabel: catLabels[catKey] || catKey });
+                          });
+                        }
+                      });
+                    } else {
+                      const items = (health.meals && health.meals[activeMealCategory]) || [];
+                      itemsToDisplay = items.map(item => ({ ...item, catKey: activeMealCategory }));
+                    }
+
+                    if (itemsToDisplay.length === 0) {
+                      return (
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
+                          Nessun cibo inserito in questa sezione.
+                        </p>
+                      );
+                    }
+
+                    return itemsToDisplay.map((item) => (
                       <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams}g)</span>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams})</span>
+                          {activeMealCategory === 'all' && item.catLabel && (
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Pasto: {item.catLabel}</span>
+                          )}
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
-                          <button onClick={() => removeLoggedFood(activeMealCategory, item.id, item.calories, item.proteins)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+                          <button
+                            onClick={() => removeLoggedFood(item.catKey, item.id)}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 6px' }}
+                            title="Rimuovi alimento"
+                          >
+                            ✕
+                          </button>
                         </div>
                       </div>
-                    ))
-                  )}
+                    ));
+                  })()}
                 </div>
               </div>
 

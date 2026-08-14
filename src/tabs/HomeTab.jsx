@@ -460,7 +460,7 @@ export default function HomeTab({
               🍎 Sostentamento Oggi
             </h3>
             <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-              {health.calories?.consumed || 0} / {health.calories?.target || 2000} kcal
+              {health.calories?.consumed || 0} / {health.calories?.goal || 2000} kcal
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
