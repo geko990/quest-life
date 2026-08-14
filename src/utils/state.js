@@ -80,11 +80,23 @@ export function getInitialState() {
       },
       history: [],
       foodDatabase: [
-        { id: 'fd1', emoji: '🍚', name: 'Riso Basmati', baseGrams: 100, baseCalories: 350, baseProteins: 7, category: 'lunch' },
-        { id: 'fd2', emoji: '🍗', name: 'Petto di Pollo', baseGrams: 100, baseCalories: 165, baseProteins: 31, category: 'dinner' },
-        { id: 'fd3', emoji: '🥦', name: 'Verdure Miste', baseGrams: 100, baseCalories: 50, baseProteins: 3, category: 'lunch' },
-        { id: 'fd4', emoji: '🍌', name: 'Banana', baseGrams: 100, baseCalories: 89, baseProteins: 1, category: 'snack' },
-        { id: 'fd5', emoji: '☕', name: 'Caffè (Zuccherato)', baseGrams: 100, baseCalories: 40, baseProteins: 0, category: 'breakfast' }
+        { id: 'fd_pane_cafone', emoji: '🍞', name: 'Pane Cafone (Fetta)', baseGrams: 100, baseCalories: 270, baseProteins: 8.5, pieceCalories: 135, pieceProteins: 4.3, category: 'lunch' },
+        { id: 'fd_pomodori', emoji: '🍅', name: 'Pomodori Freschi', baseGrams: 100, baseCalories: 18, baseProteins: 0.9, pieceCalories: 22, pieceProteins: 1.1, category: 'lunch' },
+        { id: 'fd_verdure', emoji: '🥗', name: 'Verdure Miste / Insalata', baseGrams: 100, baseCalories: 25, baseProteins: 1.5, pieceCalories: 38, pieceProteins: 2.3, category: 'lunch' },
+        { id: 'fd_mozzarella', emoji: '🧀', name: 'Mozzarella (Bufala/Fiordilatte)', baseGrams: 100, baseCalories: 280, baseProteins: 18, pieceCalories: 350, pieceProteins: 22.5, category: 'dinner' },
+        { id: 'fd_patate_forno', emoji: '🥔', name: 'Patate al Forno', baseGrams: 100, baseCalories: 130, baseProteins: 2.5, pieceCalories: 195, pieceProteins: 3.8, category: 'dinner' },
+        { id: 'fd_pasta_pomodoro', emoji: '🍝', name: 'Pasta al Pomodoro', baseGrams: 100, baseCalories: 160, baseProteins: 5, pieceCalories: 350, pieceProteins: 11, category: 'lunch' },
+        { id: 'fd_pasta_bianco', emoji: '🍝', name: 'Pasta in Bianco (con Olio)', baseGrams: 100, baseCalories: 180, baseProteins: 5.5, pieceCalories: 395, pieceProteins: 12, category: 'lunch' },
+        { id: 'fd_petto_pollo', emoji: '🍗', name: 'Petto di Pollo', baseGrams: 100, baseCalories: 165, baseProteins: 31, pieceCalories: 198, pieceProteins: 37.2, category: 'dinner' },
+        { id: 'fd_uovo', emoji: '🥚', name: 'Uovo (Sodo / Occhio di Bue)', baseGrams: 100, baseCalories: 155, baseProteins: 13, pieceCalories: 78, pieceProteins: 6.5, category: 'dinner' },
+        { id: 'fd_riso', emoji: '🍚', name: 'Riso Basmati', baseGrams: 100, baseCalories: 130, baseProteins: 2.7, pieceCalories: 260, pieceProteins: 5.4, category: 'lunch' },
+        { id: 'fd_banana', emoji: '🍌', name: 'Banana', baseGrams: 100, baseCalories: 89, baseProteins: 1.1, pieceCalories: 107, pieceProteins: 1.3, category: 'snack' },
+        { id: 'fd_mela', emoji: '🍎', name: 'Mela', baseGrams: 100, baseCalories: 52, baseProteins: 0.3, pieceCalories: 78, pieceProteins: 0.5, category: 'snack' },
+        { id: 'fd_olio_oliva', emoji: '🫒', name: 'Olio EV d\'Oliva (Cucchiaio)', baseGrams: 100, baseCalories: 884, baseProteins: 0, pieceCalories: 88, pieceProteins: 0, category: 'lunch' },
+        { id: 'fd_yogurt_greco', emoji: '🥣', name: 'Yogurt Greco 0%', baseGrams: 100, baseCalories: 59, baseProteins: 10, pieceCalories: 100, pieceProteins: 17, category: 'snack' },
+        { id: 'fd_tonno', emoji: '🐟', name: 'Tonno in Scatola', baseGrams: 100, baseCalories: 130, baseProteins: 26, pieceCalories: 104, pieceProteins: 20.8, category: 'lunch' },
+        { id: 'fd_caffe', emoji: '☕', name: 'Caffè (Zuccherato)', baseGrams: 100, baseCalories: 40, baseProteins: 0, pieceCalories: 20, pieceProteins: 0, category: 'breakfast' },
+        { id: 'fd_cornetto', emoji: '🥐', name: 'Cornetto / Brioche', baseGrams: 100, baseCalories: 410, baseProteins: 8, pieceCalories: 260, pieceProteins: 5.1, category: 'breakfast' }
       ],
       exerciseDatabase: [
         { id: 'ed1', emoji: '🏃', name: 'Camminata', baseCount: 20, baseCalories: 100, xpReward: 10, statId: 'vit' },
@@ -213,6 +225,16 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     }, 0);
     state.health.calories.consumed = totalMealCal;
     state.health.proteins.consumed = Math.round(totalMealProt * 10) / 10;
+  }
+
+  if (!state.health.foodDatabase || state.health.foodDatabase.length === 0) {
+    state.health.foodDatabase = [...defaults.health.foodDatabase];
+  } else {
+    defaults.health.foodDatabase.forEach(defItem => {
+      if (!state.health.foodDatabase.some(f => f.id === defItem.id)) {
+        state.health.foodDatabase.push(defItem);
+      }
+    });
   }
 
   if (!state.inventory.food) state.inventory.food = [];
