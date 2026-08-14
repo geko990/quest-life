@@ -189,6 +189,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     state.health = { ...state.health, ...parsed.health };
   }
 
+  if (!state.health.calories) state.health.calories = { goal: 1600, consumed: 0, burned: 0 };
   if (!state.health.proteins) state.health.proteins = { goal: 100, consumed: 0 };
   if (!state.health.meals) {
     state.health.meals = { breakfast: [], lunch: [], dinner: [], snack: [], cheat: [] };
@@ -196,6 +197,22 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     ['breakfast', 'lunch', 'dinner', 'snack', 'cheat'].forEach(k => {
       if (!state.health.meals[k]) state.health.meals[k] = [];
     });
+  }
+
+  // Ensure calories.consumed & proteins.consumed match logged meals to prevent phantom calories
+  const hasLoggedMeals = Object.values(state.health.meals).some(arr => Array.isArray(arr) && arr.length > 0);
+  if (!hasLoggedMeals) {
+    state.health.calories.consumed = 0;
+    state.health.proteins.consumed = 0;
+  } else {
+    const totalMealCal = Object.values(state.health.meals).reduce((acc, cat) => {
+      return acc + (Array.isArray(cat) ? cat.reduce((sum, item) => sum + (Number(item.calories) || 0), 0) : 0);
+    }, 0);
+    const totalMealProt = Object.values(state.health.meals).reduce((acc, cat) => {
+      return acc + (Array.isArray(cat) ? cat.reduce((sum, item) => sum + (Number(item.proteins) || 0), 0) : 0);
+    }, 0);
+    state.health.calories.consumed = totalMealCal;
+    state.health.proteins.consumed = Math.round(totalMealProt * 10) / 10;
   }
 
   if (!state.inventory.food) state.inventory.food = [];

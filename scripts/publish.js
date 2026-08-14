@@ -12,15 +12,18 @@ const customMsg = args.filter(arg => !arg.startsWith('--')).join(' ');
 const noBump = args.includes('--no-bump');
 
 try {
+  const nodeDir = path.dirname(process.execPath);
+  const execOpts = { stdio: 'inherit', cwd: rootDir, env: { ...process.env, PATH: `${nodeDir}:${process.env.PATH || ''}` } };
+
   console.log('🚀 Avvio processo di rilascio PWA su GitHub Pages...\n');
 
   // 1. Build project & bump version if needed
   console.log('📦 1/4 Aggiornamento versione e build dell\'applicazione...');
   const bumpFlag = noBump ? '' : ' --bump';
-  execSync(`node scripts/update-version.js${bumpFlag}`, { stdio: 'inherit', cwd: rootDir });
-  execSync(`npx vite build`, { stdio: 'inherit', cwd: rootDir });
-  execSync(`cp -r dist/* .`, { stdio: 'inherit', cwd: rootDir });
-  execSync(`node scripts/update-version.js --post`, { stdio: 'inherit', cwd: rootDir });
+  execSync(`node scripts/update-version.js${bumpFlag}`, execOpts);
+  execSync(`npx vite build`, execOpts);
+  execSync(`cp -r dist/* .`, execOpts);
+  execSync(`node scripts/update-version.js --post`, execOpts);
 
   // Read updated version
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
@@ -28,20 +31,20 @@ try {
 
   // 2. Stage files in Git
   console.log('\n📂 2/4 Aggiunta file a Git...');
-  execSync('git add .', { stdio: 'inherit', cwd: rootDir });
+  execSync('git add .', execOpts);
 
   // 3. Commit
   const commitMsg = customMsg ? `release v${version}: ${customMsg}` : `release v${version}: aggiornamento PWA`;
   console.log(`\n📝 3/4 Creazione commit: "${commitMsg}"...`);
   try {
-    execSync(`git commit -m "${commitMsg}"`, { stdio: 'inherit', cwd: rootDir });
+    execSync(`git commit -m "${commitMsg}"`, execOpts);
   } catch (e) {
     console.log('⚠️ Nessuna nuova modifica da committare.');
   }
 
   // 4. Push to GitHub main
   console.log('\n⬆️ 4/4 Invio modifiche a GitHub (branch main)...');
-  execSync('git push origin main', { stdio: 'inherit', cwd: rootDir });
+  execSync('git push origin main', execOpts);
 
   console.log(`\n✅ RILASCIO COMPLETATO CON SUCCESSO! 🎉`);
   console.log(`📌 Versione: v${version}`);

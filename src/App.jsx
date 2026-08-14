@@ -801,9 +801,9 @@ export default function App() {
           weight: { ...prev.weight, target: Number(formData.targetWeight) || prev.weight.target }
         }));
       } else if (field === 'consumed') {
-        setHealth(prev => ({ ...prev, calories: { ...prev.calories, consumed: prev.calories.consumed + formData.value } }));
+        setHealth(prev => ({ ...prev, calories: { ...prev.calories, consumed: (prev.calories.consumed || 0) + (Number(formData.value) || 0) } }));
       } else if (field === 'burned') {
-        setHealth(prev => ({ ...prev, calories: { ...prev.calories, burned: prev.calories.burned + formData.value } }));
+        setHealth(prev => ({ ...prev, calories: { ...prev.calories, burned: (prev.calories.burned || 0) + (Number(formData.value) || 0) } }));
       } else if (field === 'steps') {
         setHealth(prev => ({ ...prev, steps: { ...prev.steps, current: formData.value } }));
       } else if (field === 'protein') {
