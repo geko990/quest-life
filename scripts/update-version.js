@@ -36,9 +36,8 @@ const cleanIndexHtml = `<!DOCTYPE html>
 `;
 
 if (isPostBuild) {
-  // Post build step: ensure root index.html stays clean for future Vite builds
-  fs.writeFileSync(path.join(rootDir, 'index.html'), cleanIndexHtml, 'utf8');
-  console.log('[Version Updater] Post-build: Cleaned root index.html for next build.');
+  // Post build step: preserve production index.html copied from dist
+  console.log('[Version Updater] Post-build: Production index.html preserved.');
   process.exit(0);
 }
 
