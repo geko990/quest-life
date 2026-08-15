@@ -122,15 +122,15 @@ export default function App() {
   // Custom modals
   const [showMottoModal, setShowMottoModal] = useState(false);
   const [mottoText, setMottoText] = useState(player.motto || '');
-  const [showPlannerModal, setShowPlannerModal] = useState(false);
-  const [initialNutritionModal, setInitialNutritionModal] = useState(null);
+  const [showGlobalWorkoutsLog, setShowGlobalWorkoutsLog] = useState(false);
+  const [showGlobalMealsLog, setShowGlobalMealsLog] = useState(false);
 
   const handleOpenWorkoutsLog = () => {
-    setInitialNutritionModal('workouts');
+    setShowGlobalWorkoutsLog(true);
   };
 
   const handleOpenMealsLog = () => {
-    setInitialNutritionModal('meals');
+    setShowGlobalMealsLog(true);
   };
 
   // Version Auto-Check hook
@@ -1106,47 +1106,31 @@ export default function App() {
     switch (activeTab) {
       case 'home':
         return (
-          <>
-            <HomeTab
-              stats={stats}
-              setStats={setStats}
-              xpLog={xpLog}
-              player={player}
-              health={health}
-              setHealth={setHealth}
-              pomodoro={pomodoro}
-              oneshots={oneshots}
-              onToggleOneshot={handleToggleOneshot}
-              habits={habits}
-              onToggleHabit={handleToggleHabit}
-              dailyActions={dailyActions}
-              onToggleDailyAction={handleToggleDailyAction}
-              completionLog={completionLog}
-              onOpenModal={handleOpenModal}
-              onDeleteStat={handleDeleteStat}
-              onEditStat={(data) => handleOpenModal(data.type, data)}
-              onOpenPlanner={() => setShowPlannerModal(true)}
-              onOpenPomodoro={() => handleOpenModal('pomodoro')}
-              onOpenStatDetail={(stat) => handleOpenModal('stat_detail', stat)}
-              onOpenWorkoutsLog={handleOpenWorkoutsLog}
-              onOpenMealsLog={handleOpenMealsLog}
-              settings={settings}
-            />
-            {initialNutritionModal && (
-              <NutritionTab
-                activeTab={activeTab}
-                health={health}
-                setHealth={setHealth}
-                inventory={inventory}
-                setInventory={setInventory}
-                onOpenModal={handleOpenModal}
-                stats={stats}
-                onRewardXp={handleRewardXp}
-                initialModal={initialNutritionModal}
-                setInitialModal={setInitialNutritionModal}
-              />
-            )}
-          </>
+          <HomeTab
+            stats={stats}
+            setStats={setStats}
+            xpLog={xpLog}
+            player={player}
+            health={health}
+            setHealth={setHealth}
+            pomodoro={pomodoro}
+            oneshots={oneshots}
+            onToggleOneshot={handleToggleOneshot}
+            habits={habits}
+            onToggleHabit={handleToggleHabit}
+            dailyActions={dailyActions}
+            onToggleDailyAction={handleToggleDailyAction}
+            completionLog={completionLog}
+            onOpenModal={handleOpenModal}
+            onDeleteStat={handleDeleteStat}
+            onEditStat={(data) => handleOpenModal(data.type, data)}
+            onOpenPlanner={() => setShowPlannerModal(true)}
+            onOpenPomodoro={() => handleOpenModal('pomodoro')}
+            onOpenStatDetail={(stat) => handleOpenModal('stat_detail', stat)}
+            onOpenWorkoutsLog={handleOpenWorkoutsLog}
+            onOpenMealsLog={handleOpenMealsLog}
+            settings={settings}
+          />
         );
       case 'habits':
         return (
@@ -1390,6 +1374,40 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* GLOBAL WORKOUTS LOG MODAL */}
+      {showGlobalWorkoutsLog && (
+        <NutritionTab
+          activeTab={activeTab}
+          health={health}
+          setHealth={setHealth}
+          inventory={inventory}
+          setInventory={setInventory}
+          onOpenModal={handleOpenModal}
+          stats={stats}
+          onRewardXp={handleRewardXp}
+          initialModal="workouts"
+          onlyModal={true}
+          onCloseOverlay={() => setShowGlobalWorkoutsLog(false)}
+        />
+      )}
+
+      {/* GLOBAL MEALS LOG MODAL */}
+      {showGlobalMealsLog && (
+        <NutritionTab
+          activeTab={activeTab}
+          health={health}
+          setHealth={setHealth}
+          inventory={inventory}
+          setInventory={setInventory}
+          onOpenModal={handleOpenModal}
+          stats={stats}
+          onRewardXp={handleRewardXp}
+          initialModal="meals"
+          onlyModal={true}
+          onCloseOverlay={() => setShowGlobalMealsLog(false)}
+        />
       )}
 
       {/* DAILY PLANNER (🎲 È il tuo turno!) MODAL */}
