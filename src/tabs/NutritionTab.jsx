@@ -101,7 +101,86 @@ export default function NutritionTab({
   };
   const [selectedFoodForPortion, setSelectedFoodForPortion] = useState(null);
   const [portionInputValue, setPortionInputValue] = useState('');
-  const [portionUnit, setPortionUnit] = useState('gram'); // 'gram' | 'piece'
+  const pressTimerRef = React.useRef(null);
+  const isLongPressRef = React.useRef(false);
+
+  const handleFoodPressStart = (food) => {
+    isLongPressRef.current = false;
+    pressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      handleOpenPortionModal(food);
+    }, 500);
+  };
+
+  const handleFoodPressEnd = (food) => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+    if (!isLongPressRef.current) {
+      handleQuickLogFood(food);
+    }
+  };
+
+  const handleQuickLogFood = (food) => {
+    const memory = (health.foodMemory && health.foodMemory[food.id]) || {};
+    const unit = memory.unit || (food.pieceCalories ? 'piece' : 'gram');
+    const qty = memory.qty !== undefined ? memory.qty : (unit === 'piece' ? 1 : (food.baseGrams || 100));
+
+    let calculatedCal = 0;
+    let calculatedProt = 0;
+    let portionLabel = '';
+
+    if (unit === 'piece') {
+      const pieceCal = food.pieceCalories || food.baseCalories;
+      const pieceProt = food.pieceProteins || food.baseProteins;
+      calculatedCal = Math.round(qty * pieceCal);
+      calculatedProt = Math.round(qty * pieceProt * 10) / 10;
+      portionLabel = `${qty} pz`;
+    } else {
+      const baseG = food.baseGrams || 100;
+      calculatedCal = Math.round((qty / baseG) * food.baseCalories);
+      calculatedProt = Math.round(((qty / baseG) * food.baseProteins) * 10) / 10;
+      portionLabel = `${qty}g`;
+    }
+
+    const targetCat = (activeMealCategory && activeMealCategory !== 'all')
+      ? activeMealCategory
+      : (food.category === 'lunch' || food.category === 'dinner' ? 'main' : (food.category || 'snack'));
+
+    const newLoggedFood = {
+      id: 'meal_food_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      foodId: food.id,
+      name: food.name,
+      emoji: food.emoji,
+      calories: calculatedCal,
+      proteins: calculatedProt,
+      grams: portionLabel,
+      category: targetCat
+    };
+
+    const updatedMeals = {
+      ...health.meals,
+      [targetCat]: [...(health.meals[targetCat] || []), newLoggedFood]
+    };
+
+    const allMealItems = Object.values(updatedMeals).flat();
+    const newTotalCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+    const newTotalProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
+
+    setHealth(prev => ({
+      ...prev,
+      calories: {
+        ...prev.calories,
+        consumed: newTotalCal
+      },
+      proteins: {
+        ...prev.proteins,
+        consumed: newTotalProt
+      },
+      meals: updatedMeals
+    }));
+  };
 
   // Open portion prompt modal (pre-filled with last used quantity & unit)
   const handleOpenPortionModal = (food) => {
@@ -329,10 +408,16 @@ export default function NutritionTab({
   const activeInventory = inventory[activeInventoryTab] || [];
   const completedShopCount = activeInventory.filter(i => i.completed).length;
 
-  // Filtered Database Items
-  const filteredFoodDatabase = (health.foodDatabase || []).filter(f =>
-    !searchQuery || f.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtered Database Items (respects searchQuery and category tabs like 'main')
+  const filteredFoodDatabase = (health.foodDatabase || []).filter(f => {
+    const matchesSearch = !searchQuery || f.name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    if (!activeMealCategory || activeMealCategory === 'all') return true;
+    if (activeMealCategory === 'main') {
+      return !f.category || f.category === 'main' || f.category === 'lunch' || f.category === 'dinner';
+    }
+    return f.category === activeMealCategory;
+  });
 
   const filteredExerciseDatabase = (health.exerciseDatabase || []).filter(ex =>
     !searchQuery || ex.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -844,14 +929,15 @@ export default function NutritionTab({
                 {[
                   { id: 'all', label: '🌟 Tutti' },
                   { id: 'breakfast', label: '☕ Colazione' },
-                  { id: 'lunch', label: '🍚 Pranzo' },
-                  { id: 'dinner', label: '🍗 Cena' },
+                  { id: 'main', label: '🍽️ Pasti Principali' },
                   { id: 'snack', label: '🍌 Spuntino' },
                   { id: 'cheat', label: '🍕 Sgarro' }
                 ].map((cat) => {
                   const count = cat.id === 'all'
                     ? Object.values(health.meals || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
-                    : ((health.meals && health.meals[cat.id]) ? health.meals[cat.id].length : 0);
+                    : (cat.id === 'main'
+                        ? ((health.meals?.main?.length || 0) + (health.meals?.lunch?.length || 0) + (health.meals?.dinner?.length || 0))
+                        : ((health.meals && health.meals[cat.id]) ? health.meals[cat.id].length : 0));
 
                   return (
                     <button
@@ -893,7 +979,7 @@ export default function NutritionTab({
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {(() => {
-                    const catLabels = { breakfast: 'Colazione', lunch: 'Pranzo', dinner: 'Cena', snack: 'Spuntino', cheat: 'Sgarro' };
+                    const catLabels = { breakfast: 'Colazione', main: 'Pasto Principale', lunch: 'Pasto Principale', dinner: 'Pasto Principale', snack: 'Spuntino', cheat: 'Sgarro' };
                     let itemsToDisplay = [];
                     if (activeMealCategory === 'all') {
                       Object.entries(health.meals || {}).forEach(([catKey, items]) => {
@@ -902,6 +988,13 @@ export default function NutritionTab({
                             itemsToDisplay.push({ ...item, catKey, catLabel: catLabels[catKey] || catKey });
                           });
                         }
+                      });
+                    } else if (activeMealCategory === 'main') {
+                      ['main', 'lunch', 'dinner'].forEach(catKey => {
+                        const items = (health.meals && health.meals[catKey]) || [];
+                        items.forEach(item => {
+                          itemsToDisplay.push({ ...item, catKey, catLabel: catLabels[catKey] || catKey });
+                        });
                       });
                     } else {
                       const items = (health.meals && health.meals[activeMealCategory]) || [];
@@ -940,11 +1033,11 @@ export default function NutritionTab({
                 </div>
               </div>
 
-              {/* Food Database Search & List */}
+              {/* Food Database Search & 3-Column Grid */}
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                    Seleziona dal Database Alimenti
+                    Database Alimenti (3 per riga)
                   </h4>
                   <button
                     onClick={() => {
@@ -954,6 +1047,10 @@ export default function NutritionTab({
                   >
                     ➕ Nuovo Cibo
                   </button>
+                </div>
+
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', fontStyle: 'italic' }}>
+                  💡 <strong>Tocco singolo:</strong> Aggiungi 1 porzione subito | <strong>Tieni premuto:</strong> Scegli porzione / Modifica
                 </div>
 
                 <input
@@ -975,67 +1072,68 @@ export default function NutritionTab({
                   }}
                 />
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {filteredFoodDatabase.length === 0 ? (
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun cibo trovato.</p>
+                    <p style={{ gridColumn: 'span 3', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
+                      Nessun cibo trovato.
+                    </p>
                   ) : (
-                    filteredFoodDatabase.map((food) => (
-                      <div
-                        key={food.id}
-                        onClick={() => {
-                          onOpenModal('food', food);
-                        }}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '8px 10px',
-                          background: 'var(--bg-secondary)',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          transition: 'background 0.2s'
-                        }}
-                        title="Tocca per modificare le informazioni di questo cibo"
-                      >
-                        <div>
-                          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{food.emoji} {food.name}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                            Valori per {food.baseGrams || 100}g: {food.baseCalories} kcal, {food.baseProteins}g P
-                            {food.pieceCalories && (
-                              <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                                {' • '}Valori per pezzo: {food.pieceCalories} kcal, {food.pieceProteins || 0}g P
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                    filteredFoodDatabase.map((food) => {
+                      const isPiece = !!food.pieceCalories;
+                      const kcalDisplay = isPiece ? food.pieceCalories : food.baseCalories;
+                      const unitDisplay = isPiece ? '1 pz' : `${food.baseGrams || 100}g`;
+
+                      return (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenPortionModal(food);
+                          key={food.id}
+                          type="button"
+                          onMouseDown={() => handleFoodPressStart(food)}
+                          onMouseUp={() => handleFoodPressEnd(food)}
+                          onTouchStart={() => handleFoodPressStart(food)}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            handleFoodPressEnd(food);
                           }}
                           style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '50%',
-                            background: 'var(--accent-primary)',
-                            color: '#ffffff',
-                            border: 'none',
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
+                            padding: '8px 4px',
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '12px',
                             cursor: 'pointer',
-                            flexShrink: 0,
-                            boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
+                            userSelect: 'none',
+                            WebkitUserSelect: 'none',
+                            transition: 'all 0.15s ease',
+                            textAlign: 'center',
+                            minHeight: '84px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                           }}
-                          title="Aggiungi al pasto di oggi"
+                          title="Tocca 1 volta per aggiungere subito • Tieni premuto per personalizzare la porzione"
                         >
-                          +
+                          <span style={{ fontSize: '22px', marginBottom: '2px' }}>{food.emoji}</span>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            color: 'var(--text-primary)',
+                            lineHeight: '1.2',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            marginBottom: '4px',
+                            maxHeight: '26px'
+                          }}>
+                            {food.name}
+                          </span>
+                          <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'rgba(124, 58, 237, 0.12)', padding: '2px 5px', borderRadius: '6px' }}>
+                            {kcalDisplay} kcal ({unitDisplay})
+                          </span>
                         </button>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
