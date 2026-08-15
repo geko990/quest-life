@@ -45,12 +45,19 @@ export default function HomeTab({
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try { navigator.vibrate(35); } catch(e){}
       }
+      setTimeout(() => {
+        isHealthLongPressRef.current = false;
+      }, 50);
     }, 450);
   };
 
   const handleHealthPressEnd = (action) => {
-    if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
-    if (!isHealthLongPressRef.current) {
+    const wasLong = isHealthLongPressRef.current;
+    if (healthPressTimerRef.current) {
+      clearTimeout(healthPressTimerRef.current);
+      healthPressTimerRef.current = null;
+    }
+    if (!wasLong && action) {
       action();
     }
     isHealthLongPressRef.current = false;
@@ -508,13 +515,10 @@ export default function HomeTab({
 
             {/* 💧 Acqua */}
             <div
-              onMouseDown={() => handleHealthPressStart('water')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddWater(1))}
-              onTouchStart={() => handleHealthPressStart('water')}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handleHealthPressEnd(() => handleAddWater(1));
-              }}
+              onPointerDown={() => handleHealthPressStart('water')}
+              onPointerUp={() => handleHealthPressEnd(() => handleAddWater(1))}
+              onPointerLeave={() => handleHealthPressEnd(() => {})}
+              onPointerCancel={() => handleHealthPressEnd(() => {})}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
@@ -532,13 +536,10 @@ export default function HomeTab({
 
             {/* 👟 Passi */}
             <div
-              onMouseDown={() => handleHealthPressStart('steps')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
-              onTouchStart={() => handleHealthPressStart('steps')}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handleHealthPressEnd(() => handleAddSteps(1000));
-              }}
+              onPointerDown={() => handleHealthPressStart('steps')}
+              onPointerUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
+              onPointerLeave={() => handleHealthPressEnd(() => {})}
+              onPointerCancel={() => handleHealthPressEnd(() => {})}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
