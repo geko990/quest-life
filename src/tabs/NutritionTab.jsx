@@ -101,6 +101,7 @@ export default function NutritionTab({
   };
   const [selectedFoodForPortion, setSelectedFoodForPortion] = useState(null);
   const [portionInputValue, setPortionInputValue] = useState('');
+  const [portionUnit, setPortionUnit] = useState('gram'); // 'gram' | 'piece'
   const pressTimerRef = React.useRef(null);
   const isLongPressRef = React.useRef(false);
 
