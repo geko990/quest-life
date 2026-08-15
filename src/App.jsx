@@ -1182,8 +1182,6 @@ export default function App() {
             onOpenModal={handleOpenModal}
             stats={stats}
             onRewardXp={handleRewardXp}
-            initialModal={initialNutritionModal}
-            setInitialModal={setInitialNutritionModal}
           />
         );
       case 'settings':
