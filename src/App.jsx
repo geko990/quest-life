@@ -123,6 +123,17 @@ export default function App() {
   const [showMottoModal, setShowMottoModal] = useState(false);
   const [mottoText, setMottoText] = useState(player.motto || '');
   const [showPlannerModal, setShowPlannerModal] = useState(false);
+  const [initialNutritionModal, setInitialNutritionModal] = useState(null);
+
+  const handleOpenWorkoutsLog = () => {
+    setActiveTab('nutrition');
+    setInitialNutritionModal('workouts');
+  };
+
+  const handleOpenMealsLog = () => {
+    setActiveTab('nutrition');
+    setInitialNutritionModal('meals');
+  };
 
   // Version Auto-Check hook
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -1112,6 +1123,8 @@ export default function App() {
             onOpenPlanner={() => setShowPlannerModal(true)}
             onOpenPomodoro={() => handleOpenModal('pomodoro')}
             onOpenStatDetail={(stat) => handleOpenModal('stat_detail', stat)}
+            onOpenWorkoutsLog={handleOpenWorkoutsLog}
+            onOpenMealsLog={handleOpenMealsLog}
             settings={settings}
           />
         );
@@ -1164,6 +1177,8 @@ export default function App() {
             onOpenModal={handleOpenModal}
             stats={stats}
             onRewardXp={handleRewardXp}
+            initialModal={initialNutritionModal}
+            setInitialModal={setInitialNutritionModal}
           />
         );
       case 'settings':

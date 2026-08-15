@@ -20,6 +20,8 @@ export default function HomeTab({
   onOpenPlanner,
   onOpenPomodoro,
   onOpenStatDetail,
+  onOpenWorkoutsLog,
+  onOpenMealsLog,
   settings = {}
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
@@ -33,8 +35,10 @@ export default function HomeTab({
     if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
     healthPressTimerRef.current = setTimeout(() => {
       isHealthLongPressRef.current = true;
-      if (key === 'calories' && onOpenModal) {
-        onOpenModal('exercise');
+      if (key === 'calories') {
+        if (onOpenWorkoutsLog) onOpenWorkoutsLog();
+      } else if (key === 'consumed') {
+        if (onOpenMealsLog) onOpenMealsLog();
       } else {
         setActiveTooltip(key);
       }
