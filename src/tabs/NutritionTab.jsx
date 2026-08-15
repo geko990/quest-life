@@ -8,7 +8,9 @@ export default function NutritionTab({
   setInventory,
   onOpenModal,
   stats,
-  onRewardXp
+  onRewardXp,
+  initialModal,
+  setInitialModal
 }) {
   const [activeMainTab, setActiveMainTab] = useState('health'); // 'health' | 'shopping'
 
@@ -18,6 +20,16 @@ export default function NutritionTab({
       setActiveMainTab('health');
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (initialModal === 'workouts') {
+      setShowExercisesModal(true);
+      if (setInitialModal) setInitialModal(null);
+    } else if (initialModal === 'meals') {
+      setShowMealsModal(true);
+      if (setInitialModal) setInitialModal(null);
+    }
+  }, [initialModal]);
   const [activeInventoryTab, setActiveInventoryTab] = useState('food'); // 'food' | 'home'
   const [showMealsModal, setShowMealsModal] = useState(false);
   const [showExercisesModal, setShowExercisesModal] = useState(false);
