@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { getXpForLevel, getGameDate } from '../utils/helpers';
 
+const SLOT_CATEGORY_INFO = [
+  { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
+  { type: 'bonus', title: 'Azione Bonus', emoji: '⚡', color: '#f59e0b' },
+  { type: 'movement', title: 'Movimento', emoji: '🚶', color: '#0ea5e9' },
+  { type: 'reaction', title: 'Reazione', emoji: '🛡️', color: '#a855f7' }
+];
+
 export default function HomeTab({
   stats,
   setStats,
@@ -405,13 +412,7 @@ export default function HomeTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {todayActionsList.map((action, index) => {
               const isCompleted = !!action.completed;
-              const slotCategoryInfo = [
-                { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
-                { type: 'bonus', title: 'Azione Bonus', emoji: '⚡', color: '#f59e0b' },
-                { type: 'movement', title: 'Movimento', emoji: '🚶', color: '#0ea5e9' },
-                { type: 'reaction', title: 'Reazione', emoji: '🛡️', color: '#a855f7' }
-              ];
-              const info = slotCategoryInfo.find(s => s.type === action.slotType) || slotCategoryInfo[index] || slotCategoryInfo[0];
+              const info = SLOT_CATEGORY_INFO.find(s => s.type === action.slotType) || SLOT_CATEGORY_INFO[index] || SLOT_CATEGORY_INFO[0];
 
               return (
                 <div
