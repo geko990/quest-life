@@ -53,7 +53,6 @@ class TabErrorBoundary extends React.Component {
           </p>
           <button
             onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
-            className="btn-primary"
             style={{
               padding: '6px 14px',
               borderRadius: '8px',
@@ -62,7 +61,9 @@ class TabErrorBoundary extends React.Component {
               border: 'none',
               cursor: 'pointer',
               background: 'var(--accent-primary)',
-              color: '#ffffff'
+              color: '#ffffff',
+              display: 'inline-block',
+              width: 'auto'
             }}
           >
             🔄 Ripristina Schermata
