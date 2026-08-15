@@ -4,7 +4,7 @@ export default function NutritionTab({
   activeTab,
   health,
   setHealth,
-  inventory,
+  inventory = {},
   setInventory,
   onOpenModal,
   stats,
@@ -14,6 +14,8 @@ export default function NutritionTab({
   onlyModal = false,
   onCloseOverlay
 }) {
+  if (!health) return null;
+
   const [activeMainTab, setActiveMainTab] = useState('health'); // 'health' | 'shopping'
 
   // Reset to 'health' (Diario Salute) whenever opening or clicking the Salute tab
@@ -55,18 +57,18 @@ export default function NutritionTab({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Calorie calculations
-  const calorieGoal = health.calories.goal || 1600;
-  const caloriesConsumed = health.calories.consumed || 0;
-  const caloriesBurned = health.calories.burned || 0;
+  const calorieGoal = health?.calories?.goal || 1600;
+  const caloriesConsumed = health?.calories?.consumed || 0;
+  const caloriesBurned = health?.calories?.burned || 0;
   const caloriesRemaining = Math.max(0, calorieGoal - caloriesConsumed + caloriesBurned);
 
-  const allMealItems = Object.values(health.meals || {}).flat();
+  const allMealItems = Object.values(health?.meals || {}).flat();
   const totalMealCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
   const totalMealProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
-  const extraConsumed = Math.max(0, (health.calories?.consumed || 0) - totalMealCal);
+  const extraConsumed = Math.max(0, (health?.calories?.consumed || 0) - totalMealCal);
 
-  const totalWorkoutCal = (health.workouts || []).reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
-  const extraBurned = Math.max(0, (health.calories?.burned || 0) - totalWorkoutCal);
+  const totalWorkoutCal = (health?.workouts || []).reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
+  const extraBurned = Math.max(0, (health?.calories?.burned || 0) - totalWorkoutCal);
 
   const clearExtraConsumed = () => {
     setHealth(prev => ({
@@ -99,25 +101,25 @@ export default function NutritionTab({
   const dashoffset = circumference * (1 - caloriePct);
 
   // Steps progress
-  const stepsGoal = health.steps.goal || 10000;
-  const stepsCurrent = health.steps.current || 0;
+  const stepsGoal = health?.steps?.goal || 10000;
+  const stepsCurrent = health?.steps?.current || 0;
   const stepsPct = Math.min(100, (stepsCurrent / stepsGoal) * 100);
 
   // Proteins progress
-  const proteinsGoal = health.proteins.goal || 100;
-  const proteinsCurrent = health.proteins.consumed || 0;
+  const proteinsGoal = health?.proteins?.goal || 100;
+  const proteinsCurrent = health?.proteins?.consumed || 0;
   const proteinsPct = Math.min(100, (proteinsCurrent / proteinsGoal) * 100);
 
   // Water progress
-  const waterGoal = health.water.goal || 8;
-  const waterCurrent = health.water.consumed || 0;
+  const waterGoal = health?.water?.goal || 8;
+  const waterCurrent = health?.water?.consumed || 0;
   const waterPct = Math.min(100, (waterCurrent / waterGoal) * 100);
 
   // Weight mass calculations
-  const weightCurrent = health.weight.current || 75;
-  const targetWeight = health.weight.target || 70;
-  const leanPct = health.weight.currentLean || 0;
-  const fatPct = health.weight.currentFat || 0;
+  const weightCurrent = health?.weight?.current || 75;
+  const targetWeight = health?.weight?.target || 70;
+  const leanPct = health?.weight?.currentLean || 0;
+  const fatPct = health?.weight?.currentFat || 0;
 
   // Quick Action Helpers
   const quickAddWater = (delta = 1) => {
@@ -475,7 +477,7 @@ export default function NutritionTab({
     });
   };
 
-  const activeInventory = inventory[activeInventoryTab] || [];
+  const activeInventory = (inventory && inventory[activeInventoryTab]) || [];
   const completedShopCount = activeInventory.filter(i => i.completed).length;
 
   // Filtered Database Items (respects searchQuery and category tabs like 'main')
