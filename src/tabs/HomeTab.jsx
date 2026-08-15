@@ -468,13 +468,9 @@ export default function HomeTab({
               🍎 Sostentamento di oggi
             </h3>
             <span
-              onMouseDown={() => handleHealthPressStart('consumed')}
-              onMouseUp={() => handleHealthPressEnd(() => {})}
-              onTouchStart={() => handleHealthPressStart('consumed')}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handleHealthPressEnd(() => {});
-              }}
+              onPointerDown={() => handleHealthPressStart('consumed')}
+              onPointerUp={() => handleHealthPressEnd(() => {})}
+              onPointerLeave={() => handleHealthPressEnd(() => {})}
               style={{
                 fontSize: '11px',
                 color: 'var(--accent-primary)',
@@ -491,13 +487,9 @@ export default function HomeTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
             {/* 🔥 Calorie Bruciate */}
             <div
-              onMouseDown={() => handleHealthPressStart('calories')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
-              onTouchStart={() => handleHealthPressStart('calories')}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handleHealthPressEnd(() => handleAddBurnedCalories(100));
-              }}
+              onPointerDown={() => handleHealthPressStart('calories')}
+              onPointerUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
+              onPointerLeave={() => handleHealthPressEnd(() => {})}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
