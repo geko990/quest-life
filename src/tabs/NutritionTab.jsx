@@ -44,6 +44,38 @@ export default function NutritionTab({
   const caloriesBurned = health.calories.burned || 0;
   const caloriesRemaining = Math.max(0, calorieGoal - caloriesConsumed + caloriesBurned);
 
+  const allMealItems = Object.values(health.meals || {}).flat();
+  const totalMealCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+  const totalMealProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
+  const extraConsumed = Math.max(0, (health.calories?.consumed || 0) - totalMealCal);
+
+  const totalWorkoutCal = (health.workouts || []).reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
+  const extraBurned = Math.max(0, (health.calories?.burned || 0) - totalWorkoutCal);
+
+  const clearExtraConsumed = () => {
+    setHealth(prev => ({
+      ...prev,
+      calories: {
+        ...prev.calories,
+        consumed: totalMealCal
+      },
+      proteins: {
+        ...prev.proteins,
+        consumed: totalMealProt
+      }
+    }));
+  };
+
+  const clearExtraBurned = () => {
+    setHealth(prev => ({
+      ...prev,
+      calories: {
+        ...prev.calories,
+        burned: totalWorkoutCal
+      }
+    }));
+  };
+
   // Calorie SVG progress percent
   const caloriePct = Math.min(1.0, caloriesConsumed / (calorieGoal + caloriesBurned || 1));
   const radius = 60;
@@ -1185,28 +1217,60 @@ export default function NutritionTab({
                   Allenamenti Registrati Oggi
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {(!health.workouts || health.workouts.length === 0) ? (
+                  {(!health.workouts || health.workouts.length === 0) && extraBurned === 0 && extraConsumed === 0 ? (
                     <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                      Nessun allenamento registrato oggi.
+                      Nessun allenamento o valore registrato oggi.
                     </p>
                   ) : (
-                    health.workouts.map((w) => (
-                      <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                          {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
-                        </span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{w.baseCalories} kcal</span>
-                          <button
-                            onClick={() => removeLoggedExercise(w.id, w.baseCalories)}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                            title="Rimuovi allenamento"
-                          >
-                            ✕
-                          </button>
+                    <>
+                      {health.workouts && health.workouts.map((w) => (
+                        <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                            {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{w.baseCalories} kcal</span>
+                            <button
+                              onClick={() => removeLoggedExercise(w.id, w.baseCalories)}
+                              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                              title="Rimuovi allenamento"
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      ))}
+                      {extraBurned > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(249, 115, 22, 0.1)', border: '1px dashed #f97316', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>⚡ Calorie Bruciate Manuali</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{extraBurned} kcal</span>
+                            <button
+                              onClick={clearExtraBurned}
+                              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                              title="Rimuovi calorie bruciate manuali"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {extraConsumed > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px dashed #ef4444', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>🍎 Calorie Consumate Manuali</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>+{extraConsumed} kcal</span>
+                            <button
+                              onClick={clearExtraConsumed}
+                              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                              title="Rimuovi calorie consumate manuali"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
