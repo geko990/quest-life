@@ -1377,12 +1377,12 @@ export default function App() {
       )}
 
       {/* GLOBAL WORKOUTS LOG MODAL */}
-      {showGlobalWorkoutsLog && (
+      {showGlobalWorkoutsLog && health && (
         <NutritionTab
           activeTab={activeTab}
           health={health}
           setHealth={setHealth}
-          inventory={inventory}
+          inventory={inventory || {}}
           setInventory={setInventory}
           onOpenModal={handleOpenModal}
           stats={stats}
@@ -1394,12 +1394,12 @@ export default function App() {
       )}
 
       {/* GLOBAL MEALS LOG MODAL */}
-      {showGlobalMealsLog && (
+      {showGlobalMealsLog && health && (
         <NutritionTab
           activeTab={activeTab}
           health={health}
           setHealth={setHealth}
-          inventory={inventory}
+          inventory={inventory || {}}
           setInventory={setInventory}
           onOpenModal={handleOpenModal}
           stats={stats}
