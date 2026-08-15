@@ -1457,7 +1457,6 @@ export default function NutritionTab({
                   value={portionInputValue}
                   onChange={(e) => setPortionInputValue(e.target.value)}
                   placeholder={portionUnit === 'piece' ? 'Es: 1 oppure 2' : 'Es: 100 oppure 150'}
-                  autoFocus
                   style={{
                     width: '100%',
                     height: '42px',
