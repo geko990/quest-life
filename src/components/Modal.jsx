@@ -798,7 +798,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <input
                     type="number"
                     name="baseGrams"
-                    value={form.baseGrams !== undefined ? form.baseGrams : 100}
+                    value={form.baseGrams ?? 100}
                     onChange={handleNumberChange}
                     required
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
@@ -809,7 +809,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <input
                     type="number"
                     name="baseCalories"
-                    value={form.baseCalories !== undefined ? form.baseCalories : 0}
+                    value={form.baseCalories ?? 0}
                     onChange={handleNumberChange}
                     required
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
@@ -820,7 +820,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <input
                     type="number"
                     name="baseProteins"
-                    value={form.baseProteins !== undefined ? form.baseProteins : 0}
+                    value={form.baseProteins ?? 0}
                     onChange={handleNumberChange}
                     required
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
@@ -838,7 +838,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <input
                     type="number"
                     name="pieceCalories"
-                    value={form.pieceCalories !== undefined ? form.pieceCalories : ''}
+                    value={form.pieceCalories ?? ''}
                     onChange={handleNumberChange}
                     placeholder="Es: 78"
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
@@ -849,7 +849,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <input
                     type="number"
                     name="pieceProteins"
-                    value={form.pieceProteins !== undefined ? form.pieceProteins : ''}
+                    value={form.pieceProteins ?? ''}
                     onChange={handleNumberChange}
                     placeholder="Es: 6.5"
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
