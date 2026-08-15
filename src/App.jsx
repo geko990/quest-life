@@ -122,6 +122,7 @@ export default function App() {
   // Custom modals
   const [showMottoModal, setShowMottoModal] = useState(false);
   const [mottoText, setMottoText] = useState(player.motto || '');
+  const [showPlannerModal, setShowPlannerModal] = useState(false);
   const [showGlobalWorkoutsLog, setShowGlobalWorkoutsLog] = useState(false);
   const [showGlobalMealsLog, setShowGlobalMealsLog] = useState(false);
 
