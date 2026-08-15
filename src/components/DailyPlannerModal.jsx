@@ -110,19 +110,87 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
     return (
       <div
         style={{
-          padding: '10px 12px',
+          padding: '8px 10px',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--glass-border)',
           borderRadius: '12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '6px'
         }}
       >
-        <div style={{ fontSize: '11px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase' }}>
-          {theme.title}
+        {/* Top Header Row: Title on Left, Stars + Stat Selectors on Right */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '10px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {theme.title}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            {/* Stars */}
+            <div style={{ display: 'flex', gap: '1px', fontSize: '13px', lineHeight: 1 }}>
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => handleSlotChange(key, 'stars', star)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    color: star <= slot.stars ? '#f59e0b' : 'var(--text-muted)'
+                  }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+
+            {/* Primary Stat Selector */}
+            <select
+              value={slot.statId}
+              onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
+              style={{
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '6px',
+                padding: '2px 4px',
+                fontSize: '9px',
+                fontWeight: 'bold',
+                height: '22px',
+                maxWidth: '85px'
+              }}
+            >
+              {stats.map(s => (
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+
+            {/* Secondary Stat Selector */}
+            <select
+              value={slot.secondaryStatId || ''}
+              onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
+              style={{
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '6px',
+                padding: '2px 4px',
+                fontSize: '9px',
+                height: '22px',
+                maxWidth: '85px'
+              }}
+            >
+              <option value="">+ Sec (nessuno)</option>
+              {stats.map(s => (
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
+        {/* Input Row with 📋 Picker */}
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           <input
             type="text"
@@ -134,16 +202,16 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               background: 'var(--bg-primary)',
               border: '1px solid var(--glass-border)',
               borderRadius: '8px',
-              padding: '7px 10px',
-              fontSize: '12px',
+              padding: '4px 8px',
+              fontSize: '11px',
               color: 'var(--text-primary)',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              height: '30px'
             }}
           />
 
-          {/* Integrated 📋 Button right next to input bar */}
           {(uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0) && (
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', shrink: 0 }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0, height: '30px' }}>
               <select
                 value=""
                 onChange={(e) => {
@@ -205,8 +273,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   background: 'var(--bg-primary)',
                   border: '1px solid var(--glass-border)',
                   borderRadius: '8px',
-                  padding: '6px 8px',
-                  fontSize: '13px',
+                  padding: 0,
+                  width: '30px',
+                  height: '30px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -219,67 +289,6 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               </button>
             </div>
           )}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-          {/* Stars */}
-          <div style={{ display: 'flex', gap: '2px', fontSize: '16px' }}>
-            {[1, 2, 3, 4, 5].map(star => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => handleSlotChange(key, 'stars', star)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  color: star <= slot.stars ? '#f59e0b' : 'var(--text-muted)'
-                }}
-              >
-                ★
-              </button>
-            ))}
-          </div>
-
-          {/* Stat Selectors */}
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <select
-              value={slot.statId}
-              onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
-              style={{
-                background: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '6px',
-                padding: '4px 6px',
-                fontSize: '10px',
-                fontWeight: 'bold'
-              }}
-            >
-              {stats.map(s => (
-                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-              ))}
-            </select>
-
-            <select
-              value={slot.secondaryStatId || ''}
-              onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
-              style={{
-                background: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '6px',
-                padding: '4px 6px',
-                fontSize: '10px'
-              }}
-            >
-              <option value="">+ Sec (nessuno)</option>
-              {stats.map(s => (
-                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-              ))}
-            </select>
-          </div>
         </div>
       </div>
     );
@@ -303,7 +312,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '10px 16px'
+        padding: '10px 14px'
       }}
     >
       <div
@@ -315,8 +324,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
           width: '100%',
-          maxWidth: '400px',
-          padding: '16px 18px',
+          maxWidth: '420px',
+          padding: '14px 16px',
           maxHeight: '96dvh',
           overflowY: 'auto',
           borderRadius: '24px',
@@ -324,17 +333,17 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-          <div style={{ fontSize: '24px', marginBottom: '2px' }}>🎲</div>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+          <div style={{ fontSize: '20px', marginBottom: '0px' }}>🎲</div>
+          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
             È IL TUO TURNO!
           </h2>
-          <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+          <p style={{ margin: '1px 0 0 0', fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             Pianifica le tue azioni per oggi
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
           {renderSlot('action', 'Es: Completare il report')}
           {renderSlot('bonus', 'Es: Chiamare il medico')}
           {renderSlot('movement', 'Es: Passeggiata 30min')}
@@ -342,33 +351,33 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         </div>
 
         {showResult ? (
-          <div style={{ textAlign: 'center', padding: '12px 0' }}>
-            <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               {diceResult}
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#22c55e' }}>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e' }}>
               + {diceResult * 10}% XP Bonus! 🎉
             </div>
           </div>
         ) : isRolling ? (
-          <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+          <div style={{ textAlign: 'center', padding: '12px 0' }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {diceResult}
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               type="button"
               onClick={onClose}
               style={{
                 flex: 1,
-                padding: '12px',
+                padding: '9px',
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--glass-border)',
                 color: 'var(--text-primary)',
                 fontWeight: 'bold',
-                fontSize: '12px',
+                fontSize: '11px',
                 borderRadius: '10px',
                 cursor: 'pointer'
               }}
@@ -378,15 +387,17 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             <button
               type="button"
               onClick={handleRollDice}
-              className="btn-primary"
               style={{
                 flex: 1.8,
-                padding: '12px',
+                padding: '9px',
                 fontWeight: 'bold',
-                fontSize: '12px',
+                fontSize: '11px',
                 borderRadius: '10px',
                 border: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
+                color: '#ffffff',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
               }}
             >
               🎲 Lancia un D10!
