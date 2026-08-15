@@ -25,11 +25,23 @@ export default function NutritionTab({
   const [showMealsModal, setShowMealsModal] = useState(initialModal === 'meals');
   const [showExercisesModal, setShowExercisesModal] = useState(initialModal === 'workouts');
 
+  const handleCloseMealsModal = () => {
+    setShowMealsModal(false);
+    if (setInitialModal) setInitialModal(null);
+  };
+
+  const handleCloseExercisesModal = () => {
+    setShowExercisesModal(false);
+    if (setInitialModal) setInitialModal(null);
+  };
+
   useEffect(() => {
     if (initialModal === 'workouts') {
       setShowExercisesModal(true);
+      if (setInitialModal) setInitialModal(null);
     } else if (initialModal === 'meals') {
       setShowMealsModal(true);
+      if (setInitialModal) setInitialModal(null);
     }
   }, [initialModal]);
 
@@ -1215,7 +1227,7 @@ export default function NutritionTab({
       {/* 1) REGISTRO PASTI MODAL */}
       {showMealsModal && (
         <div
-          onClick={() => setShowMealsModal(false)}
+          onClick={handleCloseMealsModal}
           style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
         >
           <div
@@ -1448,7 +1460,7 @@ export default function NutritionTab({
       {/* 2) REGISTRO ALLENAMENTI MODAL */}
       {showExercisesModal && (
         <div
-          onClick={() => setShowExercisesModal(false)}
+          onClick={handleCloseExercisesModal}
           style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
         >
           <div
