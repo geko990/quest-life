@@ -22,18 +22,18 @@ export default function NutritionTab({
     }
   }, [activeTab]);
 
+  const [showMealsModal, setShowMealsModal] = useState(initialModal === 'meals');
+  const [showExercisesModal, setShowExercisesModal] = useState(initialModal === 'workouts');
+
   useEffect(() => {
     if (initialModal === 'workouts') {
       setShowExercisesModal(true);
-      if (setInitialModal) setInitialModal(null);
     } else if (initialModal === 'meals') {
       setShowMealsModal(true);
-      if (setInitialModal) setInitialModal(null);
     }
   }, [initialModal]);
+
   const [activeInventoryTab, setActiveInventoryTab] = useState('food'); // 'food' | 'home'
-  const [showMealsModal, setShowMealsModal] = useState(false);
-  const [showExercisesModal, setShowExercisesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeMealCategory, setActiveMealCategory] = useState('all');
   const [newShopItemName, setNewShopItemName] = useState('');
