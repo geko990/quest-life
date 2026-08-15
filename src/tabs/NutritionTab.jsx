@@ -103,22 +103,39 @@ export default function NutritionTab({
   const [portionInputValue, setPortionInputValue] = useState('');
   const pressTimerRef = React.useRef(null);
   const isLongPressRef = React.useRef(false);
+  const touchHandledRef = React.useRef(false);
 
-  const handleFoodPressStart = (food) => {
+  const handleFoodPressStart = (e, food) => {
+    if (e && e.type === 'touchstart') {
+      touchHandledRef.current = true;
+    } else if (e && e.type === 'mousedown' && touchHandledRef.current) {
+      touchHandledRef.current = false;
+      return;
+    }
+
     isLongPressRef.current = false;
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+
     pressTimerRef.current = setTimeout(() => {
       isLongPressRef.current = true;
-      handleOpenPortionModal(food);
+      // Long press: edit food in database
+      onOpenModal('food', food);
     }, 500);
   };
 
-  const handleFoodPressEnd = (food) => {
+  const handleFoodPressEnd = (e, food) => {
+    if (e && e.type === 'mouseup' && touchHandledRef.current) {
+      return;
+    }
+
     if (pressTimerRef.current) {
       clearTimeout(pressTimerRef.current);
       pressTimerRef.current = null;
     }
+
     if (!isLongPressRef.current) {
-      handleQuickLogFood(food);
+      // Single tap: open portion prompt modal pre-filled with last remembered quantity
+      handleOpenPortionModal(food);
     }
   };
 
@@ -1050,7 +1067,7 @@ export default function NutritionTab({
                 </div>
 
                 <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', fontStyle: 'italic' }}>
-                  💡 <strong>Tocco singolo:</strong> Aggiungi 1 porzione subito | <strong>Tieni premuto:</strong> Scegli porzione / Modifica
+                  💡 <strong>Tocco singolo:</strong> Inserisci porzione (ricorda l'ultima) | <strong>Tieni premuto:</strong> Modifica nel database
                 </div>
 
                 <input
@@ -1087,12 +1104,12 @@ export default function NutritionTab({
                         <button
                           key={food.id}
                           type="button"
-                          onMouseDown={() => handleFoodPressStart(food)}
-                          onMouseUp={() => handleFoodPressEnd(food)}
-                          onTouchStart={() => handleFoodPressStart(food)}
+                          onMouseDown={(e) => handleFoodPressStart(e, food)}
+                          onMouseUp={(e) => handleFoodPressEnd(e, food)}
+                          onTouchStart={(e) => handleFoodPressStart(e, food)}
                           onTouchEnd={(e) => {
                             e.preventDefault();
-                            handleFoodPressEnd(food);
+                            handleFoodPressEnd(e, food);
                           }}
                           style={{
                             display: 'flex',
@@ -1111,7 +1128,7 @@ export default function NutritionTab({
                             minHeight: '84px',
                             boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                           }}
-                          title="Tocca 1 volta per aggiungere subito • Tieni premuto per personalizzare la porzione"
+                          title="Tocca per inserire porzione • Tieni premuto per modificare nel database"
                         >
                           <span style={{ fontSize: '22px', marginBottom: '2px' }}>{food.emoji}</span>
                           <span style={{
