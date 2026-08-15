@@ -97,10 +97,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
   };
 
   const slotThemes = {
-    action: { title: '🎯 AZIONE', color: '#ef4444' },
-    bonus: { title: '⚡ AZIONE BONUS', color: '#f59e0b' },
-    movement: { title: '🚶 MOVIMENTO', color: '#0ea5e9' },
-    reaction: { title: '🛡️ REAZIONE', color: '#a855f7' }
+    action: { title: '🎯 AZIONE', emoji: '🎯', color: '#ef4444' },
+    bonus: { title: '⚡ AZIONE BONUS', emoji: '⚡', color: '#f59e0b' },
+    movement: { title: '🚶 MOVIMENTO', emoji: '🚶', color: '#0ea5e9' },
+    reaction: { title: '🛡️ REAZIONE', emoji: '🛡️', color: '#a855f7' }
   };
 
   const renderSlot = (key, placeholder) => {
@@ -116,82 +116,35 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           borderRadius: '12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '6px'
+          gap: '5px'
         }}
       >
-        {/* Top Header Row: Title on Left, Stars + Stat Selectors on Right */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {theme.title}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            {/* Stars */}
-            <div style={{ display: 'flex', gap: '1px', fontSize: '13px', lineHeight: 1 }}>
-              {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => handleSlotChange(key, 'stars', star)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                    color: star <= slot.stars ? '#f59e0b' : 'var(--text-muted)'
-                  }}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-
-            {/* Primary Stat Selector */}
-            <select
-              value={slot.statId}
-              onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
-              style={{
-                background: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '6px',
-                padding: '2px 4px',
-                fontSize: '9px',
-                fontWeight: 'bold',
-                height: '22px',
-                maxWidth: '85px'
-              }}
-            >
-              {stats.map(s => (
-                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-              ))}
-            </select>
-
-            {/* Secondary Stat Selector */}
-            <select
-              value={slot.secondaryStatId || ''}
-              onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
-              style={{
-                background: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '6px',
-                padding: '2px 4px',
-                fontSize: '9px',
-                height: '22px',
-                maxWidth: '85px'
-              }}
-            >
-              <option value="">+ Sec (nessuno)</option>
-              {stats.map(s => (
-                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-              ))}
-            </select>
-          </div>
+        {/* Rigo 1: Emoji + Categoria */}
+        <div style={{ fontSize: '11px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          {theme.title}
         </div>
 
-        {/* Input Row with 📋 Picker */}
+        {/* Rigo 2: Custom Emoji + Barra Nome + Emoji 📋 */}
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <input
+            type="text"
+            value={slot.emoji || theme.emoji}
+            onChange={(e) => handleSlotChange(key, 'emoji', e.target.value)}
+            style={{
+              width: '30px',
+              height: '30px',
+              textAlign: 'center',
+              fontSize: '14px',
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              padding: 0,
+              flexShrink: 0
+            }}
+            title="Personalizza Emoji"
+          />
+
           <input
             type="text"
             value={slot.name}
@@ -223,6 +176,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                     if (found) {
                       handleSlotChange(key, 'name', found.name);
                       handleSlotChange(key, 'oneshotId', found.id);
+                      if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
                       if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
                       if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
                     }
@@ -289,6 +243,70 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               </button>
             </div>
           )}
+        </div>
+
+        {/* Rigo 3: Stelline + Caratteristica 1 + Caratteristica 2 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
+          {/* Stelline */}
+          <div style={{ display: 'flex', gap: '2px', fontSize: '15px', lineHeight: 1 }}>
+            {[1, 2, 3, 4, 5].map(star => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => handleSlotChange(key, 'stars', star)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  color: star <= slot.stars ? '#f59e0b' : 'var(--text-muted)'
+                }}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+
+          {/* Caratteristiche 1 e 2 */}
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <select
+              value={slot.statId}
+              onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
+              style={{
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '6px',
+                padding: '3px 6px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                height: '24px'
+              }}
+            >
+              {stats.map(s => (
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+
+            <select
+              value={slot.secondaryStatId || ''}
+              onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
+              style={{
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '6px',
+                padding: '3px 6px',
+                fontSize: '10px',
+                height: '24px'
+              }}
+            >
+              <option value="">+ Sec (nessuno)</option>
+              {stats.map(s => (
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     );
