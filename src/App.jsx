@@ -6,8 +6,6 @@ import DailyPlannerModal from './components/DailyPlannerModal';
 import HomeTab from './tabs/HomeTab';
 import HabitsTab from './tabs/HabitsTab';
 import MissionsTab from './tabs/MissionsTab';
-import OneShotTab from './tabs/OneShotTab';
-import QuestsTab from './tabs/QuestsTab';
 import NutritionTab from './tabs/NutritionTab';
 import SettingsTab from './tabs/SettingsTab';
 
