@@ -34,15 +34,37 @@ class TabErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-primary)' }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>⚠️ Si è verificato un problema di caricamento</h3>
-          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
-            {this.state.error?.toString() || 'Errore di rendering'}
+        <div style={{
+          minHeight: '70vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '30px 20px',
+          textAlign: 'center',
+          color: 'var(--text-primary)'
+        }}>
+          <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold' }}>
+            Si è verificato un problema di caricamento
+          </h3>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '340px', marginBottom: '20px', lineHeight: '1.4' }}>
+            {this.state.error?.message || this.state.error?.toString() || 'Errore imprevisto di rendering.'}
           </p>
           <button
-            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
             className="btn-primary"
-            style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px', border: 'none', cursor: 'pointer' }}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              border: 'none',
+              cursor: 'pointer',
+              background: 'var(--accent-primary)',
+              color: '#ffffff',
+              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)'
+            }}
           >
             🔄 Ripristina Schermata
           </button>
