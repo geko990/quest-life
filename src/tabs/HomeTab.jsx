@@ -33,6 +33,7 @@ export default function HomeTab({
   const handleHealthPressStart = (key) => {
     isHealthLongPressRef.current = false;
     if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
+
     healthPressTimerRef.current = setTimeout(() => {
       isHealthLongPressRef.current = true;
       if (key === 'calories') {
@@ -45,10 +46,7 @@ export default function HomeTab({
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try { navigator.vibrate(35); } catch(e){}
       }
-      setTimeout(() => {
-        isHealthLongPressRef.current = false;
-      }, 50);
-    }, 450);
+    }, 400);
   };
 
   const handleHealthPressEnd = (action) => {
@@ -57,10 +55,12 @@ export default function HomeTab({
       clearTimeout(healthPressTimerRef.current);
       healthPressTimerRef.current = null;
     }
-    if (!wasLong && action) {
+    if (!wasLong && typeof action === 'function') {
       action();
     }
-    isHealthLongPressRef.current = false;
+    setTimeout(() => {
+      isHealthLongPressRef.current = false;
+    }, 100);
   };
 
   // Quick-add handlers for health stats on Home Tab
@@ -478,16 +478,20 @@ export default function HomeTab({
               🍎 Sostentamento di oggi
             </h3>
             <span
-              onPointerDown={() => handleHealthPressStart('consumed')}
-              onPointerUp={() => handleHealthPressEnd(() => {})}
-              onPointerLeave={() => handleHealthPressEnd(() => {})}
+              onMouseDown={() => handleHealthPressStart('consumed')}
+              onMouseUp={() => handleHealthPressEnd(() => {})}
+              onTouchStart={() => handleHealthPressStart('consumed')}
+              onTouchEnd={(e) => handleHealthPressEnd(() => {})}
+              onContextMenu={(e) => e.preventDefault()}
               style={{
                 fontSize: '11px',
                 color: 'var(--accent-primary)',
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 userSelect: 'none',
-                WebkitUserSelect: 'none'
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation'
               }}
               title="Tieni premuto per Registro Pasti e Nutrizione"
             >
@@ -497,9 +501,11 @@ export default function HomeTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
             {/* 🔥 Calorie Bruciate */}
             <div
-              onPointerDown={() => handleHealthPressStart('calories')}
-              onPointerUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
-              onPointerLeave={() => handleHealthPressEnd(() => {})}
+              onMouseDown={() => handleHealthPressStart('calories')}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
+              onTouchStart={() => handleHealthPressStart('calories')}
+              onTouchEnd={(e) => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
+              onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
@@ -507,7 +513,9 @@ export default function HomeTab({
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
                 userSelect: 'none',
-                WebkitUserSelect: 'none'
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation'
               }}
               title="Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti"
             >
@@ -518,10 +526,11 @@ export default function HomeTab({
 
             {/* 💧 Acqua */}
             <div
-              onPointerDown={() => handleHealthPressStart('water')}
-              onPointerUp={() => handleHealthPressEnd(() => handleAddWater(1))}
-              onPointerLeave={() => handleHealthPressEnd(() => {})}
-              onPointerCancel={() => handleHealthPressEnd(() => {})}
+              onMouseDown={() => handleHealthPressStart('water')}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddWater(1))}
+              onTouchStart={() => handleHealthPressStart('water')}
+              onTouchEnd={(e) => handleHealthPressEnd(() => handleAddWater(1))}
+              onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
@@ -529,7 +538,9 @@ export default function HomeTab({
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
                 userSelect: 'none',
-                WebkitUserSelect: 'none'
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation'
               }}
             >
               <div style={{ fontSize: '14px' }}>💧</div>
@@ -539,10 +550,11 @@ export default function HomeTab({
 
             {/* 👟 Passi */}
             <div
-              onPointerDown={() => handleHealthPressStart('steps')}
-              onPointerUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
-              onPointerLeave={() => handleHealthPressEnd(() => {})}
-              onPointerCancel={() => handleHealthPressEnd(() => {})}
+              onMouseDown={() => handleHealthPressStart('steps')}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
+              onTouchStart={() => handleHealthPressStart('steps')}
+              onTouchEnd={(e) => handleHealthPressEnd(() => handleAddSteps(1000))}
+              onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
                 padding: '6px 4px',
@@ -550,7 +562,9 @@ export default function HomeTab({
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
                 userSelect: 'none',
-                WebkitUserSelect: 'none'
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation'
               }}
             >
               <div style={{ fontSize: '14px' }}>👟</div>
