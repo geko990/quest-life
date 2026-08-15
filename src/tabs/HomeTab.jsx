@@ -467,7 +467,24 @@ export default function HomeTab({
             <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               🍎 Sostentamento di oggi
             </h3>
-            <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+            <span
+              onMouseDown={() => handleHealthPressStart('consumed')}
+              onMouseUp={() => handleHealthPressEnd(() => {})}
+              onTouchStart={() => handleHealthPressStart('consumed')}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleHealthPressEnd(() => {});
+              }}
+              style={{
+                fontSize: '11px',
+                color: 'var(--accent-primary)',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
+              }}
+              title="Tieni premuto per Registro Pasti e Nutrizione"
+            >
               {health.calories?.consumed || 0} / {health.calories?.goal || 2000} kcal
             </span>
           </div>

@@ -10,7 +10,8 @@ export default function NutritionTab({
   stats,
   onRewardXp,
   initialModal,
-  setInitialModal
+  setInitialModal,
+  onlyModal = false
 }) {
   const [activeMainTab, setActiveMainTab] = useState('health'); // 'health' | 'shopping'
 
@@ -499,6 +500,257 @@ export default function NutritionTab({
   const avgWater = validWaterDays.length > 0
     ? ((validWaterDays.reduce((acc, curr) => acc + Number(curr.water), 0) * 0.2) / validWaterDays.length).toFixed(1)
     : ((waterCurrent * 0.2) || 0).toFixed(1);
+
+  if (onlyModal) {
+    return (
+      <>
+        {/* 1) REGISTRO PASTI MODAL */}
+        {showMealsModal && (
+          <div
+            onClick={() => {
+              setShowMealsModal(false);
+              if (setInitialModal) setInitialModal(null);
+            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          >
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '440px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+            >
+              <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
+                <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🍴</span> Registro Pasti e Nutrizione
+                </h3>
+              </div>
+
+              <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* Category tabs */}
+                <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
+                  {[
+                    { id: 'all', label: '🌟 Tutti' },
+                    { id: 'breakfast', label: '☕ Colazione' },
+                    { id: 'main', label: '🍽️ Pasti Principali' },
+                    { id: 'snack', label: '🍌 Spuntino' },
+                    { id: 'cheat', label: '🍕 Sgarro' }
+                  ].map((cat) => {
+                    const count = cat.id === 'all'
+                      ? Object.values(health.meals || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
+                      : (cat.id === 'main'
+                          ? ((health.meals?.main?.length || 0) + (health.meals?.lunch?.length || 0) + (health.meals?.dinner?.length || 0))
+                          : ((health.meals && health.meals[cat.id]) ? health.meals[cat.id].length : 0));
+
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveMealCategory(cat.id)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          border: 'none',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          background: activeMealCategory === cat.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                          color: activeMealCategory === cat.id ? '#fff' : 'var(--text-secondary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>{cat.label}</span>
+                        <span style={{
+                          background: activeMealCategory === cat.id ? 'rgba(255, 255, 255, 0.25)' : 'var(--glass-border)',
+                          padding: '1px 5px',
+                          borderRadius: '10px',
+                          fontSize: '9px'
+                        }}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Logged Items for Active Category / All */}
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
+                    {activeMealCategory === 'all' ? 'Alimenti consumati oggi (Tutti)' : 'Loggati oggi in questo pasto'}
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {(() => {
+                      const catLabels = { breakfast: 'Colazione', main: 'Pasto Principale', lunch: 'Pasto Principale', dinner: 'Pasto Principale', snack: 'Spuntino', cheat: 'Sgarro' };
+                      let itemsToDisplay = [];
+                      if (activeMealCategory === 'all') {
+                        Object.entries(health.meals || {}).forEach(([catKey, items]) => {
+                          if (Array.isArray(items)) {
+                            items.forEach(item => {
+                              itemsToDisplay.push({ ...item, catKey, catLabel: catLabels[catKey] || catKey });
+                            });
+                          }
+                        });
+                      } else if (activeMealCategory === 'main') {
+                        ['main', 'lunch', 'dinner'].forEach(catKey => {
+                          const items = (health.meals && health.meals[catKey]) || [];
+                          items.forEach(item => {
+                            itemsToDisplay.push({ ...item, catKey, catLabel: catLabels[catKey] || catKey });
+                          });
+                        });
+                      } else {
+                        const items = (health.meals && health.meals[activeMealCategory]) || [];
+                        itemsToDisplay = items.map(item => ({ ...item, catKey: activeMealCategory }));
+                      }
+
+                      if (itemsToDisplay.length === 0 && extraConsumed === 0) {
+                        return (
+                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
+                            Nessun cibo inserito in questa sezione.
+                          </p>
+                        );
+                      }
+
+                      return (
+                        <>
+                          {itemsToDisplay.map((item) => (
+                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams})</span>
+                                {activeMealCategory === 'all' && item.catLabel && (
+                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Pasto: {item.catLabel}</span>
+                                )}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
+                                <button
+                                  onClick={() => removeLoggedFood(item.catKey, item.id)}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 6px' }}
+                                  title="Rimuovi alimento"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          {extraConsumed > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px dashed #ef4444', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>🍎 Calorie Consumate Manuali</span>
+                                <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Aggiunte a mano senza alimento</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>+{extraConsumed} kcal</span>
+                                <button
+                                  onClick={clearExtraConsumed}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 6px' }}
+                                  title="Rimuovi calorie manuali"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2) REGISTRO ALLENAMENTI MODAL */}
+        {showExercisesModal && (
+          <div
+            onClick={() => {
+              setShowExercisesModal(false);
+              if (setInitialModal) setInitialModal(null);
+            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          >
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '440px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+            >
+              <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
+                <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🏋️</span> Registro Allenamenti
+                </h3>
+              </div>
+
+              <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* Logged Workouts Today Section */}
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
+                    Allenamenti Registrati Oggi
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {(!health.workouts || health.workouts.length === 0) && extraBurned === 0 && extraConsumed === 0 ? (
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
+                        Nessun allenamento o valore registrato oggi.
+                      </p>
+                    ) : (
+                      <>
+                        {health.workouts && health.workouts.map((w) => (
+                          <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                              {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{w.baseCalories} kcal</span>
+                              <button
+                                onClick={() => removeLoggedExercise(w.id, w.baseCalories)}
+                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                                title="Rimuovi allenamento"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {extraBurned > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(249, 115, 22, 0.1)', border: '1px dashed #f97316', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>⚡ Calorie Bruciate Manuali</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{extraBurned} kcal</span>
+                              <button
+                                onClick={clearExtraBurned}
+                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                                title="Rimuovi calorie bruciate manuali"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {extraConsumed > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px dashed #ef4444', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>🍎 Calorie Consumate Manuali</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>+{extraConsumed} kcal</span>
+                              <button
+                                onClick={clearExtraConsumed}
+                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                                title="Rimuovi calorie consumate manuali"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <section id="section-nutrition" className="section active">
