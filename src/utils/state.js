@@ -227,6 +227,12 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     state.health.proteins.consumed = Math.round(totalMealProt * 10) / 10;
   }
 
+  if (!state.health.workouts) state.health.workouts = [];
+  if (Array.isArray(state.health.workouts) && state.health.workouts.length > 0) {
+    const totalWorkoutCal = state.health.workouts.reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
+    state.health.calories.burned = totalWorkoutCal;
+  }
+
   if (!state.health.foodDatabase || state.health.foodDatabase.length === 0) {
     state.health.foodDatabase = [...defaults.health.foodDatabase];
   } else {
