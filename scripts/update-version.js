@@ -23,6 +23,34 @@ const cleanIndexHtml = `<!DOCTYPE html>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f0f1a">
 
+  <!-- Emergency Auto-Recovery Script (Preserves localStorage user data) -->
+  <script>
+    (function() {
+      window.onerror = function(msg, url, line) {
+        console.error('[Emergency Recovery] Startup Error:', msg);
+        var lastReload = localStorage.getItem('rpg_last_emergency_reload');
+        var now = Date.now();
+        if (!lastReload || (now - parseInt(lastReload, 10)) > 15000) {
+          localStorage.setItem('rpg_last_emergency_reload', now.toString());
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+            });
+          }
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (var i = 0; i < names.length; i++) { caches.delete(names[i]); }
+            });
+          }
+          setTimeout(function() {
+            var search = window.location.search || '?';
+            window.location.href = window.location.pathname + search + '&v=' + Date.now();
+          }, 300);
+        }
+      };
+    })();
+  </script>
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
