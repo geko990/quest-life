@@ -867,8 +867,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
               >
                 <option value="breakfast">Colazione ☕</option>
-                <option value="lunch">Pranzo 🍚</option>
-                <option value="dinner">Cena 🍗</option>
+                <option value="main">Pasti Principali 🍽️</option>
                 <option value="snack">Spuntino 🍌</option>
                 <option value="cheat">Sgarro 🍕</option>
               </select>
@@ -1514,9 +1513,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             const allLoggedFoods = [];
             const categoryNames = {
               breakfast: '☕ Colazione',
-              lunch: '🍝 Pranzo',
-              dinner: '🥩 Cena',
-              snack: '🍎 Snack'
+              main: '🍽️ Pasti Principali',
+              lunch: '🍽️ Pasti Principali',
+              dinner: '🍽️ Pasti Principali',
+              snack: '🍌 Spuntino',
+              cheat: '🍕 Sgarro'
             };
 
             Object.entries(mealsObj).forEach(([catKey, items]) => {
