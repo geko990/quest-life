@@ -103,16 +103,8 @@ export default function NutritionTab({
   const [portionInputValue, setPortionInputValue] = useState('');
   const pressTimerRef = React.useRef(null);
   const isLongPressRef = React.useRef(false);
-  const touchHandledRef = React.useRef(false);
 
-  const handleFoodPressStart = (e, food) => {
-    if (e && e.type === 'touchstart') {
-      touchHandledRef.current = true;
-    } else if (e && e.type === 'mousedown' && touchHandledRef.current) {
-      touchHandledRef.current = false;
-      return;
-    }
-
+  const handlePointerDown = (food) => {
     isLongPressRef.current = false;
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
 
@@ -123,20 +115,20 @@ export default function NutritionTab({
     }, 500);
   };
 
-  const handleFoodPressEnd = (e, food) => {
-    if (e && e.type === 'mouseup' && touchHandledRef.current) {
-      return;
-    }
-
+  const handlePointerUp = () => {
     if (pressTimerRef.current) {
       clearTimeout(pressTimerRef.current);
       pressTimerRef.current = null;
     }
+  };
 
-    if (!isLongPressRef.current) {
-      // Single tap: open portion prompt modal pre-filled with last remembered quantity
-      handleOpenPortionModal(food);
+  const handleFoodClick = (food) => {
+    if (isLongPressRef.current) {
+      isLongPressRef.current = false;
+      return;
     }
+    // Single tap/click: open portion prompt modal pre-filled with last remembered quantity
+    handleOpenPortionModal(food);
   };
 
   const handleQuickLogFood = (food) => {
@@ -1104,13 +1096,10 @@ export default function NutritionTab({
                         <button
                           key={food.id}
                           type="button"
-                          onMouseDown={(e) => handleFoodPressStart(e, food)}
-                          onMouseUp={(e) => handleFoodPressEnd(e, food)}
-                          onTouchStart={(e) => handleFoodPressStart(e, food)}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            handleFoodPressEnd(e, food);
-                          }}
+                          onPointerDown={() => handlePointerDown(food)}
+                          onPointerUp={handlePointerUp}
+                          onPointerLeave={handlePointerUp}
+                          onClick={() => handleFoodClick(food)}
                           style={{
                             display: 'flex',
                             flexDirection: 'column',
