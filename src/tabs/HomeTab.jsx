@@ -33,7 +33,11 @@ export default function HomeTab({
     if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
     healthPressTimerRef.current = setTimeout(() => {
       isHealthLongPressRef.current = true;
-      setActiveTooltip(key);
+      if (key === 'calories' && onOpenModal) {
+        onOpenModal('exercise');
+      } else {
+        setActiveTooltip(key);
+      }
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try { navigator.vibrate(35); } catch(e){}
       }
@@ -55,7 +59,7 @@ export default function HomeTab({
       ...prev,
       water: {
         ...prev.water,
-        consumed: (prev.water?.consumed || 0) + amount
+        consumed: (Number(prev.water?.consumed) || 0) + amount
       }
     }));
     if (settings.soundEnabled) {
@@ -76,7 +80,7 @@ export default function HomeTab({
       ...prev,
       steps: {
         ...prev.steps,
-        current: (prev.steps?.current || 0) + amount
+        current: (Number(prev.steps?.current) || 0) + amount
       }
     }));
     if (settings.soundEnabled) {
@@ -91,13 +95,13 @@ export default function HomeTab({
     }
   };
 
-  const handleAddCalories = (amount = 100) => {
+  const handleAddBurnedCalories = (amount = 100) => {
     if (!setHealth) return;
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        consumed: (prev.calories?.consumed || 0) + amount
+        burned: (Number(prev.calories?.burned) || 0) + amount
       }
     }));
     if (settings.soundEnabled) {
@@ -457,21 +461,21 @@ export default function HomeTab({
         <div className="glass-panel" style={{ padding: '10px 12px', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              🍎 Sostentamento Oggi
+              🍎 Sostentamento di oggi
             </h3>
             <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
               {health.calories?.consumed || 0} / {health.calories?.goal || 2000} kcal
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
-            {/* 🔥 Calorie */}
+            {/* 🔥 Calorie Bruciate */}
             <div
               onMouseDown={() => handleHealthPressStart('calories')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddCalories(100))}
+              onMouseUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
               onTouchStart={() => handleHealthPressStart('calories')}
               onTouchEnd={(e) => {
                 e.preventDefault();
-                handleHealthPressEnd(() => handleAddCalories(100));
+                handleHealthPressEnd(() => handleAddBurnedCalories(100));
               }}
               style={{
                 background: 'var(--bg-secondary)',
@@ -482,10 +486,11 @@ export default function HomeTab({
                 userSelect: 'none',
                 WebkitUserSelect: 'none'
               }}
+              title="Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti"
             >
               <div style={{ fontSize: '14px' }}>🔥</div>
-              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.calories?.consumed || 0}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Calorie</div>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.calories?.burned || 0}</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bruciate</div>
             </div>
 
             {/* 💧 Acqua */}
@@ -508,11 +513,11 @@ export default function HomeTab({
               }}
             >
               <div style={{ fontSize: '14px' }}>💧</div>
-              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.target || 8}</div>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.goal || health.waterGoal || 8}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bicchieri</div>
             </div>
 
-            {/* 🚶 Passi */}
+            {/* 👟 Passi */}
             <div
               onMouseDown={() => handleHealthPressStart('steps')}
               onMouseUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
@@ -531,8 +536,8 @@ export default function HomeTab({
                 WebkitUserSelect: 'none'
               }}
             >
-              <div style={{ fontSize: '14px' }}>🚶</div>
-              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.steps?.current || 0}</div>
+              <div style={{ fontSize: '14px' }}>👟</div>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{Number(health.steps?.current) || 0}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Passi</div>
             </div>
           </div>
@@ -575,9 +580,8 @@ export default function HomeTab({
                 }}
               >
                 <span>
-                  {activeTooltip === 'calories' && '🔥 Tap rapido: aggiunge +100 kcal consumate'}
                   {activeTooltip === 'water' && '💧 Tap rapido: aggiunge +1 bicchiere (200ml)'}
-                  {activeTooltip === 'steps' && '🚶 Tap rapido: aggiunge +1000 passi'}
+                  {activeTooltip === 'steps' && '👟 Tap rapido: aggiunge +1000 passi'}
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>✕</span>
               </div>
