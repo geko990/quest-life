@@ -662,6 +662,8 @@ export default function App() {
       const name = slot.name.trim();
       if (!name) return;
 
+      const chosenEmoji = slot.emoji || slotIcons[key];
+
       if (slot.oneshotId) {
         updatedOneshotIds.add(slot.oneshotId);
         setOneshots(prev => prev.map(o => {
@@ -669,8 +671,11 @@ export default function App() {
             return {
               ...o,
               name: name,
+              emoji: chosenEmoji,
+              slotType: key,
               difficulty: slot.stars || o.difficulty,
               primaryTarget: slot.statId || o.primaryTarget,
+              secondaryTarget: slot.secondaryStatId || o.secondaryTarget || null,
               scheduledCount: (o.scheduledCount || 0) + 1,
               fromDailyPlan: true,
               dailyPlanDate: todayStr,
@@ -685,10 +690,11 @@ export default function App() {
         newOneshots.push({
           id: 'dp-' + Date.now() + '-' + key,
           name: name,
-          emoji: slotIcons[key],
+          emoji: chosenEmoji,
+          slotType: key,
           difficulty: slot.stars,
           primaryTarget: slot.statId,
-          secondaryTarget: null,
+          secondaryTarget: slot.secondaryStatId || null,
           completed: false,
           locked: false,
           fromDailyPlan: true,

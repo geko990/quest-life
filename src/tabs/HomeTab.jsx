@@ -390,10 +390,7 @@ export default function HomeTab({
 
         {todayActionsList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '18px 14px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            {/* 1. Emoji dado (in alto) */}
             <div style={{ fontSize: '32px', marginBottom: '8px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
-
-            {/* 2. Bottone "Pianifica la tua giornata" (in mezzo, senza emoji) */}
             <button
               onClick={onOpenPlanner}
               className="btn-primary"
@@ -404,62 +401,92 @@ export default function HomeTab({
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {todayActionsList.map((action) => {
-              const primaryStat = stats.find(s => s.id === action.primaryTarget);
-              const isCompleted = !!action.completed;
+            {[
+              { key: 'action', label: 'Azione', defaultEmoji: '🎯', color: '#ef4444' },
+              { key: 'bonus', label: 'Azione Bonus', defaultEmoji: '⚡', color: '#f59e0b' },
+              { key: 'movement', label: 'Movimento', defaultEmoji: '🚶', color: '#0ea5e9' },
+              { key: 'reaction', label: 'Reazione', defaultEmoji: '🛡️', color: '#a855f7' }
+            ].map((slotDef, index) => {
+              const action = todayActionsList.find(a => a.slotType === slotDef.key) || todayActionsList[index] || null;
+              const primaryStat = action ? stats.find(s => s.id === action.primaryTarget) : null;
+              const isCompleted = action ? !!action.completed : false;
 
               return (
                 <div
-                  key={action.id}
-                  onClick={() => onToggleOneshot && onToggleOneshot(action.id)}
+                  key={slotDef.key}
+                  onClick={() => {
+                    if (action) {
+                      if (onToggleOneshot) onToggleOneshot(action.id);
+                    } else {
+                      if (onOpenPlanner) onOpenPlanner();
+                    }
+                  }}
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
-                    border: isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)',
-                    padding: '10px 12px',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    background: action
+                      ? (isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)')
+                      : 'var(--bg-secondary)',
+                    border: action
+                      ? (isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)')
+                      : '1px dashed var(--glass-border)',
+                    padding: '8px 10px',
                     borderRadius: '12px',
                     cursor: 'pointer',
-                    opacity: isCompleted ? 0.65 : 1,
+                    opacity: isCompleted ? 0.65 : (action ? 1 : 0.7),
                     transition: 'all 0.2s ease',
                     boxSizing: 'border-box',
                     minWidth: 0,
-                    boxShadow: isCompleted ? 'none' : '0 2px 6px rgba(0,0,0,0.03)'
+                    minHeight: '62px'
                   }}
                 >
-                  {/* Checkbox */}
-                  <div
-                    className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onToggleOneshot) onToggleOneshot(action.id);
-                    }}
-                    style={{ width: '20px', height: '20px', flexShrink: 0 }}
-                  ></div>
-
-                  {/* Content */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ fontSize: '12px' }}>{action.emoji || '🎯'}</span>
-                      {primaryStat && (
-                        <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {primaryStat.name}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      color: 'var(--text-primary)',
-                      textDecoration: isCompleted ? 'line-through' : 'none',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {action.name}
-                    </div>
+                  {/* Category Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: slotDef.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {slotDef.defaultEmoji} {slotDef.label}
+                    </span>
+                    {primaryStat && (
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                        {primaryStat.icon || ''}
+                      </span>
+                    )}
                   </div>
+
+                  {/* Task Content or Placeholder */}
+                  {action ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div
+                        className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onToggleOneshot) onToggleOneshot(action.id);
+                        }}
+                        style={{ width: '18px', height: '18px', flexShrink: 0 }}
+                      ></div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          color: 'var(--text-primary)',
+                          textDecoration: isCompleted ? 'line-through' : 'none',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <span>{action.emoji || slotDef.defaultEmoji}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{action.name}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>+ Non pianificata</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
