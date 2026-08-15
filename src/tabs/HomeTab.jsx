@@ -403,16 +403,15 @@ export default function HomeTab({
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {todayActionsList.map((action) => {
-              const primaryStat = stats.find(s => s.id === action.primaryTarget);
+            {todayActionsList.map((action, index) => {
               const isCompleted = !!action.completed;
-              const slotCategoryIcons = {
-                action: '🎯',
-                bonus: '⚡',
-                movement: '🚶',
-                reaction: '🛡️'
-              };
-              const categoryIcon = slotCategoryIcons[action.slotType] || '🎯';
+              const slotCategoryInfo = [
+                { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
+                { type: 'bonus', title: 'Azione Bonus', emoji: '⚡', color: '#f59e0b' },
+                { type: 'movement', title: 'Movimento', emoji: '🚶', color: '#0ea5e9' },
+                { type: 'reaction', title: 'Reazione', emoji: '🛡️', color: '#a855f7' }
+              ];
+              const info = slotCategoryInfo.find(s => s.type === action.slotType) || slotCategoryInfo[index] || slotCategoryInfo[0];
 
               return (
                 <div
@@ -447,12 +446,10 @@ export default function HomeTab({
                   {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ fontSize: '12px' }}>{categoryIcon}</span>
-                      {primaryStat && (
-                        <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {primaryStat.name}
-                        </span>
-                      )}
+                      <span style={{ fontSize: '12px' }}>{info.emoji}</span>
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', color: info.color, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {info.title}
+                      </span>
                     </div>
                     <div style={{
                       fontSize: '11px',
