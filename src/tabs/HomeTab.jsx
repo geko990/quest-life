@@ -551,87 +551,93 @@ export default function HomeTab({
         <div style={{ height: '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           {cardMode === 'pomodoro' ? (
             /* IN-CARD POMODORO WORKSTATION VIEW */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', justifyContent: 'space-between' }}>
-              {/* Active Focused Task Selector */}
-              <div style={{ height: '36px', background: 'var(--bg-secondary)', padding: '0 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxSizing: 'border-box' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', padding: '2px 0', boxSizing: 'border-box' }}>
+              {/* 1. Top Row: Centered Large Minutes Countdown (Tap digits to edit) */}
+              <div
+                onClick={() => {
+                  if (safePomodoro.status === 'running') return;
+                  const currentMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
+                  const input = window.prompt("Imposta i minuti del Pomodoro (es. 15, 25, 45, 60):", currentMins);
+                  if (input !== null) {
+                    const newMins = parseInt(input.trim(), 10);
+                    if (!isNaN(newMins) && newMins > 0 && newMins <= 180) {
+                      setPomoSecs(newMins * 60);
+                      if (setPomodoro) {
+                        setPomodoro(prev => ({
+                          ...(prev || {}),
+                          workDuration: newMins,
+                          remainingTime: newMins * 60
+                        }));
+                      }
+                    }
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: safePomodoro.status === 'running' ? 'default' : 'pointer',
+                  paddingTop: '2px'
+                }}
+                title={safePomodoro.status === 'running' ? '' : 'Tocca per modificare i minuti'}
+              >
+                <span
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: '900',
+                    fontFamily: 'monospace',
+                    color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)',
+                    lineHeight: 1,
+                    letterSpacing: '1px'
+                  }}
+                >
+                  {formatPomoTime(pomoSecs)}
+                </span>
+              </div>
+
+              {/* 2. Bottom Row: Left (Stat Selector) & Right (Control Buttons) */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+                {/* Left: Stat / Attribute Selector */}
                 <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, flex: 1 }}>
                   <select
-                    value={selectedTaskId}
-                    onChange={(e) => setSelectedTaskId(e.target.value)}
+                    value={safePomodoro.targetStatId || 'int'}
+                    onChange={(e) => {
+                      if (setPomodoro) {
+                        setPomodoro(prev => ({
+                          ...(prev || {}),
+                          targetStatId: e.target.value
+                        }));
+                      }
+                    }}
                     style={{
-                      background: 'transparent',
-                      border: 'none',
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--glass-border)',
                       color: 'var(--text-primary)',
                       fontSize: '11px',
                       fontWeight: 'bold',
-                      width: '100%',
+                      borderRadius: '8px',
+                      padding: '6px 8px',
                       outline: 'none',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      width: '100%',
+                      maxWidth: '150px'
                     }}
                   >
-                    <option value="" style={{ background: 'var(--bg-card)' }}>Focus Libero (Nessuna task selezionata)</option>
-                    {todayActionsList.filter(a => !a.completed).map(a => (
-                      <option key={a.id} value={a.id} style={{ background: 'var(--bg-card)' }}>
-                        {a.name}
+                    {(stats || []).filter(s => s.visible !== false).map(s => (
+                      <option key={s.id} value={s.id} style={{ background: 'var(--bg-card)' }}>
+                        {s.icon || '⭐'} {s.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {selectedTaskId && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onToggleOneshot) onToggleOneshot(selectedTaskId);
-                      setSelectedTaskId('');
-                    }}
-                    style={{ fontSize: '10px', fontWeight: 'bold', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', flexShrink: 0, marginLeft: '6px' }}
-                    title="Segna questa task come completata"
-                  >
-                    ✓ Completa
-                  </button>
-                )}
-              </div>
-
-              {/* Countdown Display & Controls */}
-              <div style={{ height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '0 14px', borderRadius: '12px', border: '1px solid var(--glass-border)', boxSizing: 'border-box' }}>
-                <div
-                  onClick={() => {
-                    if (safePomodoro.status === 'running') return;
-                    const currentMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
-                    const input = window.prompt("Imposta i minuti del Pomodoro (es. 15, 25, 45, 60):", currentMins);
-                    if (input !== null) {
-                      const newMins = parseInt(input.trim(), 10);
-                      if (!isNaN(newMins) && newMins > 0 && newMins <= 180) {
-                        setPomoSecs(newMins * 60);
-                        if (setPomodoro) {
-                          setPomodoro(prev => ({
-                            ...(prev || {}),
-                            workDuration: newMins,
-                            remainingTime: newMins * 60
-                          }));
-                        }
-                      }
-                    }
-                  }}
-                  style={{ cursor: safePomodoro.status === 'running' ? 'default' : 'pointer' }}
-                  title={safePomodoro.status === 'running' ? '' : 'Tocca per modificare i minuti'}
-                >
-                  <div style={{ fontSize: '26px', fontWeight: '800', fontFamily: 'monospace', color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)', lineHeight: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>{formatPomoTime(pomoSecs)}</span>
-                    {safePomodoro.status !== 'running' && (
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>✏️</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div style={{ display: 'flex', gap: '6px' }}>
+                {/* Right: Action Buttons */}
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                   {safePomodoro.status === 'idle' && (
                     <button
                       type="button"
                       onClick={startPomodoro}
-                      style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}
+                      style={{ padding: '7px 16px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}
                     >
                       ▶️ Avvia
                     </button>
