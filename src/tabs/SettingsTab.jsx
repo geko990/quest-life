@@ -19,7 +19,7 @@ export default function SettingsTab({
   onReset,
   onApplyPresetDay
 }) {
-  const [expandedGroup, setExpandedGroup] = useState('profile');
+  const [expandedGroup, setExpandedGroup] = useState(null);
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
 
@@ -150,40 +150,114 @@ export default function SettingsTab({
 
   return (
     <section id="section-settings" className="section active">
-      {/* Tab Header */}
-      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>⚙️ Impostazioni</h2>
+      {/* Centered Top Profile & Hero Card */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          padding: '18px 14px',
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95))',
+          borderRadius: '20px',
+          border: '1px solid var(--glass-border)',
+          marginBottom: '16px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
+          textAlign: 'center'
+        }}
+      >
+        {/* Avatar Frame */}
+        <div
+          style={{
+            position: 'relative',
+            width: '76px',
+            height: '76px',
+            borderRadius: '50%',
+            background: 'var(--bg-card)',
+            border: '2px solid var(--accent-gold, #f59e0b)',
+            boxShadow: '0 0 18px rgba(245, 158, 11, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
+          }}
+        >
+          {safePlayer.avatarType === 'image' && safePlayer.avatarImage ? (
+            <img
+              src={safePlayer.avatarImage}
+              alt="Avatar"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <span style={{ fontSize: '38px' }}>
+              {safePlayer.avatarEmoji || '⚔️'}
+            </span>
+          )}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              left: 0,
+              background: 'rgba(0,0,0,0.7)',
+              fontSize: '8px',
+              color: '#fbbf24',
+              padding: '1px 0',
+              fontWeight: 'bold',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Lvl {safePlayer.level || 1}
+          </div>
+        </div>
+
+        {/* Player Name Editable Input */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px' }}>
+          <input
+            type="text"
+            defaultValue={safePlayer.name || 'Avventuriero'}
+            onBlur={(e) => updatePlayerName(e.target.value)}
+            placeholder="Inserisci il tuo nome..."
+            style={{
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '1px dashed rgba(255, 255, 255, 0.3)',
+              color: 'var(--text-primary)',
+              fontSize: '18px',
+              fontWeight: '800',
+              textAlign: 'center',
+              padding: '2px 6px',
+              outline: 'none',
+              width: 'auto',
+              maxWidth: '220px'
+            }}
+          />
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>✏️</span>
+        </div>
+
+        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+          ⚙️ Impostazioni del Giocatore
+        </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* Group 1: Profile & Gameplay */}
+        {/* Group 1: Gameplay */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
-            onClick={() => toggleGroup('profile')}
+            onClick={() => toggleGroup('gameplay')}
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              👤 Profilo & Gameplay
+              🎮 Gameplay
             </h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'profile' ? '▲' : '▼'}
+              {expandedGroup === 'gameplay' ? '▲' : '▼'}
             </span>
           </div>
 
-          {expandedGroup === 'profile' && (
+          {expandedGroup === 'gameplay' && (
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
-              {/* Name Input */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Nome Giocatore</label>
-                <input
-                  type="text"
-                  defaultValue={safePlayer.name || 'Avventuriero'}
-                  onBlur={(e) => updatePlayerName(e.target.value)}
-                  placeholder="Inserisci il tuo nome..."
-                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '13px' }}
-                />
-              </div>
-
               {/* Day Start Hour */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Inizio nuovo giorno</label>
