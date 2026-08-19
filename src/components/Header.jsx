@@ -139,8 +139,8 @@ export default function Header({
     });
 
     monthOneshots.sort((a, b) => {
-      const starsA = a.difficulty || a.stars || 1;
-      const starsB = b.difficulty || b.stars || 1;
+      const starsA = a.difficulty !== undefined ? a.difficulty : (a.stars || 1);
+      const starsB = b.difficulty !== undefined ? b.difficulty : (b.stars || 1);
       if (starsB !== starsA) return starsB - starsA;
       return (a.name || '').localeCompare(b.name || '');
     });
@@ -630,7 +630,7 @@ export default function Header({
                   <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', minHeight: 0, paddingRight: '2px' }}>
                     {summary.top10Tasks.map((t, idx) => {
                       const primaryStat = (stats || []).find(s => s.id === t.primaryTarget);
-                      const starsCount = t.difficulty || t.stars || 1;
+                      const starsCount = t.difficulty !== undefined ? t.difficulty : (t.stars || 1);
 
                       return (
                         <div

@@ -363,7 +363,7 @@ export default function HabitsTab({
               const isCompleted = h.completed;
               const primaryStat = stats.find(s => s.id === (h.primaryStatId || h.primaryTarget));
               const secondaryStat = stats.find(s => s.id === (h.secondaryStatId || h.secondaryTarget));
-              const starsCount = h.stars || h.difficulty || 1;
+              const starsCount = h.difficulty !== undefined ? h.difficulty : (h.stars || 1);
 
               return (
                 <div

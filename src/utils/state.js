@@ -167,9 +167,18 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     state.settings.presetDays = defaults.settings.presetDays;
   }
 
-  state.habits = parsed.habits || [];
-  state.oneshots = parsed.oneshots || [];
-  state.quests = parsed.quests || [];
+  state.habits = (parsed.habits || []).map(h => {
+    const diff = h.difficulty !== undefined ? h.difficulty : (h.stars !== undefined ? h.stars : 3);
+    return { ...h, difficulty: diff, stars: diff };
+  });
+  state.oneshots = (parsed.oneshots || []).map(o => {
+    const diff = o.difficulty !== undefined ? o.difficulty : (o.stars !== undefined ? o.stars : 3);
+    return { ...o, difficulty: diff, stars: diff };
+  });
+  state.quests = (parsed.quests || []).map(q => {
+    const diff = q.difficulty !== undefined ? q.difficulty : (q.stars !== undefined ? q.stars : 3);
+    return { ...q, difficulty: diff, stars: diff };
+  });
   state.completionLog = parsed.completionLog || {};
   state.xpLog = (parsed.xpLog || []).map(entry => {
     if (!entry.title && entry.source) {

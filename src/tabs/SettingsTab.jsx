@@ -26,6 +26,44 @@ export default function SettingsTab({
   const safeSettings = settings || {};
   const safePlayer = player || {};
   const safeXpLog = Array.isArray(xpLog) ? xpLog : [];
+
+  // Group raw XP log entries into single task completions
+  const groupedXpLog = [];
+  safeXpLog.forEach((entry) => {
+    if (!entry) return;
+    const title = (entry.title || entry.reason || entry.name || entry.source || 'Attività completata').trim();
+    const date = entry.date || '';
+    const timestamp = entry.timestamp || 0;
+
+    const lastGroup = groupedXpLog[groupedXpLog.length - 1];
+
+    const isSameTask =
+      lastGroup &&
+      lastGroup.title === title &&
+      lastGroup.date === date &&
+      (
+        (timestamp && lastGroup.maxTimestamp && Math.abs(timestamp - lastGroup.maxTimestamp) <= 5000) ||
+        (!timestamp || !lastGroup.maxTimestamp)
+      );
+
+    if (isSameTask) {
+      lastGroup.totalAmount += Number(entry.amount) || 0;
+      if (entry.statId && !lastGroup.statIds.includes(entry.statId)) {
+        lastGroup.statIds.push(entry.statId);
+      }
+      if (timestamp) {
+        lastGroup.maxTimestamp = Math.max(lastGroup.maxTimestamp, timestamp);
+      }
+    } else {
+      groupedXpLog.push({
+        title,
+        date,
+        maxTimestamp: timestamp,
+        totalAmount: Number(entry.amount) || 0,
+        statIds: entry.statId ? [entry.statId] : []
+      });
+    }
+  });
   const safePresetDays = Array.isArray(safeSettings.presetDays) ? safeSettings.presetDays : [
     {
       id: 'preset_work',
@@ -566,18 +604,18 @@ export default function SettingsTab({
 
           {expandedGroup === 'history' && (
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {safeXpLog.length === 0 ? (
+              {groupedXpLog.length === 0 ? (
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
                   Nessuna impresa registrata di recente.
                 </p>
               ) : (
-                safeXpLog.slice(-15).reverse().map((log, idx) => {
-                  if (!log) return null;
-                  const title = log.title || log.reason || log.name || log.source || 'Attività completata';
+                groupedXpLog.slice(-15).reverse().map((group, idx) => {
+                  if (!group) return null;
+                  const title = group.title;
                   let dateStr = '';
-                  if (log.date) {
+                  if (group.date) {
                     try {
-                      const d = new Date(log.date);
+                      const d = new Date(group.date);
                       if (!isNaN(d.getTime())) {
                         dateStr = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
                       }
@@ -585,16 +623,26 @@ export default function SettingsTab({
                       dateStr = '';
                     }
                   }
+
+                  const statEmojis = (group.statIds || [])
+                    .map(id => {
+                      const s = (stats || []).find(st => st.id === id);
+                      return s ? (s.icon || s.emoji) : null;
+                    })
+                    .filter(Boolean);
+
+                  const emojiDisplay = statEmojis.length > 0 ? statEmojis.join(' ') : '✨';
+
                   return (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                        <span>✨</span>
+                        <span style={{ fontSize: '14px', flexShrink: 0 }}>{emojiDisplay}</span>
                         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                           <span style={{ color: 'var(--text-primary)', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
                           {dateStr && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{dateStr}</span>}
                         </div>
                       </div>
-                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>+{log.amount || 0} XP</span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>+{group.totalAmount} XP</span>
                     </div>
                   );
                 })

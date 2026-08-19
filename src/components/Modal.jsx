@@ -76,7 +76,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   // Prepopulate form fields if editing or set defaults
   useEffect(() => {
     if (editData) {
-      setForm({ ...editData });
+      const initialDiff = editData.difficulty !== undefined ? editData.difficulty : (editData.stars !== undefined ? editData.stars : 3);
+      setForm({ ...editData, difficulty: initialDiff, stars: initialDiff });
       if (type === 'quest' && editData.subquests) {
         setSubquests([...editData.subquests]);
       }
@@ -328,7 +329,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
                       key={star}
-                      onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
+                      onClick={() => setForm(prev => ({ ...prev, difficulty: star, stars: star }))}
                       className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
                         star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
                       }`}
@@ -428,7 +429,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
                       key={star}
-                      onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
+                      onClick={() => setForm(prev => ({ ...prev, difficulty: star, stars: star }))}
                       className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
                         star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
                       }`}
@@ -552,7 +553,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
                       key={star}
-                      onClick={() => setForm(prev => ({ ...prev, difficulty: star }))}
+                      onClick={() => setForm(prev => ({ ...prev, difficulty: star, stars: star }))}
                       className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
                         star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
                       }`}
