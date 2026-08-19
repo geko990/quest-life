@@ -97,10 +97,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
   };
 
   const slotThemes = {
-    action: { title: '🎯 AZIONE', emoji: '🎯', color: '#ef4444' },
-    bonus: { title: '⚡ AZIONE BONUS', emoji: '⚡', color: '#f59e0b' },
-    movement: { title: '🚶 MOVIMENTO', emoji: '🚶', color: '#0ea5e9' },
-    reaction: { title: '🛡️ REAZIONE', emoji: '🛡️', color: '#a855f7' }
+    action: { title: 'AZIONE', emoji: '🎯', color: '#ef4444' },
+    bonus: { title: 'AZIONE BONUS', emoji: '⚡', color: '#f59e0b' },
+    movement: { title: 'MOVIMENTO', emoji: '🚶', color: '#0ea5e9' },
+    reaction: { title: 'REAZIONE', emoji: '🛡️', color: '#a855f7' }
   };
 
   const renderSlot = (key, placeholder) => {
@@ -110,17 +110,17 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
     return (
       <div
         style={{
-          padding: '8px 10px',
+          padding: '6px 8px',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--glass-border)',
-          borderRadius: '12px',
+          borderRadius: '10px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '5px'
+          gap: '3px'
         }}
       >
-        {/* Rigo 1: Emoji + Categoria */}
-        <div style={{ fontSize: '11px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {/* Rigo 1: Categoria Colore (Senza Emoji duplicata) */}
+        <div style={{ fontSize: '10px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           {theme.title}
         </div>
 
@@ -136,18 +136,18 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               }
             }}
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
               background: 'var(--bg-card)',
               border: '1px solid var(--glass-border)',
-              fontSize: '20px',
+              fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               flexShrink: 0,
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
+              boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
             }}
             title="Tocca per scegliere l'emoji"
           >
@@ -168,12 +168,12 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               fontSize: '11px',
               color: 'var(--text-primary)',
               boxSizing: 'border-box',
-              height: '30px'
+              height: '32px'
             }}
           />
 
           {(uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0) && (
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0, height: '30px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0, height: '32px' }}>
               <select
                 value=""
                 onChange={(e) => {
@@ -233,20 +233,19 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               <button
                 type="button"
                 style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
                   background: 'var(--bg-primary)',
                   border: '1px solid var(--glass-border)',
-                  borderRadius: '8px',
-                  padding: 0,
-                  width: '30px',
-                  height: '30px',
+                  color: 'var(--text-primary)',
                   fontSize: '12px',
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--text-primary)'
+                  cursor: 'pointer'
                 }}
-                title="Attingi da Task o Campagne"
+                title="Scegli da Task esistenti o Campagne"
               >
                 📋
               </button>
@@ -254,10 +253,9 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           )}
         </div>
 
-        {/* Rigo 3: Stelline + Caratteristica 1 + Caratteristica 2 */}
+        {/* Rigo 3: Stelline + Caratteristiche */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-          {/* Stelline */}
-          <div style={{ display: 'flex', gap: '2px', fontSize: '15px', lineHeight: 1 }}>
+          <div style={{ display: 'flex', gap: '1px', fontSize: '14px', lineHeight: 1 }}>
             {[1, 2, 3, 4, 5].map(star => (
               <button
                 key={star}
@@ -276,8 +274,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             ))}
           </div>
 
-          {/* Caratteristiche 1 e 2 */}
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             <select
               value={slot.statId}
               onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
@@ -286,10 +283,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                 color: 'var(--text-primary)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '6px',
-                padding: '3px 6px',
-                fontSize: '10px',
+                padding: '2px 4px',
+                fontSize: '9px',
                 fontWeight: 'bold',
-                height: '24px'
+                height: '22px'
               }}
             >
               {stats.map(s => (
@@ -305,9 +302,9 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                 color: 'var(--text-primary)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '6px',
-                padding: '3px 6px',
-                fontSize: '10px',
-                height: '24px'
+                padding: '2px 4px',
+                fontSize: '9px',
+                height: '22px'
               }}
             >
               <option value="">+ Sec (nessuno)</option>
@@ -360,76 +357,56 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-          <div style={{ fontSize: '20px', marginBottom: '0px' }}>🎲</div>
-          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-            È IL TUO TURNO!
+        <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <span>🎲</span> È IL TUO TURNO!
           </h2>
           <p style={{ margin: '1px 0 0 0', fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             Pianifica le tue azioni per oggi
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
-          {renderSlot('action', 'Es: Completare il report')}
-          {renderSlot('bonus', 'Es: Chiamare il medico')}
-          {renderSlot('movement', 'Es: Passeggiata 30min')}
-          {renderSlot('reaction', 'Es: Rispondere a 3 email')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '10px' }}>
+          {renderSlot('action', 'Azione')}
+          {renderSlot('bonus', 'Azione Bonus')}
+          {renderSlot('movement', 'Movimento')}
+          {renderSlot('reaction', 'Reazione')}
         </div>
 
         {showResult ? (
-          <div style={{ textAlign: 'center', padding: '8px 0' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+          <div style={{ textAlign: 'center', padding: '6px 0' }}>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               {diceResult}
             </div>
-            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e' }}>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#22c55e' }}>
               + {diceResult * 10}% XP Bonus! 🎉
             </div>
           </div>
         ) : isRolling ? (
-          <div style={{ textAlign: 'center', padding: '12px 0' }}>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {diceResult}
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                padding: '9px',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--glass-border)',
-                color: 'var(--text-primary)',
-                fontWeight: 'bold',
-                fontSize: '11px',
-                borderRadius: '10px',
-                cursor: 'pointer'
-              }}
-            >
-              Salta
-            </button>
-            <button
-              type="button"
-              onClick={handleRollDice}
-              style={{
-                flex: 1.8,
-                padding: '9px',
-                fontWeight: 'bold',
-                fontSize: '11px',
-                borderRadius: '10px',
-                border: 'none',
-                cursor: 'pointer',
-                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
-                color: '#ffffff',
-                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
-              }}
-            >
-              🎲 Lancia un D10!
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleRollDice}
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontWeight: 'bold',
+              fontSize: '12px',
+              borderRadius: '12px',
+              border: 'none',
+              cursor: 'pointer',
+              background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
+              color: '#ffffff',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+            }}
+          >
+            🎲 Lancia un D10!
+          </button>
         )}
       </div>
     </div>
