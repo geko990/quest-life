@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getCumulativeXpForLevel, forceUpdateApp } from '../utils/helpers';
+import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts } from '../utils/helpers';
 import { TITLES } from '../utils/constants';
 
 export default function Header({
@@ -8,6 +8,7 @@ export default function Header({
   stats,
   habits = [],
   oneshots = [],
+  quests = [],
   completionLog,
   xpLog,
   settings,
@@ -351,30 +352,49 @@ export default function Header({
               </div>
 
               {/* Medal Progress */}
-              <div style={{ marginTop: '15px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 'bold' }}>
-                  MEDAGLIE MENSILI ({getMonthName(player.monthlyChallenge?.currentMonth)})
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  🎯 Solo Task Singoli, Milestones e Campagne
-                </div>
-                <div className="popup-xp-bar">
-                  <div
-                    className="popup-xp-fill"
-                    id="monthlyProgressFill"
-                    style={{
-                      width: `${Math.min(100, ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100)}%`,
-                      background: 'var(--accent-gold, #f59e0b)'
-                    }}
-                  ></div>
-                </div>
-                <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span id="monthlyLabel">{getMonthName(player.monthlyChallenge?.currentMonth)}</span>
-                  <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-                    {player.monthlyChallenge?.points || 0}/{player.monthlyChallenge?.target || 50}
-                  </span>
-                </div>
-              </div>
+              {(() => {
+                const currentMonthId = player.monthlyChallenge?.currentMonth;
+                const starCounts = getMonthlyStarCounts(currentMonthId, completionLog, oneshots, quests, xpLog);
+                return (
+                  <div style={{ marginTop: '15px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 'bold' }}>
+                      MEDAGLIE MENSILI ({getMonthName(currentMonthId)})
+                    </div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                      🎯 Task Singoli, Milestones e Campagne
+                    </div>
+                    <div className="popup-xp-bar">
+                      <div
+                        className="popup-xp-fill"
+                        id="monthlyProgressFill"
+                        style={{
+                          width: `${Math.min(100, ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100)}%`,
+                          background: 'var(--accent-gold, #f59e0b)'
+                        }}
+                      ></div>
+                    </div>
+                    <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span id="monthlyLabel">{getMonthName(currentMonthId)}</span>
+                      <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                        {player.monthlyChallenge?.points || 0}/{player.monthlyChallenge?.target || 50} Task
+                      </span>
+                    </div>
+
+                    {/* Pyramid Progress Status */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px', marginTop: '8px', fontSize: '10px', background: 'var(--bg-secondary)', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                      <span style={{ color: starCounts[3] >= 5 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[3] >= 5 ? 'bold' : 'normal' }} title="Almeno 5 task da 3 stelle">
+                        3★: {starCounts[3] || 0}/5 {starCounts[3] >= 5 ? '✓' : ''}
+                      </span>
+                      <span style={{ color: starCounts[4] >= 3 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[4] >= 3 ? 'bold' : 'normal' }} title="Almeno 3 task da 4 stelle">
+                        4★: {starCounts[4] || 0}/3 {starCounts[4] >= 3 ? '✓' : ''}
+                      </span>
+                      <span style={{ color: starCounts[5] >= 2 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[5] >= 2 ? 'bold' : 'normal' }} title="Almeno 2 task da 5 stelle">
+                        5★: {starCounts[5] || 0}/2 {starCounts[5] >= 2 ? '✓' : ''}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Medals Showcase Grid */}

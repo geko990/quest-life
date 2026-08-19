@@ -3,6 +3,7 @@ import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Modal from './components/Modal';
 import DailyPlannerModal from './components/DailyPlannerModal';
+import MedalCelebrationModal from './components/MedalCelebrationModal';
 import HomeTab from './tabs/HomeTab';
 import HabitsTab from './tabs/HabitsTab';
 import MissionsTab from './tabs/MissionsTab';
@@ -11,7 +12,7 @@ import SettingsTab from './tabs/SettingsTab';
 
 import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
-import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp } from './utils/helpers';
+import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp, getMonthlyStarCounts, isMonthlyPyramidMet } from './utils/helpers';
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
 
@@ -123,6 +124,7 @@ export default function App() {
   const [showPlannerModal, setShowPlannerModal] = useState(false);
   const [showGlobalWorkoutsLog, setShowGlobalWorkoutsLog] = useState(false);
   const [showGlobalMealsLog, setShowGlobalMealsLog] = useState(false);
+  const [unlockedMedalCelebration, setUnlockedMedalCelebration] = useState(null);
 
   const handleOpenWorkoutsLog = () => {
     setShowGlobalWorkoutsLog(true);
@@ -297,7 +299,7 @@ export default function App() {
   };
 
   // 7. XP Reward Handler
-  const handleRewardXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null) => {
+  const handleRewardXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null, itemStars = 1) => {
     if (!amount || amount <= 0) return;
     const todayStr = getGameDate(settings.dayStartTime);
     const effectiveDate = logDate || todayStr;
@@ -331,10 +333,10 @@ export default function App() {
 
     const titleToSave = (itemTitle && itemTitle.trim() !== '') ? itemTitle.trim() : '';
 
-    // Log XP change with effectiveDate
+    // Log XP change with effectiveDate and stars rating
     setXpLog(prev => [
       ...prev,
-      { date: effectiveDate, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave }
+      { date: effectiveDate, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave, stars: itemStars, isMonthlyTask: countsForMonthlyMedal }
     ]);
 
     setPlayer(prev => {
@@ -342,18 +344,41 @@ export default function App() {
       const target = prev.monthlyChallenge?.target || 50;
       const medals = [...(prev.monthlyChallenge?.medals || [])];
 
-      // Check monthly medal milestone
-      if (nextMonthlyPoints >= target && (prev.monthlyChallenge?.points || 0) < target) {
-        const monthId = getMonthIdentifier(effectiveDate);
-        const medalId = monthId;
-        if (!medals.some(m => m.id === medalId)) {
-          medals.push({
-            id: medalId,
-            name: `Medaglia di ${new Date().toLocaleString('it-IT', { month: 'long' })}`,
-            icon: '🏅',
-            earnedDate: effectiveDate
-          });
-          alert(`🏆 MEDAGLIA GUADAGNATA! Hai completato la sfida mensile!`);
+      const monthId = getMonthIdentifier(effectiveDate);
+      const starCounts = getMonthlyStarCounts(monthId, completionLog, oneshots, quests, xpLog);
+      const pyramidMet = isMonthlyPyramidMet(starCounts);
+
+      // Check monthly medal milestone (50 points AND 5x 3*, 3x 4*, 2x 5*)
+      if (nextMonthlyPoints >= target && pyramidMet && !medals.some(m => m.id === monthId)) {
+        const monthNames = [
+          "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+          "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+        ];
+        const [yr, moStr] = monthId.split('-');
+        const monthName = monthNames[parseInt(moStr) - 1] || 'Mese';
+
+        const monthLogs = (xpLog || []).filter(l => l.date && l.date.startsWith(monthId) && l.amount > 0);
+        const statMap = {};
+        monthLogs.forEach(l => { if (l.statId) statMap[l.statId] = (statMap[l.statId] || 0) + l.amount; });
+        const topStatId = Object.entries(statMap).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const topStatObj = (stats || []).find(s => s.id === topStatId);
+
+        const newMedal = {
+          id: monthId,
+          name: `Medaglia di ${monthName} ${yr}`,
+          description: "Obiettivo mensile e Piramide delle Difficoltà completati!",
+          icon: topStatObj?.icon || '🏅',
+          topStatName: topStatObj?.name || 'Varie',
+          topStatIcon: topStatObj?.icon || '🏆',
+          earnedDate: effectiveDate,
+          totalCompleted: nextMonthlyPoints
+        };
+
+        medals.push(newMedal);
+        setUnlockedMedalCelebration({ medal: newMedal, starCounts });
+
+        if (settings.soundEnabled) {
+          playLevelUpSound();
         }
       }
 
@@ -584,10 +609,11 @@ export default function App() {
       xp = Math.round(xp * bonusMultiplier);
     }
 
+    const osDifficulty = os.difficulty || os.stars || 1;
     if (willBeCompleted) {
-      handleRewardXp(os.primaryTarget, xp, true, os.name, targetDate);
+      handleRewardXp(os.primaryTarget, xp, true, os.name, targetDate, osDifficulty);
       if (os.secondaryTarget) {
-        handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name, targetDate);
+        handleRewardXp(os.secondaryTarget, Math.round(xp * 0.33), false, os.name, targetDate, osDifficulty);
       }
     } else {
       // Unchecking task: deduct XP & remove xpLog entry!
@@ -599,6 +625,7 @@ export default function App() {
   };
 
   const handleToggleSubquest = (questId, subId) => {
+    const todayStr = getGameDate(settings.dayStartTime);
     setQuests(prevQuests =>
       prevQuests.map(q => {
         if (q.id !== questId) return q;
@@ -606,6 +633,7 @@ export default function App() {
         const subItem = q.subquests.find(sq => sq.id === subId);
         const subWasDone = subItem?.completed;
         const subWillBeDone = !subWasDone;
+        const questDifficulty = q.difficulty || q.stars || 1;
 
         const updatedSubs = q.subquests.map(sq =>
           sq.id === subId ? { ...sq, completed: subWillBeDone } : sq
@@ -613,10 +641,24 @@ export default function App() {
 
         // Milestone reward/deduct: awards 10 XP + 1 monthly medal point
         if (subWillBeDone) {
-          handleRewardXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone');
+          handleRewardXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone', todayStr, questDifficulty);
         } else {
-          handleDeductXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone');
+          handleDeductXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone', todayStr);
         }
+
+        // Record subquest in completionLog
+        setCompletionLog(prev => {
+          const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
+          const list = [...(dayLog.subquests || [])];
+          const key = `${questId}:${subId}`;
+          const idx = list.indexOf(key);
+          if (subWillBeDone && idx === -1) {
+            list.push(key);
+          } else if (!subWillBeDone && idx !== -1) {
+            list.splice(idx, 1);
+          }
+          return { ...prev, [todayStr]: { ...dayLog, subquests: list } };
+        });
 
         // Check if all subquests are completed now
         const allDone = updatedSubs.length > 0 && updatedSubs.every(sq => sq.completed);
@@ -624,15 +666,22 @@ export default function App() {
 
         if (allDone && !wasDone) {
           // Reward massive Campaign Completion XP! (difficulty * 35 XP) + 1 monthly medal point
-          const xpReward = q.difficulty * 35;
-          handleRewardXp(q.primaryTarget, xpReward, true, q.name);
+          const xpReward = questDifficulty * 35;
+          handleRewardXp(q.primaryTarget, xpReward, true, q.name, todayStr, questDifficulty);
           if (q.secondaryTarget) {
-            handleRewardXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
+            handleRewardXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name, todayStr, questDifficulty);
           }
+          // Record quest completion in completionLog
+          setCompletionLog(prev => {
+            const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
+            const list = [...(dayLog.quests || [])];
+            if (!list.includes(questId)) list.push(questId);
+            return { ...prev, [todayStr]: { ...dayLog, quests: list } };
+          });
           alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP!`);
         } else if (!allDone && wasDone) {
           // Deduct Campaign Completion XP if uncompleted
-          const xpReward = q.difficulty * 35;
+          const xpReward = questDifficulty * 35;
           handleDeductXp(q.primaryTarget, xpReward, true, q.name);
           if (q.secondaryTarget) {
             handleDeductXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
@@ -1277,6 +1326,7 @@ export default function App() {
           stats={stats}
           habits={habits}
           oneshots={oneshots}
+          quests={quests}
           completionLog={completionLog}
           xpLog={xpLog}
           settings={settings}
@@ -1424,6 +1474,15 @@ export default function App() {
         oneshots={oneshots}
         quests={quests}
       />
+
+      {/* MONTHLY MEDAL CELEBRATION POPUP */}
+      {unlockedMedalCelebration && (
+        <MedalCelebrationModal
+          medal={unlockedMedalCelebration.medal}
+          starCounts={unlockedMedalCelebration.starCounts}
+          onClose={() => setUnlockedMedalCelebration(null)}
+        />
+      )}
     </div>
   );
 }
