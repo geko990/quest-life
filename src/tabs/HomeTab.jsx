@@ -549,9 +549,9 @@ export default function HomeTab({
 
         {cardMode === 'pomodoro' ? (
           /* IN-CARD POMODORO WORKSTATION VIEW */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '2px 0', flex: 1, justifySelf: 'stretch' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0', flex: 1, justifyContent: 'center' }}>
             {/* Active Focused Task Selector (Clean Text, No Target Emoji) */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'var(--bg-secondary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, flex: 1 }}>
                 <select
                   value={selectedTaskId}
@@ -592,7 +592,7 @@ export default function HomeTab({
             </div>
 
             {/* Countdown Display & Controls (Tap digits to edit minutes) */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
               <div
                 onClick={() => {
                   if (safePomodoro.status === 'running') return;
@@ -615,7 +615,7 @@ export default function HomeTab({
                 style={{ cursor: safePomodoro.status === 'running' ? 'default' : 'pointer' }}
                 title={safePomodoro.status === 'running' ? '' : 'Tocca per modificare i minuti'}
               >
-                <div style={{ fontSize: '28px', fontWeight: '800', fontFamily: 'monospace', color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)', lineHeight: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '26px', fontWeight: '800', fontFamily: 'monospace', color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)', lineHeight: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span>{formatPomoTime(pomoSecs)}</span>
                   {safePomodoro.status !== 'running' && (
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>✏️</span>
@@ -629,7 +629,7 @@ export default function HomeTab({
                   <button
                     type="button"
                     onClick={startPomodoro}
-                    style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}
+                    style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}
                   >
                     ▶️ Avvia
                   </button>
@@ -639,14 +639,14 @@ export default function HomeTab({
                     <button
                       type="button"
                       onClick={pausePomodoro}
-                      style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                      style={{ padding: '7px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
                     >
                       ⏸️ Pausa
                     </button>
                     <button
                       type="button"
                       onClick={resetPomodoro}
-                      style={{ padding: '8px 10px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                      style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
                     >
                       ⏹️
                     </button>
@@ -657,25 +657,20 @@ export default function HomeTab({
                     <button
                       type="button"
                       onClick={startPomodoro}
-                      style={{ padding: '8px 12px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                      style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
                     >
                       ▶️ Riprendi
                     </button>
                     <button
                       type="button"
                       onClick={resetPomodoro}
-                      style={{ padding: '8px 10px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                      style={{ padding: '7px 10px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
                     >
                       ⏹️
                     </button>
                   </>
                 )}
               </div>
-            </div>
-
-            {/* Footer Row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-secondary)', padding: '0 2px' }}>
-              <span>Sessioni di oggi: <b>{safePomodoro.sessionsToday || 0}</b></span>
             </div>
           </div>
         ) : (
