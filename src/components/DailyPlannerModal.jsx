@@ -389,24 +389,29 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={handleRollDice}
-            style={{
-              width: '100%',
-              padding: '10px',
-              fontWeight: 'bold',
-              fontSize: '12px',
-              borderRadius: '12px',
-              border: 'none',
-              cursor: 'pointer',
-              background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
-              color: '#ffffff',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
-            }}
-          >
-            🎲 Lancia un D10!
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+            <button
+              type="button"
+              onClick={handleRollDice}
+              style={{
+                padding: '10px 28px',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                borderRadius: '20px',
+                border: 'none',
+                cursor: 'pointer',
+                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
+                color: '#ffffff',
+                boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              🎲 Lancia un D10!
+            </button>
+          </div>
         )}
       </div>
     </div>
