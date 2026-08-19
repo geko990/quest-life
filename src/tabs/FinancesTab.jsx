@@ -360,26 +360,6 @@ export default function FinancesTab({
 
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
-            onClick={() => setShowRecurringModal(true)}
-            style={{
-              background: activeRecurringCount > 0 ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-secondary)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '10px',
-              padding: '6px 9px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              color: activeRecurringCount > 0 ? '#3b82f6' : 'var(--text-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-            title="Gestisci Pagamenti Ricorrenti (Stipendio, Affitto...)"
-          >
-            🔄 {activeRecurringCount > 0 ? activeRecurringCount : ''}
-          </button>
-
-          <button
             onClick={handleTogglePrivacy}
             style={{
               background: 'var(--bg-secondary)',
@@ -432,7 +412,26 @@ export default function FinancesTab({
           <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             💳 Conto Base
           </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <button
+              onClick={() => setShowRecurringModal(true)}
+              style={{
+                background: activeRecurringCount > 0 ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: activeRecurringCount > 0 ? '#60a5fa' : '#cbd5e1',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Gestisci Pagamenti ed Entrate Ricorrenti (Stipendio, Affitto...)"
+            >
+              <span>🔄</span> {activeRecurringCount > 0 ? activeRecurringCount : ''}
+            </button>
             <button
               onClick={() => handleOpenAddTxModal('expense')}
               style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
