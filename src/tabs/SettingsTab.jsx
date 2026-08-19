@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
-import { forceUpdateApp, checkAppUpdate } from '../utils/helpers';
+import { forceUpdateApp } from '../utils/helpers';
 
 export default function SettingsTab({
   settings = {},
@@ -73,32 +73,65 @@ export default function SettingsTab({
       });
     }
   });
-  const safePresetDays = Array.isArray(safeSettings.presetDays) ? safeSettings.presetDays : [
+
+  // Default Routine Models for Day Routine Models
+  const safePresetDays = Array.isArray(safeSettings.presetDays) && safeSettings.presetDays.length > 0 ? safeSettings.presetDays : [
     {
       id: 'preset_work',
       name: 'Giorno Lavorativo',
       emoji: '💼',
-      description: 'Routine per giornate di lavoro concentrato',
-      slots: {
-        action: { name: 'Completare le task prioritarie', stars: 3, statId: 'int' },
-        bonus: { name: 'Pianificare riunioni e scadenze', stars: 2, statId: 'wis' },
-        movement: { name: 'Passeggiata rigenerante 20 min', stars: 2, statId: 'str' },
-        reaction: { name: 'Rispondere a email e messaggi', stars: 1, statId: 'int' }
-      }
+      description: 'Sequenza guidata per la giornata lavorativa',
+      steps: [
+        { id: '1', time: '07:00', title: '🌅 Sveglia, Idratazione & Stretching' },
+        { id: '2', time: '08:30', title: '💻 Deep Work & Task Prioritarie' },
+        { id: '3', time: '12:30', title: '🥗 Pranzo Leggero & Camminata 15m' },
+        { id: '4', time: '14:00', title: '📧 Gestione Messaggi & Meeting' },
+        { id: '5', time: '22:00', title: '📖 Lettura & Prep Routine Notturna' }
+      ]
+    },
+    {
+      id: 'preset_rest',
+      name: 'Giorno di Riposo',
+      emoji: '🌿',
+      description: 'Routine per ricaricare le energie e rilassarsi',
+      steps: [
+        { id: '1', time: '08:30', title: '☕ Sveglia Calma & Colazione' },
+        { id: '2', time: '10:30', title: '🚶 Camminata nella Natura o Hobby' },
+        { id: '3', time: '13:00', title: '🍕 Pranzo Conviviale & Svago' },
+        { id: '4', time: '16:00', title: '🎮 Tempo Libero & Relax Total' },
+        { id: '5', time: '22:30', title: '🛋️ Routine Serale Decompressiva' }
+      ]
     },
     {
       id: 'preset_fit',
       name: 'Giorno Allenamento',
       emoji: '🏋️',
-      description: 'Routine focalizzata su fitness e recupero',
-      slots: {
-        action: { name: 'Sessione di Allenamento Completa', stars: 4, statId: 'str' },
-        bonus: { name: 'Preparazione pasti bilanciati', stars: 2, statId: 'con' },
-        movement: { name: '10.000 passi quotidiani', stars: 3, statId: 'str' },
-        reaction: { name: 'Stretching e mobilizzazione', stars: 1, statId: 'dex' }
-      }
+      description: 'Routine incentrata su movimento, nutrizione e recupero',
+      steps: [
+        { id: '1', time: '07:00', title: '💧 Idratazione & Colazione Energetica' },
+        { id: '2', time: '10:00', title: '🏋️ Sessione Allenamento Completa' },
+        { id: '3', time: '13:00', title: '🍗 Pasto Post-Workout Bilanciato' },
+        { id: '4', time: '17:00', title: '🚶 10.000 Passi & Stretching Mobility' },
+        { id: '5', time: '22:00', title: '💤 Sonno Rigenerante' }
+      ]
     }
   ];
+
+  // Helper to safely extract steps list from preset
+  const getPresetSteps = (preset) => {
+    if (Array.isArray(preset.steps) && preset.steps.length > 0) {
+      return preset.steps;
+    }
+    if (preset.slots) {
+      const list = [];
+      if (preset.slots.action?.name) list.push({ id: 's1', time: '08:00', title: preset.slots.action.name });
+      if (preset.slots.bonus?.name) list.push({ id: 's2', time: '11:00', title: preset.slots.bonus.name });
+      if (preset.slots.movement?.name) list.push({ id: 's3', time: '17:00', title: preset.slots.movement.name });
+      if (preset.slots.reaction?.name) list.push({ id: 's4', time: '22:00', title: preset.slots.reaction.name });
+      return list;
+    }
+    return [];
+  };
 
   const toggleGroup = (groupName) => {
     setExpandedGroup(expandedGroup === groupName ? null : groupName);
@@ -118,18 +151,22 @@ export default function SettingsTab({
       name: '',
       emoji: '📅',
       description: '',
-      slots: {
-        action: { name: '', stars: 3, statId: 'int' },
-        bonus: { name: '', stars: 2, statId: 'wis' },
-        movement: { name: '', stars: 2, statId: 'str' },
-        reaction: { name: '', stars: 1, statId: 'dex' }
-      }
+      steps: [
+        { id: 'step_1', time: '07:00', title: '🌅 Sveglia & Idratazione' },
+        { id: 'step_2', time: '08:30', title: '💻 Focus & Task Principali' },
+        { id: 'step_3', time: '13:00', title: '🥗 Pranzo & Relax' },
+        { id: 'step_4', time: '22:00', title: '📖 Routine Notturna' }
+      ]
     });
     setShowPresetModal(true);
   };
 
   const handleEditPreset = (preset) => {
-    setEditingPreset(JSON.parse(JSON.stringify(preset)));
+    const presetCopy = JSON.parse(JSON.stringify(preset));
+    if (!Array.isArray(presetCopy.steps) || presetCopy.steps.length === 0) {
+      presetCopy.steps = getPresetSteps(presetCopy);
+    }
+    setEditingPreset(presetCopy);
     setShowPresetModal(true);
   };
 
@@ -151,7 +188,7 @@ export default function SettingsTab({
   };
 
   const handleDeletePreset = (id) => {
-    if (window.confirm('Vuoi davvero eliminare questa Giornata Tipo?')) {
+    if (window.confirm('Vuoi davvero eliminare questo modello di giornata?')) {
       const updated = safePresetDays.filter(p => p && p.id !== id);
       if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
     }
@@ -308,14 +345,14 @@ export default function SettingsTab({
           )}
         </div>
 
-        {/* Group 2: Giornate Tipo (Routine Preimpostate) */}
+        {/* Group 2: Giornate Tipo (Modelli di Routine) */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('presetDays')}
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              🗓️ Giornate Tipo (Routine Preimpostate)
+              🗓️ Giornate Tipo (Modelli di Routine)
             </h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'presetDays' ? '▲' : '▼'}
@@ -326,7 +363,7 @@ export default function SettingsTab({
             <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                  Scorri a destra ↔️ per esplorare le tue routine:
+                  Sequenze di riferimento (scorri a destra ↔️):
                 </span>
                 <button
                   onClick={handleOpenNewPreset}
@@ -346,7 +383,7 @@ export default function SettingsTab({
                 </button>
               </div>
 
-              {/* Horizontal Swipeable Carousel Container */}
+              {/* Horizontal Swipeable Cards ("Tessere Laterali") */}
               <div
                 style={{
                   display: 'flex',
@@ -359,97 +396,91 @@ export default function SettingsTab({
               >
                 {safePresetDays.length === 0 ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontStyle: 'italic', width: '100%' }}>
-                    Nessuna Giornata Tipo creata. Tocca ➕ Nuova Routine per aggiungere la tua prima routine!
+                    Nessun modello salvato. Tocca ➕ Nuova Routine per aggiungere una sequenza!
                   </div>
                 ) : (
-                  safePresetDays.map((preset) => (
-                    <div
-                      key={preset.id}
-                      style={{
-                        flexShrink: 0,
-                        width: '260px',
-                        scrollSnapAlign: 'start',
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--glass-border)',
-                        borderRadius: '16px',
-                        padding: '14px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        gap: '10px'
-                      }}
-                    >
-                      {/* Card Content */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{preset.emoji || '📅'}</span> {preset.name}
-                          </h4>
-                        </div>
-                        {preset.description && (
-                          <p style={{ margin: '0 0 8px 0', fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.3' }}>
-                            {preset.description}
-                          </p>
-                        )}
+                  safePresetDays.map((preset) => {
+                    const steps = getPresetSteps(preset);
 
-                        {/* Routine Slots List */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '6px' }}>
-                          {['action', 'bonus', 'movement', 'reaction'].map((slotKey) => {
-                            const slot = preset.slots?.[slotKey];
-                            const labels = { action: '🎯 Azione', bonus: '⚡ Bonus', movement: '🚶 Movimento', reaction: '🛡️ Reazione' };
-                            if (!slot || !slot.name) return null;
-                            return (
-                              <div key={slotKey} style={{ background: 'var(--bg-card)', padding: '5px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', fontSize: '10px' }}>
-                                <div style={{ color: 'var(--text-secondary)', fontWeight: 'bold', fontSize: '8px' }}>{labels[slotKey]}</div>
-                                <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {slot.name}
-                                </div>
+                    return (
+                      <div
+                        key={preset.id}
+                        style={{
+                          flexShrink: 0,
+                          width: '260px',
+                          scrollSnapAlign: 'start',
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--glass-border)',
+                          borderRadius: '16px',
+                          padding: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          gap: '10px'
+                        }}
+                      >
+                        {/* Card Header & Description */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{preset.emoji || '📅'}</span> {preset.name}
+                            </h4>
+                          </div>
+                          {preset.description && (
+                            <p style={{ margin: '0 0 10px 0', fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.3' }}>
+                              {preset.description}
+                            </p>
+                          )}
+
+                          {/* Sequential Timeline Steps */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {steps.map((st, i) => (
+                              <div
+                                key={st.id || i}
+                                style={{
+                                  background: 'var(--bg-card)',
+                                  padding: '6px 8px',
+                                  borderRadius: '8px',
+                                  border: '1px solid var(--glass-border)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  fontSize: '10px'
+                                }}
+                              >
+                                {st.time && (
+                                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'var(--bg-primary)', padding: '2px 5px', borderRadius: '4px', flexShrink: 0 }}>
+                                    {st.time}
+                                  </span>
+                                )}
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {st.title}
+                                </span>
                               </div>
-                            );
-                          })}
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Card Actions */}
+                        <div style={{ display: 'flex', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                          <button
+                            onClick={() => handleEditPreset(preset)}
+                            style={{ flex: 1, padding: '7px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                            title="Modifica Routine"
+                          >
+                            ✏️ Modifica
+                          </button>
+                          <button
+                            onClick={() => handleDeletePreset(preset.id)}
+                            style={{ padding: '7px 10px', borderRadius: '8px', fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}
+                            title="Elimina"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
-
-                      {/* Card Actions */}
-                      <div style={{ display: 'flex', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                        <button
-                          onClick={() => onApplyPresetDay && onApplyPresetDay(preset)}
-                          style={{
-                            flex: 1,
-                            padding: '8px',
-                            borderRadius: '8px',
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            background: 'var(--accent-primary)',
-                            color: '#ffffff',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px'
-                          }}
-                          title="Applica questa routine a oggi"
-                        >
-                          ⚡ Applica Oggi
-                        </button>
-                        <button
-                          onClick={() => handleEditPreset(preset)}
-                          style={{ padding: '8px 10px', borderRadius: '8px', fontSize: '11px', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
-                          title="Modifica"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => handleDeletePreset(preset.id)}
-                          style={{ padding: '8px 10px', borderRadius: '8px', fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}
-                          title="Elimina"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -503,6 +534,7 @@ export default function SettingsTab({
                   ))}
                 </div>
               </div>
+
               {/* Accent Color Selection (Colore Dettagli) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Colore Dettagli (Accent)</label>
@@ -563,58 +595,14 @@ export default function SettingsTab({
           )}
         </div>
 
-        {/* Group 4: File Database Local */}
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div
-            onClick={() => toggleGroup('storage')}
-            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              📁 Sync File Locale (PC / Chrome)
-            </h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'storage' ? '▲' : '▼'}
-            </span>
-          </div>
-
-          {expandedGroup === 'storage' && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                Collega un file `.json` locale per salvare le modifiche direttamente sul tuo disco rigido ad ogni azione.
-              </p>
-              {fileHandle ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '10px 12px', borderRadius: '8px' }}>
-                  <div style={{ fontWeight: 'bold', color: '#22c55e', fontSize: '11px' }}>
-                    ✓ File Locale Collegato: {fileHandle.name}
-                  </div>
-                  <button
-                    onClick={onReconnectDatabase}
-                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer' }}
-                  >
-                    🔄 Riconnetti Autorizzazioni File
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={onLinkDatabase}
-                  className="btn-primary"
-                  style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
-                >
-                  🔗 Collega File Database su Disco
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Group 5: Data Management & Backup */}
+        {/* Unified Group: Sync & Backup Dati */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('data')}
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              💾 Gestione Dati & Backup
+              💾 Sync & Backup Dati
             </h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'data' ? '▲' : '▼'}
@@ -622,43 +610,83 @@ export default function SettingsTab({
           </div>
 
           {expandedGroup === 'data' && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                onClick={onExport}
-                className="btn-primary"
-                style={{ padding: '10px 16px', fontSize: '12px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                📤 Esporta Backup JSON
-              </button>
-              <button
-                onClick={onImport}
-                style={{ padding: '10px 16px', fontSize: '12px', fontWeight: 'bold', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                📥 Importa Backup JSON
-              </button>
-              <button
-                onClick={onFixData}
-                style={{ padding: '8px 12px', fontSize: '11px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
-              >
-                🔧 Ripara Integrità Database
-              </button>
-              <button
-                onClick={onRepairStreaks}
-                style={{ padding: '8px 12px', fontSize: '11px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
-              >
-                🔥 Ricalcola Serie Attive
-              </button>
-              <button
-                onClick={onReset}
-                style={{ padding: '8px 12px', fontSize: '11px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', cursor: 'pointer', marginTop: '6px' }}
-              >
-                ⚠️ Azzera Tutti i Dati
-              </button>
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Section 1: File Database Sync */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>📁 Sync File Locale (PC / Chrome)</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                  Collega un file `.json` locale per salvare le modifiche direttamente sul tuo disco rigido ad ogni azione.
+                </p>
+                {fileHandle ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '8px 10px', borderRadius: '8px' }}>
+                    <div style={{ fontWeight: 'bold', color: '#22c55e', fontSize: '10px' }}>
+                      ✓ File Collegato: {fileHandle.name}
+                    </div>
+                    <button
+                      onClick={onReconnectDatabase}
+                      style={{ padding: '5px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer' }}
+                    >
+                      🔄 Riconnetti Autorizzazioni File
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={onLinkDatabase}
+                    className="btn-primary"
+                    style={{ padding: '8px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                  >
+                    🔗 Collega File Database su Disco
+                  </button>
+                )}
+              </div>
+
+              {/* Section 2: Backup & Export/Import */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <button
+                    onClick={onExport}
+                    className="btn-primary"
+                    style={{ padding: '9px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    📤 Esporta Backup
+                  </button>
+                  <button
+                    onClick={onImport}
+                    style={{ padding: '9px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    📥 Importa Backup
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <button
+                    onClick={onFixData}
+                    style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  >
+                    🔧 Ripara Integrità
+                  </button>
+                  <button
+                    onClick={onRepairStreaks}
+                    style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                  >
+                    🔥 Ricalcola Serie
+                  </button>
+                </div>
+
+                <button
+                  onClick={onReset}
+                  style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', cursor: 'pointer', marginTop: '4px' }}
+                >
+                  ⚠️ Azzera Tutti i Dati
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Group 6: Storico Imprese Recenti (Last 15 items) */}
+        {/* Group 5: Storico Imprese Recenti (Last 15 items) */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
             onClick={() => toggleGroup('history')}
@@ -748,7 +776,7 @@ export default function SettingsTab({
         </div>
       </div>
 
-      {/* CREATE / EDIT PRESET DAY MODAL */}
+      {/* CREATE / EDIT DAY ROUTINE MODEL MODAL */}
       {showPresetModal && editingPreset && (
         <div
           onClick={() => { setShowPresetModal(false); setEditingPreset(null); }}
@@ -761,7 +789,7 @@ export default function SettingsTab({
           >
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🗓️</span> {editingPreset.id ? 'Modifica Giornata Tipo' : 'Crea Giornata Tipo'}
+                <span>🗓️</span> {editingPreset.id ? 'Modifica Modello di Giornata' : 'Crea Modello di Giornata'}
               </h3>
             </div>
 
@@ -777,7 +805,7 @@ export default function SettingsTab({
                 />
                 <input
                   type="text"
-                  placeholder="Nome Giornata Tipo (es. 🏋️ Giorno Allenamento)"
+                  placeholder="Nome Modello (es. 💼 Giorno Lavorativo)"
                   value={editingPreset.name}
                   onChange={(e) => setEditingPreset(prev => ({ ...prev, name: e.target.value }))}
                   style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
@@ -787,53 +815,82 @@ export default function SettingsTab({
               {/* Description */}
               <input
                 type="text"
-                placeholder="Descrizione opzionale (es. Routine per i giorni di palestra)"
+                placeholder="Descrizione opzionale (es. Sequenza per i giorni di lavoro)"
                 value={editingPreset.description || ''}
                 onChange={(e) => setEditingPreset(prev => ({ ...prev, description: e.target.value }))}
                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '11px' }}
               />
 
-              {/* 4 Action Slots */}
-              <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>
-                Routine delle 4 Attività del Giorno:
+              {/* Sequential Steps List */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                  Sequenza Oraria delle Azioni:
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentSteps = editingPreset.steps || [];
+                    const newStep = { id: 'step_' + Date.now(), time: '12:00', title: '' };
+                    setEditingPreset(prev => ({ ...prev, steps: [...currentSteps, newStep] }));
+                  }}
+                  style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  ➕ Aggiungi Azione
+                </button>
               </div>
 
-              {[
-                { key: 'action', label: '🎯 Azione (Principale)' },
-                { key: 'bonus', label: '⚡ Bonus (Strategico)' },
-                { key: 'movement', label: '🚶 Movimento (Fisico)' },
-                { key: 'reaction', label: '🛡️ Reazione (Abitudine / Manutenzione)' }
-              ].map(({ key, label }) => {
-                const slot = editingPreset.slots?.[key] || { name: '', stars: 2, statId: 'int' };
-                return (
-                  <div key={key} style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{label}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {(editingPreset.steps || []).map((step, idx) => (
+                  <div key={step.id || idx} style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input
                       type="text"
-                      placeholder={`Nome ${label.split(' ')[1]}...`}
-                      value={slot.name || ''}
+                      placeholder="08:00"
+                      value={step.time || ''}
                       onChange={(e) => {
                         const val = e.target.value;
                         setEditingPreset(prev => ({
                           ...prev,
-                          slots: {
-                            ...prev.slots,
-                            [key]: { ...prev.slots[key], name: val }
-                          }
+                          steps: prev.steps.map((s, i) => i === idx ? { ...s, time: val } : s)
                         }));
                       }}
-                      style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '6px 10px', color: 'var(--text-primary)', fontSize: '11px' }}
+                      style={{ width: '55px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '6px', color: 'var(--text-primary)', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}
                     />
+                    <input
+                      type="text"
+                      placeholder="Descrizione azione (es. Sveglia & Idratazione)..."
+                      value={step.title || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditingPreset(prev => ({
+                          ...prev,
+                          steps: prev.steps.map((s, i) => i === idx ? { ...s, title: val } : s)
+                        }));
+                      }}
+                      style={{ flex: 1, background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '6px 10px', color: 'var(--text-primary)', fontSize: '11px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingPreset(prev => ({
+                          ...prev,
+                          steps: prev.steps.filter((_, i) => i !== idx)
+                        }));
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', padding: '2px' }}
+                      title="Elimina azione"
+                    >
+                      🗑️
+                    </button>
                   </div>
-                );
-              })}
+                ))}
+              </div>
 
               <button
                 onClick={() => handleSavePreset(editingPreset)}
                 className="btn-primary"
                 style={{ marginTop: '8px', width: '100%', padding: '10px', borderRadius: '10px', fontWeight: 'bold', fontSize: '12px', border: 'none', cursor: 'pointer' }}
               >
-                💾 Salva Giornata Tipo
+                💾 Salva Modello di Giornata
               </button>
             </div>
           </div>
