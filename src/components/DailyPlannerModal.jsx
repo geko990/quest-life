@@ -367,10 +367,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '10px' }}>
-          {renderSlot('action', 'Azione')}
-          {renderSlot('bonus', 'Azione Bonus')}
-          {renderSlot('movement', 'Movimento')}
-          {renderSlot('reaction', 'Reazione')}
+          {renderSlot('action', 'Es: Completare il report')}
+          {renderSlot('bonus', 'Es: Chiamare il medico')}
+          {renderSlot('movement', 'Es: Passeggiata 30min')}
+          {renderSlot('reaction', 'Es: Rispondere a 3 email')}
         </div>
 
         {showResult ? (
