@@ -12,33 +12,41 @@ const CATEGORIES = [
 ];
 
 export default function FinancesTab({
-  finances = { balance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [] },
+  finances = { balance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [] },
   setFinances,
   stats = [],
   onRewardXp,
   onOpenSettings
 }) {
+  const [activeSubView, setActiveSubView] = useState('transactions'); // 'transactions' | 'categories'
   const [filterType, setFilterType] = useState('all'); // 'all', 'expense', 'income'
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [modalMode, setModalMode] = useState('expense'); // 'expense' | 'income'
-  const [showGoalModal, setShowGoalModal] = useState(false);
-  const [showBudgetModal, setShowBudgetModal] = useState(false);
-  const [showDepositModal, setShowDepositModal] = useState(null); // goal object if depositing
+  const [filterCategory, setFilterCategory] = useState('all'); // 'all' or category id
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
-  // Form states
+  // Modals
+  const [showAddTxModal, setShowAddTxModal] = useState(false);
+  const [txModalMode, setTxModalMode] = useState('expense'); // 'expense' | 'income'
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  
+  // Secondary Account Modals
+  const [showAddSecModal, setShowAddSecModal] = useState(false);
+  const [secAccountAction, setSecAccountAction] = useState(null); // { account, type: 'deposit'|'withdraw'|'interest' }
+
+  // Transaction Form States
   const [amountInput, setAmountInput] = useState('');
   const [categoryInput, setCategoryInput] = useState('cibo');
   const [noteInput, setNoteInput] = useState('');
   const [dateInput, setDateInput] = useState(getGameDate());
 
-  // Goal Form states
-  const [goalName, setGoalName] = useState('');
-  const [goalTarget, setGoalTarget] = useState('');
-  const [goalEmoji, setGoalEmoji] = useState('🎯');
-  const [goalStat, setGoalStat] = useState('str');
-  const [depositAmount, setDepositAmount] = useState('');
+  // Secondary Account Form States
+  const [secName, setSecName] = useState('');
+  const [secEmoji, setSecEmoji] = useState('🛡️');
+  const [secBalance, setSecBalance] = useState('');
+  const [secRate, setSecRate] = useState('3.5');
+  const [secLockMonths, setSecLockMonths] = useState('0'); // '0', '6', '12', '24'
+  const [secActionAmount, setSecActionAmount] = useState('');
 
-  // Budget Form state
+  // Budget Form State
   const [budgetInput, setBudgetInput] = useState(finances.monthlyBudget || 1000);
 
   // Currency Formatter Helper
@@ -50,7 +58,7 @@ export default function FinancesTab({
 
   const currentMonthPrefix = getGameDate().substring(0, 7);
 
-  // Month Statistics
+  // Month Statistics for Conto Base
   const monthTransactions = (finances.transactions || []).filter(t => t.date && t.date.startsWith(currentMonthPrefix));
   const monthExpenses = monthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
@@ -67,12 +75,12 @@ export default function FinancesTab({
     setFinances(prev => ({ ...prev, hideBalances: !prev.hideBalances }));
   };
 
-  const handleOpenAddModal = (mode) => {
-    setModalMode(mode);
+  const handleOpenAddTxModal = (mode) => {
+    setTxModalMode(mode);
     setAmountInput('');
     setNoteInput('');
     setDateInput(getGameDate());
-    setShowAddModal(true);
+    setShowAddTxModal(true);
   };
 
   const handleSaveTransaction = (e) => {
@@ -82,7 +90,7 @@ export default function FinancesTab({
 
     const newTx = {
       id: 'tx_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-      type: modalMode,
+      type: txModalMode,
       amount: val,
       category: categoryInput,
       note: noteInput.trim(),
@@ -91,7 +99,7 @@ export default function FinancesTab({
     };
 
     setFinances(prev => {
-      const newBalance = modalMode === 'income' ? prev.balance + val : prev.balance - val;
+      const newBalance = txModalMode === 'income' ? prev.balance + val : prev.balance - val;
       return {
         ...prev,
         balance: newBalance,
@@ -99,7 +107,7 @@ export default function FinancesTab({
       };
     });
 
-    setShowAddModal(false);
+    setShowAddTxModal(false);
   };
 
   const handleDeleteTransaction = (txId) => {
@@ -125,94 +133,118 @@ export default function FinancesTab({
     setShowBudgetModal(false);
   };
 
-  const handleSaveGoal = (e) => {
+  // Secondary Account Handlers
+  const handleCreateSecAccount = (e) => {
     e.preventDefault();
-    const targetVal = parseFloat(goalTarget.replace(',', '.'));
-    if (!goalName.trim() || isNaN(targetVal) || targetVal <= 0) return;
+    const initialBal = parseFloat(secBalance.replace(',', '.')) || 0;
+    const rate = parseFloat(secRate.replace(',', '.')) || 0;
+    if (!secName.trim()) return;
 
-    const newGoal = {
-      id: 'goal_' + Date.now(),
-      name: goalName.trim(),
-      targetAmount: targetVal,
-      currentAmount: 0,
-      emoji: goalEmoji || '🎯',
-      statTarget: goalStat,
-      completed: false
+    const newAcc = {
+      id: 'sec_' + Date.now(),
+      name: secName.trim(),
+      emoji: secEmoji || '🏦',
+      balance: initialBal,
+      interestRate: rate,
+      lockPeriodMonths: parseInt(secLockMonths) || 0,
+      createdAt: getGameDate()
     };
 
     setFinances(prev => ({
       ...prev,
-      savingGoals: [...(prev.savingGoals || []), newGoal]
+      secondaryAccounts: [...(prev.secondaryAccounts || []), newAcc]
     }));
 
-    setGoalName('');
-    setGoalTarget('');
-    setShowGoalModal(false);
+    setSecName('');
+    setSecBalance('');
+    setShowAddSecModal(false);
   };
 
-  const handleDepositGoalSubmit = (e) => {
+  const handleSecAccountActionSubmit = (e) => {
     e.preventDefault();
-    if (!showDepositModal) return;
-    const val = parseFloat(depositAmount.replace(',', '.'));
-    if (isNaN(val) || val <= 0) return;
+    if (!secAccountAction) return;
+    const { account, type } = secAccountAction;
+    const val = parseFloat(secActionAmount.replace(',', '.'));
 
-    const goalId = showDepositModal.id;
-    setFinances(prev => {
-      let isNewlyCompleted = false;
-      let targetStatId = 'str';
-
-      const updatedGoals = (prev.savingGoals || []).map(g => {
-        if (g.id !== goalId) return g;
-        const newAmt = Math.min(g.targetAmount, g.currentAmount + val);
-        const newlyDone = newAmt >= g.targetAmount && !g.completed;
-        if (newlyDone) {
-          isNewlyCompleted = true;
-          targetStatId = g.statTarget || 'str';
-        }
-        return { ...g, currentAmount: newAmt, completed: g.completed || newlyDone };
-      });
-
-      if (isNewlyCompleted && onRewardXp) {
-        onRewardXp(targetStatId, 50, false, `Quest Risparmio: ${showDepositModal.name}`);
-        alert(`🎉 QUEST FINANZIARIA COMPLETATA! Hai raggiunto l'obiettivo "${showDepositModal.name}" e guadagnato +50 XP!`);
+    if (type === 'interest') {
+      // Calculate annual interest yield on account balance
+      const interestEarned = Math.round((account.balance * (account.interestRate / 100)) * 100) / 100;
+      if (interestEarned <= 0) {
+        alert("Nessun interesse maturato disponibile su questo saldo!");
+        setSecAccountAction(null);
+        return;
       }
 
-      return { ...prev, savingGoals: updatedGoals };
-    });
+      setFinances(prev => ({
+        ...prev,
+        secondaryAccounts: (prev.secondaryAccounts || []).map(a => 
+          a.id === account.id ? { ...a, balance: a.balance + interestEarned } : a
+        )
+      }));
+      alert(`📈 Accredito effettuato! Maturati +${interestEarned} € di interessi!`);
+      setSecAccountAction(null);
+      return;
+    }
 
-    setDepositAmount('');
-    setShowDepositModal(null);
+    if (isNaN(val) || val <= 0) return;
+
+    setFinances(prev => ({
+      ...prev,
+      secondaryAccounts: (prev.secondaryAccounts || []).map(a => {
+        if (a.id !== account.id) return a;
+        const newBal = type === 'deposit' ? a.balance + val : Math.max(0, a.balance - val);
+        return { ...a, balance: newBal };
+      })
+    }));
+
+    setSecActionAmount('');
+    setSecAccountAction(null);
   };
 
+  const handleDeleteSecAccount = (accId) => {
+    if (window.confirm("Sei sicuro di voler eliminare questo conto secondario?")) {
+      setFinances(prev => ({
+        ...prev,
+        secondaryAccounts: (prev.secondaryAccounts || []).filter(a => a.id !== accId)
+      }));
+    }
+  };
+
+  // Filtered Transactions
   const filteredTransactions = (finances.transactions || []).filter(t => {
-    if (filterType === 'expense') return t.type === 'expense';
-    if (filterType === 'income') return t.type === 'income';
+    if (filterType === 'expense' && t.type !== 'expense') return false;
+    if (filterType === 'income' && t.type !== 'income') return false;
+    if (filterCategory !== 'all' && t.category !== filterCategory) return false;
     return true;
   });
 
+  const activeCategoryLabel = filterCategory === 'all' 
+    ? 'Tutte' 
+    : (CATEGORIES.find(c => c.id === filterCategory)?.emoji + ' ' + CATEGORIES.find(c => c.id === filterCategory)?.label);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '30px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
       
-      {/* Top Bar Navigation & Privacy Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* 1. Header Compact Navigation Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             💰 Il Tesoro dell'Eroe
           </h2>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-            Gestione Finanziaria Riservata & Locale
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+            Gestione Finanziaria Privata
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '6px' }}>
           <button
             onClick={handleTogglePrivacy}
             style={{
               background: 'var(--bg-secondary)',
               border: '1px solid var(--glass-border)',
-              borderRadius: '12px',
-              padding: '8px 12px',
-              fontSize: '14px',
+              borderRadius: '10px',
+              padding: '6px 10px',
+              fontSize: '13px',
               cursor: 'pointer',
               color: 'var(--text-primary)'
             }}
@@ -227,9 +259,9 @@ export default function FinancesTab({
               style={{
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--glass-border)',
-                borderRadius: '12px',
-                padding: '8px 12px',
-                fontSize: '14px',
+                borderRadius: '10px',
+                padding: '6px 10px',
+                fontSize: '13px',
                 cursor: 'pointer',
                 color: 'var(--text-primary)'
               }}
@@ -241,45 +273,60 @@ export default function FinancesTab({
         </div>
       </div>
 
-      {/* Main Balance & Monthly Budget Card */}
+      {/* 2. Compact Hero Card: Conto Base */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95))',
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          borderRadius: '20px',
-          padding: '20px',
+          borderRadius: '16px',
+          padding: '14px 16px',
           color: '#fff',
-          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-          position: 'relative',
-          overflow: 'hidden'
+          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.18)'
         }}
       >
-        <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          💳 Saldo Netto Totale
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            💳 Conto Base
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={() => handleOpenAddTxModal('expense')}
+              style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              - Uscita
+            </button>
+            <button
+              onClick={() => handleOpenAddTxModal('income')}
+              style={{ background: '#22c55e', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              + Entrata
+            </button>
+          </div>
         </div>
-        <div style={{ fontSize: '32px', fontWeight: '900', color: finances.balance >= 0 ? '#38bdf8' : '#ef4444', margin: '4px 0 16px 0' }}>
+
+        <div style={{ fontSize: '26px', fontWeight: '900', color: finances.balance >= 0 ? '#38bdf8' : '#ef4444', margin: '2px 0 10px 0' }}>
           {fmtCurrency(finances.balance)}
         </div>
 
-        {/* Monthly Summary Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-          <div style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <div style={{ fontSize: '10px', color: '#94a3b8' }}>🟢 Entrate Mese</div>
-            <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#4ade80' }}>
+        {/* Monthly Summary Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+          <div style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div style={{ fontSize: '9px', color: '#94a3b8' }}>🟢 Entrate Mese</div>
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#4ade80' }}>
               +{fmtCurrency(monthIncome)}
             </div>
           </div>
-          <div style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <div style={{ fontSize: '10px', color: '#94a3b8' }}>🔴 Uscite Mese</div>
-            <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#f87171' }}>
+          <div style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div style={{ fontSize: '9px', color: '#94a3b8' }}>🔴 Uscite Mese</div>
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f87171' }}>
               -{fmtCurrency(monthExpenses)}
             </div>
           </div>
         </div>
 
-        {/* Monthly Budget Progress Bar */}
+        {/* Compact Monthly Budget Bar */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', marginBottom: '3px' }}>
             <span style={{ color: '#cbd5e1' }}>🎯 Budget Spesa Mensile</span>
             <span
               onClick={() => { setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
@@ -288,13 +335,13 @@ export default function FinancesTab({
               Lim: {fmtCurrency(finances.monthlyBudget || 1000)} ✏️
             </span>
           </div>
-          <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '3px', overflow: 'hidden' }}>
             <div
               style={{
                 width: `${budgetPct}%`,
                 height: '100%',
                 background: budgetPct > 90 ? '#ef4444' : budgetPct > 70 ? '#f59e0b' : '#3b82f6',
-                borderRadius: '4px',
+                borderRadius: '3px',
                 transition: 'width 0.3s'
               }}
             />
@@ -302,306 +349,305 @@ export default function FinancesTab({
         </div>
       </div>
 
-      {/* Quick Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-        <button
-          onClick={() => handleOpenAddModal('expense')}
-          style={{
-            padding: '12px 8px',
-            borderRadius: '14px',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-            border: 'none',
-            color: '#fff',
-            fontWeight: 'bold',
-            fontSize: '12px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-          }}
-        >
-          🔴 - Uscita
-        </button>
-
-        <button
-          onClick={() => handleOpenAddModal('income')}
-          style={{
-            padding: '12px 8px',
-            borderRadius: '14px',
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-            border: 'none',
-            color: '#fff',
-            fontWeight: 'bold',
-            fontSize: '12px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
-          }}
-        >
-          🟢 + Entrata
-        </button>
-
-        <button
-          onClick={() => setShowGoalModal(true)}
-          style={{
-            padding: '12px 8px',
-            borderRadius: '14px',
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            border: 'none',
-            color: '#fff',
-            fontWeight: 'bold',
-            fontSize: '12px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
-          }}
-        >
-          🎯 + Quest
-        </button>
-      </div>
-
-      {/* Quest di Risparmio (Saving Goals) Section */}
-      <div style={{ background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--glass-border)', padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-            🎯 Quest di Risparmio (Scrigni)
+      {/* 3. Conti Secondari Card */}
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
+            🏦 Conti Secondari & Risparmi
           </h3>
-          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-            +50 XP a completamento
-          </span>
+          <button
+            onClick={() => setShowAddSecModal(true)}
+            style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            + Nuovo Conto
+          </button>
         </div>
 
-        {(!finances.savingGoals || finances.savingGoals.length === 0) ? (
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
-            Nessun obiettivo di risparmio attivo. Clicca su "+ Quest" per crearne uno!
+        {(!finances.secondaryAccounts || finances.secondaryAccounts.length === 0) ? (
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>
+            Nessun conto secondario attivo. Crea ad es. un 🛡️ Conto Emergenze o 🎁 Conto Desideri!
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {finances.savingGoals.map(goal => {
-              const goalPct = Math.min(100, Math.round((goal.currentAmount / (goal.targetAmount || 1)) * 100));
-              const targetStat = (stats || []).find(s => s.id === goal.statTarget);
-
-              return (
-                <div
-                  key={goal.id}
-                  style={{
-                    background: 'var(--bg-primary)',
-                    borderRadius: '12px',
-                    padding: '10px 12px',
-                    border: '1px solid var(--glass-border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px' }}>{goal.emoji || '🎯'}</span>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                          {goal.name} {goal.completed ? '🏆' : ''}
-                        </div>
-                        <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                          Stat: {targetStat?.icon || '💪'} {targetStat?.name || 'Forza'}
-                        </div>
-                      </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {finances.secondaryAccounts.map(acc => (
+              <div
+                key={acc.id}
+                style={{
+                  background: 'var(--bg-primary)',
+                  borderRadius: '10px',
+                  padding: '8px 10px',
+                  border: '1px solid var(--glass-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                  <span style={{ fontSize: '18px', flexShrink: 0 }}>{acc.emoji || '🏦'}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {acc.name}
                     </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: goal.completed ? '#22c55e' : 'var(--text-primary)' }}>
-                        {fmtCurrency(goal.currentAmount)} / {fmtCurrency(goal.targetAmount)}
-                      </div>
-                      <button
-                        onClick={() => { setDepositAmount(''); setShowDepositModal(goal); }}
-                        style={{
-                          background: 'var(--accent-primary)',
-                          border: 'none',
-                          color: '#fff',
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          fontSize: '10px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          marginTop: '2px'
-                        }}
-                      >
-                        + Deposita
-                      </button>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '1px' }}>
+                      {acc.interestRate > 0 && (
+                        <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
+                          +{acc.interestRate}% p.a.
+                        </span>
+                      )}
+                      <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                        {acc.lockPeriodMonths > 0 ? `⏳ Vincolo ${acc.lockPeriodMonths}M` : '🔓 Svincolato'}
+                      </span>
                     </div>
-                  </div>
-
-                  <div style={{ width: '100%', height: '6px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div
-                      style={{
-                        width: `${goalPct}%`,
-                        height: '100%',
-                        background: goal.completed ? '#22c55e' : 'var(--accent-gold, #f59e0b)',
-                        borderRadius: '3px',
-                        transition: 'width 0.3s'
-                      }}
-                    />
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      {/* Ripartizione Spese del Mese per Categoria */}
-      <div style={{ background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--glass-border)', padding: '16px' }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-          📊 Spese del Mese per Categoria
-        </h3>
-
-        {monthExpenses === 0 ? (
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
-            Nessuna spesa registrata per questo mese.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {CATEGORIES.map(cat => {
-              const catSpent = catExpensesMap[cat.id] || 0;
-              if (catSpent === 0) return null;
-              const catPct = Math.round((catSpent / monthExpenses) * 100);
-
-              return (
-                <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                      {cat.emoji} {cat.label}
-                    </span>
-                    <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                      {fmtCurrency(catSpent)} ({catPct}%)
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
+                    {fmtCurrency(acc.balance)}
                   </div>
-                  <div style={{ width: '100%', height: '5px', background: 'var(--bg-primary)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: `${catPct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Storico Movimenti Section */}
-      <div style={{ background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--glass-border)', padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-            📜 Registro Movimenti
-          </h3>
-
-          <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-primary)', padding: '2px', borderRadius: '8px' }}>
-            <button
-              onClick={() => setFilterType('all')}
-              style={{
-                background: filterType === 'all' ? 'var(--bg-card)' : 'transparent',
-                border: 'none',
-                color: 'var(--text-primary)',
-                fontSize: '10px',
-                padding: '3px 7px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: filterType === 'all' ? 'bold' : 'normal'
-              }}
-            >
-              Tutti
-            </button>
-            <button
-              onClick={() => setFilterType('expense')}
-              style={{
-                background: filterType === 'expense' ? 'var(--bg-card)' : 'transparent',
-                border: 'none',
-                color: '#ef4444',
-                fontSize: '10px',
-                padding: '3px 7px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: filterType === 'expense' ? 'bold' : 'normal'
-              }}
-            >
-              Uscite
-            </button>
-            <button
-              onClick={() => setFilterType('income')}
-              style={{
-                background: filterType === 'income' ? 'var(--bg-card)' : 'transparent',
-                border: 'none',
-                color: '#22c55e',
-                fontSize: '10px',
-                padding: '3px 7px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: filterType === 'income' ? 'bold' : 'normal'
-              }}
-            >
-              Entrate
-            </button>
-          </div>
-        </div>
-
-        {filteredTransactions.length === 0 ? (
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
-            Nessun movimento registrato nel sistema.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '320px', overflowY: 'auto' }}>
-            {filteredTransactions.map(t => {
-              const catObj = CATEGORIES.find(c => c.id === t.category) || { emoji: '📦', label: 'Altro' };
-              const isIncome = t.type === 'income';
-
-              return (
-                <div
-                  key={t.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: 'var(--bg-primary)',
-                    padding: '8px 12px',
-                    borderRadius: '10px',
-                    border: '1px solid var(--glass-border)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '18px' }}>{catObj.emoji}</span>
-                    <div>
-                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                        {t.note || catObj.label}
-                      </div>
-                      <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                        {t.date}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: isIncome ? '#22c55e' : '#ef4444' }}>
-                      {isIncome ? '+' : '-'}{fmtCurrency(t.amount)}
-                    </span>
+                  <div style={{ display: 'flex', gap: '3px' }}>
                     <button
-                      onClick={() => handleDeleteTransaction(t.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', padding: '2px' }}
-                      title="Elimina movimento"
+                      onClick={() => { setSecActionAmount(''); setSecAccountAction({ account: acc, type: 'deposit' }); }}
+                      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+                      title="Deposita nel conto"
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={() => { setSecActionAmount(''); setSecAccountAction({ account: acc, type: 'withdraw' }); }}
+                      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+                      title="Preleva dal conto"
+                    >
+                      -
+                    </button>
+                    {acc.interestRate > 0 && (
+                      <button
+                        onClick={() => setSecAccountAction({ account: acc, type: 'interest' })}
+                        style={{ background: 'rgba(34, 197, 94, 0.2)', border: '1px solid rgba(34, 197, 94, 0.4)', color: '#22c55e', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+                        title="Calcola & Accredita Interessi Maturati"
+                      >
+                        📈
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteSecAccount(acc.id)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', padding: '1px 3px', cursor: 'pointer' }}
+                      title="Elimina conto"
                     >
                       🗑️
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
+      {/* 4. Tessera Unificata: Movimenti & Categorie (con Imbuto Filtro 🌪️) */}
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
+        
+        {/* Header & Sub-view Switch + Filter Funnel */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-primary)', padding: '2px', borderRadius: '8px' }}>
+            <button
+              onClick={() => setActiveSubView('transactions')}
+              style={{
+                background: activeSubView === 'transactions' ? 'var(--bg-card)' : 'transparent',
+                border: 'none',
+                color: 'var(--text-primary)',
+                fontSize: '10px',
+                fontWeight: activeSubView === 'transactions' ? 'bold' : 'normal',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              📜 Movimenti ({filteredTransactions.length})
+            </button>
+            <button
+              onClick={() => setActiveSubView('categories')}
+              style={{
+                background: activeSubView === 'categories' ? 'var(--bg-card)' : 'transparent',
+                border: 'none',
+                color: 'var(--text-primary)',
+                fontSize: '10px',
+                fontWeight: activeSubView === 'categories' ? 'bold' : 'normal',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              📊 Categorie
+            </button>
+          </div>
+
+          <button
+            onClick={() => setShowFilterModal(!showFilterModal)}
+            style={{
+              background: (filterType !== 'all' || filterCategory !== 'all') ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: (filterType !== 'all' || filterCategory !== 'all') ? '#fff' : 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Filtra movimenti per tipo e categoria"
+          >
+            <span>🌪️ Filtri</span>
+            {(filterType !== 'all' || filterCategory !== 'all') && <span style={{ fontSize: '9px' }}>•</span>}
+          </button>
+        </div>
+
+        {/* Filter Selection Panel (Toggleable Popup/Row) */}
+        {showFilterModal && (
+          <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Filtra Tipo:</span>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {['all', 'expense', 'income'].map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setFilterType(t)}
+                    style={{
+                      background: filterType === t ? 'var(--accent-primary)' : 'transparent',
+                      color: filterType === t ? '#fff' : 'var(--text-secondary)',
+                      border: 'none',
+                      fontSize: '9px',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t === 'all' ? 'Tutti' : t === 'expense' ? 'Uscite' : 'Entrate'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria:</span>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '6px', fontSize: '10px', padding: '2px 4px' }}
+              >
+                <option value="all">Tutte le Categorie</option>
+                {CATEGORIES.map(c => (
+                  <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* Content View: Transactions List */}
+        {activeSubView === 'transactions' && (
+          filteredTransactions.length === 0 ? (
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
+              Nessun movimento trovato con i filtri attuali.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '200px', overflowY: 'auto', paddingRight: '2px' }}>
+              {filteredTransactions.map(t => {
+                const catObj = CATEGORIES.find(c => c.id === t.category) || { emoji: '📦', label: 'Altro' };
+                const isIncome = t.type === 'income';
+
+                return (
+                  <div
+                    key={t.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: 'var(--bg-primary)',
+                      padding: '6px 8px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--glass-border)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                      <span style={{ fontSize: '15px', flexShrink: 0 }}>{catObj.emoji}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {t.note || catObj.label}
+                        </div>
+                        <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>
+                          {t.date}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: isIncome ? '#22c55e' : '#ef4444' }}>
+                        {isIncome ? '+' : '-'}{fmtCurrency(t.amount)}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteTransaction(t.id)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '1px' }}
+                        title="Elimina movimento"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+        {/* Content View: Category Breakdown */}
+        {activeSubView === 'categories' && (
+          monthExpenses === 0 ? (
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
+              Nessuna spesa registrata per questo mese.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+              {CATEGORIES.map(cat => {
+                const catSpent = catExpensesMap[cat.id] || 0;
+                if (catSpent === 0) return null;
+                const catPct = Math.round((catSpent / monthExpenses) * 100);
+
+                return (
+                  <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                        {cat.emoji} {cat.label}
+                      </span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                        {fmtCurrency(catSpent)} ({catPct}%)
+                      </span>
+                    </div>
+                    <div style={{ width: '100%', height: '4px', background: 'var(--bg-primary)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${catPct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '2px' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+      </div>
+
       {/* MODAL: Nuova Uscita / Entrata */}
-      {showAddModal && (
+      {showAddTxModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '340px', padding: '20px' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 'bold', color: modalMode === 'expense' ? '#ef4444' : '#22c55e' }}>
-              {modalMode === 'expense' ? '🔴 Registra Uscita' : '🟢 Registra Entrata'}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: txModalMode === 'expense' ? '#ef4444' : '#22c55e' }}>
+              {txModalMode === 'expense' ? '🔴 Registra Uscita' : '🟢 Registra Entrata'}
             </h3>
 
-            <form onSubmit={handleSaveTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleSaveTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo (€)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo (€)*</label>
                 <input
                   type="text"
                   placeholder="0.00"
@@ -609,16 +655,16 @@ export default function FinancesTab({
                   onChange={(e) => setAmountInput(e.target.value)}
                   autoFocus
                   required
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 'bold', marginTop: '4px', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria</label>
                 <select
                   value={categoryInput}
                   onChange={(e) => setCategoryInput(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '4px', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
                   {CATEGORIES.map(c => (
                     <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
@@ -627,37 +673,37 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione</label>
                 <input
                   type="text"
-                  placeholder="Es. Spesa Conad, Stipendio..."
+                  placeholder="Es. Spesa, Stipendio..."
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '4px', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data</label>
                 <input
                   type="date"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '4px', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '12px', cursor: 'pointer' }}
+                  onClick={() => setShowAddTxModal(false)}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: modalMode === 'expense' ? '#ef4444' : '#22c55e', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: txModalMode === 'expense' ? '#ef4444' : '#22c55e', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   Salva
                 </button>
@@ -667,77 +713,89 @@ export default function FinancesTab({
         </div>
       )}
 
-      {/* MODAL: Nuovo Goal di Risparmio */}
-      {showGoalModal && (
+      {/* MODAL: Nuovo Conto Secondario */}
+      {showAddSecModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '340px', padding: '20px' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
-              🎯 Nuova Quest di Risparmio
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+              🏦 Crea Conto Secondario
             </h3>
 
-            <form onSubmit={handleSaveGoal} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleCreateSecAccount} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nome Obiettivo*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nome Conto*</label>
                 <input
                   type="text"
-                  placeholder="Es. Fondo Emergenza, Vacanze..."
-                  value={goalName}
-                  onChange={(e) => setGoalName(e.target.value)}
+                  placeholder="Es. Conto Emergenze, Conto Desideri..."
+                  value={secName}
+                  onChange={(e) => setSecName(e.target.value)}
                   autoFocus
                   required
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '4px', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Target (€)*</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Saldo Iniziale (€)</label>
                   <input
                     type="text"
-                    placeholder="1000"
-                    value={goalTarget}
-                    onChange={(e) => setGoalTarget(e.target.value)}
-                    required
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '4px', boxSizing: 'border-box' }}
+                    placeholder="0"
+                    value={secBalance}
+                    onChange={(e) => setSecBalance(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                   />
                 </div>
-                <div style={{ width: '80px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Emoji</label>
+                <div style={{ width: '70px' }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Emoji</label>
                   <input
                     type="text"
-                    value={goalEmoji}
-                    onChange={(e) => setGoalEmoji(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '16px', textAlign: 'center', marginTop: '4px', boxSizing: 'border-box' }}
+                    value={secEmoji}
+                    onChange={(e) => setSecEmoji(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px', textAlign: 'center', marginTop: '2px', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Statistica Premio (+50 XP)</label>
-                <select
-                  value={goalStat}
-                  onChange={(e) => setGoalStat(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '4px', boxSizing: 'border-box' }}
-                >
-                  {(stats || []).map(s => (
-                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Interesse (% p.a.)</label>
+                  <input
+                    type="text"
+                    placeholder="3.5"
+                    value={secRate}
+                    onChange={(e) => setSecRate(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Vincolo</label>
+                  <select
+                    value={secLockMonths}
+                    onChange={(e) => setSecLockMonths(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                  >
+                    <option value="0">Svincolato</option>
+                    <option value="6">6 Mesi</option>
+                    <option value="12">12 Mesi</option>
+                    <option value="24">24 Mesi</option>
+                  </select>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <button
                   type="button"
-                  onClick={() => setShowGoalModal(false)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '12px', cursor: 'pointer' }}
+                  onClick={() => setShowAddSecModal(false)}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--accent-gold, #f59e0b)', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Crea Quest
+                  Crea Conto
                 </button>
               </div>
             </form>
@@ -745,44 +803,74 @@ export default function FinancesTab({
         </div>
       )}
 
-      {/* MODAL: Deposita in Goal */}
-      {showDepositModal && (
+      {/* MODAL: Azione su Conto Secondario (Deposita / Preleva / Accreditamento Interessi) */}
+      {secAccountAction && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '340px', padding: '20px' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {showDepositModal.emoji} Deposita in {showDepositModal.name}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              {secAccountAction.account.emoji} {secAccountAction.account.name}
             </h3>
 
-            <form onSubmit={handleDepositGoalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo da Accantonare (€)</label>
-                <input
-                  type="text"
-                  placeholder="50"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
-                  autoFocus
-                  required
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 'bold', marginTop: '4px', boxSizing: 'border-box' }}
-                />
-              </div>
+            {secAccountAction.type === 'interest' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
+                  Calcolo degli interessi del <b>{secAccountAction.account.interestRate}% p.a.</b> sul saldo attuale di <b>{fmtCurrency(secAccountAction.account.balance)}</b>.
+                </p>
+                <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold', color: '#22c55e' }}>
+                  Interessi Maturati: +{fmtCurrency((secAccountAction.account.balance * secAccountAction.account.interestRate) / 100)}
+                </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowDepositModal(null)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '12px', cursor: 'pointer' }}
-                >
-                  Annulla
-                </button>
-                <button
-                  type="submit"
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  Deposita
-                </button>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSecAccountAction(null)}
+                    style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
+                  >
+                    Annulla
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSecAccountActionSubmit}
+                    style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#22c55e', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Accredita
+                  </button>
+                </div>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleSecAccountActionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    {secAccountAction.type === 'deposit' ? 'Importo da Depositare (€)' : 'Importo da Prelevare (€)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="50"
+                    value={secActionAmount}
+                    onChange={(e) => setSecActionAmount(e.target.value)}
+                    autoFocus
+                    required
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSecAccountAction(null)}
+                    style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
+                  >
+                    Annulla
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Conferma
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -790,14 +878,14 @@ export default function FinancesTab({
       {/* MODAL: Modifica Budget Mensile */}
       {showBudgetModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '340px', padding: '20px' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              ✏️ Imposta Budget Spesa Mensile
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              ✏️ Limite Budget Spesa Mensile
             </h3>
 
-            <form onSubmit={handleSaveBudget} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form onSubmit={handleSaveBudget} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Limite Budget Spesa (€)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Limite Budget Spesa (€)</label>
                 <input
                   type="number"
                   placeholder="1000"
@@ -805,21 +893,21 @@ export default function FinancesTab({
                   onChange={(e) => setBudgetInput(e.target.value)}
                   autoFocus
                   required
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 'bold', marginTop: '4px', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <button
                   type="button"
                   onClick={() => setShowBudgetModal(false)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '12px', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   Salva Budget
                 </button>
