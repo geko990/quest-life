@@ -29,7 +29,7 @@ const getCategoryObj = (catId) => {
 };
 
 export default function FinancesTab({
-  finances = { balance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [] },
+  finances = { balance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
   setFinances,
   stats = [],
   onRewardXp,
@@ -44,7 +44,8 @@ export default function FinancesTab({
   const [showAddTxModal, setShowAddTxModal] = useState(false);
   const [txModalMode, setTxModalMode] = useState('expense'); // 'expense' | 'income'
   const [showBudgetModal, setShowBudgetModal] = useState(false);
-  
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
+
   // Secondary Account Modals
   const [showAddSecModal, setShowAddSecModal] = useState(false);
   const [secAccountAction, setSecAccountAction] = useState(null); // { account, type: 'deposit'|'withdraw'|'interest' }
@@ -54,6 +55,8 @@ export default function FinancesTab({
   const [categoryInput, setCategoryInput] = useState('cibo');
   const [noteInput, setNoteInput] = useState('');
   const [dateInput, setDateInput] = useState(getGameDate());
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recDay, setRecDay] = useState(1);
 
   // Secondary Account Form States
   const [secName, setSecName] = useState('');
@@ -75,6 +78,60 @@ export default function FinancesTab({
 
   const currentMonthPrefix = getGameDate().substring(0, 7);
 
+  // Always default to hidden balances (*** €) whenever Finances tab opens
+  useEffect(() => {
+    setFinances(prev => ({ ...prev, hideBalances: true }));
+  }, []);
+
+  // Auto-process active recurring transactions for current month if not yet processed
+  useEffect(() => {
+    const todayStr = getGameDate();
+    const currentMonthPrefix = todayStr.substring(0, 7);
+    const recurringList = finances.recurringTransactions || [];
+    if (recurringList.length === 0) return;
+
+    let updatedBalance = finances.balance;
+    const newTxList = [];
+    let stateChanged = false;
+
+    const updatedRecurring = recurringList.map(rec => {
+      if (!rec.active) return rec;
+      if (rec.lastProcessedMonth === currentMonthPrefix) return rec;
+
+      const dayStr = String(rec.dayOfMonth || 1).padStart(2, '0');
+      const txDate = `${currentMonthPrefix}-${dayStr}`;
+
+      const generatedTx = {
+        id: 'tx_rec_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        type: rec.type,
+        amount: rec.amount,
+        category: rec.category,
+        note: `${rec.note || getCategoryObj(rec.category).label} (Ricorrente)`,
+        date: txDate,
+        timestamp: Date.now()
+      };
+
+      newTxList.push(generatedTx);
+      if (rec.type === 'income') {
+        updatedBalance += rec.amount;
+      } else {
+        updatedBalance -= rec.amount;
+      }
+      stateChanged = true;
+
+      return { ...rec, lastProcessedMonth: currentMonthPrefix };
+    });
+
+    if (stateChanged) {
+      setFinances(prev => ({
+        ...prev,
+        balance: updatedBalance,
+        transactions: [...newTxList, ...(prev.transactions || [])],
+        recurringTransactions: updatedRecurring
+      }));
+    }
+  }, []);
+
   // Month Statistics for Conto Base
   const monthTransactions = (finances.transactions || []).filter(t => t.date && t.date.startsWith(currentMonthPrefix));
   const monthExpenses = monthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
@@ -92,11 +149,6 @@ export default function FinancesTab({
     catIncomeMap[t.category] = (catIncomeMap[t.category] || 0) + t.amount;
   });
 
-  // Always default to hidden balances (*** €) whenever Finances tab opens
-  useEffect(() => {
-    setFinances(prev => ({ ...prev, hideBalances: true }));
-  }, []);
-
   // Handlers
   const handleTogglePrivacy = () => {
     setFinances(prev => ({ ...prev, hideBalances: !prev.hideBalances }));
@@ -108,6 +160,8 @@ export default function FinancesTab({
     setAmountInput('');
     setNoteInput('');
     setDateInput(getGameDate());
+    setIsRecurring(false);
+    setRecDay(1);
     setShowAddTxModal(true);
   };
 
@@ -126,12 +180,29 @@ export default function FinancesTab({
       timestamp: Date.now()
     };
 
+    let newRecurring = finances.recurringTransactions || [];
+    if (isRecurring) {
+      const recItem = {
+        id: 'rec_' + Date.now(),
+        type: txModalMode,
+        amount: val,
+        category: categoryInput,
+        note: noteInput.trim(),
+        frequency: 'monthly',
+        dayOfMonth: parseInt(recDay) || 1,
+        lastProcessedMonth: currentMonthPrefix,
+        active: true
+      };
+      newRecurring = [recItem, ...newRecurring];
+    }
+
     setFinances(prev => {
       const newBalance = txModalMode === 'income' ? prev.balance + val : prev.balance - val;
       return {
         ...prev,
         balance: newBalance,
-        transactions: [newTx, ...(prev.transactions || [])]
+        transactions: [newTx, ...(prev.transactions || [])],
+        recurringTransactions: newRecurring
       };
     });
 
@@ -150,6 +221,24 @@ export default function FinancesTab({
           transactions: prev.transactions.filter(t => t.id !== txId)
         };
       });
+    }
+  };
+
+  const handleToggleRecurringActive = (recId) => {
+    setFinances(prev => ({
+      ...prev,
+      recurringTransactions: (prev.recurringTransactions || []).map(r => 
+        r.id === recId ? { ...r, active: !r.active } : r
+      )
+    }));
+  };
+
+  const handleDeleteRecurring = (recId) => {
+    if (window.confirm("Eliminare questa regola di pagamento ricorrente?")) {
+      setFinances(prev => ({
+        ...prev,
+        recurringTransactions: (prev.recurringTransactions || []).filter(r => r.id !== recId)
+      }));
     }
   };
 
@@ -253,6 +342,8 @@ export default function FinancesTab({
   // Dynamic Categories list for Add modal
   const currentModalCategories = txModalMode === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
+  const activeRecurringCount = (finances.recurringTransactions || []).filter(r => r.active).length;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
       
@@ -268,6 +359,26 @@ export default function FinancesTab({
         </div>
 
         <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            onClick={() => setShowRecurringModal(true)}
+            style={{
+              background: activeRecurringCount > 0 ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-secondary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '10px',
+              padding: '6px 9px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              color: activeRecurringCount > 0 ? '#3b82f6' : 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Gestisci Pagamenti Ricorrenti (Stipendio, Affitto...)"
+          >
+            🔄 {activeRecurringCount > 0 ? activeRecurringCount : ''}
+          </button>
+
           <button
             onClick={handleTogglePrivacy}
             style={{
@@ -762,7 +873,7 @@ export default function FinancesTab({
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione</label>
                 <input
                   type="text"
-                  placeholder={txModalMode === 'expense' ? "Es. Spesa Conad, Benzina..." : "Es. Stipendio Mese, Consulenza..."}
+                  placeholder={txModalMode === 'expense' ? "Es. Spesa, Affitto..." : "Es. Stipendio Mese, Consulenza..."}
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
@@ -770,13 +881,45 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data Prima Esecuzione</label>
                 <input
                   type="date"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
+              </div>
+
+              {/* Recurring Payment Option */}
+              <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '2px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={isRecurring}
+                    onChange={(e) => setIsRecurring(e.target.checked)}
+                    style={{ width: '15px', height: '15px', cursor: 'pointer' }}
+                  />
+                  <span>🔄 Rendi Pagamento Ricorrente</span>
+                </label>
+
+                {isRecurring && (
+                  <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                      Si ripeterà automaticamente ogni mese nel giorno stabilito.
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Giorno del mese:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={recDay}
+                        onChange={(e) => setRecDay(e.target.value)}
+                        style={{ width: '60px', padding: '4px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '12px', textAlign: 'center' }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
@@ -795,6 +938,97 @@ export default function FinancesTab({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Gestione Pagamenti Ricorrenti */}
+      {showRecurringModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                🔄 Pagamenti Ricorrenti
+              </h3>
+              <button
+                onClick={() => setShowRecurringModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer' }}
+              >
+                ✖
+              </button>
+            </div>
+
+            {(!finances.recurringTransactions || finances.recurringTransactions.length === 0) ? (
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
+                Nessun pagamento o entrata ricorrente salvato. Quando aggiungi un'uscita o un'entrata, spunta "Rendi Pagamento Ricorrente"!
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
+                {finances.recurringTransactions.map(rec => {
+                  const catObj = getCategoryObj(rec.category);
+                  const isIncome = rec.type === 'income';
+
+                  return (
+                    <div
+                      key={rec.id}
+                      style={{
+                        background: 'var(--bg-primary)',
+                        borderRadius: '10px',
+                        padding: '10px',
+                        border: '1px solid var(--glass-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        opacity: rec.active ? 1 : 0.6
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                        <span style={{ fontSize: '18px', flexShrink: 0 }}>{catObj.emoji}</span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {rec.note || catObj.label}
+                          </div>
+                          <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                            Mensile (giorno {rec.dayOfMonth || 1})
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: isIncome ? '#22c55e' : '#ef4444' }}>
+                          {isIncome ? '+' : '-'}{fmtCurrency(rec.amount)}
+                        </span>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            onClick={() => handleToggleRecurringActive(rec.id)}
+                            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: rec.active ? '#22c55e' : 'var(--text-muted)', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                            title={rec.active ? 'Metti in pausa' : 'Attiva'}
+                          >
+                            {rec.active ? '▶️' : '⏸️'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRecurring(rec.id)}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer', padding: '1px' }}
+                            title="Elimina regola"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div style={{ marginTop: '14px', textAlign: 'center' }}>
+              <button
+                onClick={() => setShowRecurringModal(false)}
+                style={{ width: '100%', padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Chiudi
+              </button>
+            </div>
           </div>
         </div>
       )}
