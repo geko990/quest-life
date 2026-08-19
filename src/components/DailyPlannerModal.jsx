@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [] }) {
   const [slots, setSlots] = useState({
-    action: { name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
-    bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
-    movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
-    reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
+    action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
+    bonus: { emoji: '⚡', name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
+    movement: { emoji: '🚶', name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
+    reaction: { emoji: '🛡️', name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
   });
 
   const [isRolling, setIsRolling] = useState(false);
@@ -15,10 +15,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
   useEffect(() => {
     if (isOpen) {
       setSlots({
-        action: { name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
-        bonus: { name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
-        movement: { name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
-        reaction: { name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
+        action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
+        bonus: { emoji: '⚡', name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
+        movement: { emoji: '🚶', name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
+        reaction: { emoji: '🛡️', name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
       });
       setIsRolling(false);
       setDiceResult(null);
@@ -128,13 +128,13 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           <input
             type="text"
-            value={slot.emoji || theme.emoji}
+            value={slot.emoji !== undefined ? slot.emoji : theme.emoji}
             onChange={(e) => handleSlotChange(key, 'emoji', e.target.value)}
             style={{
-              width: '30px',
-              height: '30px',
+              width: '34px',
+              height: '34px',
               textAlign: 'center',
-              fontSize: '14px',
+              fontSize: '16px',
               background: 'var(--bg-primary)',
               border: '1px solid var(--glass-border)',
               borderRadius: '8px',
