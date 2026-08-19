@@ -471,7 +471,7 @@ export default function HomeTab({
       </div>
 
       {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
-      <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
+      <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px', minHeight: '148px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
@@ -486,14 +486,14 @@ export default function HomeTab({
               type="button"
               onClick={() => setCardMode(prev => prev === 'tasks' ? 'pomodoro' : 'tasks')}
               style={{
-                padding: (pomodoro?.status === 'running' || pomodoro?.status === 'paused') ? '4px 10px' : '0',
-                width: (pomodoro?.status === 'running' || pomodoro?.status === 'paused') ? 'auto' : '30px',
+                padding: (safePomodoro.status === 'running' || safePomodoro.status === 'paused') ? '4px 10px' : '0',
+                width: (safePomodoro.status === 'running' || safePomodoro.status === 'paused') ? 'auto' : '30px',
                 height: '30px',
                 borderRadius: '15px',
-                background: cardMode === 'pomodoro' || pomodoro?.status === 'running'
+                background: cardMode === 'pomodoro' || safePomodoro.status === 'running'
                   ? 'rgba(239, 68, 68, 0.2)'
                   : 'var(--bg-secondary)',
-                color: pomodoro?.status === 'running' ? '#ef4444' : 'var(--text-primary)',
+                color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)',
                 fontWeight: 'bold',
                 fontSize: '11px',
                 cursor: 'pointer',
@@ -501,18 +501,18 @@ export default function HomeTab({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
-                boxShadow: pomodoro?.status === 'running' ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none',
+                boxShadow: safePomodoro.status === 'running' ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none',
                 border: cardMode === 'pomodoro' ? '1px solid #ef4444' : '1px solid var(--glass-border)'
               }}
               title={cardMode === 'pomodoro' ? "Passa a Lista Task" : "Passa a Timer Pomodoro"}
             >
               <span>🍅</span>
-              {pomodoro?.status === 'running' && (
+              {safePomodoro.status === 'running' && (
                 <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>
                   {formatPomoTime(pomoSecs)}
                 </span>
               )}
-              {pomodoro?.status === 'paused' && (
+              {safePomodoro.status === 'paused' && (
                 <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>
                   Pausa ({formatPomoTime(pomoSecs)})
                 </span>
@@ -549,11 +549,10 @@ export default function HomeTab({
 
         {cardMode === 'pomodoro' ? (
           /* IN-CARD POMODORO WORKSTATION VIEW */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '2px 0' }}>
-            {/* Active Focused Task Selector */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '2px 0', flex: 1, justifySelf: 'stretch' }}>
+            {/* Active Focused Task Selector (Clean Text, No Target Emoji) */}
             <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
-                <span style={{ fontSize: '14px', flexShrink: 0 }}>🎯</span>
+              <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, flex: 1 }}>
                 <select
                   value={selectedTaskId}
                   onChange={(e) => setSelectedTaskId(e.target.value)}
@@ -568,10 +567,10 @@ export default function HomeTab({
                     cursor: 'pointer'
                   }}
                 >
-                  <option value="" style={{ background: 'var(--bg-card)' }}>🎯 Focus Libero (Nessuna task selezionata)</option>
+                  <option value="" style={{ background: 'var(--bg-card)' }}>Focus Libero (Nessuna task selezionata)</option>
                   {todayActionsList.filter(a => !a.completed).map(a => (
                     <option key={a.id} value={a.id} style={{ background: 'var(--bg-card)' }}>
-                      {a.emoji || '🎯'} {a.name}
+                      {a.name}
                     </option>
                   ))}
                 </select>
@@ -592,20 +591,41 @@ export default function HomeTab({
               )}
             </div>
 
-            {/* Countdown Display & Controls */}
+            {/* Countdown Display & Controls (Tap digits to edit minutes) */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-              <div>
-                <div style={{ fontSize: '26px', fontWeight: '800', fontFamily: 'monospace', color: pomodoro?.status === 'running' ? '#ef4444' : 'var(--text-primary)', lineHeight: 1 }}>
-                  {formatPomoTime(pomoSecs)}
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 'bold' }}>
-                  {pomodoro?.status === 'running' ? '🔥 Focus in corso' : pomodoro?.status === 'paused' ? '⏸️ In Pausa' : '✨ Sessione da 25 Min'}
+              <div
+                onClick={() => {
+                  if (safePomodoro.status === 'running') return;
+                  const currentMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
+                  const input = window.prompt("Imposta i minuti del Pomodoro (es. 15, 25, 45, 60):", currentMins);
+                  if (input !== null) {
+                    const newMins = parseInt(input.trim(), 10);
+                    if (!isNaN(newMins) && newMins > 0 && newMins <= 180) {
+                      setPomoSecs(newMins * 60);
+                      if (setPomodoro) {
+                        setPomodoro(prev => ({
+                          ...(prev || {}),
+                          workDuration: newMins,
+                          remainingTime: newMins * 60
+                        }));
+                      }
+                    }
+                  }
+                }}
+                style={{ cursor: safePomodoro.status === 'running' ? 'default' : 'pointer' }}
+                title={safePomodoro.status === 'running' ? '' : 'Tocca per modificare i minuti'}
+              >
+                <div style={{ fontSize: '28px', fontWeight: '800', fontFamily: 'monospace', color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)', lineHeight: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>{formatPomoTime(pomoSecs)}</span>
+                  {safePomodoro.status !== 'running' && (
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>✏️</span>
+                  )}
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '6px' }}>
-                {pomodoro?.status === 'idle' && (
+                {safePomodoro.status === 'idle' && (
                   <button
                     type="button"
                     onClick={startPomodoro}
@@ -614,7 +634,7 @@ export default function HomeTab({
                     ▶️ Avvia
                   </button>
                 )}
-                {pomodoro?.status === 'running' && (
+                {safePomodoro.status === 'running' && (
                   <>
                     <button
                       type="button"
@@ -632,7 +652,7 @@ export default function HomeTab({
                     </button>
                   </>
                 )}
-                {pomodoro?.status === 'paused' && (
+                {safePomodoro.status === 'paused' && (
                   <>
                     <button
                       type="button"
@@ -655,13 +675,7 @@ export default function HomeTab({
 
             {/* Footer Row */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-secondary)', padding: '0 2px' }}>
-              <span>🍅 Sessioni oggi: <b>{pomodoro?.sessionsToday || 0}</b></span>
-              <span
-                onClick={() => setCardMode('tasks')}
-                style={{ color: 'var(--accent-primary)', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                📋 Torna alla Lista Task
-              </span>
+              <span>Sessioni di oggi: <b>{safePomodoro.sessionsToday || 0}</b></span>
             </div>
           </div>
         ) : (
