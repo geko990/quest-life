@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getGameDate } from '../utils/helpers';
 
 const EXPENSE_CATEGORIES = [
@@ -91,6 +91,11 @@ export default function FinancesTab({
   monthTransactions.filter(t => t.type === 'income').forEach(t => {
     catIncomeMap[t.category] = (catIncomeMap[t.category] || 0) + t.amount;
   });
+
+  // Always default to hidden balances (*** €) whenever Finances tab opens
+  useEffect(() => {
+    setFinances(prev => ({ ...prev, hideBalances: true }));
+  }, []);
 
   // Handlers
   const handleTogglePrivacy = () => {
@@ -270,32 +275,34 @@ export default function FinancesTab({
               border: '1px solid var(--glass-border)',
               borderRadius: '10px',
               padding: '6px 10px',
-              fontSize: '13px',
+              fontSize: '14px',
               cursor: 'pointer',
-              color: 'var(--text-primary)'
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
             title={finances.hideBalances ? 'Mostra saldi' : 'Nascondi saldi'}
           >
-            {finances.hideBalances ? '🙈' : '👁️'}
+            <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              👁️
+              {finances.hideBalances && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '-2px',
+                    right: '-2px',
+                    height: '2px',
+                    background: '#ef4444',
+                    transform: 'rotate(-45deg)',
+                    borderRadius: '1px',
+                    boxShadow: '0 0 2px rgba(0,0,0,0.5)'
+                  }}
+                />
+              )}
+            </span>
           </button>
-
-          {onOpenSettings && (
-            <button
-              onClick={onOpenSettings}
-              style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '10px',
-                padding: '6px 10px',
-                fontSize: '13px',
-                cursor: 'pointer',
-                color: 'var(--text-primary)'
-              }}
-              title="Torna alle Opzioni"
-            >
-              ⚙️
-            </button>
-          )}
         </div>
       </div>
 
