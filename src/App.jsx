@@ -302,7 +302,7 @@ export default function App() {
   };
 
   // 7. XP Reward Handler
-  const handleRewardXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null, itemStars = 1) => {
+  const handleRewardXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null, itemStars = 1, itemType = 'task') => {
     if (!amount || amount <= 0) return;
     const todayStr = getGameDate(settings.dayStartTime);
     const effectiveDate = logDate || todayStr;
@@ -339,7 +339,7 @@ export default function App() {
     // Log XP change with effectiveDate and stars rating
     setXpLog(prev => [
       ...prev,
-      { date: effectiveDate, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave, stars: itemStars, isMonthlyTask: countsForMonthlyMedal }
+      { date: effectiveDate, statId, amount, timestamp: Date.now(), title: titleToSave, source: titleToSave, stars: itemStars, isMonthlyTask: countsForMonthlyMedal, itemType }
     ]);
 
     setPlayer(prev => {
@@ -530,10 +530,10 @@ export default function App() {
     const secondaryXp = Math.round(primaryXp * 0.33);
 
     if (!isCompleted) {
-      // Complete habit: add streak, reward primary and secondary targets XP
-      handleRewardXp(habit.primaryTarget, primaryXp, true, habit.name, targetDate);
+      // Complete habit: add streak, reward primary and secondary targets XP (habits DO NOT count for monthly medals / achievements log)
+      handleRewardXp(habit.primaryTarget, primaryXp, false, habit.name, targetDate, 1, 'habit');
       if (habit.secondaryTarget) {
-        handleRewardXp(habit.secondaryTarget, secondaryXp, false, habit.name, targetDate);
+        handleRewardXp(habit.secondaryTarget, secondaryXp, false, habit.name, targetDate, 1, 'habit');
       }
 
       // Increment Streak
@@ -1251,6 +1251,7 @@ export default function App() {
             setPlayer={setPlayer}
             xpLog={xpLog}
             stats={stats}
+            habits={habits}
             fileHandle={fileHandle}
             onLinkDatabase={handleLinkDatabase}
             onReconnectDatabase={handleReconnectDatabase}
