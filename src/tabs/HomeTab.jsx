@@ -43,42 +43,14 @@ export default function HomeTab({
   const healthPressTimerRef = useRef(null);
   const isHealthLongPressRef = useRef(false);
 
+  const safePomodoro = pomodoro || { status: 'idle', workDuration: 25, xpPerSession: 25, sessionsToday: 0 };
   const todayStr = getGameDate(settings?.dayStartTime || 0);
 
-  // Pomodoro Countdown Timer Tick Effect
-  useEffect(() => {
-    let interval = null;
-    if (pomodoro?.status === 'running') {
-      const target = new Date(pomodoro.targetTime).getTime();
-      const checkTimer = () => {
-        const now = Date.now();
-        const diff = Math.max(0, Math.ceil((target - now) / 1000));
-        setPomoSecs(diff);
-
-        if (diff <= 0) {
-          clearInterval(interval);
-          handlePomodoroFinish();
-        }
-      };
-
-      checkTimer();
-      interval = setInterval(checkTimer, 1000);
-    } else if (pomodoro?.status === 'paused') {
-      setPomoSecs(pomodoro.remainingTime || 0);
-    } else {
-      setPomoSecs((pomodoro?.workDuration || 25) * 60);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [pomodoro?.status, pomodoro?.targetTime, pomodoro?.workDuration]);
-
   const handlePomodoroFinish = () => {
-    if (onRewardXp && pomodoro) {
-      onRewardXp(pomodoro.targetStatId || 'int', pomodoro.xpPerSession || 25, false, 'Timer Pomodoro');
+    if (onRewardXp && safePomodoro) {
+      onRewardXp(safePomodoro.targetStatId || 'int', safePomodoro.xpPerSession || 25, false, 'Timer Pomodoro');
     }
-    if (settings.soundEnabled) {
+    if (settings?.soundEnabled) {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
@@ -90,15 +62,15 @@ export default function HomeTab({
       } catch (e) {}
     }
 
-    alert(`🍅 Pomodoro completato! Hai guadagnato +${pomodoro?.xpPerSession || 25} XP!`);
+    alert(`🍅 Pomodoro completato! Hai guadagnato +${safePomodoro.xpPerSession || 25} XP!`);
 
     if (setPomodoro) {
       setPomodoro(prev => ({
-        ...prev,
+        ...(prev || {}),
         status: 'idle',
         targetTime: null,
         remainingTime: null,
-        sessionsToday: (prev.sessionsToday || 0) + 1,
+        sessionsToday: ((prev && prev.sessionsToday) || 0) + 1,
         lastSessionDate: todayStr
       }));
     }
@@ -106,9 +78,9 @@ export default function HomeTab({
 
   const startPomodoro = () => {
     if (!setPomodoro) return;
-    const target = new Date(Date.now() + (pomodoro?.workDuration || 25) * 60 * 1000).toISOString();
+    const target = new Date(Date.now() + (safePomodoro.workDuration || 25) * 60 * 1000).toISOString();
     setPomodoro(prev => ({
-      ...prev,
+      ...(prev || {}),
       status: 'running',
       targetTime: target,
       remainingTime: null
@@ -118,7 +90,7 @@ export default function HomeTab({
   const pausePomodoro = () => {
     if (!setPomodoro) return;
     setPomodoro(prev => ({
-      ...prev,
+      ...(prev || {}),
       status: 'paused',
       remainingTime: pomoSecs
     }));
@@ -127,7 +99,7 @@ export default function HomeTab({
   const resetPomodoro = () => {
     if (!setPomodoro) return;
     setPomodoro(prev => ({
-      ...prev,
+      ...(prev || {}),
       status: 'idle',
       targetTime: null,
       remainingTime: null
@@ -135,10 +107,42 @@ export default function HomeTab({
   };
 
   const formatPomoTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const numSecs = Number(seconds) || 0;
+    const mins = Math.floor(numSecs / 60);
+    const secs = numSecs % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Pomodoro Countdown Timer Tick Effect
+  useEffect(() => {
+    let interval = null;
+    if (safePomodoro.status === 'running' && safePomodoro.targetTime) {
+      const target = new Date(safePomodoro.targetTime).getTime();
+      if (!isNaN(target) && target > 0) {
+        const checkTimer = () => {
+          const now = Date.now();
+          const diff = Math.max(0, Math.ceil((target - now) / 1000));
+          setPomoSecs(diff);
+
+          if (diff <= 0) {
+            if (interval) clearInterval(interval);
+            handlePomodoroFinish();
+          }
+        };
+
+        checkTimer();
+        interval = setInterval(checkTimer, 1000);
+      }
+    } else if (safePomodoro.status === 'paused') {
+      setPomoSecs(safePomodoro.remainingTime || 0);
+    } else {
+      setPomoSecs((safePomodoro.workDuration || 25) * 60);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [safePomodoro.status, safePomodoro.targetTime, safePomodoro.workDuration]);
 
   const handleHealthPressStart = (key) => {
     isHealthLongPressRef.current = false;
