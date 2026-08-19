@@ -150,33 +150,28 @@ export default function SettingsTab({
 
   return (
     <section id="section-settings" className="section active">
-      {/* Centered Top Profile & Hero Card */}
+      {/* Centered Floating Profile Header (No Bounding Card) */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px',
-          padding: '18px 14px',
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95))',
-          borderRadius: '20px',
-          border: '1px solid var(--glass-border)',
-          marginBottom: '16px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.22)',
+          gap: '10px',
+          margin: '8px 0 22px 0',
           textAlign: 'center'
         }}
       >
-        {/* Avatar Frame */}
+        {/* Avatar Frame (Bigger Size: 96px) */}
         <div
           style={{
             position: 'relative',
-            width: '76px',
-            height: '76px',
+            width: '96px',
+            height: '96px',
             borderRadius: '50%',
             background: 'var(--bg-card)',
-            border: '2px solid var(--accent-gold, #f59e0b)',
-            boxShadow: '0 0 18px rgba(245, 158, 11, 0.35)',
+            border: '3px solid var(--accent-gold, #f59e0b)',
+            boxShadow: '0 0 22px rgba(245, 158, 11, 0.4)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -190,7 +185,7 @@ export default function SettingsTab({
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
-            <span style={{ fontSize: '38px' }}>
+            <span style={{ fontSize: '48px' }}>
               {safePlayer.avatarEmoji || '⚔️'}
             </span>
           )}
@@ -200,10 +195,10 @@ export default function SettingsTab({
               bottom: 0,
               right: 0,
               left: 0,
-              background: 'rgba(0,0,0,0.7)',
-              fontSize: '8px',
+              background: 'rgba(0,0,0,0.75)',
+              fontSize: '9px',
               color: '#fbbf24',
-              padding: '1px 0',
+              padding: '2px 0',
               fontWeight: 'bold',
               letterSpacing: '0.5px'
             }}
@@ -212,33 +207,25 @@ export default function SettingsTab({
           </div>
         </div>
 
-        {/* Player Name Editable Input */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px' }}>
-          <input
-            type="text"
-            defaultValue={safePlayer.name || 'Avventuriero'}
-            onBlur={(e) => updatePlayerName(e.target.value)}
-            placeholder="Inserisci il tuo nome..."
-            style={{
-              background: 'transparent',
-              border: 'none',
-              borderBottom: '1px dashed rgba(255, 255, 255, 0.3)',
-              color: 'var(--text-primary)',
-              fontSize: '18px',
-              fontWeight: '800',
-              textAlign: 'center',
-              padding: '2px 6px',
-              outline: 'none',
-              width: 'auto',
-              maxWidth: '220px'
-            }}
-          />
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>✏️</span>
-        </div>
-
-        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
-          ⚙️ Impostazioni del Giocatore
-        </div>
+        {/* Clean Player Name (Tap to Rename) */}
+        <h2
+          onClick={() => {
+            const newName = window.prompt("Modifica Nome Giocatore:", safePlayer.name || 'Avventuriero');
+            if (newName !== null) updatePlayerName(newName);
+          }}
+          style={{
+            margin: 0,
+            fontSize: '22px',
+            fontWeight: '800',
+            color: 'var(--text-primary)',
+            cursor: 'pointer',
+            textAlign: 'center',
+            letterSpacing: '0.3px'
+          }}
+          title="Tocca per rinominare"
+        >
+          {safePlayer.name || 'Avventuriero'}
+        </h2>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
