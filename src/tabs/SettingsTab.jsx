@@ -9,6 +9,7 @@ export default function SettingsTab({
   setPlayer,
   xpLog = [],
   stats = [],
+  habits = [],
   fileHandle,
   onLinkDatabase,
   onReconnectDatabase,
@@ -26,12 +27,20 @@ export default function SettingsTab({
   const safeSettings = settings || {};
   const safePlayer = player || {};
   const safeXpLog = Array.isArray(xpLog) ? xpLog : [];
+  const safeHabitNames = (habits || []).map(h => (h.name || '').trim().toLowerCase()).filter(Boolean);
 
-  // Group raw XP log entries into single task completions
+  // Group raw XP log entries into single task completions (EXCLUDING HABITS - keeping only tasks & campaign milestones)
   const groupedXpLog = [];
   safeXpLog.forEach((entry) => {
     if (!entry) return;
     const title = (entry.title || entry.reason || entry.name || entry.source || 'Attività completata').trim();
+    if (!title) return;
+
+    // Filter out habits
+    if (entry.itemType === 'habit') return;
+    if (entry.isMonthlyTask === false) return;
+    if (safeHabitNames.includes(title.toLowerCase())) return;
+
     const date = entry.date || '';
     const timestamp = entry.timestamp || 0;
 
