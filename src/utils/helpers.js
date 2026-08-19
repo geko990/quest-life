@@ -117,6 +117,77 @@ export function formatDate(dateStr) {
     return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
 }
 
+export function getMonthlyStarCounts(monthId, completionLog = {}, oneshots = [], quests = [], xpLog = []) {
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, total: 0 };
+    if (!monthId) return counts;
+
+    // 1. Completion log inspection
+    const monthDates = Object.keys(completionLog || {}).filter(d => d.startsWith(monthId));
+
+    monthDates.forEach(date => {
+        const log = completionLog[date];
+        if (!log) return;
+
+        // Task singoli (oneshots)
+        if (Array.isArray(log.oneshots)) {
+            log.oneshots.forEach(id => {
+                const item = (oneshots || []).find(o => o.id === id);
+                if (item) {
+                    const stars = item.difficulty || item.stars || 1;
+                    if (counts[stars] !== undefined) counts[stars]++;
+                    counts.total++;
+                }
+            });
+        }
+
+        // Campagne (quests)
+        if (Array.isArray(log.quests)) {
+            log.quests.forEach(id => {
+                const quest = (quests || []).find(q => q.id === id);
+                if (quest) {
+                    const stars = quest.difficulty || quest.stars || 1;
+                    if (counts[stars] !== undefined) counts[stars]++;
+                    counts.total++;
+                }
+            });
+        }
+
+        // Milestones (subquests)
+        if (Array.isArray(log.subquests)) {
+            log.subquests.forEach(sub => {
+                const questId = typeof sub === 'string' && sub.includes(':') ? sub.split(':')[0] : sub;
+                const quest = (quests || []).find(q => q.id === questId);
+                if (quest) {
+                    const stars = quest.difficulty || quest.stars || 1;
+                    if (counts[stars] !== undefined) counts[stars]++;
+                    counts.total++;
+                }
+            });
+        }
+    });
+
+    // 2. XP Log inspection fallback (if entries have stars logged directly or match completed items)
+    const monthXpLogs = (xpLog || []).filter(
+        entry => entry.date && entry.date.startsWith(monthId) && entry.amount > 0 && entry.title
+    );
+
+    monthXpLogs.forEach(entry => {
+        if (entry.stars) {
+            const stars = entry.stars;
+            if (counts[stars] !== undefined) counts[stars]++;
+            counts.total++;
+        }
+    });
+
+    return counts;
+}
+
+export function isMonthlyPyramidMet(starCounts) {
+    if (!starCounts) return false;
+    return (starCounts[3] || 0) >= 5 && (starCounts[4] || 0) >= 3 && (starCounts[5] || 0) >= 2;
+}
+
 export { forceUpdateApp, checkAppUpdate } from './pwaManager';
+
 
 
