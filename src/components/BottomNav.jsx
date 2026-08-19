@@ -1,13 +1,41 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType }) {
+  const lastSettingsClickRef = useRef(0);
+  const clickTimeoutRef = useRef(null);
+
   const navItems = [
     { id: 'habits', icon: '📜', label: 'Abitudini' },
     { id: 'missions', icon: '⚔️', label: 'Missioni' },
     { id: 'home', icon: 'avatar', label: 'Eroe', isCenter: true },
     { id: 'nutrition', icon: '🍎', label: 'Salute' },
-    { id: 'settings', icon: '⚙️', label: 'Opzioni' },
+    { id: 'settings', icon: activeTab === 'finances' ? '💰' : '⚙️', label: activeTab === 'finances' ? 'Tesoro' : 'Opzioni' },
   ];
+
+  const handleItemClick = (itemId) => {
+    if (itemId === 'settings') {
+      const now = Date.now();
+      const delta = now - lastSettingsClickRef.current;
+      lastSettingsClickRef.current = now;
+
+      if (delta < 350) {
+        // Double tap: clear pending single click timeout and switch to finances
+        if (clickTimeoutRef.current) {
+          clearTimeout(clickTimeoutRef.current);
+          clickTimeoutRef.current = null;
+        }
+        setActiveTab(activeTab === 'finances' ? 'settings' : 'finances');
+        return;
+      }
+
+      // Single tap: set timer to switch to settings if no second tap occurs
+      clickTimeoutRef.current = setTimeout(() => {
+        setActiveTab('settings');
+      }, 250);
+    } else {
+      setActiveTab(itemId);
+    }
+  };
 
   return (
     <nav
@@ -31,7 +59,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
           return (
             <div key={item.id} style={{ position: 'relative', top: '-14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <button
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleItemClick(item.id)}
                 style={{
                   width: '52px',
                   height: '52px',
@@ -62,11 +90,11 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
           );
         }
 
-        const isActive = activeTab === item.id;
+        const isActive = activeTab === item.id || (item.id === 'settings' && activeTab === 'finances');
         return (
           <button
             key={item.id}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => handleItemClick(item.id)}
             style={{
               display: 'flex',
               flexDirection: 'column',
