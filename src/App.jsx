@@ -673,6 +673,7 @@ export default function App() {
               emoji: chosenEmoji,
               slotType: key,
               difficulty: slot.stars || o.difficulty,
+              stars: slot.stars || o.stars || o.difficulty,
               primaryTarget: slot.statId || o.primaryTarget,
               secondaryTarget: slot.secondaryStatId || o.secondaryTarget || null,
               scheduledCount: (o.scheduledCount || 0) + 1,
@@ -692,6 +693,7 @@ export default function App() {
           emoji: chosenEmoji,
           slotType: key,
           difficulty: slot.stars,
+          stars: slot.stars,
           primaryTarget: slot.statId,
           secondaryTarget: slot.secondaryStatId || null,
           completed: false,
@@ -728,11 +730,13 @@ export default function App() {
         setStats(prev => [...prev, newStat]);
       }
     } else if (targetType === 'habit') {
+      const diff = formData.difficulty !== undefined ? formData.difficulty : (formData.stars !== undefined ? formData.stars : 3);
+      const dataToSave = { ...formData, difficulty: diff, stars: diff };
       if (editData) {
-        setHabits(prev => prev.map(h => (h.id === editData.id ? { ...h, ...formData } : h)));
+        setHabits(prev => prev.map(h => (h.id === editData.id ? { ...h, ...dataToSave } : h)));
       } else {
         const newHabit = {
-          ...formData,
+          ...dataToSave,
           id: 'habit_' + Date.now(),
           streak: 0,
           locked: false,
@@ -741,11 +745,13 @@ export default function App() {
         setHabits(prev => [...prev, newHabit]);
       }
     } else if (targetType === 'oneshot') {
+      const diff = formData.difficulty !== undefined ? formData.difficulty : (formData.stars !== undefined ? formData.stars : 3);
+      const dataToSave = { ...formData, difficulty: diff, stars: diff };
       if (editData) {
-        setOneshots(prev => prev.map(o => (o.id === editData.id ? { ...o, ...formData } : o)));
+        setOneshots(prev => prev.map(o => (o.id === editData.id ? { ...o, ...dataToSave } : o)));
       } else {
         const newOneshot = {
-          ...formData,
+          ...dataToSave,
           id: 'oneshot_' + Date.now(),
           locked: false,
           createdAt: new Date().toISOString()
@@ -753,11 +759,13 @@ export default function App() {
         setOneshots(prev => [...prev, newOneshot]);
       }
     } else if (targetType === 'quest') {
+      const diff = formData.difficulty !== undefined ? formData.difficulty : (formData.stars !== undefined ? formData.stars : 3);
+      const dataToSave = { ...formData, difficulty: diff, stars: diff };
       if (editData) {
-        setQuests(prev => prev.map(q => (q.id === editData.id ? { ...q, ...formData } : q)));
+        setQuests(prev => prev.map(q => (q.id === editData.id ? { ...q, ...dataToSave } : q)));
       } else {
         const newQuest = {
-          ...formData,
+          ...dataToSave,
           id: 'quest_' + Date.now(),
           completed: false,
           createdAt: new Date().toISOString()

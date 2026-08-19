@@ -103,7 +103,7 @@ export default function MissionsTab({
             ) : (
               filteredOneshots.map((o) => {
                 const primaryStat = stats.find(s => s.id === o.primaryTarget);
-                const starsCount = o.difficulty || 1;
+                const starsCount = o.difficulty !== undefined ? o.difficulty : (o.stars || 1);
 
                 return (
                   <div

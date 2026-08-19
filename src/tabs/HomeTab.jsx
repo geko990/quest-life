@@ -70,6 +70,14 @@ export default function HomeTab({
     }, 100);
   };
 
+  const handleHealthPressCancel = () => {
+    if (healthPressTimerRef.current) {
+      clearTimeout(healthPressTimerRef.current);
+      healthPressTimerRef.current = null;
+    }
+    isHealthLongPressRef.current = false;
+  };
+
   // Quick-add handlers for health stats on Home Tab
   const handleAddWater = (amount = 1) => {
     if (!setHealth) return;
@@ -335,10 +343,9 @@ export default function HomeTab({
       {/* 1. Radar Chart Card (Enlarged to fill space) */}
       <div
         className="glass-panel"
-        onMouseDown={handleTouchStart}
-        onMouseUp={handleTouchEnd}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onPointerDown={handleTouchStart}
+        onPointerUp={handleTouchEnd}
+        onPointerCancel={handleTouchEnd}
         onClick={handleChartClick}
         style={{
           padding: '8px 12px',
@@ -479,10 +486,9 @@ export default function HomeTab({
               🍎 Sostentamento di oggi
             </h3>
             <span
-              onMouseDown={() => handleHealthPressStart('consumed')}
-              onMouseUp={() => handleHealthPressEnd(() => {})}
-              onTouchStart={() => handleHealthPressStart('consumed')}
-              onTouchEnd={(e) => handleHealthPressEnd(() => {})}
+              onPointerDown={() => handleHealthPressStart('consumed')}
+              onPointerUp={() => handleHealthPressEnd(() => {})}
+              onPointerCancel={handleHealthPressCancel}
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 fontSize: '11px',
@@ -502,10 +508,9 @@ export default function HomeTab({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
             {/* 🔥 Calorie Bruciate */}
             <div
-              onMouseDown={() => handleHealthPressStart('calories')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
-              onTouchStart={() => handleHealthPressStart('calories')}
-              onTouchEnd={(e) => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
+              onPointerDown={() => handleHealthPressStart('calories')}
+              onPointerUp={() => handleHealthPressEnd(() => handleAddBurnedCalories(100))}
+              onPointerCancel={handleHealthPressCancel}
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
@@ -527,10 +532,9 @@ export default function HomeTab({
 
             {/* 💧 Acqua */}
             <div
-              onMouseDown={() => handleHealthPressStart('water')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddWater(1))}
-              onTouchStart={() => handleHealthPressStart('water')}
-              onTouchEnd={(e) => handleHealthPressEnd(() => handleAddWater(1))}
+              onPointerDown={() => handleHealthPressStart('water')}
+              onPointerUp={() => handleHealthPressEnd(() => handleAddWater(1))}
+              onPointerCancel={handleHealthPressCancel}
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
@@ -551,10 +555,9 @@ export default function HomeTab({
 
             {/* 👟 Passi */}
             <div
-              onMouseDown={() => handleHealthPressStart('steps')}
-              onMouseUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
-              onTouchStart={() => handleHealthPressStart('steps')}
-              onTouchEnd={(e) => handleHealthPressEnd(() => handleAddSteps(1000))}
+              onPointerDown={() => handleHealthPressStart('steps')}
+              onPointerUp={() => handleHealthPressEnd(() => handleAddSteps(1000))}
+              onPointerCancel={handleHealthPressCancel}
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',

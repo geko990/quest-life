@@ -66,10 +66,15 @@ export default function QuestsTab({
                   {primaryStat.icon} {primaryStat.name}
                 </span>
               )}
-              <span className="text-yellow-400">
-                {'★'.repeat(q.difficulty)}
-                <span className="text-slate-600">{'★'.repeat(5 - q.difficulty)}</span>
-              </span>
+              {(() => {
+                const diff = q.difficulty !== undefined ? q.difficulty : (q.stars || 1);
+                return (
+                  <span className="text-yellow-400">
+                    {'★'.repeat(diff)}
+                    <span className="text-slate-600">{'★'.repeat(5 - Math.min(5, diff))}</span>
+                  </span>
+                );
+              })()}
               <span className="font-semibold text-text-secondary/70">
                 {completedSub}/{totalSub} obiettivi
               </span>

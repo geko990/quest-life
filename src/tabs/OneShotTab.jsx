@@ -95,10 +95,15 @@ export default function OneShotTab({
                             {primaryStat.icon} {primaryStat.name}
                           </span>
                         )}
-                        <span className="text-yellow-400">
-                          {'★'.repeat(o.difficulty)}
-                          <span className="text-slate-600">{'★'.repeat(5 - o.difficulty)}</span>
-                        </span>
+                        {(() => {
+                          const diff = o.difficulty !== undefined ? o.difficulty : (o.stars || 1);
+                          return (
+                            <span className="text-yellow-400">
+                              {'★'.repeat(diff)}
+                              <span className="text-slate-600">{'★'.repeat(5 - Math.min(5, diff))}</span>
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
