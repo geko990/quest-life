@@ -63,7 +63,8 @@ export function getInitialState() {
       monthlyBudget: 1000,
       hideBalances: false,
       transactions: [],
-      savingGoals: []
+      savingGoals: [],
+      secondaryAccounts: []
     },
     health: {
       calories: { goal: 1600, consumed: 0, burned: 0 },
@@ -332,7 +333,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       monthlyBudget: Number(parsed.finances.monthlyBudget) || 1000,
       hideBalances: Boolean(parsed.finances.hideBalances),
       transactions: Array.isArray(parsed.finances.transactions) ? parsed.finances.transactions : [],
-      savingGoals: Array.isArray(parsed.finances.savingGoals) ? parsed.finances.savingGoals : []
+      savingGoals: Array.isArray(parsed.finances.savingGoals) ? parsed.finances.savingGoals : [],
+      secondaryAccounts: Array.isArray(parsed.finances.secondaryAccounts) ? parsed.finances.secondaryAccounts : []
     };
   } else {
     state.finances = {
@@ -340,7 +342,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       monthlyBudget: 1000,
       hideBalances: false,
       transactions: [],
-      savingGoals: []
+      savingGoals: [],
+      secondaryAccounts: []
     };
   }
 
