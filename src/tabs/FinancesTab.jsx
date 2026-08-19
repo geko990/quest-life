@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
 import { getGameDate } from '../utils/helpers';
 
-const CATEGORIES = [
+const EXPENSE_CATEGORIES = [
   { id: 'cibo', label: 'Cibo & Ristorante', emoji: '🍕' },
   { id: 'casa', label: 'Casa & Bollette', emoji: '🏠' },
   { id: 'trasporti', label: 'Trasporti & Auto', emoji: '🚗' },
   { id: 'svago', label: 'Svago & Tempo Libero', emoji: '🎮' },
   { id: 'salute', label: 'Salute & Benessere', emoji: '💊' },
   { id: 'tecnologia', label: 'Tecnologia & Lavoro', emoji: '💻' },
-  { id: 'altro', label: 'Altre Spese', emoji: '📦' }
+  { id: 'altro_spesa', label: 'Altre Spese', emoji: '📦' }
 ];
+
+const INCOME_CATEGORIES = [
+  { id: 'stipendio', label: 'Stipendio / Salario', emoji: '💼' },
+  { id: 'fattura', label: 'Fattura / Freelance', emoji: '📜' },
+  { id: 'prestazione', label: 'Prestazione Occasionale', emoji: '🛠️' },
+  { id: 'regalo', label: 'Regalo / Donazione', emoji: '🎁' },
+  { id: 'investimenti', label: 'Rendimenti / Investimenti', emoji: '📈' },
+  { id: 'rimborso', label: 'Rimborso / Note Spese', emoji: '🔄' },
+  { id: 'vendita', label: 'Vendita Usato / Oggetti', emoji: '🏷️' },
+  { id: 'altro_entrata', label: 'Altre Entrate', emoji: '💰' }
+];
+
+const ALL_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
+
+const getCategoryObj = (catId) => {
+  return ALL_CATEGORIES.find(c => c.id === catId) || { emoji: '📦', label: 'Altro' };
+};
 
 export default function FinancesTab({
   finances = { balance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [] },
@@ -64,10 +81,15 @@ export default function FinancesTab({
   const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const budgetPct = Math.min(100, Math.round((monthExpenses / (finances.monthlyBudget || 1)) * 100));
 
-  // Category Expenses Breakdown
+  // Category Expenses & Income Breakdown
   const catExpensesMap = {};
   monthTransactions.filter(t => t.type === 'expense').forEach(t => {
     catExpensesMap[t.category] = (catExpensesMap[t.category] || 0) + t.amount;
+  });
+
+  const catIncomeMap = {};
+  monthTransactions.filter(t => t.type === 'income').forEach(t => {
+    catIncomeMap[t.category] = (catIncomeMap[t.category] || 0) + t.amount;
   });
 
   // Handlers
@@ -77,6 +99,7 @@ export default function FinancesTab({
 
   const handleOpenAddTxModal = (mode) => {
     setTxModalMode(mode);
+    setCategoryInput(mode === 'income' ? 'stipendio' : 'cibo');
     setAmountInput('');
     setNoteInput('');
     setDateInput(getGameDate());
@@ -164,10 +187,8 @@ export default function FinancesTab({
     e.preventDefault();
     if (!secAccountAction) return;
     const { account, type } = secAccountAction;
-    const val = parseFloat(secActionAmount.replace(',', '.'));
 
     if (type === 'interest') {
-      // Calculate annual interest yield on account balance
       const interestEarned = Math.round((account.balance * (account.interestRate / 100)) * 100) / 100;
       if (interestEarned <= 0) {
         alert("Nessun interesse maturato disponibile su questo saldo!");
@@ -186,6 +207,7 @@ export default function FinancesTab({
       return;
     }
 
+    const val = parseFloat(secActionAmount.replace(',', '.'));
     if (isNaN(val) || val <= 0) return;
 
     setFinances(prev => ({
@@ -218,9 +240,13 @@ export default function FinancesTab({
     return true;
   });
 
-  const activeCategoryLabel = filterCategory === 'all' 
-    ? 'Tutte' 
-    : (CATEGORIES.find(c => c.id === filterCategory)?.emoji + ' ' + CATEGORIES.find(c => c.id === filterCategory)?.label);
+  // Dynamic Categories list for Filter modal
+  const availableCategoriesForFilter = filterType === 'expense' 
+    ? EXPENSE_CATEGORIES 
+    : (filterType === 'income' ? INCOME_CATEGORIES : ALL_CATEGORIES);
+
+  // Dynamic Categories list for Add modal
+  const currentModalCategories = txModalMode === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
@@ -513,7 +539,10 @@ export default function FinancesTab({
                 {['all', 'expense', 'income'].map(t => (
                   <button
                     key={t}
-                    onClick={() => setFilterType(t)}
+                    onClick={() => {
+                      setFilterType(t);
+                      setFilterCategory('all');
+                    }}
                     style={{
                       background: filterType === t ? 'var(--accent-primary)' : 'transparent',
                       color: filterType === t ? '#fff' : 'var(--text-secondary)',
@@ -538,7 +567,7 @@ export default function FinancesTab({
                 style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '6px', fontSize: '10px', padding: '2px 4px' }}
               >
                 <option value="all">Tutte le Categorie</option>
-                {CATEGORIES.map(c => (
+                {availableCategoriesForFilter.map(c => (
                   <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
                 ))}
               </select>
@@ -555,7 +584,7 @@ export default function FinancesTab({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '200px', overflowY: 'auto', paddingRight: '2px' }}>
               {filteredTransactions.map(t => {
-                const catObj = CATEGORIES.find(c => c.id === t.category) || { emoji: '📦', label: 'Altro' };
+                const catObj = getCategoryObj(t.category);
                 const isIncome = t.type === 'income';
 
                 return (
@@ -604,35 +633,83 @@ export default function FinancesTab({
 
         {/* Content View: Category Breakdown */}
         {activeSubView === 'categories' && (
-          monthExpenses === 0 ? (
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
-              Nessuna spesa registrata per questo mese.
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
-              {CATEGORIES.map(cat => {
-                const catSpent = catExpensesMap[cat.id] || 0;
-                if (catSpent === 0) return null;
-                const catPct = Math.round((catSpent / monthExpenses) * 100);
-
-                return (
-                  <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
-                      <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                        {cat.emoji} {cat.label}
-                      </span>
-                      <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                        {fmtCurrency(catSpent)} ({catPct}%)
-                      </span>
-                    </div>
-                    <div style={{ width: '100%', height: '4px', background: 'var(--bg-primary)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${catPct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '2px' }} />
-                    </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '220px', overflowY: 'auto' }}>
+            {/* Expense Categories Breakdown */}
+            {(filterType === 'all' || filterType === 'expense') && (
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#ef4444', marginBottom: '4px', textTransform: 'uppercase' }}>
+                  🔴 Uscite per Categoria ({fmtCurrency(monthExpenses)})
+                </div>
+                {monthExpenses === 0 ? (
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '2px 0' }}>
+                    Nessuna spesa registrata nel mese.
                   </div>
-                );
-              })}
-            </div>
-          )
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    {EXPENSE_CATEGORIES.map(cat => {
+                      const catSpent = catExpensesMap[cat.id] || 0;
+                      if (catSpent === 0) return null;
+                      const catPct = Math.round((catSpent / monthExpenses) * 100);
+
+                      return (
+                        <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                              {cat.emoji} {cat.label}
+                            </span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                              {fmtCurrency(catSpent)} ({catPct}%)
+                            </span>
+                          </div>
+                          <div style={{ width: '100%', height: '4px', background: 'var(--bg-primary)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: `${catPct}%`, height: '100%', background: '#ef4444', borderRadius: '2px' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Income Categories Breakdown */}
+            {(filterType === 'all' || filterType === 'income') && (
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#22c55e', marginBottom: '4px', textTransform: 'uppercase' }}>
+                  🟢 Entrate per Categoria ({fmtCurrency(monthIncome)})
+                </div>
+                {monthIncome === 0 ? (
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '2px 0' }}>
+                    Nessuna entrata registrata nel mese.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    {INCOME_CATEGORIES.map(cat => {
+                      const catEarned = catIncomeMap[cat.id] || 0;
+                      if (catEarned === 0) return null;
+                      const catPct = Math.round((catEarned / monthIncome) * 100);
+
+                      return (
+                        <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                              {cat.emoji} {cat.label}
+                            </span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                              {fmtCurrency(catEarned)} ({catPct}%)
+                            </span>
+                          </div>
+                          <div style={{ width: '100%', height: '4px', background: 'var(--bg-primary)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: `${catPct}%`, height: '100%', background: '#22c55e', borderRadius: '2px' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
       </div>
@@ -660,13 +737,15 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                  Categoria {txModalMode === 'expense' ? '(Uscita)' : '(Entrata)'}
+                </label>
                 <select
                   value={categoryInput}
                   onChange={(e) => setCategoryInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  {CATEGORIES.map(c => (
+                  {currentModalCategories.map(c => (
                     <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
                   ))}
                 </select>
@@ -676,7 +755,7 @@ export default function FinancesTab({
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione</label>
                 <input
                   type="text"
-                  placeholder="Es. Spesa, Stipendio..."
+                  placeholder={txModalMode === 'expense' ? "Es. Spesa Conad, Benzina..." : "Es. Stipendio Mese, Consulenza..."}
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
@@ -803,7 +882,7 @@ export default function FinancesTab({
         </div>
       )}
 
-      {/* MODAL: Azione su Conto Secondario (Deposita / Preleva / Accreditamento Interessi) */}
+      {/* MODAL: Azione su Conto Secondario */}
       {secAccountAction && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
