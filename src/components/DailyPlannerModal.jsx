@@ -126,24 +126,33 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
 
         {/* Rigo 2: Custom Emoji + Barra Nome + Emoji 📋 */}
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          <input
-            type="text"
-            value={slot.emoji !== undefined ? slot.emoji : theme.emoji}
-            onChange={(e) => handleSlotChange(key, 'emoji', e.target.value)}
-            style={{
-              width: '34px',
-              height: '34px',
-              textAlign: 'center',
-              fontSize: '16px',
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              padding: 0,
-              flexShrink: 0
+          <button
+            type="button"
+            onClick={() => {
+              const currentVal = slot.emoji || theme.emoji;
+              const chosen = window.prompt("Scegli o digita l'emoji per quest'azione:", currentVal);
+              if (chosen !== null && chosen.trim() !== '') {
+                handleSlotChange(key, 'emoji', chosen.trim());
+              }
             }}
-            title="Personalizza Emoji"
-          />
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--glass-border)',
+              fontSize: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
+            }}
+            title="Tocca per scegliere l'emoji"
+          >
+            {slot.emoji || theme.emoji}
+          </button>
 
           <input
             type="text"
