@@ -144,6 +144,21 @@ export default function HomeTab({
     };
   }, [safePomodoro.status, safePomodoro.targetTime, safePomodoro.workDuration]);
 
+  const POMO_MINUTE_PRESETS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 120];
+  const wheelScrollRef = useRef(null);
+
+  // Auto-scroll wheel to active duration on mount / idle toggle
+  useEffect(() => {
+    if (cardMode === 'pomodoro' && safePomodoro.status === 'idle' && wheelScrollRef.current) {
+      const activeMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
+      const idx = POMO_MINUTE_PRESETS.findIndex(m => m === activeMins);
+      if (idx !== -1) {
+        const itemWidth = 82;
+        wheelScrollRef.current.scrollLeft = idx * itemWidth;
+      }
+    }
+  }, [cardMode, safePomodoro.status, pomoSecs, safePomodoro.workDuration]);
+
   const handleHealthPressStart = (key) => {
     isHealthLongPressRef.current = false;
     if (healthPressTimerRef.current) clearTimeout(healthPressTimerRef.current);
@@ -552,48 +567,89 @@ export default function HomeTab({
           {cardMode === 'pomodoro' ? (
             /* IN-CARD POMODORO WORKSTATION VIEW */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', padding: '2px 0', boxSizing: 'border-box' }}>
-              {/* 1. Top Row: Centered Large Minutes Countdown (Tap digits to edit) */}
-              <div
-                onClick={() => {
-                  if (safePomodoro.status === 'running') return;
-                  const currentMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
-                  const input = window.prompt("Imposta i minuti del Pomodoro (es. 15, 25, 45, 60):", currentMins);
-                  if (input !== null) {
-                    const newMins = parseInt(input.trim(), 10);
-                    if (!isNaN(newMins) && newMins > 0 && newMins <= 180) {
-                      setPomoSecs(newMins * 60);
-                      if (setPomodoro) {
-                        setPomodoro(prev => ({
-                          ...(prev || {}),
-                          workDuration: newMins,
-                          remainingTime: newMins * 60
-                        }));
-                      }
-                    }
-                  }
-                }}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  cursor: safePomodoro.status === 'running' ? 'default' : 'pointer',
-                  paddingTop: '2px'
-                }}
-                title={safePomodoro.status === 'running' ? '' : 'Tocca per modificare i minuti'}
-              >
-                <span
+              {/* 1. Top Row: Centered Minutes Display or Horizontal Swipe Wheel */}
+              {safePomodoro.status === 'idle' ? (
+                <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '42px' }}>
+                  <div
+                    ref={wheelScrollRef}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      overflowX: 'auto',
+                      scrollSnapType: 'x mandatory',
+                      WebkitOverflowScrolling: 'touch',
+                      width: '230px',
+                      height: '42px',
+                      paddingLeft: 'calc(50% - 36px)',
+                      paddingRight: 'calc(50% - 36px)',
+                      boxSizing: 'border-box',
+                      scrollbarWidth: 'none',
+                      maskImage: 'linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)'
+                    }}
+                    className="no-scrollbar"
+                  >
+                    {POMO_MINUTE_PRESETS.map((m) => {
+                      const isSelected = (Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25) === m;
+                      return (
+                        <div
+                          key={m}
+                          onClick={() => {
+                            setPomoSecs(m * 60);
+                            if (setPomodoro) {
+                              setPomodoro(prev => ({
+                                ...(prev || {}),
+                                workDuration: m,
+                                remainingTime: m * 60
+                              }));
+                            }
+                          }}
+                          style={{
+                            scrollSnapAlign: 'center',
+                            flexShrink: 0,
+                            fontSize: isSelected ? '34px' : '20px',
+                            fontWeight: isSelected ? '900' : '600',
+                            fontFamily: 'monospace',
+                            color: isSelected ? '#ef4444' : 'var(--text-secondary)',
+                            opacity: isSelected ? 1 : 0.35,
+                            transform: isSelected ? 'scale(1.05)' : 'scale(0.85)',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                            cursor: 'pointer',
+                            userSelect: 'none',
+                            minWidth: '72px',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {m}:00
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div
                   style={{
-                    fontSize: '36px',
-                    fontWeight: '900',
-                    fontFamily: 'monospace',
-                    color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)',
-                    lineHeight: 1,
-                    letterSpacing: '1px'
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '42px'
                   }}
                 >
-                  {formatPomoTime(pomoSecs)}
-                </span>
-              </div>
+                  <span
+                    style={{
+                      fontSize: '36px',
+                      fontWeight: '900',
+                      fontFamily: 'monospace',
+                      color: safePomodoro.status === 'running' ? '#ef4444' : '#f59e0b',
+                      lineHeight: 1,
+                      letterSpacing: '1px'
+                    }}
+                  >
+                    {formatPomoTime(pomoSecs)}
+                  </span>
+                </div>
+              )}
 
               {/* 2. Bottom Row: Left (Stat Selector) & Right (Control Buttons) */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
