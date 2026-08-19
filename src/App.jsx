@@ -1173,6 +1173,8 @@ export default function App() {
             health={health}
             setHealth={setHealth}
             pomodoro={pomodoro}
+            setPomodoro={setPomodoro}
+            onRewardXp={handleRewardXp}
             oneshots={oneshots}
             onToggleOneshot={handleToggleOneshot}
             habits={habits}

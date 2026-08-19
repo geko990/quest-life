@@ -16,6 +16,8 @@ export default function HomeTab({
   health,
   setHealth,
   pomodoro,
+  setPomodoro,
+  onRewardXp,
   oneshots = [],
   onToggleOneshot,
   habits = [],
@@ -33,9 +35,110 @@ export default function HomeTab({
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [cardMode, setCardMode] = useState('tasks'); // 'tasks' or 'pomodoro'
+  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const [pomoSecs, setPomoSecs] = useState(0);
+
   const pressTimerRef = useRef(null);
   const healthPressTimerRef = useRef(null);
   const isHealthLongPressRef = useRef(false);
+
+  const todayStr = getGameDate(settings?.dayStartTime || 0);
+
+  // Pomodoro Countdown Timer Tick Effect
+  useEffect(() => {
+    let interval = null;
+    if (pomodoro?.status === 'running') {
+      const target = new Date(pomodoro.targetTime).getTime();
+      const checkTimer = () => {
+        const now = Date.now();
+        const diff = Math.max(0, Math.ceil((target - now) / 1000));
+        setPomoSecs(diff);
+
+        if (diff <= 0) {
+          clearInterval(interval);
+          handlePomodoroFinish();
+        }
+      };
+
+      checkTimer();
+      interval = setInterval(checkTimer, 1000);
+    } else if (pomodoro?.status === 'paused') {
+      setPomoSecs(pomodoro.remainingTime || 0);
+    } else {
+      setPomoSecs((pomodoro?.workDuration || 25) * 60);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [pomodoro?.status, pomodoro?.targetTime, pomodoro?.workDuration]);
+
+  const handlePomodoroFinish = () => {
+    if (onRewardXp && pomodoro) {
+      onRewardXp(pomodoro.targetStatId || 'int', pomodoro.xpPerSession || 25, false, 'Timer Pomodoro');
+    }
+    if (settings.soundEnabled) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } catch (e) {}
+    }
+
+    alert(`🍅 Pomodoro completato! Hai guadagnato +${pomodoro?.xpPerSession || 25} XP!`);
+
+    if (setPomodoro) {
+      setPomodoro(prev => ({
+        ...prev,
+        status: 'idle',
+        targetTime: null,
+        remainingTime: null,
+        sessionsToday: (prev.sessionsToday || 0) + 1,
+        lastSessionDate: todayStr
+      }));
+    }
+  };
+
+  const startPomodoro = () => {
+    if (!setPomodoro) return;
+    const target = new Date(Date.now() + (pomodoro?.workDuration || 25) * 60 * 1000).toISOString();
+    setPomodoro(prev => ({
+      ...prev,
+      status: 'running',
+      targetTime: target,
+      remainingTime: null
+    }));
+  };
+
+  const pausePomodoro = () => {
+    if (!setPomodoro) return;
+    setPomodoro(prev => ({
+      ...prev,
+      status: 'paused',
+      remainingTime: pomoSecs
+    }));
+  };
+
+  const resetPomodoro = () => {
+    if (!setPomodoro) return;
+    setPomodoro(prev => ({
+      ...prev,
+      status: 'idle',
+      targetTime: null,
+      remainingTime: null
+    }));
+  };
+
+  const formatPomoTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleHealthPressStart = (key) => {
     isHealthLongPressRef.current = false;
@@ -306,8 +409,6 @@ export default function HomeTab({
   };
 
   // ONLY calculate actions planned via the Daily Planner for today
-  const todayStr = getGameDate(settings?.dayStartTime || 0);
-
   const todayActionsList = (oneshots || []).filter(
     o => !o.locked && o.fromDailyPlan && o.dailyPlanDate === todayStr
   );
@@ -365,18 +466,58 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* 2. Tessera "Azioni del Giorno" (Griglia 2x2) */}
+      {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
       <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>⚔️</span>
+            <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
-              Azioni del Giorno
+              {cardMode === 'pomodoro' ? 'Timer Pomodoro' : 'Azioni del Giorno'}
             </h3>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            {/* Pomodoro Switch Button */}
             <button
+              type="button"
+              onClick={() => setCardMode(prev => prev === 'tasks' ? 'pomodoro' : 'tasks')}
+              style={{
+                padding: (pomodoro?.status === 'running' || pomodoro?.status === 'paused') ? '4px 10px' : '0',
+                width: (pomodoro?.status === 'running' || pomodoro?.status === 'paused') ? 'auto' : '30px',
+                height: '30px',
+                borderRadius: '15px',
+                background: cardMode === 'pomodoro' || pomodoro?.status === 'running'
+                  ? 'rgba(239, 68, 68, 0.2)'
+                  : 'var(--bg-secondary)',
+                color: pomodoro?.status === 'running' ? '#ef4444' : 'var(--text-primary)',
+                fontWeight: 'bold',
+                fontSize: '11px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                boxShadow: pomodoro?.status === 'running' ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none',
+                border: cardMode === 'pomodoro' ? '1px solid #ef4444' : '1px solid var(--glass-border)'
+              }}
+              title={cardMode === 'pomodoro' ? "Passa a Lista Task" : "Passa a Timer Pomodoro"}
+            >
+              <span>🍅</span>
+              {pomodoro?.status === 'running' && (
+                <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>
+                  {formatPomoTime(pomoSecs)}
+                </span>
+              )}
+              {pomodoro?.status === 'paused' && (
+                <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>
+                  Pausa ({formatPomoTime(pomoSecs)})
+                </span>
+              )}
+            </button>
+
+            {/* Plus Button */}
+            <button
+              type="button"
               onClick={() => onOpenModal('oneshot')}
               style={{
                 width: '30px',
@@ -401,80 +542,201 @@ export default function HomeTab({
             </button>
           </div>
         </div>
-        {todayActionsList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '18px 14px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            {/* 1. Emoji dado (in alto) */}
-            <div style={{ fontSize: '32px', marginBottom: '8px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
 
-            {/* 2. Bottone "Pianifica la tua giornata" (in mezzo, senza emoji) */}
-            <button
-              onClick={onOpenPlanner}
-              className="btn-primary"
-              style={{ padding: '9px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
-            >
-              Pianifica la tua giornata
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {todayActionsList.map((action, index) => {
-              const isCompleted = !!action.completed;
-              const info = SLOT_CATEGORY_INFO.find(s => s.type === action.slotType) || SLOT_CATEGORY_INFO[index] || SLOT_CATEGORY_INFO[0];
-
-              return (
-                <div
-                  key={action.id}
-                  onClick={() => onToggleOneshot && onToggleOneshot(action.id)}
+        {cardMode === 'pomodoro' ? (
+          /* IN-CARD POMODORO WORKSTATION VIEW */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '2px 0' }}>
+            {/* Active Focused Task Selector */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: '14px', flexShrink: 0 }}>🎯</span>
+                <select
+                  value={selectedTaskId}
+                  onChange={(e) => setSelectedTaskId(e.target.value)}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
-                    border: isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)',
-                    padding: '10px 12px',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    opacity: isCompleted ? 0.65 : 1,
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box',
-                    minWidth: 0,
-                    boxShadow: isCompleted ? 'none' : '0 2px 6px rgba(0,0,0,0.03)'
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-primary)',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    width: '100%',
+                    outline: 'none',
+                    cursor: 'pointer'
                   }}
                 >
-                  {/* Checkbox */}
-                  <div
-                    className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onToggleOneshot) onToggleOneshot(action.id);
-                    }}
-                    style={{ width: '20px', height: '20px', flexShrink: 0 }}
-                  ></div>
+                  <option value="" style={{ background: 'var(--bg-card)' }}>🎯 Focus Libero (Nessuna task selezionata)</option>
+                  {todayActionsList.filter(a => !a.completed).map(a => (
+                    <option key={a.id} value={a.id} style={{ background: 'var(--bg-card)' }}>
+                      {a.emoji || '🎯'} {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                  {/* Content */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ fontSize: '12px' }}>{info.emoji}</span>
-                      <span style={{ fontSize: '9px', fontWeight: 'bold', color: info.color, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {info.title}
-                      </span>
-                    </div>
-                    <div style={{
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      color: 'var(--text-primary)',
-                      textDecoration: isCompleted ? 'line-through' : 'none',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {action.name}
+              {selectedTaskId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onToggleOneshot) onToggleOneshot(selectedTaskId);
+                    setSelectedTaskId('');
+                  }}
+                  style={{ fontSize: '10px', fontWeight: 'bold', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', flexShrink: 0, marginLeft: '6px' }}
+                  title="Segna questa task come completata"
+                >
+                  ✓ Completa
+                </button>
+              )}
+            </div>
+
+            {/* Countdown Display & Controls */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+              <div>
+                <div style={{ fontSize: '26px', fontWeight: '800', fontFamily: 'monospace', color: pomodoro?.status === 'running' ? '#ef4444' : 'var(--text-primary)', lineHeight: 1 }}>
+                  {formatPomoTime(pomoSecs)}
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 'bold' }}>
+                  {pomodoro?.status === 'running' ? '🔥 Focus in corso' : pomodoro?.status === 'paused' ? '⏸️ In Pausa' : '✨ Sessione da 25 Min'}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {pomodoro?.status === 'idle' && (
+                  <button
+                    type="button"
+                    onClick={startPomodoro}
+                    style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}
+                  >
+                    ▶️ Avvia
+                  </button>
+                )}
+                {pomodoro?.status === 'running' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={pausePomodoro}
+                      style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                    >
+                      ⏸️ Pausa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetPomodoro}
+                      style={{ padding: '8px 10px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                    >
+                      ⏹️
+                    </button>
+                  </>
+                )}
+                {pomodoro?.status === 'paused' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={startPomodoro}
+                      style={{ padding: '8px 12px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                    >
+                      ▶️ Riprendi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetPomodoro}
+                      style={{ padding: '8px 10px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
+                    >
+                      ⏹️
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Footer Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-secondary)', padding: '0 2px' }}>
+              <span>🍅 Sessioni oggi: <b>{pomodoro?.sessionsToday || 0}</b></span>
+              <span
+                onClick={() => setCardMode('tasks')}
+                style={{ color: 'var(--accent-primary)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                📋 Torna alla Lista Task
+              </span>
+            </div>
+          </div>
+        ) : (
+          /* STANDARD TASKS LIST VIEW */
+          todayActionsList.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '18px 14px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              {/* 1. Emoji dado (in alto) */}
+              <div style={{ fontSize: '32px', marginBottom: '8px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
+
+              {/* 2. Bottone "Pianifica la tua giornata" (in mezzo, senza emoji) */}
+              <button
+                onClick={onOpenPlanner}
+                className="btn-primary"
+                style={{ padding: '9px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
+              >
+                Pianifica la tua giornata
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {todayActionsList.map((action, index) => {
+                const isCompleted = !!action.completed;
+                const info = SLOT_CATEGORY_INFO.find(s => s.type === action.slotType) || SLOT_CATEGORY_INFO[index] || SLOT_CATEGORY_INFO[0];
+
+                return (
+                  <div
+                    key={action.id}
+                    onClick={() => onToggleOneshot && onToggleOneshot(action.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
+                      border: isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      opacity: isCompleted ? 0.65 : 1,
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      minWidth: 0,
+                      boxShadow: isCompleted ? 'none' : '0 2px 6px rgba(0,0,0,0.03)'
+                    }}
+                  >
+                    {/* Checkbox */}
+                    <div
+                      className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onToggleOneshot) onToggleOneshot(action.id);
+                      }}
+                      style={{ width: '20px', height: '20px', flexShrink: 0 }}
+                    ></div>
+
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <span style={{ fontSize: '12px' }}>{info.emoji}</span>
+                        <span style={{ fontSize: '9px', fontWeight: 'bold', color: info.color, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {info.title}
+                        </span>
+                      </div>
+                      <div style={{
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        color: 'var(--text-primary)',
+                        textDecoration: isCompleted ? 'line-through' : 'none',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {action.name}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )
         )}
       </div>
 
