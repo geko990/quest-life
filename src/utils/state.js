@@ -58,6 +58,13 @@ export function getInitialState() {
       nutritionStreak: 0,
       lastNutritionDate: null
     },
+    finances: {
+      balance: 0,
+      monthlyBudget: 1000,
+      hideBalances: false,
+      transactions: [],
+      savingGoals: []
+    },
     health: {
       calories: { goal: 1600, consumed: 0, burned: 0 },
       proteins: { goal: 100, consumed: 0 },
@@ -317,6 +324,24 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       }
       return o;
     });
+  }
+
+  if (parsed.finances) {
+    state.finances = {
+      balance: Number(parsed.finances.balance) || 0,
+      monthlyBudget: Number(parsed.finances.monthlyBudget) || 1000,
+      hideBalances: Boolean(parsed.finances.hideBalances),
+      transactions: Array.isArray(parsed.finances.transactions) ? parsed.finances.transactions : [],
+      savingGoals: Array.isArray(parsed.finances.savingGoals) ? parsed.finances.savingGoals : []
+    };
+  } else {
+    state.finances = {
+      balance: 0,
+      monthlyBudget: 1000,
+      hideBalances: false,
+      transactions: [],
+      savingGoals: []
+    };
   }
 
   return state;

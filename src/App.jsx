@@ -9,6 +9,7 @@ import HabitsTab from './tabs/HabitsTab';
 import MissionsTab from './tabs/MissionsTab';
 import NutritionTab from './tabs/NutritionTab';
 import SettingsTab from './tabs/SettingsTab';
+import FinancesTab from './tabs/FinancesTab';
 
 import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
@@ -102,6 +103,7 @@ export default function App() {
   const [inventory, setInventory] = useState(initialFullState.inventory);
   const [health, setHealth] = useState(initialFullState.health);
   const [settings, setSettings] = useState(initialFullState.settings);
+  const [finances, setFinances] = useState(initialFullState.finances);
   const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);
 
   const handleToggleDailyAction = (actionId) => {
@@ -178,7 +180,8 @@ export default function App() {
       pomodoro,
       inventory,
       health,
-      settings
+      settings,
+      finances
     };
 
     // Save to LocalStorage
@@ -188,7 +191,7 @@ export default function App() {
     if (fileHandle) {
       saveDataToFile(stateObj, fileHandle);
     }
-  }, [player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings, fileHandle]);
+  }, [player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings, finances, fileHandle]);
 
   // 5. Apply Theme & Accent attributes to root HTML element
   useEffect(() => {
@@ -1257,6 +1260,16 @@ export default function App() {
             onRepairStreaks={handleRepairStreaks}
             onReset={handleReset}
             onApplyPresetDay={handleApplyPresetDay}
+          />
+        );
+      case 'finances':
+        return (
+          <FinancesTab
+            finances={finances}
+            setFinances={setFinances}
+            stats={stats}
+            onRewardXp={handleRewardXp}
+            onOpenSettings={() => setActiveTab('settings')}
           />
         );
       default:
