@@ -326,6 +326,10 @@ export default function FinancesTab({
     }
   };
 
+  // Total Net Worth (Conto Base + Secondary Accounts)
+  const secondaryAccountsTotal = (finances.secondaryAccounts || []).reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
+  const totalPatrimonio = (Number(finances.balance) || 0) + secondaryAccountsTotal;
+
   // Filtered Transactions
   const filteredTransactions = (finances.transactions || []).filter(t => {
     if (filterType === 'expense' && t.type !== 'expense') return false;
@@ -353,12 +357,29 @@ export default function FinancesTab({
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             💰 Il Tesoro dell'Eroe
           </h2>
-          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-            Gestione Finanziaria Privata
-          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          {/* Total Net Worth Badge */}
+          <div
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '10px',
+              padding: '5px 9px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}
+            title="Patrimonio Totale (Somma di tutti i conti)"
+          >
+            <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Totale:</span>
+            <span style={{ fontSize: '12px', fontWeight: '900', color: totalPatrimonio >= 0 ? '#38bdf8' : '#ef4444' }}>
+              {fmtCurrency(totalPatrimonio)}
+            </span>
+          </div>
+
+          {/* Privacy Eye Toggle */}
           <button
             onClick={handleTogglePrivacy}
             style={{
