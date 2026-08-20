@@ -723,17 +723,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '14px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--glass-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '26px',
-                  margin: '0 auto 8px auto',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  fontSize: '36px',
+                  margin: '0 auto 6px auto',
+                  lineHeight: 1,
+                  filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
                 }}
               >
                 {currentQuest.emoji || '🏆'}
@@ -873,17 +866,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '14px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--glass-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '22px',
-                  margin: '0 auto 8px auto',
-                  boxShadow: '0 3px 10px rgba(0,0,0,0.12)'
+                  fontSize: '36px',
+                  margin: '0 auto 6px auto',
+                  lineHeight: 1,
+                  filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
                 }}
               >
                 {item.emoji || '💥'}
@@ -977,17 +963,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '14px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--glass-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '22px',
-                  margin: '0 auto 8px auto',
-                  boxShadow: '0 3px 10px rgba(0,0,0,0.12)'
+                  fontSize: '36px',
+                  margin: '0 auto 6px auto',
+                  lineHeight: 1,
+                  filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
                 }}
               >
                 {habit.emoji || '📜'}
@@ -1075,17 +1054,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '14px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--glass-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '26px',
-                  margin: '0 auto 8px auto',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  fontSize: '36px',
+                  margin: '0 auto 6px auto',
+                  lineHeight: 1,
+                  filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
                 }}
               >
                 {tmpl.icon || '⚔️'}
