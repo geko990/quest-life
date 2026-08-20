@@ -152,6 +152,22 @@ export default function App() {
   }, []);
 
   // 3. Load FileHandle on Start
+  // Sync monthlyChallenge.currentMonth with current game month
+  useEffect(() => {
+    const todayGameDate = getGameDate(settings.dayStartTime);
+    const todayMonth = todayGameDate.substring(0, 7);
+
+    if (player.monthlyChallenge?.currentMonth !== todayMonth) {
+      setPlayer(prev => ({
+        ...prev,
+        monthlyChallenge: {
+          ...prev.monthlyChallenge,
+          currentMonth: todayMonth
+        }
+      }));
+    }
+  }, [settings.dayStartTime, player.monthlyChallenge?.currentMonth]);
+
   useEffect(() => {
     async function loadHandle() {
       const handle = await loadFileHandleOnStart();
