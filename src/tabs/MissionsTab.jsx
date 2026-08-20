@@ -119,7 +119,7 @@ export default function MissionsTab({
                     data-id={o.id}
                     {...dragProps}
                   >
-                    <div className="swipe-content" onClick={() => onEditOneshot(o)}>
+                    <div className="swipe-content" onClick={() => onOpenModal('oneshot_detail', o)}>
                       <div
                         className={`card-checkbox ${o.completed ? 'checked' : ''}`}
                         onClick={(e) => {
@@ -136,7 +136,7 @@ export default function MissionsTab({
                           {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon} {primaryStat.name}</span>}
                           {o.scheduledCount > 0 && (
                             <span style={{ fontSize: '10px', color: '#8b5cf6', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.1)', padding: '1px 6px', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.25)' }}>
-                              📌 Azioni del Giorno ({o.scheduledCount}x)
+                              📌 {o.scheduledCount}x
                             </span>
                           )}
                           {o.dueDate && (
