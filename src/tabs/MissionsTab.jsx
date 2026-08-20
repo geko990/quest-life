@@ -108,6 +108,7 @@ export default function MissionsTab({
             ) : (
               filteredOneshots.map((o, idx) => {
                 const primaryStat = stats.find(s => s.id === o.primaryTarget);
+                const secondaryStat = stats.find(s => s.id === o.secondaryTarget);
                 const starsCount = o.difficulty !== undefined ? o.difficulty : (o.stars || 1);
                 const dragProps = getOneshotDragProps(o, idx);
 
