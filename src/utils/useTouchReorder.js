@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 /**
  * Custom hook to enable longpress touch & mouse drag-and-drop reordering for lists.
+ * Completely locks page/container scrolling during active drag using non-passive touch listeners.
  * 
  * @param {Array} items - The state array to reorder
  * @param {Function} setItems - The state updater function
@@ -15,8 +16,37 @@ export function useTouchReorder(items, setItems) {
   const itemsRef = useRef(items);
   itemsRef.current = items;
 
+  // Window non-passive touchmove handler to strictly lock page scroll during active drag
+  useEffect(() => {
+    const preventTouchScroll = (e) => {
+      if (isDraggingRef.current) {
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    if (draggingId) {
+      window.addEventListener('touchmove', preventTouchScroll, { passive: false });
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      const mainEl = document.querySelector('.content-area');
+      if (mainEl) mainEl.style.overflowY = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      const mainEl = document.querySelector('.content-area');
+      if (mainEl) mainEl.style.overflowY = '';
+    }
+
+    return () => {
+      window.removeEventListener('touchmove', preventTouchScroll);
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      const mainEl = document.querySelector('.content-area');
+      if (mainEl) mainEl.style.overflowY = '';
+    };
+  }, [draggingId]);
+
   const handleTouchStart = (item, index, e) => {
-    // Only drag with primary touch or primary mouse click
     if (e.button && e.button !== 0) return;
     const touch = e.touches ? e.touches[0] : e;
     startPosRef.current = { x: touch.clientX, y: touch.clientY };
@@ -24,14 +54,14 @@ export function useTouchReorder(items, setItems) {
 
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
 
-    // 300ms longpress threshold
+    // 250ms longpress threshold
     pressTimerRef.current = setTimeout(() => {
       isDraggingRef.current = true;
       setDraggingId(item.id);
       if (navigator.vibrate) {
         try { navigator.vibrate(40); } catch (err) {}
       }
-    }, 300);
+    }, 250);
   };
 
   const handleTouchMove = (e) => {
@@ -39,15 +69,14 @@ export function useTouchReorder(items, setItems) {
     const diffX = Math.abs(touch.clientX - startPosRef.current.x);
     const diffY = Math.abs(touch.clientY - startPosRef.current.y);
 
-    // If finger moves more than 8px before 300ms, user is scrolling normally -> cancel longpress
+    // If finger moves more than 6px before longpress fires, user is scrolling normally -> cancel longpress
     if (!isDraggingRef.current) {
-      if (diffX > 8 || diffY > 8) {
+      if (diffX > 6 || diffY > 6) {
         if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
       }
       return;
     }
 
-    // Active drag: prevent default page scrolling & live swap items
     if (e.cancelable) e.preventDefault();
 
     const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -91,14 +120,14 @@ export function useTouchReorder(items, setItems) {
       style: {
         touchAction: draggingId === item.id ? 'none' : 'pan-y',
         transform: draggingId === item.id ? 'scale(1.03) translateY(-2px)' : 'none',
-        boxShadow: draggingId === item.id ? '0 12px 28px rgba(124, 58, 237, 0.4)' : undefined,
+        boxShadow: draggingId === item.id ? '0 14px 32px rgba(124, 58, 237, 0.45)' : undefined,
         border: draggingId === item.id ? '2px solid var(--accent-primary)' : undefined,
         opacity: draggingId === item.id ? 0.92 : 1,
-        zIndex: draggingId === item.id ? 50 : 1,
+        zIndex: draggingId === item.id ? 100 : 1,
         transition: draggingId === item.id ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        cursor: 'grab'
+        cursor: draggingId === item.id ? 'grabbing' : 'grab'
       }
     })
   };
