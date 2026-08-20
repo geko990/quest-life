@@ -1176,8 +1176,9 @@ export default function App() {
             setPomodoro={setPomodoro}
             onRewardXp={handleRewardXp}
             oneshots={oneshots}
-            onToggleOneshot={handleToggleOneshot}
+            setOneshots={setOneshots}
             habits={habits}
+            setHabits={setHabits}
             onToggleHabit={handleToggleHabit}
             dailyActions={dailyActions}
             onToggleDailyAction={handleToggleDailyAction}
@@ -1197,6 +1198,7 @@ export default function App() {
         return (
           <HabitsTab
             habits={habits}
+            setHabits={setHabits}
             completionLog={completionLog}
             setCompletionLog={setCompletionLog}
             onToggleHabit={handleToggleHabit}
@@ -1215,11 +1217,15 @@ export default function App() {
       case 'quests':
         return (
           <MissionsTab
+            habits={habits}
+            setHabits={setHabits}
             oneshots={oneshots}
+            setOneshots={setOneshots}
             onToggleOneshot={handleToggleOneshot}
             onDeleteOneshot={handleDeleteOneshot}
             onEditOneshot={(data) => handleOpenModal('oneshot', data)}
             quests={quests}
+            setQuests={setQuests}
             onToggleSubquest={handleToggleSubquest}
             onDeleteQuest={handleDeleteQuest}
             onEditQuest={(data) => handleOpenModal('quest', data)}
