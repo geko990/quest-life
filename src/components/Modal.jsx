@@ -1912,7 +1912,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
-  const isExpandedModal = ['quest_detail', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
+  const isExpandedModal = ['quest_detail', 'challenge_preview', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
   const headerObj = getHeaderInfo();
 
   return (
@@ -1935,8 +1935,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           maxHeight: isExpandedModal ? '94vh' : '88vh'
         }}
       >
-        {/* Header (Hidden for stat_detail) */}
-        {activeT !== 'stat_detail' && (
+        {/* Header (Hidden for stat_detail, quest_detail, challenge_preview) */}
+        {!['stat_detail', 'quest_detail', 'challenge_preview'].includes(activeT) && (
           <div
             className="modal-header"
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}
@@ -1950,7 +1950,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         {/* Form */}
         <form onSubmit={handleSave} style={{ margin: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'space-between' }}>
-          <div className="px-7 py-2 overflow-y-auto no-scrollbar flex flex-col justify-start flex-1" style={{ gap: '14px' }}>
+          <div className="px-5 py-4 overflow-y-auto no-scrollbar flex flex-col justify-start flex-1" style={{ gap: '14px' }}>
             {/* Top 3-way Creation Type Selector */}
             {isCreatableItem && (
               <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '14px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
@@ -2014,103 +2014,105 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions (Centered Coherent 44x44 Emoji Buttons) */}
-          <div
-            style={{
-              padding: '12px 28px 24px 28px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '14px',
-              background: 'transparent',
-              borderTop: 'none'
-            }}
-            className="shrink-0"
-          >
-            {editData && onDelete && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
-                    onDelete(editData.id || editData);
-                    onClose();
-                  }
-                }}
-                title="Elimina"
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  fontSize: '15px',
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid rgba(239, 68, 68, 0.25)',
-                  color: '#ef4444',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                }}
-              >
-                🗑️
-              </button>
-            )}
-
-            {(type === 'stat_detail' || activeT === 'quest_detail') && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeT === 'quest_detail') {
-                    handleTypeSwitch('quest');
-                  } else if (onEditStat) {
-                    onEditStat(editData);
-                  }
-                }}
-                title="Modifica"
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  fontSize: '15px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--glass-border)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                }}
-              >
-                ✏️
-              </button>
-            )}
-
-            <button
-              type="submit"
-              title="Salva / Chiudi"
+          {/* Footer Actions (Centered Coherent 44x44 Emoji Buttons - Hidden for challenge_preview) */}
+          {activeT !== 'challenge_preview' && (
+            <div
               style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                fontSize: '15px',
-                fontWeight: 'bold',
-                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
-                color: '#ffffff',
-                border: 'none',
-                cursor: 'pointer',
+                padding: '12px 28px 24px 28px',
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
-                transition: 'all 0.2s ease'
+                alignItems: 'center',
+                gap: '14px',
+                background: 'transparent',
+                borderTop: 'none'
               }}
+              className="shrink-0"
             >
-              💾
-            </button>
-          </div>
+              {editData && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                      onDelete(editData.id || editData);
+                      onClose();
+                    }
+                  }}
+                  title="Elimina"
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
+                    fontSize: '15px',
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                  }}
+                >
+                  🗑️
+                </button>
+              )}
+
+              {(type === 'stat_detail' || activeT === 'quest_detail') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeT === 'quest_detail') {
+                      handleTypeSwitch('quest');
+                    } else if (onEditStat) {
+                      onEditStat(editData);
+                    }
+                  }}
+                  title="Modifica"
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
+                    fontSize: '15px',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--glass-border)',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                  }}
+                >
+                  ✏️
+                </button>
+              )}
+
+              <button
+                type="submit"
+                title="Salva / Chiudi"
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
+                  color: '#ffffff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                💾
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
