@@ -1,5 +1,5 @@
-export const BUILD_TIME = '2026-08-20T00:29:07.972Z';
-export const APP_VERSION = '5.9.130';
+export const BUILD_TIME = '2026-08-20T00:30:19.122Z';
+export const APP_VERSION = '5.9.131';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -41,7 +41,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv1',
         name: 'Flessioni Liv.1',
-        description: 'Programma principianti: 30 giorni per arrivare a 30 flessioni. Recupero tra serie: 60s.',
+        description: 'Programma principianti: 30 giorni a serie progressive per arrivare a 30+ flessioni. Recupero tra serie: 60s.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -52,17 +52,17 @@ export const CHALLENGE_TEMPLATES = [
         unlockRequirement: null,
         generateSubquests: () => {
             const daily = [
-                '2-2-2', '3-2-2', '3-2-2', 'Recupero',
-                '3-3-2', '4-3-2', '4-3-3', 'Recupero',
-                '5-4-3', '5-4-4', '6-5-4', 'Recupero',
-                '6-5-5', '7-6-5', '7-6-6', 'Recupero',
-                '8-6-5', '8-7-6', '9-7-6', 'Recupero',
-                '10-8-6', '10-8-8', '11-9-8', 'Recupero',
-                '12-10-8', '13-10-9', '14-11-10', 'Recupero',
-                '15-12-10', 'TEST: 30 Max'
+                '4-3-2-2', '4-3-3-2', '5-4-3-2', 'Recupero',
+                '5-4-3-3', '6-4-4-3', '6-5-4-3', 'Recupero',
+                '7-5-4-4', '7-6-5-4', '8-6-5-4', 'Recupero',
+                '8-7-6-5', '9-7-6-5', '9-8-6-5', 'Recupero',
+                '10-8-6-5', '10-8-7-6', '11-9-7-6', 'Recupero',
+                '12-9-8-6', '12-10-8-7', '13-10-8-7', 'Recupero',
+                '14-11-9-8', '14-12-10-8', '15-12-10-9', 'Recupero',
+                '16-13-11-10', 'TEST: 30 Max'
             ];
             return daily.map((target, i) => {
-                let totalReps = 1;
+                let totalReps = 0;
                 let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
                     displayTarget = target;
@@ -71,7 +71,10 @@ export const CHALLENGE_TEMPLATES = [
                         totalReps = parts.reduce((a, b) => a + b, 0);
                     }
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} flessioni`;
+                const isRest = target === 'Recupero';
+                const nameText = isRest 
+                    ? 'Riposo Attivo 🧘' 
+                    : (target.startsWith('TEST') ? target : `${target} (${totalReps} flessioni)`);
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -85,7 +88,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv2',
         name: 'Flessioni Liv.2',
-        description: 'Programma intermedio: 30 giorni per arrivare a 60 flessioni. Recupero tra serie: 45-60s.',
+        description: 'Programma intermedio: 30 giorni per arrivare a 60+ flessioni. Recupero tra serie: 45-60s.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -96,24 +99,27 @@ export const CHALLENGE_TEMPLATES = [
         unlockRequirement: 'pushup_lv1',
         generateSubquests: () => {
             const daily = [
-                '10-10-8', '12-10-8', '12-10-10', 'Recupero',
-                '14-12-10', '14-12-12', '15-13-12', 'Recupero',
-                '16-14-12', '16-14-14', '18-16-14', 'Recupero',
-                '18-16-15', '20-18-15', '20-18-16', 'Recupero',
-                '22-20-15', '22-20-18', '24-22-18', 'Recupero',
-                '25-22-20', '26-24-20', '28-24-20', 'Recupero',
-                '30-26-22', '32-28-24', '35-30-25', 'Recupero',
-                '40-30-25', 'TEST: 60 Max'
+                '10-10-8-6', '12-10-8-6', '12-10-10-8', 'Recupero',
+                '14-12-10-8', '14-12-12-8', '15-13-12-10', 'Recupero',
+                '16-14-12-10', '16-14-14-10', '18-16-14-12', 'Recupero',
+                '18-16-15-12', '20-18-15-12', '20-18-16-14', 'Recupero',
+                '22-20-15-14', '22-20-18-14', '24-22-18-14', 'Recupero',
+                '25-22-20-15', '26-24-20-16', '28-24-20-18', 'Recupero',
+                '30-26-22-18', '32-28-24-20', '35-30-25-20', 'Recupero',
+                '40-30-25-20', 'TEST: 60 Max'
             ];
             return daily.map((target, i) => {
-                let totalReps = 1;
+                let totalReps = 0;
                 let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
                     displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} flessioni`;
+                const isRest = target === 'Recupero';
+                const nameText = isRest 
+                    ? 'Riposo Attivo 🧘' 
+                    : (target.startsWith('TEST') ? target : `${target} (${totalReps} flessioni)`);
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -127,7 +133,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'pushup_lv3',
         name: 'Flessioni Liv.3',
-        description: 'Programma avanzato: 30 giorni per superare i 100. Recupero minimo.',
+        description: 'Programma avanzato: 30 giorni per superare i 100. Recupero minimo tra serie.',
         duration: 30,
         icon: '💪',
         category: 'fitness',
@@ -148,14 +154,17 @@ export const CHALLENGE_TEMPLATES = [
                 '80-60-50-50', 'TEST: 100 Challenge'
             ];
             return daily.map((target, i) => {
-                let totalReps = 1;
+                let totalReps = 0;
                 let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
                     displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} flessioni`;
+                const isRest = target === 'Recupero';
+                const nameText = isRest 
+                    ? 'Riposo Attivo 🧘' 
+                    : (target.startsWith('TEST') ? target : `${target} (${totalReps} flessioni)`);
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -169,7 +178,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'situp_lv1',
         name: 'Sit-Ups Liv.1',
-        description: 'Core base: 30 giorni per addominali d\'acciaio.',
+        description: 'Core base: 30 giorni a serie progressive per addominali d\'acciaio.',
         duration: 30,
         icon: '🍫',
         category: 'fitness',
@@ -180,24 +189,27 @@ export const CHALLENGE_TEMPLATES = [
         unlockRequirement: null,
         generateSubquests: () => {
             const daily = [
-                '10-10-8', '12-10-8', '12-10-10', 'Recupero',
-                '14-12-10', '14-12-12', '15-13-12', 'Recupero',
-                '16-14-12', '16-14-14', '18-16-14', 'Recupero',
-                '18-16-15', '20-18-15', '20-18-16', 'Recupero',
-                '22-20-15', '22-20-18', '24-22-18', 'Recupero',
-                '25-22-20', '26-24-20', '28-24-20', 'Recupero',
-                '30-26-22', '32-28-24', '35-30-25', 'Recupero',
-                '40-30-25', 'TEST: Max Sit-Ups'
+                '8-6-6-4', '10-8-6-4', '10-8-8-6', 'Recupero',
+                '12-10-8-6', '12-10-10-8', '14-12-10-8', 'Recupero',
+                '15-12-10-10', '16-14-12-10', '18-14-12-10', 'Recupero',
+                '18-16-14-12', '20-16-14-12', '20-18-16-12', 'Recupero',
+                '22-18-16-14', '24-20-16-14', '25-20-18-15', 'Recupero',
+                '26-22-18-15', '28-22-20-16', '30-24-20-16', 'Recupero',
+                '32-25-22-18', '35-28-24-18', '38-30-25-20', 'Recupero',
+                '40-30-25-20', 'TEST: Max Sit-Ups'
             ];
             return daily.map((target, i) => {
-                let totalReps = 1;
+                let totalReps = 0;
                 let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
                     displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} sit-ups`;
+                const isRest = target === 'Recupero';
+                const nameText = isRest 
+                    ? 'Riposo Attivo 🧘' 
+                    : (target.startsWith('TEST') ? target : `${target} (${totalReps} sit-ups)`);
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
@@ -211,7 +223,7 @@ export const CHALLENGE_TEMPLATES = [
     {
         id: 'situp_lv2',
         name: 'Sit-Ups Liv.2',
-        description: 'Core avanzato: 30 giorni di fuoco per veri atleti.',
+        description: 'Core avanzato: 30 giorni di fuoco a serie progressive per veri atleti.',
         duration: 30,
         icon: '🍫',
         category: 'fitness',
@@ -222,24 +234,27 @@ export const CHALLENGE_TEMPLATES = [
         unlockRequirement: 'situp_lv1',
         generateSubquests: () => {
             const daily = [
-                '20-15-15', '25-20-15', '25-20-20', 'Recupero',
-                '30-25-20', '35-25-20', '35-30-25', 'Recupero',
-                '40-30-30', '45-35-30', '50-40-30', 'Recupero',
-                '50-45-35', '55-45-40', '60-50-40', 'Recupero',
-                '65-50-45', '70-55-50', '75-60-50', 'Recupero',
-                '80-60-50', '85-65-55', '90-70-60', 'Recupero',
-                '95-75-65', '100-80-70', '110-90-80', 'Recupero',
-                '120-100-80', 'TEST: 200 Sit-Ups'
+                '20-15-15-10', '25-20-15-10', '25-20-20-15', 'Recupero',
+                '30-25-20-15', '35-25-20-15', '35-30-25-20', 'Recupero',
+                '40-30-30-20', '45-35-30-20', '50-40-30-25', 'Recupero',
+                '50-45-35-25', '55-45-40-30', '60-50-40-30', 'Recupero',
+                '65-50-45-35', '70-55-50-35', '75-60-50-40', 'Recupero',
+                '80-60-50-40', '85-65-55-45', '90-70-60-45', 'Recupero',
+                '95-75-65-50', '100-80-70-50', '110-90-80-60', 'Recupero',
+                '120-100-80-60', 'TEST: 200 Sit-Ups'
             ];
             return daily.map((target, i) => {
-                let totalReps = 1;
+                let totalReps = 0;
                 let displayTarget = null;
                 if (target !== 'Recupero' && !target.startsWith('TEST')) {
                     displayTarget = target;
                     const parts = target.split('-').map(Number);
                     if (!parts.some(isNaN)) totalReps = parts.reduce((a, b) => a + b, 0);
                 }
-                const nameText = target === 'Recupero' ? 'Riposo Attivo 🧘' : `${totalReps} sit-ups`;
+                const isRest = target === 'Recupero';
+                const nameText = isRest 
+                    ? 'Riposo Attivo 🧘' 
+                    : (target.startsWith('TEST') ? target : `${target} (${totalReps} sit-ups)`);
                 return {
                     id: `day_${i + 1}`,
                     name: `Giorno ${i + 1}: ${nameText}`,
