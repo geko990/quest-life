@@ -738,6 +738,29 @@ export default function App() {
           }
           return o;
         }));
+      } else if (slot.questId && slot.subquestId) {
+        // Link directly to campaign milestone - DO NOT create a oneshot!
+        setQuests(prev => prev.map(q => {
+          if (q.id === slot.questId) {
+            return {
+              ...q,
+              subquests: (q.subquests || []).map(sq => {
+                if (sq.id === slot.subquestId) {
+                  return {
+                    ...sq,
+                    slotType: key,
+                    fromDailyPlan: true,
+                    dailyPlanDate: todayStr,
+                    d10Roll: d10Roll,
+                    scheduledCount: (sq.scheduledCount || 0) + 1
+                  };
+                }
+                return sq;
+              })
+            };
+          }
+          return q;
+        }));
       } else {
         newOneshots.push({
           id: 'dp-' + Date.now() + '-' + key,
@@ -1179,6 +1202,8 @@ export default function App() {
             setOneshots={setOneshots}
             habits={habits}
             setHabits={setHabits}
+            quests={quests}
+            onToggleSubquest={handleToggleSubquest}
             onToggleHabit={handleToggleHabit}
             dailyActions={dailyActions}
             onToggleDailyAction={handleToggleDailyAction}
