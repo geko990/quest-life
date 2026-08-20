@@ -1,5 +1,5 @@
-export const BUILD_TIME = '2026-08-20T11:08:00.000Z';
-export const APP_VERSION = '5.9.148';
+export const BUILD_TIME = '2026-08-20T11:13:00.000Z';
+export const APP_VERSION = '5.9.149';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -18,17 +18,60 @@ export const AVATAR_EMOJIS = ['⚔️', '🗡️', '🏹', '🛡️', '👑', '�
 
 export const ACCENT_COLORS = ['violet', 'blue', 'indigo', 'cyan', 'teal', 'emerald', 'gold', 'orange', 'rose', 'pink', 'red', 'green', 'yellow', 'lime', 'sky'];
 
+export const LEVEL_CAP = 20;
+
+export const LEVEL_XP_REQUIREMENTS = [
+    0,      // Level 1
+    150,    // Level 2  (cumul 150)
+    300,    // Level 3  (cumul 450)
+    500,    // Level 4  (cumul 950)
+    800,    // Level 5  (cumul 1,750)
+    1200,   // Level 6  (cumul 2,950)
+    1700,   // Level 7  (cumul 4,650)
+    2300,   // Level 8  (cumul 6,950)
+    3000,   // Level 9  (cumul 9,950)
+    3800,   // Level 10 (cumul 13,750)
+    4800,   // Level 11 (cumul 18,550)
+    6000,   // Level 12 (cumul 24,550)
+    7500,   // Level 13 (cumul 32,050)
+    9200,   // Level 14 (cumul 41,250)
+    11200,  // Level 15 (cumul 52,450)
+    13500,  // Level 16 (cumul 65,950)
+    16200,  // Level 17 (cumul 82,150)
+    19300,  // Level 18 (cumul 101,450)
+    23000,  // Level 19 (cumul 124,450)
+    27500   // Level 20 (cumul 151,950)
+];
+
 export const XP_CONFIG = {
     baseXpPerLevel: 100,
     levelMultiplier: 1.5,
     starsMultiplier: { 1: 0.5, 2: 0.75, 3: 1, 4: 1.5, 5: 2 },
-    secondaryRatio: 0.33
+    secondaryRatio: 0.33,
+    maxLevel: LEVEL_CAP
 };
 
 export const TITLES = [
-    { level: 1, title: 'Novizio' }, { level: 5, title: 'Apprendista' }, { level: 10, title: 'Avventuriero' },
-    { level: 15, title: 'Veterano' }, { level: 20, title: 'Esperto' }, { level: 25, title: 'Maestro' },
-    { level: 30, title: 'Campione' }, { level: 40, title: 'Leggenda' }, { level: 50, title: 'Eroe' }
+    { level: 1, title: 'Novizio' },
+    { level: 2, title: 'Recluta' },
+    { level: 3, title: 'Avventuriero' },
+    { level: 4, title: 'Esploratore' },
+    { level: 5, title: 'Eroe Locale' },
+    { level: 6, title: 'Difensore' },
+    { level: 7, title: 'Cavaliere' },
+    { level: 8, title: 'Veterano' },
+    { level: 9, title: 'Campione del Regno' },
+    { level: 10, title: 'Eroe del Regno' },
+    { level: 11, title: 'Signore della Guerra' },
+    { level: 12, title: 'Comandante' },
+    { level: 13, title: 'Eroe Continentale' },
+    { level: 14, title: 'Gran Maestro' },
+    { level: 15, title: 'Guardiano del Reame' },
+    { level: 16, title: 'Leggenda del Mondo' },
+    { level: 17, title: 'Semidio' },
+    { level: 18, title: 'Arconte Epico' },
+    { level: 19, title: 'Titano delle Leggende' },
+    { level: 20, title: 'Divinità Vivente' }
 ];
 
 export const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
