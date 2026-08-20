@@ -196,6 +196,11 @@ export default function MissionsTab({
                                 {primaryStat.icon} {primaryStat.name}
                               </span>
                             )}
+                            {q.dueDate && (
+                              <span style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold', color: '#f59e0b' }}>
+                                📅 {new Date(q.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                              </span>
+                            )}
                             <span style={{ color: '#f59e0b' }}>{'★'.repeat(q.difficulty || 1)}</span>
                             <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{completedSub}/{totalSub} sotto-obiettivi</span>
                           </div>

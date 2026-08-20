@@ -557,6 +557,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               />
             </div>
 
+            {/* Data di Scadenza (Opzionale) */}
+            <div>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">📅 Data di Scadenza (Opzionale)</label>
+              <input
+                type="date"
+                name="dueDate"
+                value={form.dueDate || ''}
+                onChange={handleChange}
+                className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+              />
+            </div>
+
             {/* Row 3: Difficoltà */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
@@ -697,20 +709,41 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         const secondaryStat = stats?.find(s => s.id === currentQuest.secondaryTarget);
 
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {/* Header Tessera */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-              {currentQuest.emoji && currentQuest.emoji !== '🏆' && (
-                <div style={{ fontSize: '36px', lineHeight: '1', marginBottom: '4px' }}>
-                  {currentQuest.emoji}
-                </div>
-              )}
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Top Hero Banner (Identical to Challenge Preview) */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, var(--bg-secondary) 100%)',
+                padding: '16px 14px',
+                borderRadius: '18px',
+                border: '1.5px solid rgba(124, 58, 237, 0.35)',
+                textAlign: 'center',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '14px',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--glass-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '26px',
+                  margin: '0 auto 8px auto',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}
+              >
+                {currentQuest.emoji || '🏆'}
+              </div>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {currentQuest.name}
               </h3>
 
-              {/* Stars & XP */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              {/* Stars, XP, Stats & Optional Due Date */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px', color: '#f59e0b' }}>
                   {'★'.repeat(currentQuest.difficulty || 1)}
                   <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - (currentQuest.difficulty || 1))}</span>
@@ -718,18 +751,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
                   +{(currentQuest.difficulty || 3) * 35} XP
                 </span>
-              </div>
-
-              {/* Stats badges */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 {primaryStat && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                    {primaryStat.icon} {primaryStat.name} (Primaria)
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+                    {primaryStat.icon} {primaryStat.name}
                   </span>
                 )}
                 {secondaryStat && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                    {secondaryStat.icon} {secondaryStat.name} (Secondaria)
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                    {secondaryStat.icon} {secondaryStat.name}
+                  </span>
+                )}
+                {currentQuest.dueDate && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b' }}>
+                    📅 {new Date(currentQuest.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
                   </span>
                 )}
               </div>
@@ -737,33 +771,35 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Descrizione Tessera */}
             {currentQuest.description && (
-              <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
-                <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
+              <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px' }}>
                   📝 Descrizione Campagna
                 </div>
-                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--text-primary)', lineHeight: '1.45' }}>
                   {currentQuest.description}
                 </p>
               </div>
             )}
 
             {/* Premio Tessera */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.2) 100%)', padding: '10px 14px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
-              <div style={{ fontSize: '9px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span>🎁 Premio al completamento</span>
+            {currentQuest.reward && (
+              <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.2) 100%)', padding: '10px 14px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>🎁 Premio al completamento</span>
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  {currentQuest.reward}
+                </div>
               </div>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                {currentQuest.reward ? currentQuest.reward : <span style={{ fontStyle: 'italic', fontWeight: 'normal', fontSize: '11px', color: 'var(--text-secondary)' }}>Nessun premio impostato. Clicca ✏️ per aggiungerne uno!</span>}
-              </div>
-            </div>
+            )}
 
-            {/* Subquests / Milestones Progress Tessera */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+            {/* Milestones Progress Tessera */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   🚩 Milestones ({completedSub}/{totalSub})
                 </span>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
                   {progressPct}%
                 </span>
               </div>
@@ -779,12 +815,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   Nessun sotto-obiettivo definito per questa campagna.
                 </p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '130px', overflowY: 'auto' }} className="no-scrollbar">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto', paddingRight: '4px' }} className="no-scrollbar">
                   {currentQuest.subquests?.map((sq) => (
                     <div
                       key={sq.id}
                       onClick={() => onToggleSubquest && onToggleSubquest(currentQuest.id, sq.id)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
                     >
                       <div
                         style={{
@@ -917,35 +953,36 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             </div>
 
-            {/* Activate Button */}
-            <button
-              type="button"
-              onClick={() => {
-                if (onActivateChallenge) {
-                  onActivateChallenge(tmpl);
-                }
-                onClose();
-              }}
-              className="btn-primary"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '14px',
-                background: tmpl.color || 'var(--accent-gradient, #7c3aed)',
-                color: '#fff',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              🚀 Attiva Questa Sfida
-            </button>
+            {/* Centered Activate Button */}
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onActivateChallenge) {
+                    onActivateChallenge(tmpl);
+                  }
+                  onClose();
+                }}
+                className="btn-primary"
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '14px',
+                  background: tmpl.color || 'var(--accent-gradient, #7c3aed)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  fontSize: '13px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                🚀 Attiva Questa Sfida
+              </button>
+            </div>
           </div>
         );
       }
