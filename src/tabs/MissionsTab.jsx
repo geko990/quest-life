@@ -424,7 +424,9 @@ export default function MissionsTab({
                 <div
                   key={tmpl.id}
                   className="glass-panel"
-                  style={{ padding: '14px', borderLeft: `4px solid ${tmpl.color || 'var(--accent-primary)'}`, display: 'flex', flexDirection: 'column', gap: '10px' }}
+                  onClick={() => onOpenModal('challenge_preview', tmpl)}
+                  style={{ padding: '14px', borderLeft: `4px solid ${tmpl.color || 'var(--accent-primary)'}`, display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }}
+                  title="Clicca per visualizzare l'anteprima completa delle milestones e i dettagli della sfida"
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
@@ -456,7 +458,8 @@ export default function MissionsTab({
                       </div>
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onActivateChallenge(tmpl);
                         setSubTab('quest');
                       }}

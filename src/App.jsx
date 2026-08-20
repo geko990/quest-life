@@ -1395,6 +1395,7 @@ export default function App() {
         habits={habits}
         quests={quests}
         settings={settings}
+        onActivateChallenge={handleActivateChallenge}
         onEditStat={(statData) => {
           setModalOpen(false);
           setTimeout(() => {

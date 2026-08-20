@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat }) {
+export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge }) {
   if (!isOpen) return null;
 
   const [currentType, setCurrentType] = useState(type);
@@ -812,6 +812,140 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </div>
               )}
             </div>
+          </div>
+        );
+      }
+
+      case 'challenge_preview': {
+        const tmpl = editData || {};
+        const subquests = tmpl.generateSubquests ? tmpl.generateSubquests() : [];
+        const primaryStat = stats?.find(s => s.id === tmpl.primaryStatId);
+        const cleanName = tmpl.name ? tmpl.name.replace(/^[\p{Emoji}\s]+/u, '').trim() : '';
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Top Hero Banner */}
+            <div
+              style={{
+                background: `linear-gradient(135deg, ${tmpl.color || '#7c3aed'}15 0%, var(--bg-secondary) 100%)`,
+                padding: '16px 14px',
+                borderRadius: '18px',
+                border: `1.5px solid ${tmpl.color || 'var(--accent-primary)'}40`,
+                textAlign: 'center',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '14px',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--glass-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '26px',
+                  margin: '0 auto 8px auto',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}
+              >
+                {tmpl.icon || '⚔️'}
+              </div>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {cleanName || tmpl.name}
+              </h3>
+
+              {/* Stars, Stats & Duration */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '13px', color: '#f59e0b' }}>
+                  {'★'.repeat(tmpl.stars || 3)}
+                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - (tmpl.stars || 3))}</span>
+                </span>
+                {primaryStat && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+                    {primaryStat.icon} {primaryStat.name} (+{(tmpl.stars || 3) * 35} XP)
+                  </span>
+                )}
+                <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                  📅 {tmpl.duration || 30} Giorni
+                </span>
+              </div>
+            </div>
+
+            {/* Description & Program Rules Box */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px' }}>
+                📖 Programma & Sovraccarico Progressivo
+              </div>
+              <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--text-primary)', lineHeight: '1.45' }}>
+                {tmpl.description}
+              </p>
+            </div>
+
+            {/* Complete Milestone Schedule Preview */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🚩 Programma Milestones ({subquests.length} Giorni)
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }} className="no-scrollbar">
+                {subquests.map((sq, idx) => {
+                  const isRest = sq.name.includes('Riposo');
+                  return (
+                    <div
+                      key={sq.id || idx}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '7px 10px',
+                        background: isRest ? 'rgba(56, 189, 248, 0.08)' : 'var(--bg-card)',
+                        borderRadius: '10px',
+                        border: isRest ? '1px solid rgba(56, 189, 248, 0.25)' : '1px solid var(--glass-border)'
+                      }}
+                    >
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: isRest ? '#38bdf8' : 'var(--text-primary)' }}>
+                        {sq.name}
+                      </span>
+                      {isRest && <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8' }}>RIGENERAZIONE</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Activate Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onActivateChallenge) {
+                  onActivateChallenge(tmpl);
+                }
+                onClose();
+              }}
+              className="btn-primary"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '14px',
+                background: tmpl.color || 'var(--accent-gradient, #7c3aed)',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              🚀 Attiva Questa Sfida
+            </button>
           </div>
         );
       }
