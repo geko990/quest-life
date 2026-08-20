@@ -983,9 +983,9 @@ export default function HomeTab({
           <div
             className="modal-content glass-panel"
             onClick={(e) => e.stopPropagation()}
-            style={{ width: '85%', maxWidth: '300px', padding: '20px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 12px 36px rgba(0,0,0,0.4)', border: '1px solid var(--glass-border)' }}
+            style={{ width: '85%', maxWidth: '280px', padding: '18px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 12px 36px rgba(0,0,0,0.4)', border: '1px solid var(--glass-border)' }}
           >
-            <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               ⏱️ Seleziona Minuti
             </h3>
 
@@ -996,14 +996,13 @@ export default function HomeTab({
                 style={{
                   position: 'absolute',
                   top: '50%',
-                  left: '8%',
-                  right: '8%',
+                  left: '4px',
+                  right: '4px',
                   height: '44px',
                   transform: 'translateY(-50%)',
-                  background: 'rgba(239, 68, 68, 0.15)',
-                  borderTop: '1px solid rgba(239, 68, 68, 0.4)',
-                  borderBottom: '1px solid rgba(239, 68, 68, 0.4)',
-                  borderRadius: '10px',
+                  background: 'rgba(239, 68, 68, 0.18)',
+                  border: '1.5px solid rgba(239, 68, 68, 0.5)',
+                  borderRadius: '12px',
                   pointerEvents: 'none',
                   zIndex: 1
                 }}
@@ -1033,13 +1032,21 @@ export default function HomeTab({
                     <div
                       key={m}
                       onClick={() => {
-                        setPomoSecs(m * 60);
-                        if (setPomodoro) {
-                          setPomodoro(prev => ({
-                            ...(prev || {}),
-                            workDuration: m,
-                            remainingTime: m * 60
-                          }));
+                        if (isSelected) {
+                          setShowPomoWheelModal(false);
+                        } else {
+                          setPomoSecs(m * 60);
+                          if (setPomodoro) {
+                            setPomodoro(prev => ({
+                              ...(prev || {}),
+                              workDuration: m,
+                              remainingTime: m * 60
+                            }));
+                          }
+                          const idx = POMO_MINUTE_PRESETS.findIndex(item => item === m);
+                          if (idx !== -1 && verticalWheelRef.current) {
+                            verticalWheelRef.current.scrollTo({ top: idx * 44, behavior: 'smooth' });
+                          }
                         }
                       }}
                       style={{
@@ -1048,12 +1055,11 @@ export default function HomeTab({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: isSelected ? '28px' : '18px',
-                        fontWeight: isSelected ? '900' : '600',
+                        fontSize: isSelected ? '22px' : '16px',
+                        fontWeight: isSelected ? '800' : '500',
                         fontFamily: 'monospace',
                         color: isSelected ? '#ef4444' : 'var(--text-secondary)',
-                        opacity: isSelected ? 1 : 0.35,
-                        transform: isSelected ? 'scale(1.1)' : 'scale(0.9)',
+                        opacity: isSelected ? 1 : 0.4,
                         transition: 'all 0.15s ease',
                         cursor: 'pointer',
                         userSelect: 'none'
@@ -1066,26 +1072,9 @@ export default function HomeTab({
               </div>
             </div>
 
-            {/* Confirm Button */}
-            <button
-              onClick={() => setShowPomoWheelModal(false)}
-              className="btn-primary"
-              style={{
-                marginTop: '16px',
-                width: '100%',
-                padding: '10px',
-                borderRadius: '12px',
-                background: '#ef4444',
-                color: '#fff',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-              }}
-            >
-              Conferma ({Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25} min)
-            </button>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '10px' }}>
+              Tocca il numero al centro per confermare
+            </div>
           </div>
         </div>
       )}
