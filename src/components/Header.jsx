@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts } from '../utils/helpers';
+import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES } from '../utils/constants';
 
 export default function Header({
