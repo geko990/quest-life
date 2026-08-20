@@ -1,4 +1,5 @@
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
+import { calculateLevelFromXp } from './helpers.js';
 
 export function getInitialState() {
   return {
@@ -158,6 +159,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   if (!parsed) return state;
 
   state.player = { ...state.player, ...parsed.player };
+  state.player.totalXp = Number(state.player.totalXp) || 0;
+  state.player.level = calculateLevelFromXp(state.player.totalXp);
   if (state.player.motto === undefined) state.player.motto = '';
   if (state.player.streakFreezes === undefined) state.player.streakFreezes = 2;
   if (state.player.lastActionDate === undefined) state.player.lastActionDate = null;

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
-import { TITLES } from '../utils/constants';
+import { TITLES, LEVEL_CAP } from '../utils/constants';
 
 export default function Header({
   player,
@@ -23,11 +23,12 @@ export default function Header({
   // Backdrop overlay handles popup closure on click outside
 
   // Calculate XP and level info
+  const isMaxLevel = player.level >= LEVEL_CAP;
   const currentLevelTotal = getCumulativeXpForLevel(player.level);
   const nextLevelTotal = getCumulativeXpForLevel(player.level + 1);
-  const xpInLevel = Math.max(0, player.totalXp - currentLevelTotal);
-  const xpNeededForLevel = nextLevelTotal - currentLevelTotal;
-  const xpPercent = Math.min(100, Math.max(0, (xpInLevel / xpNeededForLevel) * 100));
+  const xpInLevel = isMaxLevel ? Math.max(0, player.totalXp - currentLevelTotal) : Math.max(0, player.totalXp - currentLevelTotal);
+  const xpNeededForLevel = isMaxLevel ? 1 : Math.max(1, nextLevelTotal - currentLevelTotal);
+  const xpPercent = isMaxLevel ? 100 : Math.min(100, Math.max(0, (xpInLevel / xpNeededForLevel) * 100));
 
   // Determine Title
   const getPlayerTitle = () => {
@@ -348,7 +349,11 @@ export default function Header({
                 ></div>
               </div>
               <div className="popup-xp-text" id="popupXpText">
-                {Math.floor(xpInLevel)} / {Math.floor(xpNeededForLevel)} XP
+                {isMaxLevel ? (
+                  `LIV. MASSIMO (20) • ${player.totalXp} XP Totali`
+                ) : (
+                  `${Math.floor(xpInLevel)} / ${Math.floor(xpNeededForLevel)} XP`
+                )}
               </div>
 
               {/* Medal Progress */}

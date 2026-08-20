@@ -1,4 +1,4 @@
-import { XP_CONFIG, DAY_NAMES } from './constants.js';
+import { XP_CONFIG, DAY_NAMES, LEVEL_CAP, LEVEL_XP_REQUIREMENTS } from './constants.js';
 
 export function getGameDateObj(dayStartTime = 0) {
     const now = new Date();
@@ -73,21 +73,25 @@ export function calculateXp(stars) {
 }
 
 export function getXpForLevel(level) {
-    const rawXp = XP_CONFIG.baseXpPerLevel * Math.pow(XP_CONFIG.levelMultiplier, level - 1);
-    return Math.round(rawXp / 50) * 50; // Round to nearest 50
+    if (level <= 1) return 0;
+    if (level > LEVEL_CAP) return LEVEL_XP_REQUIREMENTS[LEVEL_CAP];
+    return LEVEL_XP_REQUIREMENTS[level] || LEVEL_XP_REQUIREMENTS[LEVEL_CAP];
 }
 
 export function getCumulativeXpForLevel(targetLevel) {
+    if (targetLevel <= 1) return 0;
+    const effectiveLevel = Math.min(targetLevel, LEVEL_CAP);
     let total = 0;
-    for (let i = 1; i < targetLevel; i++) {
-        total += getXpForLevel(i + 1);
+    for (let i = 2; i <= effectiveLevel; i++) {
+        total += LEVEL_XP_REQUIREMENTS[i] || 0;
     }
     return total;
 }
 
 export function calculateLevelFromXp(totalXp) {
+    if (!totalXp || totalXp <= 0) return 1;
     let level = 1;
-    while (totalXp >= getCumulativeXpForLevel(level + 1)) {
+    while (level < LEVEL_CAP && totalXp >= getCumulativeXpForLevel(level + 1)) {
         level++;
     }
     return level;

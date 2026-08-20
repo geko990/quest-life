@@ -343,9 +343,8 @@ export default function App() {
     );
 
     // 2. Reward Player XP
-    const newTotalXp = player.totalXp + amount;
-    const newLvl = calculateLevelFromXp(newTotalXp);
-    const leveledUp = newLvl > player.level;
+    let leveledUp = false;
+    let achievedLevel = 1;
 
     // Monthly challenge points (EXCLUDE habits, INCLUDE task singoli, milestones, e campagne)
     let monthlyPointsAdd = countsForMonthlyMedal ? 1 : 0;
@@ -359,6 +358,16 @@ export default function App() {
     ]);
 
     setPlayer(prev => {
+      const currentXp = prev.totalXp || 0;
+      const currentLvl = calculateLevelFromXp(currentXp);
+      const newTotalXp = currentXp + amount;
+      const newLvl = calculateLevelFromXp(newTotalXp);
+
+      if (newLvl > currentLvl) {
+        leveledUp = true;
+        achievedLevel = newLvl;
+      }
+
       const nextMonthlyPoints = (prev.monthlyChallenge?.points || 0) + monthlyPointsAdd;
       const target = prev.monthlyChallenge?.target || 50;
       const medals = [...(prev.monthlyChallenge?.medals || [])];
@@ -416,7 +425,7 @@ export default function App() {
 
     if (leveledUp) {
       if (settings.soundEnabled) playLevelUpSound();
-      alert(`🎉 LEVEL UP! Sei salito al Livello ${newLvl}! Continua così, eroe!`);
+      alert(`🎉 LEVEL UP! Sei salito al Livello ${achievedLevel}! Continua così, eroe!`);
     }
   };
 
