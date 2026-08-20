@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getGameDate, getGameDateObj, formatISO, getWeekIdentifier, getMonthIdentifier, getYearIdentifier } from '../utils/helpers';
 import SwipeableCard from '../components/SwipeableCard';
+import { useTouchReorder } from '../utils/useTouchReorder';
 
 export default function HabitsTab({
-  habits,
+  habits = [],
+  setHabits,
   completionLog,
   setCompletionLog,
   onToggleHabit,
@@ -13,6 +15,7 @@ export default function HabitsTab({
   stats,
   settings
 }) {
+  const { getDragProps } = useTouchReorder(habits, setHabits);
   const todayStr = getGameDate(settings.dayStartTime);
   const [viewedDate, setViewedDate] = useState(todayStr);
   const calendarScrollRef = useRef(null);
@@ -192,11 +195,12 @@ export default function HabitsTab({
               <div className="empty-state-hint">Clicca "+" per iniziare</div>
             </div>
           ) : (
-            habitsToShow.map((h) => {
+            habitsToShow.map((h, idx) => {
               const isCompleted = h.completed;
               const primaryStat = stats.find(s => s.id === (h.primaryStatId || h.primaryTarget));
               const secondaryStat = stats.find(s => s.id === (h.secondaryStatId || h.secondaryTarget));
               const starsCount = h.difficulty !== undefined ? h.difficulty : (h.stars || 1);
+              const dragProps = getDragProps(h, idx);
 
               return (
                 <div
@@ -204,6 +208,7 @@ export default function HabitsTab({
                   className={`task-card ${h.locked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}`}
                   data-type="habit"
                   data-id={h.id}
+                  {...dragProps}
                 >
                   <div className="swipe-content" onClick={() => onEditHabit(h)}>
                     {/* Checkbox (v3.3.0 card-checkbox) */}

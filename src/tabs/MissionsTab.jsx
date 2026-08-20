@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
+import { useTouchReorder } from '../utils/useTouchReorder';
 
 export default function MissionsTab({
-  oneshots,
+  oneshots = [],
+  setOneshots,
   onToggleOneshot,
   onDeleteOneshot,
   onEditOneshot,
-  quests,
+  quests = [],
+  setQuests,
   onToggleSubquest,
   onDeleteQuest,
   onEditQuest,
@@ -18,6 +21,8 @@ export default function MissionsTab({
   onOpenDailyPlanner,
   onActivateChallenge
 }) {
+  const { getDragProps: getOneshotDragProps } = useTouchReorder(oneshots, setOneshots);
+  const { getDragProps: getQuestDragProps } = useTouchReorder(quests, setQuests);
   const [subTab, setSubTab] = useState('oneshot'); // 'oneshot' | 'quest' | 'catalog'
   const [showCompletedOneshots, setShowCompletedOneshots] = useState(false);
   const [expandedQuestId, setExpandedQuestId] = useState(null);
@@ -101,9 +106,10 @@ export default function MissionsTab({
                 <div className="empty-state-hint">Clicca "+" per crearne una</div>
               </div>
             ) : (
-              filteredOneshots.map((o) => {
+              filteredOneshots.map((o, idx) => {
                 const primaryStat = stats.find(s => s.id === o.primaryTarget);
                 const starsCount = o.difficulty !== undefined ? o.difficulty : (o.stars || 1);
+                const dragProps = getOneshotDragProps(o, idx);
 
                 return (
                   <div
@@ -111,6 +117,7 @@ export default function MissionsTab({
                     className={`task-card ${o.completed ? 'completed' : ''}`}
                     data-type="oneshot"
                     data-id={o.id}
+                    {...dragProps}
                   >
                     <div className="swipe-content" onClick={() => onEditOneshot(o)}>
                       <div
@@ -156,19 +163,31 @@ export default function MissionsTab({
                   <div className="empty-state-hint">Attiva una sfida dal catalogo o creane una nuova</div>
                 </div>
               ) : (
-                activeQuests.map((q) => {
+                activeQuests.map((q, idx) => {
                   const totalSub = q.subquests?.length || 0;
                   const completedSub = q.subquests?.filter(sq => sq.completed).length || 0;
                   const progressPct = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
                   const primaryStat = stats.find(s => s.id === q.primaryTarget);
                   const isExpanded = expandedQuestId === q.id;
                   const nextSubquest = q.subquests?.find(sq => !sq.completed);
+                  const dragProps = getQuestDragProps(q, idx);
 
                   return (
                     <div
                       key={q.id}
                       className="glass-panel"
-                      style={{ overflow: 'hidden', border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)', borderRadius: '16px' }}
+                      {...dragProps}
+                      style={{
+                        padding: 0,
+                        overflow: 'hidden',
+                        borderLeft: `4px solid ${q.color || 'var(--accent-primary)'}`,
+                        border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                        borderRadius: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        cursor: 'pointer',
+                        ...dragProps.style
+                      }}
                     >
                       {/* Header Section */}
                       <div
