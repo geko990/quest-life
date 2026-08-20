@@ -353,8 +353,17 @@ export default function Header({
 
               {/* Medal Progress */}
               {(() => {
-                const currentMonthId = player.monthlyChallenge?.currentMonth;
+                const todayGameDate = settings?.dayStartTime ? getGameDate(settings.dayStartTime) : new Date().toISOString().substring(0, 10);
+                const currentMonthId = player.monthlyChallenge?.currentMonth || todayGameDate.substring(0, 7);
                 const starCounts = getMonthlyStarCounts(currentMonthId, completionLog, oneshots, quests, xpLog);
+
+                // Calculate current month points dynamically from xpLog
+                const currentMonthPoints = (xpLog || []).filter(
+                  l => l.date && l.date.startsWith(currentMonthId) && l.isMonthlyTask
+                ).length;
+                const targetPoints = player.monthlyChallenge?.target || 50;
+                const displayPoints = Math.max(player.monthlyChallenge?.points || 0, currentMonthPoints);
+
                 return (
                   <div style={{ marginTop: '15px' }}>
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 'bold' }}>
@@ -368,7 +377,7 @@ export default function Header({
                         className="popup-xp-fill"
                         id="monthlyProgressFill"
                         style={{
-                          width: `${Math.min(100, ((player.monthlyChallenge?.points || 0) / (player.monthlyChallenge?.target || 50)) * 100)}%`,
+                          width: `${Math.min(100, (displayPoints / targetPoints) * 100)}%`,
                           background: 'var(--accent-gold, #f59e0b)'
                         }}
                       ></div>
@@ -376,7 +385,7 @@ export default function Header({
                     <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span id="monthlyLabel">{getMonthName(currentMonthId)}</span>
                       <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-                        {player.monthlyChallenge?.points || 0}/{player.monthlyChallenge?.target || 50} Task
+                        {displayPoints}/{targetPoints} Task
                       </span>
                     </div>
 
@@ -397,30 +406,84 @@ export default function Header({
               })()}
             </div>
 
-            {/* Medals Showcase Grid */}
+            {/* Medals Showcase Grid (Sorted newest first at top-left) */}
             <div className="popup-motto-container" style={{ marginTop: '10px' }}>
               <div className="medals-grid" id="medalsGrid">
-                {!player.monthlyChallenge?.medals || player.monthlyChallenge?.medals?.length === 0 ? (
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                    Nessuna medaglia sbloccata questo mese
-                  </span>
-                ) : (
-                  player.monthlyChallenge?.medals?.map((medal, idx) => (
-                    <div
-                      key={idx}
-                      title={`${medal.name} - Touch per il riepilogo mensile`}
-                      className="medal-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowProfile(false);
-                        setSelectedMedal(medal);
-                      }}
-                      style={{ fontSize: '24px', cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      {medal.icon || '🏆'}
-                    </div>
-                  ))
-                )}
+                {(() => {
+                  const medalsList = player.monthlyChallenge?.medals || [];
+                  if (medalsList.length === 0) {
+                    return (
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                        Nessuna medaglia sbloccata ancora
+                      </span>
+                    );
+                  }
+
+                  // Sort medals newest first (top-left)
+                  const sortedMedals = [...medalsList].sort((a, b) => {
+                    const monthA = a.id || a.earnedDate || '';
+                    const monthB = b.id || b.earnedDate || '';
+                    return monthB.localeCompare(monthA);
+                  });
+
+                  return sortedMedals.map((medal, idx) => {
+                    let monthNum = '';
+                    if (medal.id && medal.id.includes('-')) {
+                      monthNum = parseInt(medal.id.split('-')[1], 10);
+                    } else if (medal.earnedDate && medal.earnedDate.includes('-')) {
+                      monthNum = parseInt(medal.earnedDate.split('-')[1], 10);
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        title={`${medal.name} - Touch per il riepilogo mensile`}
+                        className="medal-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowProfile(false);
+                          setSelectedMedal(medal);
+                        }}
+                        style={{
+                          fontSize: '24px',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative',
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '12px',
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--glass-border)'
+                        }}
+                      >
+                        {/* 80% Transparent Month Number under/behind medal emoji */}
+                        {monthNum && (
+                          <span
+                            style={{
+                              position: 'absolute',
+                              fontSize: '22px',
+                              fontWeight: '900',
+                              fontFamily: 'monospace',
+                              color: 'var(--text-primary)',
+                              opacity: 0.22,
+                              zIndex: 0,
+                              userSelect: 'none',
+                              pointerEvents: 'none'
+                            }}
+                          >
+                            {monthNum}
+                          </span>
+                        )}
+                        <span style={{ position: 'relative', zIndex: 1 }}>
+                          {medal.icon || '🏅'}
+                        </span>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
 
