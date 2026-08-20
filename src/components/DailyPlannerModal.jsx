@@ -38,8 +38,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         id: `quest-${q.id}-${nextSub.id}`,
         questId: q.id,
         subquestId: nextSub.id,
-        name: `${q.emoji || '🏆'} ${q.title}: ${nextSub.name}`,
+        name: nextSub.name,
         rawName: nextSub.name,
+        questName: q.name,
+        emoji: q.emoji || '🏆',
         difficulty: nextSub.difficulty || 2,
         statId: q.primaryTarget || 'int'
       };
@@ -194,7 +196,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   } else if (val.startsWith('quest-')) {
                     const found = activeCampaignMilestones.find(m => m.id === val);
                     if (found) {
-                      handleSlotChange(key, 'name', found.rawName || found.name);
+                      handleSlotChange(key, 'name', found.name);
+                      if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
                       handleSlotChange(key, 'oneshotId', null);
                       handleSlotChange(key, 'questId', found.questId);
                       handleSlotChange(key, 'subquestId', found.subquestId);
@@ -228,7 +231,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   <optgroup label="🏆 Prossimo Obiettivo Campagne">
                     {activeCampaignMilestones.map(m => (
                       <option key={m.id} value={m.id}>
-                        {m.name}
+                        {m.emoji || '🏆'} {m.name} {m.questName ? `(${m.questName})` : ''}
                       </option>
                     ))}
                   </optgroup>
