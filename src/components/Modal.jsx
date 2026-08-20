@@ -6,6 +6,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const [currentType, setCurrentType] = useState(type);
   const [form, setForm] = useState({});
   const [subquests, setSubquests] = useState([]);
+  const [milestonesText, setMilestonesText] = useState('');
   const [newSubquestName, setNewSubquestName] = useState('');
   const [selectedDayIndex, setSelectedDayIndex] = useState(6);
 
@@ -45,6 +46,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         completed: false
       });
       setSubquests([]);
+      setMilestonesText('');
     }
   };
 
@@ -78,8 +80,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     if (editData) {
       const initialDiff = editData.difficulty !== undefined ? editData.difficulty : (editData.stars !== undefined ? editData.stars : 3);
       setForm({ ...editData, difficulty: initialDiff, stars: initialDiff });
-      if (type === 'quest' && editData.subquests) {
+      if ((type === 'quest' || currentType === 'quest') && editData.subquests) {
         setSubquests([...editData.subquests]);
+        setMilestonesText(editData.subquests.map(sq => `- ${sq.name}`).join('\n'));
       }
     } else {
       // Default initial states based on currentType
@@ -116,6 +119,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           completed: false
         });
         setSubquests([]);
+        setMilestonesText('');
       } else if (activeT === 'food') {
         setForm({ emoji: '🍎', name: '', baseGrams: 100, baseCalories: 100, baseProteins: 10, category: 'snack' });
       } else if (activeT === 'exercise') {
@@ -156,7 +160,21 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     e.preventDefault();
     const activeT = currentType || type;
     if (activeT === 'quest') {
-      onSave({ ...form, _targetType: activeT, subquests });
+      const lines = (milestonesText || '').split('\n');
+      const parsedSubquests = lines
+        .map(line => line.replace(/^[\s\-•\d\.\)]+/, '').trim())
+        .filter(name => name.length > 0)
+        .map((name, idx) => {
+          const existing = subquests[idx] || subquests.find(sq => sq.name === name);
+          return {
+            id: existing?.id || `sub_${Date.now()}_${idx}_${Math.floor(Math.random()*1000)}`,
+            name: name,
+            completed: existing?.completed || false,
+            ...(existing?.targetReps ? { targetReps: existing.targetReps } : {}),
+            ...(existing?.displayTarget ? { displayTarget: existing.displayTarget } : {})
+          };
+        });
+      onSave({ ...form, _targetType: activeT, subquests: parsedSubquests.length > 0 ? parsedSubquests : subquests });
     } else {
       onSave({ ...form, _targetType: activeT });
     }
@@ -596,39 +614,75 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             </div>
 
-            {/* Subquests Section */}
+            {/* Subquests Section: Multi-line Milestone Editor */}
             <div className="border-t border-[var(--glass-border)] pt-3 mt-0.5">
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">Sotto-obiettivi (Milestones)</label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={newSubquestName}
-                  onChange={(e) => setNewSubquestName(e.target.value)}
-                  placeholder="Es: Finire capitolo 1..."
-                  className="flex-1 h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs focus:border-accent-primary focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={addSubquest}
-                  className="bg-accent-primary hover:bg-accent-primary/80 text-white text-xs px-4.5 py-1 rounded-2xl font-bold"
-                >
-                  +
-                </button>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">
+                🚩 Sotto-obiettivi / Milestones (Un rigo per milestone, inizia con -)
+              </label>
+              <textarea
+                value={milestonesText}
+                onChange={(e) => {
+                  const newText = e.target.value;
+                  setMilestonesText(newText);
+                  const lines = newText.split('\n');
+                  const parsed = lines
+                    .map(line => line.replace(/^[\s\-•\d\.\)]+/, '').trim())
+                    .filter(name => name.length > 0)
+                    .map((name, idx) => {
+                      const existing = subquests[idx] || subquests.find(sq => sq.name === name);
+                      return {
+                        id: existing?.id || `sub_${Date.now()}_${idx}_${Math.floor(Math.random()*1000)}`,
+                        name: name,
+                        completed: existing?.completed || false,
+                        ...(existing?.targetReps ? { targetReps: existing.targetReps } : {}),
+                        ...(existing?.displayTarget ? { displayTarget: existing.displayTarget } : {})
+                      };
+                    });
+                  setSubquests(parsed);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.stopPropagation();
+                    const { selectionStart, selectionEnd, value } = e.target;
+                    if (selectionStart === selectionEnd) {
+                      e.preventDefault();
+                      const before = value.substring(0, selectionStart);
+                      const after = value.substring(selectionEnd);
+                      const newValue = before + '\n- ' + after;
+                      setMilestonesText(newValue);
+                      
+                      const lines = newValue.split('\n');
+                      const parsed = lines
+                        .map(line => line.replace(/^[\s\-•\d\.\)]+/, '').trim())
+                        .filter(name => name.length > 0)
+                        .map((name, idx) => {
+                          const existing = subquests[idx] || subquests.find(sq => sq.name === name);
+                          return {
+                            id: existing?.id || `sub_${Date.now()}_${idx}_${Math.floor(Math.random()*1000)}`,
+                            name: name,
+                            completed: existing?.completed || false,
+                            ...(existing?.targetReps ? { targetReps: existing.targetReps } : {}),
+                            ...(existing?.displayTarget ? { displayTarget: existing.displayTarget } : {})
+                          };
+                        });
+                      setSubquests(parsed);
+
+                      setTimeout(() => {
+                        if (e.target) {
+                          e.target.selectionStart = e.target.selectionEnd = selectionStart + 3;
+                        }
+                      }, 0);
+                    }
+                  }
+                }}
+                rows={5}
+                placeholder="- Capitolo 1: Introduzione&#10;- Capitolo 2: Sviluppo&#10;- Capitolo 3: Conclusione"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none font-mono"
+              ></textarea>
+              <div className="flex justify-between items-center mt-1.5 text-[10px] text-text-muted">
+                <span>💡 Premi Invio per andare a capo e creare un nuovo rigo (-)</span>
+                <span className="font-bold text-accent-primary">{subquests.length} milestone</span>
               </div>
-              <ul className="max-h-36 overflow-y-auto space-y-1.5 no-scrollbar">
-                {subquests.map((sq) => (
-                  <li key={sq.id} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2.5 px-4 rounded-xl text-xs border border-[var(--glass-border)]">
-                    <span className={sq.completed ? 'line-through text-text-secondary' : ''}>{sq.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeSubquest(sq.id)}
-                      className="text-red-500 hover:text-red-400 font-bold px-1"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         );

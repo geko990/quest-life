@@ -941,7 +941,7 @@ export default function App() {
       handleDeleteHabit(targetId);
     } else if (targetType === 'oneshot') {
       handleDeleteOneshot(targetId);
-    } else if (targetType === 'quest') {
+    } else if (targetType === 'quest' || targetType === 'quest_detail') {
       handleDeleteQuest(targetId);
     } else if (targetType === 'food' || modalType === 'food') {
       if (targetId) {
