@@ -133,12 +133,8 @@ export default function MissionsTab({
                         </div>
                         <div className="card-meta">
                           <span className="card-stars">{'⭐'.repeat(starsCount)}</span>
-                          {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon} {primaryStat.name}</span>}
-                          {o.scheduledCount > 0 && (
-                            <span style={{ fontSize: '10px', color: '#8b5cf6', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.1)', padding: '1px 6px', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.25)' }}>
-                              📌 {o.scheduledCount}x
-                            </span>
-                          )}
+                          {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon}</span>}
+                          {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}>{secondaryStat.icon}</span>}
                           {o.dueDate && (
                             <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.1)', padding: '1px 6px', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
                               📅 {new Date(o.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
@@ -146,6 +142,14 @@ export default function MissionsTab({
                           )}
                         </div>
                       </div>
+
+                      {o.scheduledCount > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', flexShrink: 0 }}>
+                          <span style={{ fontSize: '10px', color: '#8b5cf6', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.12)', padding: '2px 7px', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.25)' }}>
+                            📌 {o.scheduledCount}x
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

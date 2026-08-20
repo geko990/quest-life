@@ -227,14 +227,16 @@ export default function HabitsTab({
                       </div>
                       <div className="card-meta">
                         <span className="card-stars">{'⭐'.repeat(starsCount)}</span>
-                        {h.streak > 0 && <span className="card-streak">🔥 {h.streak}</span>}
-                        <span className="card-xp">+{calculateXp(starsCount)} XP</span>
                         {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon}</span>}
                         {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}>{secondaryStat.icon}</span>}
                       </div>
                     </div>
 
-                    <div className="drag-handle" title="Trascina per riordinare">⋮⋮</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', flexShrink: 0 }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)', padding: '2px 7px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                        🔥 {h.streak || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
