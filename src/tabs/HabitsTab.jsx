@@ -210,7 +210,7 @@ export default function HabitsTab({
                   data-id={h.id}
                   {...dragProps}
                 >
-                  <div className="swipe-content" onClick={() => onEditHabit(h)}>
+                  <div className="swipe-content" onClick={() => onOpenModal('habit_detail', h)}>
                     {/* Checkbox (v3.3.0 card-checkbox) */}
                     <div
                       className={`card-checkbox ${isCompleted ? 'checked' : ''}`}

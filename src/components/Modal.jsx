@@ -852,6 +852,190 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         );
       }
 
+      case 'oneshot_detail': {
+        const item = editData || form || {};
+        const primaryStat = stats?.find(s => s.id === item.primaryTarget);
+        const secondaryStat = stats?.find(s => s.id === item.secondaryTarget);
+        const starsCount = item.difficulty !== undefined ? item.difficulty : (item.stars || 1);
+        const count = item.scheduledCount || 0;
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Top Compact Hero Banner */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, var(--bg-secondary) 100%)',
+                padding: '14px 12px',
+                borderRadius: '16px',
+                border: '1px solid rgba(124, 58, 237, 0.3)',
+                textAlign: 'center'
+              }}
+            >
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--glass-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  margin: '0 auto 6px auto',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.12)'
+                }}
+              >
+                {item.emoji || '💥'}
+              </div>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {item.name}
+              </h3>
+
+              {/* Badges Row */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '12px', color: '#f59e0b' }}>
+                  {'★'.repeat(starsCount)}
+                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - starsCount)}</span>
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
+                  +{starsCount * 8} XP
+                </span>
+                {primaryStat && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+                    {primaryStat.icon} {primaryStat.name}
+                  </span>
+                )}
+                {secondaryStat && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                    {secondaryStat.icon} {secondaryStat.name}
+                  </span>
+                )}
+                {item.dueDate && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b' }}>
+                    📅 {new Date(item.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* In Azioni Del Giorno Info Row */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                📌 In Azioni del Giorno:
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: count > 0 ? '#8b5cf6' : 'var(--text-muted)' }}>
+                {count > 0 ? `${count} ${count === 1 ? 'volta' : 'volte'}` : 'Mai inserito'}
+              </span>
+            </div>
+
+            {/* Status / Notes Box if any */}
+            {item.description && (
+              <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
+                  📝 Note
+                </div>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+                  {item.description}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      case 'habit_detail': {
+        const habit = editData || form || {};
+        const primaryStat = stats?.find(s => s.id === (habit.primaryStatId || habit.primaryTarget));
+        const secondaryStat = stats?.find(s => s.id === (habit.secondaryStatId || habit.secondaryTarget));
+        const starsCount = habit.difficulty !== undefined ? habit.difficulty : (habit.stars || 1);
+        const streak = habit.streak || 0;
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Top Compact Hero Banner */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, var(--bg-secondary) 100%)',
+                padding: '14px 12px',
+                borderRadius: '16px',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+                textAlign: 'center'
+              }}
+            >
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--glass-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  margin: '0 auto 6px auto',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.12)'
+                }}
+              >
+                {habit.emoji || '📜'}
+              </div>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {habit.name}
+              </h3>
+
+              {/* Badges Row */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '12px', color: '#f59e0b' }}>
+                  {'★'.repeat(starsCount)}
+                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - starsCount)}</span>
+                </span>
+                {streak > 0 && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
+                    🔥 Streak: {streak} {streak === 1 ? 'giorno' : 'giorni'}
+                  </span>
+                )}
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#22c55e', background: 'rgba(34, 197, 94, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
+                  +{starsCount * 5} XP
+                </span>
+                {primaryStat && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+                    {primaryStat.icon} {primaryStat.name}
+                  </span>
+                )}
+                {secondaryStat && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                    {secondaryStat.icon} {secondaryStat.name}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Frequenza / Info Box */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                🔄 Frequenza:
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {habit.frequency === 'daily' ? 'Tutti i giorni' : (habit.frequency || 'Giornaliera')}
+              </span>
+            </div>
+
+            {/* Descrizione / Note Box if any */}
+            {habit.description && (
+              <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
+                  📝 Note & Dettagli
+                </div>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+                  {habit.description}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      }
+
       case 'challenge_preview': {
         const tmpl = editData || {};
         const subquests = tmpl.generateSubquests ? tmpl.generateSubquests() : [];
@@ -1949,7 +2133,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
-  const isExpandedModal = ['quest_detail', 'challenge_preview', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
+  const isExpandedModal = ['quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
   const headerObj = getHeaderInfo();
 
   return (
@@ -1972,8 +2156,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           maxHeight: isExpandedModal ? '94vh' : '88vh'
         }}
       >
-        {/* Header (Hidden for stat_detail, quest_detail, challenge_preview) */}
-        {!['stat_detail', 'quest_detail', 'challenge_preview'].includes(activeT) && (
+        {/* Header (Hidden for stat_detail, quest_detail, oneshot_detail, habit_detail, challenge_preview) */}
+        {!['stat_detail', 'quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview'].includes(activeT) && (
           <div
             className="modal-header"
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}
@@ -2057,7 +2241,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               style={{
                 padding: '12px 28px 24px 28px',
                 display: 'flex',
-                justifyContent: 'center',
+                justify: 'center',
                 alignItems: 'center',
                 gap: '14px',
                 background: 'transparent',
@@ -2095,12 +2279,16 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </button>
               )}
 
-              {(type === 'stat_detail' || activeT === 'quest_detail') && (
+              {(type === 'stat_detail' || ['quest_detail', 'oneshot_detail', 'habit_detail'].includes(activeT)) && (
                 <button
                   type="button"
                   onClick={() => {
                     if (activeT === 'quest_detail') {
                       handleTypeSwitch('quest');
+                    } else if (activeT === 'oneshot_detail') {
+                      handleTypeSwitch('oneshot');
+                    } else if (activeT === 'habit_detail') {
+                      handleTypeSwitch('habit');
                     } else if (onEditStat) {
                       onEditStat(editData);
                     }
