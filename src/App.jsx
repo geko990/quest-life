@@ -622,13 +622,12 @@ export default function App() {
     });
 
     // Calculate XP (oneshot awards difficulty * 8 XP!)
-    let xp = os.difficulty * 8;
+    const osDifficulty = os.difficulty || os.stars || 1;
+    let xp = osDifficulty * 8;
     if (os.d10Roll) {
       const bonusMultiplier = 1 + (os.d10Roll * 10) / 100;
       xp = Math.round(xp * bonusMultiplier);
     }
-
-    const osDifficulty = os.difficulty || os.stars || 1;
     if (willBeCompleted) {
       handleRewardXp(os.primaryTarget, xp, true, os.name, targetDate, osDifficulty);
       if (os.secondaryTarget) {
@@ -1216,6 +1215,7 @@ export default function App() {
             onRewardXp={handleRewardXp}
             oneshots={oneshots}
             setOneshots={setOneshots}
+            onToggleOneshot={handleToggleOneshot}
             habits={habits}
             setHabits={setHabits}
             quests={quests}
