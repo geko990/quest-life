@@ -38,13 +38,27 @@ export default function HomeTab({
   const [cardMode, setCardMode] = useState('tasks'); // 'tasks' or 'pomodoro'
   const [selectedTaskId, setSelectedTaskId] = useState('');
   const [pomoSecs, setPomoSecs] = useState(0);
+  const [showPomoWheelModal, setShowPomoWheelModal] = useState(false);
 
   const pressTimerRef = useRef(null);
   const healthPressTimerRef = useRef(null);
   const isHealthLongPressRef = useRef(false);
+  const verticalWheelRef = useRef(null);
 
   const safePomodoro = pomodoro || { status: 'idle', workDuration: 25, xpPerSession: 25, sessionsToday: 0 };
   const todayStr = getGameDate(settings?.dayStartTime || 0);
+
+  const POMO_MINUTE_PRESETS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 120];
+
+  useEffect(() => {
+    if (showPomoWheelModal && verticalWheelRef.current) {
+      const activeMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
+      const idx = POMO_MINUTE_PRESETS.findIndex(m => m === activeMins);
+      if (idx !== -1) {
+        verticalWheelRef.current.scrollTop = idx * 44;
+      }
+    }
+  }, [showPomoWheelModal]);
 
   const handlePomodoroFinish = () => {
     if (onRewardXp && safePomodoro) {
@@ -143,21 +157,6 @@ export default function HomeTab({
       if (interval) clearInterval(interval);
     };
   }, [safePomodoro.status, safePomodoro.targetTime, safePomodoro.workDuration]);
-
-  const POMO_MINUTE_PRESETS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 120];
-  const wheelScrollRef = useRef(null);
-
-  // Auto-scroll wheel to active duration on mount / idle toggle
-  useEffect(() => {
-    if (cardMode === 'pomodoro' && safePomodoro.status === 'idle' && wheelScrollRef.current) {
-      const activeMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
-      const idx = POMO_MINUTE_PRESETS.findIndex(m => m === activeMins);
-      if (idx !== -1) {
-        const itemWidth = 82;
-        wheelScrollRef.current.scrollLeft = idx * itemWidth;
-      }
-    }
-  }, [cardMode, safePomodoro.status, pomoSecs, safePomodoro.workDuration]);
 
   const handleHealthPressStart = (key) => {
     isHealthLongPressRef.current = false;
@@ -567,89 +566,35 @@ export default function HomeTab({
           {cardMode === 'pomodoro' ? (
             /* IN-CARD POMODORO WORKSTATION VIEW */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', padding: '2px 0', boxSizing: 'border-box' }}>
-              {/* 1. Top Row: Centered Minutes Display or Horizontal Swipe Wheel */}
-              {safePomodoro.status === 'idle' ? (
-                <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '42px' }}>
-                  <div
-                    ref={wheelScrollRef}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      overflowX: 'auto',
-                      scrollSnapType: 'x mandatory',
-                      WebkitOverflowScrolling: 'touch',
-                      width: '230px',
-                      height: '42px',
-                      paddingLeft: 'calc(50% - 36px)',
-                      paddingRight: 'calc(50% - 36px)',
-                      boxSizing: 'border-box',
-                      scrollbarWidth: 'none',
-                      maskImage: 'linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)'
-                    }}
-                    className="no-scrollbar"
-                  >
-                    {POMO_MINUTE_PRESETS.map((m) => {
-                      const isSelected = (Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25) === m;
-                      return (
-                        <div
-                          key={m}
-                          onClick={() => {
-                            setPomoSecs(m * 60);
-                            if (setPomodoro) {
-                              setPomodoro(prev => ({
-                                ...(prev || {}),
-                                workDuration: m,
-                                remainingTime: m * 60
-                              }));
-                            }
-                          }}
-                          style={{
-                            scrollSnapAlign: 'center',
-                            flexShrink: 0,
-                            fontSize: isSelected ? '34px' : '20px',
-                            fontWeight: isSelected ? '900' : '600',
-                            fontFamily: 'monospace',
-                            color: isSelected ? '#ef4444' : 'var(--text-secondary)',
-                            opacity: isSelected ? 1 : 0.35,
-                            transform: isSelected ? 'scale(1.05)' : 'scale(0.85)',
-                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                            cursor: 'pointer',
-                            userSelect: 'none',
-                            minWidth: '72px',
-                            textAlign: 'center'
-                          }}
-                        >
-                          {m}:00
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <div
+              {/* 1. Top Row: Centered Large Minutes Countdown (Tap opens vertical swipe wheel modal) */}
+              <div
+                onClick={() => {
+                  if (safePomodoro.status !== 'running') {
+                    setShowPomoWheelModal(true);
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '42px',
+                  cursor: safePomodoro.status === 'running' ? 'default' : 'pointer'
+                }}
+                title={safePomodoro.status === 'running' ? '' : 'Tocca per imposta i minuti con la ruota'}
+              >
+                <span
                   style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '42px'
+                    fontSize: '36px',
+                    fontWeight: '900',
+                    fontFamily: 'monospace',
+                    color: safePomodoro.status === 'running' ? '#ef4444' : 'var(--text-primary)',
+                    lineHeight: 1,
+                    letterSpacing: '1px'
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '36px',
-                      fontWeight: '900',
-                      fontFamily: 'monospace',
-                      color: safePomodoro.status === 'running' ? '#ef4444' : '#f59e0b',
-                      lineHeight: 1,
-                      letterSpacing: '1px'
-                    }}
-                  >
-                    {formatPomoTime(pomoSecs)}
-                  </span>
-                </div>
-              )}
+                  {formatPomoTime(pomoSecs)}
+                </span>
+              </div>
 
               {/* 2. Bottom Row: Left (Stat Selector) & Right (Control Buttons) */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
@@ -1024,6 +969,122 @@ export default function HomeTab({
               style={{ width: '100%', marginTop: '16px', padding: '10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
             >
               Fatto ✓
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Vertical Pomodoro Duration Wheel Modal */}
+      {showPomoWheelModal && (
+        <div
+          className="modal-overlay active"
+          onClick={() => setShowPomoWheelModal(false)}
+          style={{ zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)' }}
+        >
+          <div
+            className="modal-content glass-panel"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '85%', maxWidth: '300px', padding: '20px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 12px 36px rgba(0,0,0,0.4)', border: '1px solid var(--glass-border)' }}
+          >
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              ⏱️ Seleziona Minuti
+            </h3>
+
+            {/* Vertical Swipe Wheel Area */}
+            <div style={{ position: 'relative', height: '180px', margin: '0 auto', overflow: 'hidden' }}>
+              {/* Highlight selection bar */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '8%',
+                  right: '8%',
+                  height: '44px',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  borderTop: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderBottom: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: '10px',
+                  pointerEvents: 'none',
+                  zIndex: 1
+                }}
+              />
+
+              {/* Vertical Scroll Wheel */}
+              <div
+                ref={verticalWheelRef}
+                style={{
+                  height: '100%',
+                  overflowY: 'auto',
+                  scrollSnapType: 'y mandatory',
+                  WebkitOverflowScrolling: 'touch',
+                  paddingTop: '68px',
+                  paddingBottom: '68px',
+                  boxSizing: 'border-box',
+                  scrollbarWidth: 'none',
+                  maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)'
+                }}
+                className="no-scrollbar"
+              >
+                {POMO_MINUTE_PRESETS.map((m) => {
+                  const activeMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
+                  const isSelected = activeMins === m;
+                  return (
+                    <div
+                      key={m}
+                      onClick={() => {
+                        setPomoSecs(m * 60);
+                        if (setPomodoro) {
+                          setPomodoro(prev => ({
+                            ...(prev || {}),
+                            workDuration: m,
+                            remainingTime: m * 60
+                          }));
+                        }
+                      }}
+                      style={{
+                        scrollSnapAlign: 'center',
+                        height: '44px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: isSelected ? '28px' : '18px',
+                        fontWeight: isSelected ? '900' : '600',
+                        fontFamily: 'monospace',
+                        color: isSelected ? '#ef4444' : 'var(--text-secondary)',
+                        opacity: isSelected ? 1 : 0.35,
+                        transform: isSelected ? 'scale(1.1)' : 'scale(0.9)',
+                        transition: 'all 0.15s ease',
+                        cursor: 'pointer',
+                        userSelect: 'none'
+                      }}
+                    >
+                      {m} Minuti
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Confirm Button */}
+            <button
+              onClick={() => setShowPomoWheelModal(false)}
+              className="btn-primary"
+              style={{
+                marginTop: '16px',
+                width: '100%',
+                padding: '10px',
+                borderRadius: '12px',
+                background: '#ef4444',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+              }}
+            >
+              Conferma ({Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25} min)
             </button>
           </div>
         </div>
