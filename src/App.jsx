@@ -973,12 +973,12 @@ export default function App() {
   // Delete handler for global Edit Modal
   const handleDeleteModal = (idOrObj) => {
     const targetId = typeof idOrObj === 'object' ? idOrObj.id : idOrObj;
-    const targetType = editData?.type || modalType;
+    const targetType = editData?._targetType || editData?.type || modalType;
     if (targetType === 'attribute' || targetType === 'ability') {
       handleDeleteStat(targetId);
-    } else if (targetType === 'habit') {
+    } else if (targetType === 'habit' || targetType === 'habit_detail') {
       handleDeleteHabit(targetId);
-    } else if (targetType === 'oneshot') {
+    } else if (targetType === 'oneshot' || targetType === 'oneshot_detail') {
       handleDeleteOneshot(targetId);
     } else if (targetType === 'quest' || targetType === 'quest_detail') {
       handleDeleteQuest(targetId);
