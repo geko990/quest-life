@@ -861,7 +861,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Top Compact Hero Banner */}
+            {/* Top Compact Hero Banner: ONLY Emoji, Name, Stars */}
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, var(--bg-secondary) 100%)',
@@ -873,16 +873,16 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '14px',
                   background: 'var(--bg-primary)',
                   border: '1px solid var(--glass-border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '22px',
-                  margin: '0 auto 6px auto',
+                  margin: '0 auto 8px auto',
                   boxShadow: '0 3px 10px rgba(0,0,0,0.12)'
                 }}
               >
@@ -891,32 +891,44 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {item.name}
               </h3>
+              <div style={{ fontSize: '14px', color: '#f59e0b' }}>
+                {'★'.repeat(starsCount)}
+                <span style={{ opacity: 0.25 }}>{'★'.repeat(5 - starsCount)}</span>
+              </div>
+            </div>
 
-              {/* Badges Row */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '12px', color: '#f59e0b' }}>
-                  {'★'.repeat(starsCount)}
-                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - starsCount)}</span>
-                </span>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
+            {/* Expanded Details Section Below */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>⚡ Ricompensa XP:</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
                   +{starsCount * 8} XP
                 </span>
-                {primaryStat && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+              </div>
+              {primaryStat && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🧠 Statistica Primaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     {primaryStat.icon} {primaryStat.name}
                   </span>
-                )}
-                {secondaryStat && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                </div>
+              )}
+              {secondaryStat && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🛡️ Statistica Secondaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                     {secondaryStat.icon} {secondaryStat.name}
                   </span>
-                )}
-                {item.dueDate && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b' }}>
-                    📅 {new Date(item.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                </div>
+              )}
+              {item.dueDate && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>📅 Scadenza:</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#f59e0b' }}>
+                    {new Date(item.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </span>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* In Azioni Del Giorno Info Row */}
@@ -929,11 +941,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </span>
             </div>
 
-            {/* Status / Notes Box if any */}
+            {/* Description / Note Box if any */}
             {item.description && (
               <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
                 <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
-                  📝 Note
+                  📝 Note & Dettagli
                 </div>
                 <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
                   {item.description}
@@ -953,7 +965,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Top Compact Hero Banner */}
+            {/* Top Compact Hero Banner: ONLY Emoji, Name, Stars */}
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, var(--bg-secondary) 100%)',
@@ -965,16 +977,16 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '14px',
                   background: 'var(--bg-primary)',
                   border: '1px solid var(--glass-border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '22px',
-                  margin: '0 auto 6px auto',
+                  margin: '0 auto 8px auto',
                   boxShadow: '0 3px 10px rgba(0,0,0,0.12)'
                 }}
               >
@@ -983,45 +995,51 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {habit.name}
               </h3>
-
-              {/* Badges Row */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '12px', color: '#f59e0b' }}>
-                  {'★'.repeat(starsCount)}
-                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - starsCount)}</span>
-                </span>
-                {streak > 0 && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
-                    🔥 Streak: {streak} {streak === 1 ? 'giorno' : 'giorni'}
-                  </span>
-                )}
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#22c55e', background: 'rgba(34, 197, 94, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
-                  +{starsCount * 5} XP
-                </span>
-                {primaryStat && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                    {primaryStat.icon} {primaryStat.name}
-                  </span>
-                )}
-                {secondaryStat && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                    {secondaryStat.icon} {secondaryStat.name}
-                  </span>
-                )}
+              <div style={{ fontSize: '14px', color: '#f59e0b' }}>
+                {'★'.repeat(starsCount)}
+                <span style={{ opacity: 0.25 }}>{'★'.repeat(5 - starsCount)}</span>
               </div>
             </div>
 
-            {/* Frequenza / Info Box */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                🔄 Frequenza:
-              </span>
-              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                {habit.frequency === 'daily' ? 'Tutti i giorni' : (habit.frequency || 'Giornaliera')}
-              </span>
+            {/* Expanded Details Section Below */}
+            <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🔥 Serie Attuale (Streak):</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
+                  {streak} {streak === 1 ? 'giorno' : 'giorni'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>⚡ Ricompensa XP:</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#22c55e', background: 'rgba(34, 197, 94, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
+                  +{starsCount * 5} XP
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🔄 Frequenza:</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  {habit.frequency === 'daily' ? 'Tutti i giorni' : (habit.frequency || 'Giornaliera')}
+                </span>
+              </div>
+              {primaryStat && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🧠 Statistica Primaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                    {primaryStat.icon} {primaryStat.name}
+                  </span>
+                </div>
+              )}
+              {secondaryStat && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🛡️ Statistica Secondaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    {secondaryStat.icon} {secondaryStat.name}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Descrizione / Note Box if any */}
+            {/* Note & Dettagli */}
             {habit.description && (
               <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
                 <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
@@ -2314,28 +2332,30 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </button>
               )}
 
-              <button
-                type="submit"
-                title="Salva / Chiudi"
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  fontSize: '15px',
-                  fontWeight: 'bold',
-                  background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
-                  color: '#ffffff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                💾
-              </button>
+              {!['oneshot_detail', 'habit_detail'].includes(activeT) && (
+                <button
+                  type="submit"
+                  title="Salva"
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
+                    fontSize: '15px',
+                    fontWeight: 'bold',
+                    background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
+                    color: '#ffffff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  💾
+                </button>
+              )}
             </div>
           )}
         </form>
