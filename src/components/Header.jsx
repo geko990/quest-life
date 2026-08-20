@@ -459,19 +459,24 @@ export default function Header({
                           border: '1px solid var(--glass-border)'
                         }}
                       >
-                        {/* 80% Transparent Month Number under/behind medal emoji */}
+                        {/* 80% Transparent Month Number filling the entire button box */}
                         {monthNum && (
                           <span
                             style={{
                               position: 'absolute',
-                              fontSize: '22px',
+                              inset: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '36px',
                               fontWeight: '900',
-                              fontFamily: 'monospace',
+                              fontFamily: 'system-ui, -apple-system, sans-serif',
                               color: 'var(--text-primary)',
-                              opacity: 0.22,
+                              opacity: 0.3,
                               zIndex: 0,
                               userSelect: 'none',
-                              pointerEvents: 'none'
+                              pointerEvents: 'none',
+                              lineHeight: 1
                             }}
                           >
                             {monthNum}
