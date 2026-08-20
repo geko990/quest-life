@@ -55,7 +55,7 @@ export default function HomeTab({
       const activeMins = Math.floor(pomoSecs / 60) || safePomodoro.workDuration || 25;
       const idx = POMO_MINUTE_PRESETS.findIndex(m => m === activeMins);
       if (idx !== -1) {
-        verticalWheelRef.current.scrollTop = idx * 44;
+        verticalWheelRef.current.scrollTop = idx * 40;
       }
     }
   }, [showPomoWheelModal]);
@@ -973,7 +973,7 @@ export default function HomeTab({
           </div>
         </div>
       )}
-      {/* Vertical Pomodoro Duration Wheel Modal */}
+      {/* Ultra-compact Vertical Pomodoro Duration Wheel Modal */}
       {showPomoWheelModal && (
         <div
           className="modal-overlay active"
@@ -983,14 +983,10 @@ export default function HomeTab({
           <div
             className="modal-content glass-panel"
             onClick={(e) => e.stopPropagation()}
-            style={{ width: '85%', maxWidth: '280px', padding: '18px', borderRadius: '22px', textAlign: 'center', boxShadow: '0 12px 36px rgba(0,0,0,0.4)', border: '1px solid var(--glass-border)' }}
+            style={{ width: 'auto', minWidth: '180px', maxWidth: '220px', padding: '8px 12px', borderRadius: '20px', textAlign: 'center', boxShadow: '0 12px 36px rgba(0,0,0,0.5)', border: '1px solid var(--glass-border)' }}
           >
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              ⏱️ Seleziona Minuti
-            </h3>
-
             {/* Vertical Swipe Wheel Area */}
-            <div style={{ position: 'relative', height: '180px', margin: '0 auto', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', height: '150px', margin: '0 auto', overflow: 'hidden' }}>
               {/* Highlight selection bar */}
               <div
                 style={{
@@ -998,11 +994,11 @@ export default function HomeTab({
                   top: '50%',
                   left: '4px',
                   right: '4px',
-                  height: '44px',
+                  height: '40px',
                   transform: 'translateY(-50%)',
                   background: 'rgba(239, 68, 68, 0.18)',
                   border: '1.5px solid rgba(239, 68, 68, 0.5)',
-                  borderRadius: '12px',
+                  borderRadius: '10px',
                   pointerEvents: 'none',
                   zIndex: 1
                 }}
@@ -1016,8 +1012,8 @@ export default function HomeTab({
                   overflowY: 'auto',
                   scrollSnapType: 'y mandatory',
                   WebkitOverflowScrolling: 'touch',
-                  paddingTop: '68px',
-                  paddingBottom: '68px',
+                  paddingTop: '55px',
+                  paddingBottom: '55px',
                   boxSizing: 'border-box',
                   scrollbarWidth: 'none',
                   maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)',
@@ -1045,22 +1041,22 @@ export default function HomeTab({
                           }
                           const idx = POMO_MINUTE_PRESETS.findIndex(item => item === m);
                           if (idx !== -1 && verticalWheelRef.current) {
-                            verticalWheelRef.current.scrollTo({ top: idx * 44, behavior: 'smooth' });
+                            verticalWheelRef.current.scrollTo({ top: idx * 40, behavior: 'smooth' });
                           }
                         }
                       }}
                       style={{
                         scrollSnapAlign: 'center',
-                        height: '44px',
+                        height: '40px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: isSelected ? '22px' : '16px',
+                        fontSize: '18px',
                         fontWeight: isSelected ? '800' : '500',
                         fontFamily: 'monospace',
                         color: isSelected ? '#ef4444' : 'var(--text-secondary)',
                         opacity: isSelected ? 1 : 0.4,
-                        transition: 'all 0.15s ease',
+                        transition: 'color 0.15s ease, opacity 0.15s ease',
                         cursor: 'pointer',
                         userSelect: 'none'
                       }}
@@ -1070,10 +1066,6 @@ export default function HomeTab({
                   );
                 })}
               </div>
-            </div>
-
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '10px' }}>
-              Tocca il numero al centro per confermare
             </div>
           </div>
         </div>
