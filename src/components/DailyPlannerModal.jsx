@@ -185,6 +185,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                     if (found) {
                       handleSlotChange(key, 'name', found.name);
                       handleSlotChange(key, 'oneshotId', found.id);
+                      handleSlotChange(key, 'questId', null);
+                      handleSlotChange(key, 'subquestId', null);
                       if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
                       if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
                       if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
@@ -194,6 +196,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                     if (found) {
                       handleSlotChange(key, 'name', found.rawName || found.name);
                       handleSlotChange(key, 'oneshotId', null);
+                      handleSlotChange(key, 'questId', found.questId);
+                      handleSlotChange(key, 'subquestId', found.subquestId);
                       if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
                       if (found.statId) handleSlotChange(key, 'statId', found.statId);
                     }

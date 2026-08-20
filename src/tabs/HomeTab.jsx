@@ -20,6 +20,8 @@ export default function HomeTab({
   onRewardXp,
   oneshots = [],
   onToggleOneshot,
+  quests = [],
+  onToggleSubquest,
   habits = [],
   onToggleHabit,
   dailyActions = [],
@@ -426,11 +428,37 @@ export default function HomeTab({
     );
   };
 
-  // ONLY calculate actions planned via the Daily Planner for today
-  const todayActionsList = (oneshots || []).filter(
-    o => !o.locked && o.fromDailyPlan && o.dailyPlanDate === todayStr
-  );
+  // Calculate actions planned via the Daily Planner for today (Oneshots + Campaign Subquests)
+  const todayOneshots = (oneshots || [])
+    .filter(o => !o.locked && o.fromDailyPlan && o.dailyPlanDate === todayStr)
+    .map(o => ({
+      id: o.id,
+      name: o.name,
+      emoji: o.emoji,
+      completed: o.completed,
+      slotType: o.slotType,
+      isSubquest: false,
+      oneshotId: o.id
+    }));
 
+  const todaySubquests = [];
+  (quests || []).forEach(q => {
+    (q.subquests || []).forEach(sq => {
+      if (sq.fromDailyPlan && sq.dailyPlanDate === todayStr) {
+        todaySubquests.push({
+          id: `sq-${q.id}-${sq.id}`,
+          questId: q.id,
+          subquestId: sq.id,
+          name: `${q.emoji || '🏆'} ${sq.name}`,
+          completed: sq.completed,
+          slotType: sq.slotType,
+          isSubquest: true
+        });
+      }
+    });
+  });
+
+  const todayActionsList = [...todayOneshots, ...todaySubquests];
   todayActionsList.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
   const handleChartClick = (e) => {
@@ -704,7 +732,13 @@ export default function HomeTab({
                   return (
                     <div
                       key={action.id}
-                      onClick={() => onToggleOneshot && onToggleOneshot(action.id)}
+                      onClick={() => {
+                        if (action.isSubquest) {
+                          if (onToggleSubquest) onToggleSubquest(action.questId, action.subquestId);
+                        } else if (onToggleOneshot) {
+                          onToggleOneshot(action.oneshotId || action.id);
+                        }
+                      }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -726,7 +760,11 @@ export default function HomeTab({
                         className={`card-checkbox ${isCompleted ? 'checked' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (onToggleOneshot) onToggleOneshot(action.id);
+                          if (action.isSubquest) {
+                            if (onToggleSubquest) onToggleSubquest(action.questId, action.subquestId);
+                          } else if (onToggleOneshot) {
+                            onToggleOneshot(action.oneshotId || action.id);
+                          }
                         }}
                         style={{ width: '18px', height: '18px', flexShrink: 0 }}
                       ></div>
