@@ -1298,6 +1298,7 @@ export default function App() {
             onOpenModal={handleOpenModal}
             stats={stats}
             onRewardXp={handleRewardXp}
+            settings={settings}
           />
         );
       case 'settings':

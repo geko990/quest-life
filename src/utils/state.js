@@ -61,6 +61,7 @@ export function getInitialState() {
     },
     finances: {
       balance: 0,
+      cashBalance: 0,
       monthlyBudget: 1000,
       hideBalances: false,
       transactions: [],
@@ -120,6 +121,7 @@ export function getInitialState() {
       dayStartTime: 0,
       weekStart: 'sunday',
       enableDailyPenalties: true,
+      allowPastEdits: false,
       animatedBackground: true,
       enableDailyPlanner: true,
       enableWeeklyRecap: true,
@@ -175,6 +177,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
   if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
   if (state.settings.enableDailyPenalties === undefined) state.settings.enableDailyPenalties = true;
+  if (state.settings.allowPastEdits === undefined) state.settings.allowPastEdits = false;
   if (!Array.isArray(state.settings.presetDays)) {
     state.settings.presetDays = defaults.settings.presetDays;
   }
@@ -334,6 +337,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   if (parsed.finances) {
     state.finances = {
       balance: Number(parsed.finances.balance) || 0,
+      cashBalance: Number(parsed.finances.cashBalance) || 0,
       monthlyBudget: Number(parsed.finances.monthlyBudget) || 1000,
       hideBalances: Boolean(parsed.finances.hideBalances),
       transactions: Array.isArray(parsed.finances.transactions) ? parsed.finances.transactions : [],
@@ -344,6 +348,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   } else {
     state.finances = {
       balance: 0,
+      cashBalance: 0,
       monthlyBudget: 1000,
       hideBalances: false,
       transactions: [],

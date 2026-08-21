@@ -29,7 +29,7 @@ const getCategoryObj = (catId) => {
 };
 
 export default function FinancesTab({
-  finances = { balance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
+  finances = { balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
   setFinances,
   stats = [],
   onRewardXp,
@@ -46,6 +46,11 @@ export default function FinancesTab({
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showRecurringModal, setShowRecurringModal] = useState(false);
 
+  // Cash Withdrawal / Transfer Modal
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawSource, setWithdrawSource] = useState('base'); // 'base' or secondary account id
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+
   // Secondary Account Modals
   const [showAddSecModal, setShowAddSecModal] = useState(false);
   const [secAccountAction, setSecAccountAction] = useState(null); // { account, type: 'deposit'|'withdraw'|'interest' }
@@ -53,6 +58,7 @@ export default function FinancesTab({
   // Transaction Form States
   const [amountInput, setAmountInput] = useState('');
   const [categoryInput, setCategoryInput] = useState('cibo');
+  const [txAccountInput, setTxAccountInput] = useState('base'); // 'base' | 'cash' | secondary account id
   const [noteInput, setNoteInput] = useState('');
   const [dateInput, setDateInput] = useState(getGameDate());
   const [isRecurring, setIsRecurring] = useState(false);
@@ -154,8 +160,9 @@ export default function FinancesTab({
     setFinances(prev => ({ ...prev, hideBalances: !prev.hideBalances }));
   };
 
-  const handleOpenAddTxModal = (mode) => {
+  const handleOpenAddTxModal = (mode, defaultAccount = 'base') => {
     setTxModalMode(mode);
+    setTxAccountInput(defaultAccount);
     setCategoryInput(mode === 'income' ? 'stipendio' : 'cibo');
     setAmountInput('');
     setNoteInput('');
@@ -175,6 +182,7 @@ export default function FinancesTab({
       type: txModalMode,
       amount: val,
       category: categoryInput,
+      account: txAccountInput,
       note: noteInput.trim(),
       date: dateInput,
       timestamp: Date.now()
@@ -187,6 +195,7 @@ export default function FinancesTab({
         type: txModalMode,
         amount: val,
         category: categoryInput,
+        account: txAccountInput,
         note: noteInput.trim(),
         frequency: 'monthly',
         dayOfMonth: parseInt(recDay) || 1,
@@ -197,10 +206,27 @@ export default function FinancesTab({
     }
 
     setFinances(prev => {
-      const newBalance = txModalMode === 'income' ? prev.balance + val : prev.balance - val;
+      let newBalance = prev.balance;
+      let newCashBalance = prev.cashBalance || 0;
+      let newSecAccounts = prev.secondaryAccounts || [];
+
+      if (txAccountInput === 'base') {
+        newBalance = txModalMode === 'income' ? prev.balance + val : prev.balance - val;
+      } else if (txAccountInput === 'cash') {
+        newCashBalance = txModalMode === 'income' ? (prev.cashBalance || 0) + val : (prev.cashBalance || 0) - val;
+      } else {
+        newSecAccounts = (prev.secondaryAccounts || []).map(a => {
+          if (a.id !== txAccountInput) return a;
+          const updatedBal = txModalMode === 'income' ? a.balance + val : a.balance - val;
+          return { ...a, balance: updatedBal };
+        });
+      }
+
       return {
         ...prev,
         balance: newBalance,
+        cashBalance: newCashBalance,
+        secondaryAccounts: newSecAccounts,
         transactions: [newTx, ...(prev.transactions || [])],
         recurringTransactions: newRecurring
       };
@@ -214,14 +240,90 @@ export default function FinancesTab({
     if (!tx) return;
     if (window.confirm(`Eliminare il movimento di ${tx.amount} €?`)) {
       setFinances(prev => {
-        const restoredBalance = tx.type === 'income' ? prev.balance - tx.amount : prev.balance + tx.amount;
+        let newBalance = prev.balance;
+        let newCashBalance = prev.cashBalance || 0;
+        let newSecAccounts = prev.secondaryAccounts || [];
+        const targetAccount = tx.account || 'base';
+
+        if (tx.type === 'transfer') {
+          // Internal transfer to cash
+          newCashBalance = (prev.cashBalance || 0) - tx.amount;
+          if (tx.sourceAccount === 'base' || !tx.sourceAccount) {
+            newBalance = prev.balance + tx.amount;
+          } else {
+            newSecAccounts = (prev.secondaryAccounts || []).map(a => 
+              a.id === tx.sourceAccount ? { ...a, balance: a.balance + tx.amount } : a
+            );
+          }
+        } else if (targetAccount === 'base') {
+          newBalance = tx.type === 'income' ? prev.balance - tx.amount : prev.balance + tx.amount;
+        } else if (targetAccount === 'cash') {
+          newCashBalance = tx.type === 'income' ? (prev.cashBalance || 0) - tx.amount : (prev.cashBalance || 0) + tx.amount;
+        } else {
+          newSecAccounts = (prev.secondaryAccounts || []).map(a => {
+            if (a.id !== targetAccount) return a;
+            const restoredBal = tx.type === 'income' ? a.balance - tx.amount : a.balance + tx.amount;
+            return { ...a, balance: restoredBal };
+          });
+        }
+
         return {
           ...prev,
-          balance: restoredBalance,
+          balance: newBalance,
+          cashBalance: newCashBalance,
+          secondaryAccounts: newSecAccounts,
           transactions: prev.transactions.filter(t => t.id !== txId)
         };
       });
     }
+  };
+
+  const handleWithdrawCashSubmit = (e) => {
+    e.preventDefault();
+    const val = parseFloat(withdrawAmount.replace(',', '.'));
+    if (isNaN(val) || val <= 0) return;
+
+    let sourceName = 'Conto Base';
+    if (withdrawSource !== 'base') {
+      const sec = (finances.secondaryAccounts || []).find(a => a.id === withdrawSource);
+      if (sec) sourceName = `${sec.emoji || '🏦'} ${sec.name}`;
+    }
+
+    const newTx = {
+      id: 'tx_trf_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      type: 'transfer',
+      amount: val,
+      category: 'altro_entrata',
+      account: 'cash',
+      sourceAccount: withdrawSource,
+      note: `🏧 Prelievo Contanti (da ${sourceName})`,
+      date: getGameDate(),
+      timestamp: Date.now()
+    };
+
+    setFinances(prev => {
+      let newBalance = prev.balance;
+      let newSecAccounts = prev.secondaryAccounts || [];
+
+      if (withdrawSource === 'base') {
+        newBalance = prev.balance - val;
+      } else {
+        newSecAccounts = (prev.secondaryAccounts || []).map(a => 
+          a.id === withdrawSource ? { ...a, balance: Math.max(0, a.balance - val) } : a
+        );
+      }
+
+      return {
+        ...prev,
+        balance: newBalance,
+        cashBalance: (prev.cashBalance || 0) + val,
+        secondaryAccounts: newSecAccounts,
+        transactions: [newTx, ...(prev.transactions || [])]
+      };
+    });
+
+    setWithdrawAmount('');
+    setShowWithdrawModal(false);
   };
 
   const handleToggleRecurringActive = (recId) => {
@@ -326,9 +428,10 @@ export default function FinancesTab({
     }
   };
 
-  // Total Net Worth (Conto Base + Secondary Accounts)
+  // Total Net Worth (Conto Base + Contanti + Secondary Accounts)
   const secondaryAccountsTotal = (finances.secondaryAccounts || []).reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
-  const totalPatrimonio = (Number(finances.balance) || 0) + secondaryAccountsTotal;
+  const cashTotal = Number(finances.cashBalance) || 0;
+  const totalPatrimonio = (Number(finances.balance) || 0) + cashTotal + secondaryAccountsTotal;
 
   // Filtered Transactions
   const filteredTransactions = (finances.transactions || []).filter(t => {
@@ -513,7 +616,48 @@ export default function FinancesTab({
         </div>
       </div>
 
-      {/* 3. Conti Secondari Card */}
+      {/* 2b. Card Contanti Disponibili */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(20, 83, 45, 0.85), rgba(15, 23, 42, 0.95))',
+          border: '1px solid rgba(34, 197, 94, 0.3)',
+          borderRadius: '16px',
+          padding: '12px 16px',
+          color: '#fff',
+          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            💵 Contanti Disponibili
+          </div>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <button
+              onClick={() => { setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
+              style={{ background: 'rgba(234, 179, 8, 0.25)', border: '1px solid rgba(234, 179, 8, 0.4)', color: '#fde047', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+              title="Preleva contanti dal Conto Base o da un Conto Secondario"
+            >
+              🏧 Preleva
+            </button>
+            <button
+              onClick={() => handleOpenAddTxModal('expense', 'cash')}
+              style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              - Uscita
+            </button>
+            <button
+              onClick={() => handleOpenAddTxModal('income', 'cash')}
+              style={{ background: '#22c55e', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              + Entrata
+            </button>
+          </div>
+        </div>
+
+        <div style={{ fontSize: '24px', fontWeight: '900', color: (finances.cashBalance || 0) >= 0 ? '#4ade80' : '#ef4444', margin: '2px 0 2px 0' }}>
+          {fmtCurrency(finances.cashBalance || 0)}
+        </div>
+      </div>
       <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
@@ -725,6 +869,21 @@ export default function FinancesTab({
                 const catObj = getCategoryObj(t.category);
                 const isIncome = t.type === 'income';
 
+                const getAccountBadge = (tx) => {
+                  if (tx.type === 'transfer') {
+                    return <span style={{ fontSize: '8px', background: 'rgba(234, 179, 8, 0.2)', color: '#eab308', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>🏧 Prelievo</span>;
+                  }
+                  const accKey = tx.account || 'base';
+                  if (accKey === 'cash') {
+                    return <span style={{ fontSize: '8px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💵 Contanti</span>;
+                  }
+                  if (accKey !== 'base') {
+                    const sec = (finances.secondaryAccounts || []).find(a => a.id === accKey);
+                    return <span style={{ fontSize: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Secondo'}</span>;
+                  }
+                  return <span style={{ fontSize: '8px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💳 Base</span>;
+                };
+
                 return (
                   <div
                     key={t.id}
@@ -739,20 +898,21 @@ export default function FinancesTab({
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                      <span style={{ fontSize: '15px', flexShrink: 0 }}>{catObj.emoji}</span>
+                      <span style={{ fontSize: '15px', flexShrink: 0 }}>{t.type === 'transfer' ? '🏧' : catObj.emoji}</span>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {t.note || catObj.label}
                         </div>
-                        <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>
-                          {t.date}
+                        <div style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
+                          <span>{t.date}</span>
+                          {getAccountBadge(t)}
                         </div>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: isIncome ? '#22c55e' : '#ef4444' }}>
-                        {isIncome ? '+' : '-'}{fmtCurrency(t.amount)}
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: t.type === 'transfer' ? '#eab308' : (isIncome ? '#22c55e' : '#ef4444') }}>
+                        {t.type === 'transfer' ? '🏧 ' : (isIncome ? '+' : '-')}{fmtCurrency(t.amount)}
                       </span>
                       <button
                         onClick={() => handleDeleteTransaction(t.id)}
@@ -872,6 +1032,23 @@ export default function FinancesTab({
                   required
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
                 />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                  {txModalMode === 'expense' ? 'Conto da Addebitare' : 'Conto di Accredito'}
+                </label>
+                <select
+                  value={txAccountInput}
+                  onChange={(e) => setTxAccountInput(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>
+                  <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
+                  {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -1250,6 +1427,66 @@ export default function FinancesTab({
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   Salva Budget
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Preleva Contanti */}
+      {showWithdrawModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#fde047', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🏧 Preleva Contanti
+            </h3>
+
+            <form onSubmit={handleWithdrawCashSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Preleva Da (Conto Sorgente)</label>
+                <select
+                  value={withdrawSource}
+                  onChange={(e) => setWithdrawSource(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>
+                  {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo da Prelevare (€)*</label>
+                <input
+                  type="text"
+                  placeholder="50"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  autoFocus
+                  required
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
+                💡 L'importo verrà scalato dal conto selezionato e aggiunto al tuo fondo <b>💵 Contanti Disponibili</b>.
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowWithdrawModal(false)}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Conferma Prelievo
                 </button>
               </div>
             </form>

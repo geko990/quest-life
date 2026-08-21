@@ -341,6 +341,22 @@ export default function SettingsTab({
                   style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
                 />
               </div>
+
+              {/* Allow Past Edits Toggle */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    🔓 Modifica Dati Passati & Storico
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Abilita la modifica manuale dei dati trascorsi nello Storico Salute</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={safeSettings.allowPastEdits === true}
+                  onChange={(e) => updateSetting('allowPastEdits', e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                />
+              </div>
             </div>
           )}
         </div>
