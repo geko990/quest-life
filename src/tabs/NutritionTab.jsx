@@ -12,7 +12,8 @@ export default function NutritionTab({
   initialModal,
   setInitialModal,
   onlyModal = false,
-  onCloseOverlay
+  onCloseOverlay,
+  settings = {}
 }) {
   if (!health) return null;
 
@@ -52,6 +53,54 @@ export default function NutritionTab({
 
   const [activeInventoryTab, setActiveInventoryTab] = useState('food'); // 'food' | 'home'
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+
+  // Edit History Entry States
+  const [editingHistoryDay, setEditingHistoryDay] = useState(null); // { idx, date }
+  const [editHistConsumed, setEditHistConsumed] = useState('');
+  const [editHistBurned, setEditHistBurned] = useState('');
+  const [editHistSteps, setEditHistSteps] = useState('');
+  const [editHistProteins, setEditHistProteins] = useState('');
+  const [editHistWater, setEditHistWater] = useState('');
+  const [editHistWeight, setEditHistWeight] = useState('');
+
+  const handleOpenEditHistory = (h, idx) => {
+    setEditingHistoryDay({ idx, date: h.date });
+    setEditHistConsumed(String(h.consumed || 0));
+    setEditHistBurned(String(h.burned || 0));
+    setEditHistSteps(String(h.steps || 0));
+    setEditHistProteins(String(h.proteins || 0));
+    setEditHistWater(String(h.water || 0));
+    setEditHistWeight(h.weight !== null && h.weight !== undefined ? String(h.weight) : '');
+  };
+
+  const handleSaveEditHistorySubmit = (e) => {
+    e.preventDefault();
+    if (!editingHistoryDay) return;
+    const { idx } = editingHistoryDay;
+
+    setHealth(prev => {
+      const historyCopy = [...(prev.history || [])];
+      if (idx < 0 || idx >= historyCopy.length) return prev;
+
+      historyCopy[idx] = {
+        ...historyCopy[idx],
+        consumed: Number(editHistConsumed) || 0,
+        burned: Number(editHistBurned) || 0,
+        steps: Number(editHistSteps) || 0,
+        proteins: Number(editHistProteins) || 0,
+        water: Number(editHistWater) || 0,
+        weight: editHistWeight.trim() !== '' ? Number(editHistWeight.replace(',', '.')) || null : null
+      };
+
+      return {
+        ...prev,
+        history: historyCopy
+      };
+    });
+
+    setEditingHistoryDay(null);
+  };
+
   const [activeMealCategory, setActiveMealCategory] = useState('all');
   const [newShopItemName, setNewShopItemName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -1663,32 +1712,148 @@ export default function NutritionTab({
                   Nessun dato storico salvato nei giorni precedenti. I dati di ciascuna giornata si archiviano automaticamente al cambio del giorno!
                 </p>
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
-                  <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
-                    <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Data</th>
-                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Calorie</th>
-                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Passi</th>
-                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Proteine</th>
-                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Acqua</th>
-                      <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Peso</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historyList.map((h, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                        <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{new Date(h.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</td>
-                        <td style={{ padding: '8px 6px', color: '#3b82f6' }}>{h.consumed}/{h.burned}</td>
-                        <td style={{ padding: '8px 6px', color: 'var(--accent-primary)' }}>{(h.steps || 0).toLocaleString()}</td>
-                        <td style={{ padding: '8px 6px', color: '#eab308' }}>{h.proteins || 0}g</td>
-                        <td style={{ padding: '8px 6px', color: '#06b6d4' }}>{((h.water || 0) * 0.2).toFixed(1)}L</td>
-                        <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{h.weight ? `${h.weight} kg` : '--'}</td>
+                <>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
+                    <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
+                      <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Data</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Calorie</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Passi</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Proteine</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Acqua</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Peso</th>
+                        {settings?.allowPastEdits && (
+                          <th style={{ padding: '8px 6px', background: 'var(--bg-card)', textAlign: 'center' }}>✏️</th>
+                        )}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {historyList.map((h, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
+                          <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{new Date(h.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</td>
+                          <td style={{ padding: '8px 6px', color: '#3b82f6' }}>{h.consumed}/{h.burned}</td>
+                          <td style={{ padding: '8px 6px', color: 'var(--accent-primary)' }}>{(h.steps || 0).toLocaleString()}</td>
+                          <td style={{ padding: '8px 6px', color: '#eab308' }}>{h.proteins || 0}g</td>
+                          <td style={{ padding: '8px 6px', color: '#06b6d4' }}>{((h.water || 0) * 0.2).toFixed(1)}L</td>
+                          <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{h.weight ? `${h.weight} kg` : '--'}</td>
+                          {settings?.allowPastEdits && (
+                            <td style={{ padding: '8px 6px', textAlign: 'center' }}>
+                              <button
+                                onClick={() => handleOpenEditHistory(h, idx)}
+                                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', padding: '3px 7px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                                title="Modifica dati di questa giornata"
+                              >
+                                ✏️
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <div style={{ fontSize: '9px', color: settings?.allowPastEdits ? '#4ade80' : 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', marginTop: '10px' }}>
+                    {settings?.allowPastEdits
+                      ? '🔓 Modifica Dati Passati Attiva: usa l\'icona ✏️ per correggere una giornata.'
+                      : '💡 Attiva "Modifica Dati Passati" nelle Impostazioni per abilitare la correzione delle singole giornate.'
+                    }
+                  </div>
+                </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Modifica Giornata Storica */}
+      {editingHistoryDay && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '340px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              ✏️ Modifica Giornata: {new Date(editingHistoryDay.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </h3>
+
+            <form onSubmit={handleSaveEditHistorySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Calorie Consumate</label>
+                  <input
+                    type="number"
+                    value={editHistConsumed}
+                    onChange={(e) => setEditHistConsumed(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Calorie Bruciate</label>
+                  <input
+                    type="number"
+                    value={editHistBurned}
+                    onChange={(e) => setEditHistBurned(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Passi</label>
+                  <input
+                    type="number"
+                    value={editHistSteps}
+                    onChange={(e) => setEditHistSteps(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Proteine (g)</label>
+                  <input
+                    type="number"
+                    value={editHistProteins}
+                    onChange={(e) => setEditHistProteins(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Acqua (Bicchieri)</label>
+                  <input
+                    type="number"
+                    value={editHistWater}
+                    onChange={(e) => setEditHistWater(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Peso (kg)</label>
+                  <input
+                    type="text"
+                    value={editHistWeight}
+                    onChange={(e) => setEditHistWeight(e.target.value)}
+                    placeholder="es. 74.5"
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingHistoryDay(null)}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Salva Modifica
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
