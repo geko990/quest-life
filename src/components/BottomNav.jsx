@@ -1,38 +1,70 @@
 import React, { useRef } from 'react';
 
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType }) {
-  const lastSettingsClickRef = useRef(0);
+  const lastClicksRef = useRef({});
   const clickTimeoutRef = useRef(null);
+
+  const doubleTapTargets = {
+    missions: 'quests',
+    quests: 'missions',
+    nutrition: 'shopping',
+    shopping: 'nutrition',
+    settings: 'finances',
+    finances: 'settings'
+  };
 
   const navItems = [
     { id: 'habits', icon: '📜', label: 'Abitudini' },
-    { id: 'missions', icon: '⚔️', label: 'Missioni' },
+    {
+      id: 'missions',
+      icon: activeTab === 'quests' ? '🏆' : '⚔️',
+      label: activeTab === 'quests' ? 'Campagne' : 'Missioni'
+    },
     { id: 'home', icon: 'avatar', label: 'Eroe', isCenter: true },
-    { id: 'nutrition', icon: '🍎', label: 'Salute' },
-    { id: 'settings', icon: activeTab === 'finances' ? '💰' : '⚙️', label: activeTab === 'finances' ? 'Tesoro' : 'Opzioni' },
+    {
+      id: 'nutrition',
+      icon: activeTab === 'shopping' ? '🛒' : '🍎',
+      label: activeTab === 'shopping' ? 'Spesa' : 'Salute'
+    },
+    {
+      id: 'settings',
+      icon: activeTab === 'finances' ? '💰' : '⚙️',
+      label: activeTab === 'finances' ? 'Tesoro' : 'Opzioni'
+    },
   ];
 
   const handleItemClick = (itemId) => {
-    if (itemId === 'settings') {
+    const targetDoubleTap = doubleTapTargets[itemId];
+
+    if (targetDoubleTap) {
       const now = Date.now();
-      const delta = now - lastSettingsClickRef.current;
-      lastSettingsClickRef.current = now;
+      const lastClick = lastClicksRef.current[itemId] || 0;
+      const delta = now - lastClick;
+      lastClicksRef.current[itemId] = now;
 
       if (delta < 350) {
-        // Double tap: clear pending single click timeout and switch to finances
+        // Double tap: clear pending single click timeout
         if (clickTimeoutRef.current) {
           clearTimeout(clickTimeoutRef.current);
           clickTimeoutRef.current = null;
         }
-        setActiveTab(activeTab === 'finances' ? 'settings' : 'finances');
+        const nextTab = activeTab === targetDoubleTap ? itemId : targetDoubleTap;
+        setActiveTab(nextTab);
         return;
       }
 
-      // Single tap: set timer to switch to settings if no second tap occurs
+      // Single tap: set timer to switch tab if no second tap occurs
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
       clickTimeoutRef.current = setTimeout(() => {
-        setActiveTab('settings');
+        setActiveTab(itemId);
       }, 250);
     } else {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
+      }
       setActiveTab(itemId);
     }
   };
@@ -90,7 +122,11 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
           );
         }
 
-        const isActive = activeTab === item.id || (item.id === 'settings' && activeTab === 'finances');
+        const isActive =
+          activeTab === item.id ||
+          (item.id === 'settings' && activeTab === 'finances') ||
+          (item.id === 'missions' && (activeTab === 'quests' || activeTab === 'oneshots')) ||
+          (item.id === 'nutrition' && activeTab === 'shopping');
         return (
           <button
             key={item.id}

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
 import { useTouchReorder } from '../utils/useTouchReorder';
 
 export default function MissionsTab({
+  activeTab,
   oneshots = [],
   setOneshots,
   onToggleOneshot,
@@ -23,7 +24,15 @@ export default function MissionsTab({
 }) {
   const { getDragProps: getOneshotDragProps } = useTouchReorder(oneshots, setOneshots);
   const { getDragProps: getQuestDragProps } = useTouchReorder(quests, setQuests);
-  const [subTab, setSubTab] = useState('oneshot'); // 'oneshot' | 'quest' | 'catalog'
+  const [subTab, setSubTab] = useState(() => (activeTab === 'quests' ? 'quest' : 'oneshot')); // 'oneshot' | 'quest' | 'catalog'
+
+  useEffect(() => {
+    if (activeTab === 'quests') {
+      setSubTab('quest');
+    } else if (activeTab === 'missions' || activeTab === 'oneshots') {
+      setSubTab('oneshot');
+    }
+  }, [activeTab]);
   const [showCompletedOneshots, setShowCompletedOneshots] = useState(false);
   const [expandedQuestId, setExpandedQuestId] = useState(null);
 

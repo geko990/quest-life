@@ -17,12 +17,14 @@ export default function NutritionTab({
 }) {
   if (!health) return null;
 
-  const [activeMainTab, setActiveMainTab] = useState('health'); // 'health' | 'shopping'
+  const [activeMainTab, setActiveMainTab] = useState(() => (activeTab === 'shopping' ? 'shopping' : 'health')); // 'health' | 'shopping'
 
-  // Reset to 'health' (Diario Salute) whenever opening or clicking the Salute tab
+  // Update active main sub-tab whenever activeTab changes (single tap -> health, double tap -> shopping)
   useEffect(() => {
     if (activeTab === 'nutrition') {
       setActiveMainTab('health');
+    } else if (activeTab === 'shopping') {
+      setActiveMainTab('shopping');
     }
   }, [activeTab]);
 
