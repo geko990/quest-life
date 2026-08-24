@@ -346,9 +346,9 @@ export default function SettingsTab({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    🔓 Modifica Dati Passati & Storico
+                    🔓 Modifica Dati Passati, Storico & Cibi
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Abilita la modifica manuale dei dati trascorsi nello Storico Salute</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Abilita la modifica e cancellazione avanzata dei cibi nel database, degli alimenti loggati e dei dati nello Storico Salute</div>
                 </div>
                 <input
                   type="checkbox"

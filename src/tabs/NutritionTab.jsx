@@ -218,6 +218,79 @@ export default function NutritionTab({
   const pressTimerRef = React.useRef(null);
   const isLongPressRef = React.useRef(false);
 
+  // Edit Logged Meal Item State
+  const [editingLoggedItem, setEditingLoggedItem] = useState(null);
+  const [editLoggedItemGrams, setEditLoggedItemGrams] = useState('');
+  const [editLoggedItemCal, setEditLoggedItemCal] = useState('');
+  const [editLoggedItemProt, setEditLoggedItemProt] = useState('');
+  const [editLoggedItemCat, setEditLoggedItemCat] = useState('main');
+
+  const handleOpenEditLoggedItem = (item) => {
+    setEditingLoggedItem(item);
+    setEditLoggedItemGrams(item.grams || '');
+    setEditLoggedItemCal(item.calories !== undefined ? String(item.calories) : '');
+    setEditLoggedItemProt(item.proteins !== undefined ? String(item.proteins) : '');
+    setEditLoggedItemCat(item.catKey || item.category || 'main');
+  };
+
+  const handleSaveEditLoggedItem = (e) => {
+    if (e) e.preventDefault();
+    if (!editingLoggedItem) return;
+
+    const newCal = Math.max(0, parseInt(editLoggedItemCal) || 0);
+    const newProt = Math.max(0, parseFloat(editLoggedItemProt) || 0);
+    const newCat = editLoggedItemCat;
+    const oldCat = editingLoggedItem.catKey || editingLoggedItem.category;
+
+    const updatedMeals = { ...health.meals };
+
+    // Remove from old category
+    if (oldCat && updatedMeals[oldCat]) {
+      updatedMeals[oldCat] = updatedMeals[oldCat].filter(i => i.id !== editingLoggedItem.id);
+    } else {
+      ['breakfast', 'main', 'lunch', 'dinner', 'snack', 'cheat'].forEach(cat => {
+        if (updatedMeals[cat]) {
+          updatedMeals[cat] = updatedMeals[cat].filter(i => i.id !== editingLoggedItem.id);
+        }
+      });
+    }
+
+    // Add updated item to target category
+    const updatedItem = {
+      ...editingLoggedItem,
+      grams: editLoggedItemGrams || editingLoggedItem.grams,
+      calories: newCal,
+      proteins: newProt,
+      category: newCat
+    };
+
+    updatedMeals[newCat] = [...(updatedMeals[newCat] || []), updatedItem];
+
+    // Recalculate totals
+    const allMealItems = Object.values(updatedMeals).flat();
+    const newTotalCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+    const newTotalProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
+
+    setHealth(prev => ({
+      ...prev,
+      calories: { ...prev.calories, consumed: newTotalCal },
+      proteins: { ...prev.proteins, consumed: newTotalProt },
+      meals: updatedMeals
+    }));
+
+    setEditingLoggedItem(null);
+  };
+
+  const handleDeleteFoodFromDatabase = (food) => {
+    if (!food) return;
+    if (confirm(`Sei sicuro di voler eliminare "${food.name}" dal database alimenti?`)) {
+      setHealth(prev => ({
+        ...prev,
+        foodDatabase: (prev.foodDatabase || []).filter(f => f.id !== food.id)
+      }));
+    }
+  };
+
   const handlePointerDown = (food) => {
     isLongPressRef.current = false;
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
@@ -685,11 +758,20 @@ export default function NutritionTab({
                                   <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Pasto: {item.catLabel}</span>
                                 )}
                               </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
+                                {settings?.allowPastEdits && (
+                                  <button
+                                    onClick={() => handleOpenEditLoggedItem(item)}
+                                    style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', padding: '2px 4px' }}
+                                    title="Modifica porzione loggata"
+                                  >
+                                    ✏️
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => removeLoggedFood(item.catKey, item.id)}
-                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 6px' }}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 4px' }}
                                   title="Rimuovi alimento"
                                 >
                                   ✕
@@ -1385,11 +1467,20 @@ export default function NutritionTab({
                             <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Pasto: {item.catLabel}</span>
                           )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
+                          {settings?.allowPastEdits && (
+                            <button
+                              onClick={() => handleOpenEditLoggedItem(item)}
+                              style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', padding: '2px 4px' }}
+                              title="Modifica porzione loggata"
+                            >
+                              ✏️
+                            </button>
+                          )}
                           <button
                             onClick={() => removeLoggedFood(item.catKey, item.id)}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 6px' }}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 4px' }}
                             title="Rimuovi alimento"
                           >
                             ✕
@@ -1417,9 +1508,16 @@ export default function NutritionTab({
                   </button>
                 </div>
 
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', fontStyle: 'italic' }}>
-                  💡 <strong>Tocco singolo:</strong> Inserisci porzione (ricorda l'ultima) | <strong>Tieni premuto:</strong> Modifica nel database
-                </div>
+                {settings?.allowPastEdits ? (
+                  <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '6px 10px', borderRadius: '8px', marginBottom: '8px', border: '1px solid rgba(56, 189, 248, 0.3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🔓</span>
+                    <span><strong>Modalità Modifica Cibi Attiva:</strong> usa ✏️ (Modifica) o 🗑️ (Elimina) direttamente sui cibi in griglia.</span>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', fontStyle: 'italic' }}>
+                    💡 <strong>Tocco singolo:</strong> Inserisci porzione (ricorda l'ultima) | <strong>Tieni premuto:</strong> Modifica nel database
+                  </div>
+                )}
 
                 <input
                   type="text"
@@ -1452,51 +1550,103 @@ export default function NutritionTab({
                       const unitDisplay = isPiece ? '1 pz' : `${food.baseGrams || 100}g`;
 
                       return (
-                        <button
-                          key={food.id}
-                          type="button"
-                          onPointerDown={() => handlePointerDown(food)}
-                          onPointerUp={handlePointerUp}
-                          onPointerLeave={handlePointerUp}
-                          onClick={() => handleFoodClick(food)}
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '8px 4px',
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            userSelect: 'none',
-                            WebkitUserSelect: 'none',
-                            transition: 'all 0.15s ease',
-                            textAlign: 'center',
-                            minHeight: '84px',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-                          }}
-                          title="Tocca per inserire porzione • Tieni premuto per modificare nel database"
-                        >
-                          <span style={{ fontSize: '22px', marginBottom: '2px' }}>{food.emoji}</span>
-                          <span style={{
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            color: 'var(--text-primary)',
-                            lineHeight: '1.2',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            marginBottom: '4px',
-                            maxHeight: '26px'
-                          }}>
-                            {food.name}
-                          </span>
-                          <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'rgba(124, 58, 237, 0.12)', padding: '2px 5px', borderRadius: '6px' }}>
-                            {kcalDisplay} kcal ({unitDisplay})
-                          </span>
-                        </button>
+                        <div key={food.id} style={{ position: 'relative' }}>
+                          <button
+                            type="button"
+                            onPointerDown={() => handlePointerDown(food)}
+                            onPointerUp={handlePointerUp}
+                            onPointerLeave={handlePointerUp}
+                            onClick={() => handleFoodClick(food)}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '8px 4px',
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--glass-border)',
+                              borderRadius: '12px',
+                              cursor: 'pointer',
+                              userSelect: 'none',
+                              WebkitUserSelect: 'none',
+                              transition: 'all 0.15s ease',
+                              textAlign: 'center',
+                              minHeight: '84px',
+                              width: '100%',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                            }}
+                            title="Tocca per inserire porzione • Tieni premuto per modificare nel database"
+                          >
+                            <span style={{ fontSize: '22px', marginBottom: '2px' }}>{food.emoji}</span>
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              color: 'var(--text-primary)',
+                              lineHeight: '1.2',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              marginBottom: '4px',
+                              maxHeight: '26px'
+                            }}>
+                              {food.name}
+                            </span>
+                            <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'rgba(124, 58, 237, 0.12)', padding: '2px 5px', borderRadius: '6px' }}>
+                              {kcalDisplay} kcal ({unitDisplay})
+                            </span>
+                          </button>
+                          {settings?.allowPastEdits && (
+                            <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '2px', zIndex: 5 }}>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenModal('food', food);
+                                }}
+                                style={{
+                                  background: 'rgba(0, 0, 0, 0.75)',
+                                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                                  borderRadius: '50%',
+                                  width: '24px',
+                                  height: '24px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#fff',
+                                  fontSize: '11px',
+                                  cursor: 'pointer'
+                                }}
+                                title="Modifica nel database"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteFoodFromDatabase(food);
+                                }}
+                                style={{
+                                  background: 'rgba(239, 68, 68, 0.85)',
+                                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                                  borderRadius: '50%',
+                                  width: '24px',
+                                  height: '24px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#fff',
+                                  fontSize: '11px',
+                                  cursor: 'pointer'
+                                }}
+                                title="Elimina dal database"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       );
                     })
                   )}
@@ -2028,6 +2178,98 @@ export default function NutritionTab({
               >
                 🍴 Aggiungi al Pasto
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4) EDIT LOGGED MEAL ITEM MODAL */}
+      {editingLoggedItem && (
+        <div
+          onClick={() => setEditingLoggedItem(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '380px', width: '90%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+          >
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              ✏️ Modifica Porzione Loggata
+            </h3>
+            <p style={{ margin: '0 0 14px 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {editingLoggedItem.emoji} <strong>{editingLoggedItem.name}</strong>
+            </p>
+
+            <form onSubmit={handleSaveEditLoggedItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                  Quantità / Etichetta (es: 150g oppure 2 pz)
+                </label>
+                <input
+                  type="text"
+                  value={editLoggedItemGrams}
+                  onChange={(e) => setEditLoggedItemGrams(e.target.value)}
+                  style={{ width: '100%', height: '36px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '12px', outline: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                    Calorie (kcal)
+                  </label>
+                  <input
+                    type="number"
+                    value={editLoggedItemCal}
+                    onChange={(e) => setEditLoggedItemCal(e.target.value)}
+                    style={{ width: '100%', height: '36px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '12px', outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                    Proteine (g)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editLoggedItemProt}
+                    onChange={(e) => setEditLoggedItemProt(e.target.value)}
+                    style={{ width: '100%', height: '36px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '12px', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                  Pasto / Categoria
+                </label>
+                <select
+                  value={editLoggedItemCat}
+                  onChange={(e) => setEditLoggedItemCat(e.target.value)}
+                  style={{ width: '100%', height: '36px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '12px', outline: 'none' }}
+                >
+                  <option value="breakfast">Colazione ☕</option>
+                  <option value="main">Pasto Principale 🍽️</option>
+                  <option value="snack">Spuntino 🍌</option>
+                  <option value="cheat">Sgarro 🍕</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingLoggedItem(null)}
+                  style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Salva Modifica
+                </button>
+              </div>
             </form>
           </div>
         </div>
