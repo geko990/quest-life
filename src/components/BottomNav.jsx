@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType }) {
   const lastClicksRef = useRef({});
-  const clickTimeoutRef = useRef(null);
 
   const doubleTapTargets = {
     missions: 'quests',
@@ -42,29 +41,16 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
       const delta = now - lastClick;
       lastClicksRef.current[itemId] = now;
 
-      if (delta < 350) {
-        // Double tap: clear pending single click timeout
-        if (clickTimeoutRef.current) {
-          clearTimeout(clickTimeoutRef.current);
-          clickTimeoutRef.current = null;
-        }
+      // Instant double-tap detection OR single tap when already on this tab group
+      if (delta < 350 || activeTab === itemId || activeTab === targetDoubleTap) {
         const nextTab = activeTab === targetDoubleTap ? itemId : targetDoubleTap;
         setActiveTab(nextTab);
         return;
       }
 
-      // Single tap: set timer to switch tab if no second tap occurs
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
-      clickTimeoutRef.current = setTimeout(() => {
-        setActiveTab(itemId);
-      }, 250);
+      // Single tap from a different tab: switch INSTANTLY (0ms delay)
+      setActiveTab(itemId);
     } else {
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-        clickTimeoutRef.current = null;
-      }
       setActiveTab(itemId);
     }
   };
