@@ -1267,6 +1267,7 @@ export default function App() {
       case 'quests':
         return (
           <MissionsTab
+            activeTab={activeTab}
             habits={habits}
             setHabits={setHabits}
             oneshots={oneshots}
@@ -1288,6 +1289,7 @@ export default function App() {
           />
         );
       case 'nutrition':
+      case 'shopping':
         return (
           <NutritionTab
             activeTab={activeTab}
