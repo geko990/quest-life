@@ -9,54 +9,72 @@ export function parseNutritionText(text) {
   if (!text) return { calories: null, proteins: null, rawText: '' };
 
   const rawText = text;
-  // Normalize text for easier parsing
-  let clean = text.toLowerCase()
-    .replace(/kca[l1|i]/g, 'kcal')
-    .replace(/kj/g, 'kj')
-    .replace(/prot[eé]in[ae]/g, 'proteine')
-    .replace(/valor[ei]\s*energetic[oi]/g, 'energia')
-    .replace(/[\:\=]/g, ' ')
-    .replace(/(\d+)\s*,\s*(\d+)/g, '$1.$2'); // replace comma with dot in numbers
+
+  // Preprocessing: Replace OCR typos in numbers & commas
+  let clean = text
+    .replace(/(\d+)\s*,\s*(\d+)/g, '$1.$2')
+    .replace(/(\d+)\s*[oO]\s*(\d+)?/g, (m, p1, p2) => p1 + '0' + (p2 || ''))
+    .replace(/kca[l1|i]/gi, 'kcal');
 
   const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
 
   let foundCalories = null;
   let foundProteins = null;
 
-  // 1. SEARCH FOR CALORIES (kcal)
-  for (const line of lines) {
-    if (line.includes('kcal')) {
-      const matches = [...line.matchAll(/(\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]));
-      // Find a plausible calorie value (e.g. between 5 and 950)
-      const plausible = matches.find(n => n >= 5 && n <= 950 && n !== 100);
-      if (plausible !== undefined) {
-        foundCalories = Math.round(plausible);
+  // 1. Kcal Extraction: match number right before or after 'kcal'
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const kcalMatch = line.match(/(\d+(?:\.\d+)?)\s*kcal/i) || line.match(/kcal\s*(\d+(?:\.\d+)?)/i);
+    if (kcalMatch) {
+      const val = parseFloat(kcalMatch[1]);
+      if (val >= 5 && val <= 950 && val !== 100) {
+        foundCalories = Math.round(val);
         break;
       }
     }
   }
 
-  // Fallback for calories if 'kcal' keyword was missed but 'energia' or 'energy' is present
+  // Fallback for calories if 'kcal' label wasn't found directly next to a number
   if (foundCalories === null) {
-    for (const line of lines) {
-      if (line.includes('energia') || line.includes('energy')) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/energia|energy|valore energetico/i.test(line)) {
         const matches = [...line.matchAll(/(\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]));
-        const plausible = matches.find(n => n >= 10 && n <= 950 && n !== 100);
-        if (plausible !== undefined) {
-          foundCalories = Math.round(plausible);
+        const plausible = matches.filter(n => n >= 10 && n <= 950 && n !== 100);
+        if (plausible.length > 0) {
+          // If multiple numbers on line (e.g. 630 kJ / 150 kcal), calories is the smaller value!
+          foundCalories = Math.round(Math.min(...plausible));
           break;
         }
       }
     }
   }
 
-  // 2. SEARCH FOR PROTEINS (proteine / protein)
-  for (const line of lines) {
-    if (line.includes('proteine') || line.includes('protein')) {
-      const matches = [...line.matchAll(/(\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]));
-      const validNumbers = matches.filter(n => n !== 100 && n <= 100);
-      if (validNumbers.length > 0) {
-        foundProteins = Math.round(validNumbers[0] * 10) / 10;
+  // 2. Protein Extraction (fuzzy matching + multi-line lookahead)
+  const proteinRegex = /(?:p[r0oó][otl1i!\-]{1,3}[eé3o0]?[i1l]?n|prot|proie|protel|prole|proteina|protein|prtein|protn)/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (proteinRegex.test(line)) {
+      // Find numbers on current line
+      let matches = [...line.matchAll(/(\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]));
+      let valid = matches.filter(n => n !== 100 && n <= 100);
+
+      // Multi-line lookahead if no valid number on current line (e.g. label and number on separate lines)
+      if (valid.length === 0) {
+        for (let j = 1; j <= 2 && i + j < lines.length; j++) {
+          const nextLine = lines[i + j];
+          const nextMatches = [...nextLine.matchAll(/(\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]));
+          const nextValid = nextMatches.filter(n => n !== 100 && n <= 100);
+          if (nextValid.length > 0) {
+            valid = nextValid;
+            break;
+          }
+        }
+      }
+
+      if (valid.length > 0) {
+        foundProteins = Math.round(valid[0] * 10) / 10;
         break;
       }
     }

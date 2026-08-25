@@ -16,10 +16,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const [ocrProgress, setOcrProgress] = useState(0);
   const [ocrStatusText, setOcrStatusText] = useState('');
   const [ocrResultMsg, setOcrResultMsg] = useState(null);
+  const [ocrRawText, setOcrRawText] = useState(null);
+  const [showOcrDebug, setShowOcrDebug] = useState(false);
 
   useEffect(() => {
     setCurrentType(type);
     setOcrResultMsg(null);
+    setOcrRawText(null);
+    setShowOcrDebug(false);
     setOcrLoading(false);
   }, [type]);
 
@@ -44,6 +48,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         setOcrProgress(pct);
         setOcrStatusText(statusMsg);
       });
+
+      setOcrRawText(result.rawText || '');
 
       const updates = {};
       const foundMsgParts = [];
@@ -1355,8 +1361,26 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             )}
 
             {ocrResultMsg && (
-              <div className={`p-2.5 rounded-xl text-xs font-semibold ${ocrResultMsg.startsWith('✅') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
-                {ocrResultMsg}
+              <div className="flex flex-col gap-1.5">
+                <div className={`p-2.5 rounded-xl text-xs font-semibold ${ocrResultMsg.startsWith('✅') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
+                  {ocrResultMsg}
+                </div>
+                {ocrRawText && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setShowOcrDebug(!showOcrDebug)}
+                      className="text-[10px] text-text-muted hover:text-text-secondary underline cursor-pointer"
+                    >
+                      {showOcrDebug ? '🙈 Nascondi testo letto dall\'OCR' : '🔍 Mostra testo letto dall\'OCR'}
+                    </button>
+                    {showOcrDebug && (
+                      <pre className="mt-1 p-2 bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-xl text-[10px] text-text-secondary max-h-32 overflow-y-auto whitespace-pre-wrap font-mono select-all">
+                        {ocrRawText || '(Nessun testo rilevato)'}
+                      </pre>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
