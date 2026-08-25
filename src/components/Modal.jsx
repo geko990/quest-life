@@ -10,9 +10,78 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const [newSubquestName, setNewSubquestName] = useState('');
   const [selectedDayIndex, setSelectedDayIndex] = useState(6);
 
+  // OCR state for food scanning
+  const fileInputRef = React.useRef(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrStatusText, setOcrStatusText] = useState('');
+  const [ocrResultMsg, setOcrResultMsg] = useState(null);
+
   useEffect(() => {
     setCurrentType(type);
+    setOcrResultMsg(null);
+    setOcrLoading(false);
   }, [type]);
+
+  const handleOcrScanClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleOcrFileSelect = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    setOcrLoading(true);
+    setOcrProgress(0);
+    setOcrStatusText('Avvio scansione OCR...');
+    setOcrResultMsg(null);
+
+    try {
+      const { processNutritionImage } = await import('../utils/nutritionOcr');
+      const result = await processNutritionImage(file, (pct, statusMsg) => {
+        setOcrProgress(pct);
+        setOcrStatusText(statusMsg);
+      });
+
+      const updates = {};
+      const foundMsgParts = [];
+
+      if (result.calories !== null) {
+        updates.baseCalories = result.calories;
+        foundMsgParts.push(`${result.calories} kcal`);
+      }
+      if (result.proteins !== null) {
+        updates.baseProteins = result.proteins;
+        foundMsgParts.push(`${result.proteins}g proteine`);
+      }
+
+      if (foundMsgParts.length > 0) {
+        setForm(prev => {
+          const updated = { ...prev, ...updates };
+          const pGrams = parseFloat(prev.pieceGrams);
+          if (pGrams && !isNaN(pGrams)) {
+            const baseG = parseFloat(updated.baseGrams) || 100;
+            const baseCal = parseFloat(updated.baseCalories) || 0;
+            const baseProt = parseFloat(updated.baseProteins) || 0;
+            updated.pieceCalories = Math.round((pGrams / baseG) * baseCal);
+            updated.pieceProteins = Math.round(((pGrams / baseG) * baseProt) * 10) / 10;
+          }
+          return updated;
+        });
+        setOcrResultMsg(`✅ Estratti: ${foundMsgParts.join(' e ')} per 100g`);
+      } else {
+        setOcrResultMsg('⚠️ Nessun valore chiaro individuato nella foto. Verifica i dati o riprova con una foto più nitida.');
+      }
+    } catch (err) {
+      console.error('OCR Error:', err);
+      setOcrResultMsg('❌ Errore durante l\'analisi della foto. Riprova con un\'altra immagine.');
+    } finally {
+      setOcrLoading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
 
   const handleTypeSwitch = (newType) => {
     setCurrentType(newType);
@@ -153,6 +222,64 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         ...prev,
         [name]: isNaN(num) ? '' : value
       }));
+    }
+  };
+
+  const handleFoodBaseChange = (e) => {
+    const { name, value } = e.target;
+    handleNumberChange(e);
+
+    setForm(prev => {
+      const pGrams = parseFloat(prev.pieceGrams);
+      if (!pGrams || isNaN(pGrams)) return prev;
+
+      const baseG = name === 'baseGrams' ? (parseFloat(value) || 100) : (parseFloat(prev.baseGrams) || 100);
+      const baseCal = name === 'baseCalories' ? (parseFloat(value) || 0) : (parseFloat(prev.baseCalories) || 0);
+      const baseProt = name === 'baseProteins' ? (parseFloat(value) || 0) : (parseFloat(prev.baseProteins) || 0);
+
+      const calcCal = Math.round((pGrams / baseG) * baseCal);
+      const calcProt = Math.round(((pGrams / baseG) * baseProt) * 10) / 10;
+
+      return {
+        ...prev,
+        [name]: value,
+        pieceCalories: calcCal,
+        pieceProteins: calcProt
+      };
+    });
+  };
+
+  const handlePieceGramsChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || value === null || value === undefined) {
+      setForm(prev => ({
+        ...prev,
+        pieceGrams: '',
+        pieceCalories: '',
+        pieceProteins: ''
+      }));
+    } else {
+      const pGrams = parseFloat(value);
+      if (isNaN(pGrams) || pGrams <= 0) {
+        setForm(prev => ({
+          ...prev,
+          pieceGrams: value
+        }));
+      } else {
+        const baseG = parseFloat(form.baseGrams) || 100;
+        const baseCal = parseFloat(form.baseCalories) || 0;
+        const baseProt = parseFloat(form.baseProteins) || 0;
+
+        const calcCal = Math.round((pGrams / baseG) * baseCal);
+        const calcProt = Math.round(((pGrams / baseG) * baseProt) * 10) / 10;
+
+        setForm(prev => ({
+          ...prev,
+          pieceGrams: value,
+          pieceCalories: calcCal,
+          pieceProteins: calcProt
+        }));
+      }
     }
   };
 
@@ -1189,6 +1316,50 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             </div>
 
+            {/* OCR Scanner Button & Input */}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              ref={fileInputRef}
+              onChange={handleOcrFileSelect}
+              style={{ display: 'none' }}
+            />
+
+            <button
+              type="button"
+              onClick={handleOcrScanClick}
+              disabled={ocrLoading}
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            >
+              {ocrLoading ? (
+                <>
+                  <span className="animate-spin text-sm">⏳</span>
+                  <span>{ocrStatusText || 'Analisi foto in corso...'}</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-base">📷</span>
+                  <span>Scansiona Tabella Nutrizionale (OCR)</span>
+                </>
+              )}
+            </button>
+
+            {ocrLoading && (
+              <div className="w-full bg-[var(--bg-secondary)] rounded-full h-2 border border-[var(--glass-border)] overflow-hidden">
+                <div
+                  className="bg-accent-primary h-full transition-all duration-200"
+                  style={{ width: `${ocrProgress}%` }}
+                ></div>
+              </div>
+            )}
+
+            {ocrResultMsg && (
+              <div className={`p-2.5 rounded-xl text-xs font-semibold ${ocrResultMsg.startsWith('✅') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
+                {ocrResultMsg}
+              </div>
+            )}
+
             {/* Valori per 100g */}
             <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
               <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Valori Nutrizionali per 100g</span>
@@ -1199,7 +1370,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     type="number"
                     name="baseGrams"
                     value={form.baseGrams ?? 100}
-                    onChange={handleNumberChange}
+                    onChange={handleFoodBaseChange}
                     required
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
@@ -1210,7 +1381,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     type="number"
                     name="baseCalories"
                     value={form.baseCalories ?? 0}
-                    onChange={handleNumberChange}
+                    onChange={handleFoodBaseChange}
                     required
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
@@ -1221,7 +1392,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     type="number"
                     name="baseProteins"
                     value={form.baseProteins ?? 0}
-                    onChange={handleNumberChange}
+                    onChange={handleFoodBaseChange}
                     required
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
@@ -1232,9 +1403,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Valori per Pezzo / Porzione (Opzionale) */}
             <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
               <span className="text-[10px] font-bold text-accent-primary uppercase tracking-wider">🧩 Valori per Pezzo / Porzione (Opzionale)</span>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal per 1 Pezzo</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Peso Pezzo (g)</label>
+                  <input
+                    type="number"
+                    name="pieceGrams"
+                    value={form.pieceGrams ?? ''}
+                    onChange={handlePieceGramsChange}
+                    placeholder="Es: 60"
+                    className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal 1 Pezzo</label>
                   <input
                     type="number"
                     name="pieceCalories"
@@ -1245,7 +1427,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine (g) per 1 Pezzo</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine 1 Pezzo</label>
                   <input
                     type="number"
                     name="pieceProteins"
