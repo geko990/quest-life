@@ -1437,6 +1437,7 @@ export default function App() {
           avatarEmoji={player.avatarEmoji}
           avatarImage={player.avatarImage}
           avatarType={player.avatarType}
+          settings={settings}
         />
       </div>
 
