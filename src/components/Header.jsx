@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES, LEVEL_CAP } from '../utils/constants';
-import { t } from '../utils/i18n';
 
 export default function Header({
   player,
@@ -15,7 +14,6 @@ export default function Header({
   settings,
   onOpenMottoEdit
 }) {
-  const lang = settings?.language || 'it';
   const [showProfile, setShowProfile] = useState(false);
   const [showStreak, setShowStreak] = useState(false);
   const [selectedMedal, setSelectedMedal] = useState(null);
@@ -551,7 +549,7 @@ export default function Header({
                 <h3 className="popup-name">{activity7Days.moodTitle}</h3>
                 <div className="popup-level-info">
                   <span className="popup-level" style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>
-                    {activity7Days.totalCompleted7Days} {t('header.habits_in_7_days', lang)}
+                    {activity7Days.totalCompleted7Days} abitudini nei 7 giorni
                   </span>
                 </div>
               </div>
@@ -567,8 +565,8 @@ export default function Header({
             {/* 7-Day Activity Chart */}
             <div style={{ marginTop: '12px' }}>
               <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{t('header.habits_regularity', lang)}</span>
-                <span style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>{t('header.avg_per_day', lang)}: {(activity7Days.totalCompleted7Days / 7).toFixed(1)}/gg</span>
+                <span>Regolarità Abitudini (7 gg)</span>
+                <span style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>Media: {(activity7Days.totalCompleted7Days / 7).toFixed(1)}/gg</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '70px', padding: '0 4px', gap: '6px' }}>

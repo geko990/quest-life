@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { t } from '../utils/i18n';
 
 export default function NutritionTab({
   activeTab,
@@ -17,8 +16,6 @@ export default function NutritionTab({
   settings = {}
 }) {
   if (!health) return null;
-
-  const lang = settings?.language || 'it';
 
   const [activeMainTab, setActiveMainTab] = useState(() => (activeTab === 'shopping' ? 'shopping' : 'health')); // 'health' | 'shopping'
 
@@ -669,11 +666,11 @@ export default function NutritionTab({
                 {/* Category tabs */}
                 <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
                   {[
-                    { id: 'all', label: t('nutrition.all_categories', lang) },
-                    { id: 'breakfast', label: t('nutrition.breakfast', lang) },
-                    { id: 'main', label: t('nutrition.main_meal', lang) },
-                    { id: 'snack', label: t('nutrition.snack', lang) },
-                    { id: 'cheat', label: t('nutrition.cheat', lang) }
+                    { id: 'all', label: '🌟 Tutti' },
+                    { id: 'breakfast', label: '☕ Colazione' },
+                    { id: 'main', label: '🍽️ Pasti Principali' },
+                    { id: 'snack', label: '🍌 Spuntino' },
+                    { id: 'cheat', label: '🍕 Sgarro' }
                   ].map((cat) => {
                     const count = cat.id === 'all'
                       ? Object.values(health.meals || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
