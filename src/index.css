@@ -4267,14 +4267,8 @@ textarea {
     /* Custom Scrollbar for this area */
     scrollbar-width: thin;
     scrollbar-color: var(--accent-primary) transparent;
-
-    /* Fade Effect at top only (to dissolve into header) */
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
-    padding-top: 20px;
-    /* Push content out of top fade initially */
+    padding-top: 10px;
     padding-bottom: 20px;
-    /* Extra space at bottom for safe scrolling */
 }
 
 .quest-scroll-area::-webkit-scrollbar {
