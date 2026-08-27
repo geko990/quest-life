@@ -1394,7 +1394,7 @@ export default function App() {
       )}
 
       {/* Upper header */}
-      <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
+      <div style={{ flexShrink: 0, width: '100%', zIndex: 40, background: 'var(--bg-secondary)' }}>
         <Header
           player={player}
           setPlayer={setPlayer}
