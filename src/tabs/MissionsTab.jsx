@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
 import { useTouchReorder } from '../utils/useTouchReorder';
+import { t } from '../utils/i18n';
 
 export default function MissionsTab({
   activeTab,
@@ -22,6 +23,7 @@ export default function MissionsTab({
   onOpenDailyPlanner,
   onActivateChallenge
 }) {
+  const lang = settings?.language || 'it';
   const { getDragProps: getOneshotDragProps } = useTouchReorder(oneshots, setOneshots);
   const { getDragProps: getQuestDragProps } = useTouchReorder(quests, setQuests);
   const [subTab, setSubTab] = useState(() => (activeTab === 'quests' ? 'quest' : 'oneshot')); // 'oneshot' | 'quest' | 'catalog'
@@ -52,12 +54,12 @@ export default function MissionsTab({
     <section id="section-activities" className="section active">
       {/* Top Header */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '8px' }}>
-        <h2 style={{ margin: 0, fontSize: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>⚔️ Registro Missioni</h2>
+        <h2 style={{ margin: 0, fontSize: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>⚔️ {t('nav.tasks', lang)}</h2>
         <div className="header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <button
             className="add-btn-circle"
             onClick={() => setShowCompletedOneshots(!showCompletedOneshots)}
-            title={showCompletedOneshots ? "Mostra missioni da completare" : "Mostra missioni completate"}
+            title={showCompletedOneshots ? t('tasks.completed', lang) : t('tasks.pending', lang)}
             style={{
               background: showCompletedOneshots ? 'var(--accent-gradient, #7c3aed)' : 'var(--bg-secondary)',
               color: showCompletedOneshots ? '#ffffff' : 'var(--text-primary)',
@@ -73,7 +75,7 @@ export default function MissionsTab({
           <button
             className="add-btn-circle"
             onClick={() => onOpenModal(subTab === 'quest' ? 'quest' : 'oneshot')}
-            title="Crea nuova missione"
+            title={t('tasks.add_task', lang)}
           >
             +
           </button>
@@ -86,19 +88,19 @@ export default function MissionsTab({
           onClick={() => setSubTab('oneshot')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'oneshot' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'oneshot' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
-          💥 Singole
+          💥 {t('tasks.title', lang)}
         </button>
         <button
           onClick={() => setSubTab('quest')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'quest' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'quest' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
-          🏆 Campagne
+          🏆 {t('quests.title', lang)}
         </button>
         <button
           onClick={() => setSubTab('catalog')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'catalog' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'catalog' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
-          ⚔️ Sfide
+          ⚔️ {t('quests.preset_catalog', lang)}
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getXpForLevel, getGameDate } from '../utils/helpers';
+import { t } from '../utils/i18n';
 
 const SLOT_CATEGORY_INFO = [
   { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
@@ -35,6 +36,7 @@ export default function HomeTab({
   onOpenMealsLog,
   settings = {}
 }) {
+  const lang = settings?.language || 'it';
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [cardMode, setCardMode] = useState('tasks'); // 'tasks' or 'pomodoro'
@@ -518,7 +520,7 @@ export default function HomeTab({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
-              {cardMode === 'pomodoro' ? 'Timer Pomodoro' : 'Azioni del Giorno'}
+              {cardMode === 'pomodoro' ? t('home.pomodoro_timer', lang) : t('tasks.title', lang)}
             </h3>
           </div>
 

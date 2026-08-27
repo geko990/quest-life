@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getGameDate, getGameDateObj, formatISO, getWeekIdentifier, getMonthIdentifier, getYearIdentifier } from '../utils/helpers';
 import SwipeableCard from '../components/SwipeableCard';
 import { useTouchReorder } from '../utils/useTouchReorder';
+import { t } from '../utils/i18n';
 
 export default function HabitsTab({
   habits = [],
@@ -15,6 +16,7 @@ export default function HabitsTab({
   stats,
   settings
 }) {
+  const lang = settings?.language || 'it';
   const { getDragProps } = useTouchReorder(habits, setHabits);
   const todayStr = getGameDate(settings.dayStartTime);
   const [viewedDate, setViewedDate] = useState(todayStr);
@@ -174,7 +176,7 @@ export default function HabitsTab({
       <div className="habits-wrapper">
         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '8px' }}>
           <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            📜 Abitudini <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--text-secondary)' }}>({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
+            📜 {t('habits.title', lang)} <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--text-secondary)' }}>({viewedDate === todayStr ? t('habits.today', lang) : viewedDate})</span>
           </h2>
           <div className="header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
             <button
