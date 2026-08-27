@@ -14,7 +14,10 @@ export const translations = {
       quests: 'Campagne',
       nutrition: 'Nutrizione',
       finances: 'Finanze',
-      settings: 'Impostazioni'
+      settings: 'Impostazioni',
+      shopping: 'Spesa',
+      health: 'Salute',
+      treasure: 'Tesoro'
     },
     header: {
       level: 'Livello',
@@ -22,7 +25,20 @@ export const translations = {
       streak: 'Serie',
       freezes: 'Protezioni',
       edit_profile: 'Modifica Profilo',
-      player_title: 'Scheda Personaggio'
+      player_title: 'Scheda Personaggio',
+      monthly_medals: 'MEDAGLIE MENSILI',
+      earned_in: 'Sbloccata a',
+      monthly_xp: 'XP Maturati nel Mese',
+      top_stat: 'Top Attributo',
+      top_habit: 'Top Abitudine',
+      top_tasks: 'Top 10 Task Completati',
+      habits_regularity: 'Regolarità Abitudini (7 gg)',
+      avg_per_day: 'Media',
+      habits_in_7_days: 'abitudini nei 7 giorni',
+      new_start: 'Nuovo Inizio!',
+      extraordinary_consistency: 'Costanza Straordinaria!',
+      great_rhythm: 'Ottimo Ritmo!',
+      serene_pace: 'Passo Sereno!'
     },
     home: {
       title: 'Dashboard Eroe',
@@ -36,7 +52,8 @@ export const translations = {
       reset: 'Azzera',
       minutes: 'minuti',
       target_stat: 'Statistica da allenare',
-      xp_reward: 'XP Premio'
+      xp_reward: 'XP Premio',
+      no_activity: 'Nessuna attività recente.'
     },
     habits: {
       title: 'Registro Abitudini',
@@ -79,7 +96,19 @@ export const translations = {
       food_db: 'Alimenti Salvati',
       consumed: 'Consumate',
       goal: 'Obiettivo',
-      remaining: 'Rimanenti'
+      remaining: 'Rimanenti',
+      search_food: 'Cerca cibo...',
+      base_grams: 'Grammi Base',
+      base_calories: 'Kcal per 100g',
+      base_proteins: 'Proteine (g)',
+      piece_weight: 'Peso Pezzo (g)',
+      piece_calories: 'Kcal 1 Pezzo',
+      piece_proteins: 'Proteine 1 Pezzo',
+      default_category: 'Categoria Pasto Predefinita',
+      breakfast: 'Colazione ☕',
+      main_meal: 'Pasti Principali 🍽️',
+      snack: 'Spuntino 🍌',
+      cheat: 'Sgarro 🍕'
     },
     finances: {
       title: 'Gestione Finanziaria',
@@ -88,7 +117,8 @@ export const translations = {
       add_tx: '+ Transazione',
       income: 'Entrata',
       expense: 'Uscita',
-      savings_goals: 'Obiettivi di Risparmio'
+      savings_goals: 'Obiettivi di Risparmio',
+      recent_movements: 'Movimenti Recenti'
     },
     settings: {
       title: 'Impostazioni & Personalizzazione',
@@ -107,6 +137,17 @@ export const translations = {
       recap: 'Abilita Resoconto Settimanale',
       danger_zone: 'Zona Pericolo',
       reset_app: 'Azzera Tutti i Dati'
+    },
+    modal: {
+      scan_ocr_btn: '📷 Scansiona Tabella Nutrizionale (OCR)',
+      ocr_analyzing: 'Analisi foto in corso...',
+      ocr_show_text: '🔍 Mostra testo letto dall\'OCR',
+      ocr_hide_text: '🙈 Nascondi testo letto dall\'OCR',
+      values_per_100g: 'Valori Nutrizionali per 100g',
+      values_per_piece: '🧩 Valori per Pezzo / Porzione (Opzionale)',
+      exercise_name: 'Nome Esercizio',
+      reps_min: 'Reps/Min',
+      calories_burned: 'Kcal Bruciate'
     },
     common: {
       save: 'Salva',
@@ -132,7 +173,10 @@ export const translations = {
       quests: 'Quests',
       nutrition: 'Nutrition',
       finances: 'Finances',
-      settings: 'Settings'
+      settings: 'Settings',
+      shopping: 'Shopping',
+      health: 'Health',
+      treasure: 'Treasure'
     },
     header: {
       level: 'Level',
@@ -140,7 +184,20 @@ export const translations = {
       streak: 'Streak',
       freezes: 'Freezes',
       edit_profile: 'Edit Profile',
-      player_title: 'Character Card'
+      player_title: 'Character Card',
+      monthly_medals: 'MONTHLY MEDALS',
+      earned_in: 'Unlocked in',
+      monthly_xp: 'XP Earned This Month',
+      top_stat: 'Top Attribute',
+      top_habit: 'Top Habit',
+      top_tasks: 'Top 10 Completed Tasks',
+      habits_regularity: 'Habit Consistency (7 days)',
+      avg_per_day: 'Average',
+      habits_in_7_days: 'habits in 7 days',
+      new_start: 'Fresh Start!',
+      extraordinary_consistency: 'Extraordinary Consistency!',
+      great_rhythm: 'Great Rhythm!',
+      serene_pace: 'Steady Pace!'
     },
     home: {
       title: 'Hero Dashboard',
@@ -154,7 +211,8 @@ export const translations = {
       reset: 'Reset',
       minutes: 'minutes',
       target_stat: 'Target Stat',
-      xp_reward: 'XP Reward'
+      xp_reward: 'XP Reward',
+      no_activity: 'No recent activity.'
     },
     habits: {
       title: 'Habits Tracker',
@@ -197,7 +255,19 @@ export const translations = {
       food_db: 'Saved Foods',
       consumed: 'Consumed',
       goal: 'Goal',
-      remaining: 'Remaining'
+      remaining: 'Remaining',
+      search_food: 'Search food...',
+      base_grams: 'Base Grams',
+      base_calories: 'Kcal per 100g',
+      base_proteins: 'Proteins (g)',
+      piece_weight: 'Piece Weight (g)',
+      piece_calories: 'Kcal 1 Piece',
+      piece_proteins: 'Proteins 1 Piece',
+      default_category: 'Default Meal Category',
+      breakfast: 'Breakfast ☕',
+      main_meal: 'Main Meals 🍽️',
+      snack: 'Snack 🍌',
+      cheat: 'Cheat 🍕'
     },
     finances: {
       title: 'Financial Management',
@@ -206,7 +276,8 @@ export const translations = {
       add_tx: '+ Transaction',
       income: 'Income',
       expense: 'Expense',
-      savings_goals: 'Savings Goals'
+      savings_goals: 'Savings Goals',
+      recent_movements: 'Recent Movements'
     },
     settings: {
       title: 'Settings & Customization',
@@ -225,6 +296,17 @@ export const translations = {
       recap: 'Enable Weekly Recap',
       danger_zone: 'Danger Zone',
       reset_app: 'Reset All Data'
+    },
+    modal: {
+      scan_ocr_btn: '📷 Scan Nutrition Label (OCR)',
+      ocr_analyzing: 'Analyzing photo...',
+      ocr_show_text: '🔍 Show text read by OCR',
+      ocr_hide_text: '🙈 Hide text read by OCR',
+      values_per_100g: 'Nutrition Values per 100g',
+      values_per_piece: '🧩 Values per Piece / Portion (Optional)',
+      exercise_name: 'Exercise Name',
+      reps_min: 'Reps/Min',
+      calories_burned: 'Kcal Burned'
     },
     common: {
       save: 'Save',
@@ -250,7 +332,10 @@ export const translations = {
       quests: 'Campañas',
       nutrition: 'Nutrición',
       finances: 'Finanzas',
-      settings: 'Ajustes'
+      settings: 'Ajustes',
+      shopping: 'Compra',
+      health: 'Salud',
+      treasure: 'Tesoro'
     },
     header: {
       level: 'Nivel',
@@ -258,7 +343,20 @@ export const translations = {
       streak: 'Racha',
       freezes: 'Escudos',
       edit_profile: 'Editar Perfil',
-      player_title: 'Ficha de Personaje'
+      player_title: 'Ficha de Personaje',
+      monthly_medals: 'MEDALLAS MENSUALES',
+      earned_in: 'Desbloqueada en',
+      monthly_xp: 'XP Ganados este Mes',
+      top_stat: 'Atributo Principal',
+      top_habit: 'Mejor Hábito',
+      top_tasks: 'Top 10 Tareas Completadas',
+      habits_regularity: 'Constancia de Hábitos (7 días)',
+      avg_per_day: 'Promedio',
+      habits_in_7_days: 'hábitos en 7 días',
+      new_start: '¡Nuevo Comienzo!',
+      extraordinary_consistency: '¡Constancia Extraordinaria!',
+      great_rhythm: '¡Excelente Ritmo!',
+      serene_pace: '¡Paso Tranquilo!'
     },
     home: {
       title: 'Panel del Héroe',
@@ -272,7 +370,8 @@ export const translations = {
       reset: 'Reiniciar',
       minutes: 'minutos',
       target_stat: 'Estadística a Entrenar',
-      xp_reward: 'Recompensa XP'
+      xp_reward: 'Recompensa XP',
+      no_activity: 'Sin actividad reciente.'
     },
     habits: {
       title: 'Registro de Hábitos',
@@ -315,7 +414,19 @@ export const translations = {
       food_db: 'Alimentos Guardados',
       consumed: 'Consumidas',
       goal: 'Meta',
-      remaining: 'Restantes'
+      remaining: 'Restantes',
+      search_food: 'Buscar comida...',
+      base_grams: 'Gramos Base',
+      base_calories: 'Kcal por 100g',
+      base_proteins: 'Proteínas (g)',
+      piece_weight: 'Peso Pieza (g)',
+      piece_calories: 'Kcal 1 Pieza',
+      piece_proteins: 'Proteínas 1 Pieza',
+      default_category: 'Categoría Predefinida',
+      breakfast: 'Desayuno ☕',
+      main_meal: 'Comidas Principales 🍽️',
+      snack: 'Merienda 🍌',
+      cheat: 'Capricho 🍕'
     },
     finances: {
       title: 'Gestión Financiera',
@@ -324,7 +435,8 @@ export const translations = {
       add_tx: '+ Transacción',
       income: 'Ingreso',
       expense: 'Gasto',
-      savings_goals: 'Metas de Ahorro'
+      savings_goals: 'Metas de Ahorro',
+      recent_movements: 'Movimientos Recientes'
     },
     settings: {
       title: 'Ajustes y Personalización',
@@ -343,6 +455,17 @@ export const translations = {
       recap: 'Activar Resumen Semanal',
       danger_zone: 'Zona de Peligro',
       reset_app: 'Restablecer Todos los Datos'
+    },
+    modal: {
+      scan_ocr_btn: '📷 Escanear Tabla Nutricional (OCR)',
+      ocr_analyzing: 'Analizando foto...',
+      ocr_show_text: '🔍 Mostrar texto leído por OCR',
+      ocr_hide_text: '🙈 Ocultar texto leído por OCR',
+      values_per_100g: 'Valores Nutricionales por 100g',
+      values_per_piece: '🧩 Valores por Pieza / Porción (Opcional)',
+      exercise_name: 'Nombre del Ejercicio',
+      reps_min: 'Reps/Min',
+      calories_burned: 'Kcal Quemadas'
     },
     common: {
       save: 'Guardar',
@@ -368,7 +491,10 @@ export const translations = {
       quests: 'クエスト',
       nutrition: '栄養',
       finances: '家計',
-      settings: '設定'
+      settings: '設定',
+      shopping: '買い物',
+      health: '健康',
+      treasure: '宝物'
     },
     header: {
       level: 'レベル',
@@ -376,7 +502,20 @@ export const translations = {
       streak: '連続',
       freezes: 'フリーズ',
       edit_profile: 'プロフィール編集',
-      player_title: 'キャラクターカード'
+      player_title: 'キャラクターカード',
+      monthly_medals: '月間メダル',
+      earned_in: '獲得月:',
+      monthly_xp: '今月の獲得XP',
+      top_stat: 'トップ属性',
+      top_habit: 'トップ習慣',
+      top_tasks: '完了したトップ10タスク',
+      habits_regularity: '習慣の継続率 (7日間)',
+      avg_per_day: '平均',
+      habits_in_7_days: '7日間の習慣数',
+      new_start: '新鮮なスタート！',
+      extraordinary_consistency: '驚異的な継続力！',
+      great_rhythm: '素晴らしいリズム！',
+      serene_pace: '着実なペース！'
     },
     home: {
       title: 'ヒーローダッシュボード',
@@ -390,7 +529,8 @@ export const translations = {
       reset: 'リセット',
       minutes: '分',
       target_stat: 'トレーニング対象',
-      xp_reward: '報酬XP'
+      xp_reward: '報酬XP',
+      no_activity: '最近のアクティビティはありません。'
     },
     habits: {
       title: '習慣トラッカー',
@@ -433,7 +573,19 @@ export const translations = {
       food_db: '保存された食品',
       consumed: '摂取量',
       goal: '目標',
-      remaining: '残り'
+      remaining: '残り',
+      search_food: '食品を検索...',
+      base_grams: '基本グラム (g)',
+      base_calories: '100gあたりのカロリー',
+      base_proteins: 'タンパク質 (g)',
+      piece_weight: '1個の重量 (g)',
+      piece_calories: '1個あたりのカロリー',
+      piece_proteins: '1個あたりのタンパク質',
+      default_category: 'デフォルトの食事カテゴリ',
+      breakfast: '朝食 ☕',
+      main_meal: '主食 🍽️',
+      snack: '間食 🍌',
+      cheat: 'ご褒美 🍕'
     },
     finances: {
       title: '財務管理',
@@ -442,7 +594,8 @@ export const translations = {
       add_tx: '+ 取引を追加',
       income: '収入',
       expense: '支出',
-      savings_goals: '貯金目標'
+      savings_goals: '貯金目標',
+      recent_movements: '最近の移動'
     },
     settings: {
       title: '設定とカスタマイズ',
@@ -461,6 +614,17 @@ export const translations = {
       recap: 'ウィークリーレポートを有効化',
       danger_zone: '危険ゾーン',
       reset_app: '全データをリセット'
+    },
+    modal: {
+      scan_ocr_btn: '📷 栄養成分表示をスキャン (OCR)',
+      ocr_analyzing: '写真を解析中...',
+      ocr_show_text: '🔍 OCRで読み取ったテキストを表示',
+      ocr_hide_text: '🙈 OCRテキストを非表示',
+      values_per_100g: '100gあたりの栄養成分',
+      values_per_piece: '🧩 1個/1食あたりの数値 (任意)',
+      exercise_name: '運動名',
+      reps_min: '回数/分',
+      calories_burned: '消費カロリー'
     },
     common: {
       save: '保存',
