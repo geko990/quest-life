@@ -519,46 +519,6 @@ export default function SettingsTab({
 
           {expandedGroup === 'theme' && (
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
-              {/* Language selection */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                  🌐 Lingua dell'App / App Language
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {[
-                    { id: 'it', name: 'Italiano', flag: '🇮🇹' },
-                    { id: 'en', name: 'English', flag: '🇬🇧' },
-                    { id: 'es', name: 'Español', flag: '🇪🇸' },
-                    { id: 'pt', name: 'Português', flag: '🇵🇹' }
-                  ].map((lang) => {
-                    const isSelected = (safeSettings.language || 'it') === lang.id;
-                    return (
-                      <button
-                        key={lang.id}
-                        onClick={() => updateSetting('language', lang.id)}
-                        style={{
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          background: isSelected ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                          color: isSelected ? '#ffffff' : 'var(--text-primary)',
-                          border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <span style={{ fontSize: '16px' }}>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Theme selection */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Stile Tema</label>

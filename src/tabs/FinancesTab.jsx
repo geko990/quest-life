@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { getGameDate } from '../utils/helpers';
-import { t } from '../utils/i18n';
 
 const EXPENSE_CATEGORIES = [
   { id: 'cibo', label: 'Cibo & Ristorante', emoji: '🍕' },
@@ -34,10 +33,8 @@ export default function FinancesTab({
   setFinances,
   stats = [],
   onRewardXp,
-  onOpenSettings,
-  settings = {}
+  onOpenSettings
 }) {
-  const lang = settings?.language || 'it';
   const [activeSubView, setActiveSubView] = useState('transactions'); // 'transactions' | 'categories'
   const [filterType, setFilterType] = useState('all'); // 'all', 'expense', 'income'
   const [filterCategory, setFilterCategory] = useState('all'); // 'all' or category id
@@ -461,7 +458,7 @@ export default function FinancesTab({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            💰 {t('finances.title', lang)}
+            💰 Il Tesoro dell'Eroe
           </h2>
         </div>
 

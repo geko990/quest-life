@@ -1332,7 +1332,6 @@ export default function App() {
             stats={stats}
             onRewardXp={handleRewardXp}
             onOpenSettings={() => setActiveTab('settings')}
-            settings={settings}
           />
         );
       default:
@@ -1438,7 +1437,6 @@ export default function App() {
           avatarEmoji={player.avatarEmoji}
           avatarImage={player.avatarImage}
           avatarType={player.avatarType}
-          settings={settings}
         />
       </div>
 
