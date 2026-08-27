@@ -1332,6 +1332,7 @@ export default function App() {
             stats={stats}
             onRewardXp={handleRewardXp}
             onOpenSettings={() => setActiveTab('settings')}
+            settings={settings}
           />
         );
       default:
