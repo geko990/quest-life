@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
+import { t } from '../utils/i18n';
 
-export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType }) {
+export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, settings }) {
+  const lang = settings?.language || 'it';
   const lastClicksRef = useRef({});
 
   const doubleTapTargets = {
@@ -13,22 +15,22 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
   };
 
   const navItems = [
-    { id: 'habits', icon: '📜', label: 'Abitudini' },
+    { id: 'habits', icon: '📜', label: t('nav.habits', lang) },
     {
       id: 'missions',
       icon: activeTab === 'quests' ? '🏆' : '⚔️',
-      label: activeTab === 'quests' ? 'Campagne' : 'Missioni'
+      label: activeTab === 'quests' ? t('nav.quests', lang) : t('nav.tasks', lang)
     },
-    { id: 'home', icon: 'avatar', label: 'Eroe', isCenter: true },
+    { id: 'home', icon: 'avatar', label: t('nav.home', lang), isCenter: true },
     {
       id: 'nutrition',
       icon: activeTab === 'shopping' ? '🛒' : '🍎',
-      label: activeTab === 'shopping' ? 'Spesa' : 'Salute'
+      label: activeTab === 'shopping' ? (lang === 'it' ? 'Spesa' : lang === 'es' ? 'Compra' : lang === 'ja' ? '買い物' : 'Shopping') : t('nav.nutrition', lang)
     },
     {
       id: 'settings',
       icon: activeTab === 'finances' ? '💰' : '⚙️',
-      label: activeTab === 'finances' ? 'Tesoro' : 'Opzioni'
+      label: activeTab === 'finances' ? t('nav.finances', lang) : t('nav.settings', lang)
     },
   ];
 

@@ -116,6 +116,7 @@ export function getInitialState() {
       lastUpdate: null
     },
     settings: {
+      language: 'it',
       theme: 'dark',
       accent: 'violet',
       dayStartTime: 0,
