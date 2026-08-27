@@ -25,7 +25,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
     {
       id: 'nutrition',
       icon: activeTab === 'shopping' ? '🛒' : '🍎',
-      label: activeTab === 'shopping' ? (lang === 'it' ? 'Spesa' : lang === 'es' ? 'Compra' : lang === 'ja' ? '買い物' : 'Shopping') : t('nav.nutrition', lang)
+      label: activeTab === 'shopping' ? (lang === 'it' ? 'Spesa' : lang === 'es' ? 'Compra' : lang === 'pt' ? 'Compras' : 'Shopping') : t('nav.nutrition', lang)
     },
     {
       id: 'settings',
