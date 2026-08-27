@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES, LEVEL_CAP } from '../utils/constants';
+import { t } from '../utils/i18n';
 
 export default function Header({
   player,
@@ -14,6 +15,7 @@ export default function Header({
   settings,
   onOpenMottoEdit
 }) {
+  const lang = settings?.language || 'it';
   const [showProfile, setShowProfile] = useState(false);
   const [showStreak, setShowStreak] = useState(false);
   const [selectedMedal, setSelectedMedal] = useState(null);

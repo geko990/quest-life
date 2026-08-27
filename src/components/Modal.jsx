@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { t } from '../utils/i18n';
 
 export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge }) {
   if (!isOpen) return null;
 
+  const lang = settings?.language || 'it';
   const [currentType, setCurrentType] = useState(type);
   const [form, setForm] = useState({});
   const [subquests, setSubquests] = useState([]);
@@ -1341,12 +1343,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {ocrLoading ? (
                 <>
                   <span className="animate-spin text-sm">⏳</span>
-                  <span>{ocrStatusText || 'Analisi foto in corso...'}</span>
+                  <span>{ocrStatusText || t('modal.ocr_analyzing', lang)}</span>
                 </>
               ) : (
                 <>
                   <span className="text-base">📷</span>
-                  <span>Scansiona Tabella Nutrizionale (OCR)</span>
+                  <span>{t('modal.scan_ocr_btn', lang)}</span>
                 </>
               )}
             </button>
@@ -1372,7 +1374,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       onClick={() => setShowOcrDebug(!showOcrDebug)}
                       className="text-[10px] text-text-muted hover:text-text-secondary underline cursor-pointer"
                     >
-                      {showOcrDebug ? '🙈 Nascondi testo letto dall\'OCR' : '🔍 Mostra testo letto dall\'OCR'}
+                      {showOcrDebug ? t('modal.ocr_hide_text', lang) : t('modal.ocr_show_text', lang)}
                     </button>
                     {showOcrDebug && (
                       <pre className="mt-1 p-2 bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-xl text-[10px] text-text-secondary max-h-32 overflow-y-auto whitespace-pre-wrap font-mono select-all">
@@ -1386,10 +1388,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Valori per 100g */}
             <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Valori Nutrizionali per 100g</span>
+              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{t('modal.values_per_100g', lang)}</span>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Grammi Base</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{t('nutrition.base_grams', lang)}</label>
                   <input
                     type="number"
                     name="baseGrams"
@@ -1400,7 +1402,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal per 100g</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{t('nutrition.base_calories', lang)}</label>
                   <input
                     type="number"
                     name="baseCalories"
@@ -1411,7 +1413,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine (g)</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{t('nutrition.base_proteins', lang)}</label>
                   <input
                     type="number"
                     name="baseProteins"
@@ -1426,10 +1428,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Valori per Pezzo / Porzione (Opzionale) */}
             <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-accent-primary uppercase tracking-wider">🧩 Valori per Pezzo / Porzione (Opzionale)</span>
+              <span className="text-[10px] font-bold text-accent-primary uppercase tracking-wider">{t('modal.values_per_piece', lang)}</span>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Peso Pezzo (g)</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{t('nutrition.piece_weight', lang)}</label>
                   <input
                     type="number"
                     name="pieceGrams"
@@ -1440,7 +1442,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal 1 Pezzo</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{t('nutrition.piece_calories', lang)}</label>
                   <input
                     type="number"
                     name="pieceCalories"
@@ -1451,7 +1453,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine 1 Pezzo</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{t('nutrition.piece_proteins', lang)}</label>
                   <input
                     type="number"
                     name="pieceProteins"
@@ -1465,17 +1467,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             </div>
 
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Categoria Pasto Predefinita</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1">{t('nutrition.default_category', lang)}</label>
               <select
                 name="category"
                 value={form.category || 'snack'}
                 onChange={handleChange}
                 className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
               >
-                <option value="breakfast">Colazione ☕</option>
-                <option value="main">Pasti Principali 🍽️</option>
-                <option value="snack">Spuntino 🍌</option>
-                <option value="cheat">Sgarro 🍕</option>
+                <option value="breakfast">{t('nutrition.breakfast', lang)}</option>
+                <option value="main">{t('nutrition.main_meal', lang)}</option>
+                <option value="snack">{t('nutrition.snack', lang)}</option>
+                <option value="cheat">{t('nutrition.cheat', lang)}</option>
               </select>
             </div>
           </div>
