@@ -529,7 +529,7 @@ export default function SettingsTab({
                     { id: 'it', name: 'Italiano', flag: '🇮🇹' },
                     { id: 'en', name: 'English', flag: '🇬🇧' },
                     { id: 'es', name: 'Español', flag: '🇪🇸' },
-                    { id: 'ja', name: '日本語', flag: '🇯🇵' }
+                    { id: 'pt', name: 'Português', flag: '🇵🇹' }
                   ].map((lang) => {
                     const isSelected = (safeSettings.language || 'it') === lang.id;
                     return (

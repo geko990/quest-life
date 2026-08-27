@@ -2,7 +2,7 @@ export const SUPPORTED_LANGUAGES = [
   { id: 'it', name: 'Italiano', flag: '🇮🇹' },
   { id: 'en', name: 'English', flag: '🇬🇧' },
   { id: 'es', name: 'Español', flag: '🇪🇸' },
-  { id: 'ja', name: '日本語', flag: '🇯🇵' }
+  { id: 'pt', name: 'Português', flag: '🇵🇹' }
 ];
 
 export const translations = {
@@ -65,7 +65,8 @@ export const translations = {
       streak_days: 'giorni di fila',
       complete: 'Completa',
       completed: 'Completato',
-      empty: 'Nessuna abitudine registrata.'
+      empty: 'Nessuna abitudine registrata.',
+      today: 'Oggi'
     },
     tasks: {
       title: 'Azioni del Giorno & One-Shot',
@@ -82,7 +83,8 @@ export const translations = {
       milestones: 'Milestones',
       reward: 'Premio Finale',
       progress: 'Progresso',
-      empty: 'Nessuna campagna attiva.'
+      empty: 'Nessuna campagna attiva.',
+      preset_catalog: 'Sfide Predefinite'
     },
     nutrition: {
       title: 'Salute & Nutrizione',
@@ -108,7 +110,9 @@ export const translations = {
       breakfast: 'Colazione ☕',
       main_meal: 'Pasti Principali 🍽️',
       snack: 'Spuntino 🍌',
-      cheat: 'Sgarro 🍕'
+      cheat: 'Sgarro 🍕',
+      all_categories: '🌟 Tutti',
+      logged_today: 'Alimenti consumati oggi'
     },
     finances: {
       title: 'Gestione Finanziaria',
@@ -224,7 +228,8 @@ export const translations = {
       streak_days: 'days streak',
       complete: 'Complete',
       completed: 'Completed',
-      empty: 'No habits registered.'
+      empty: 'No habits registered.',
+      today: 'Today'
     },
     tasks: {
       title: 'Daily Tasks & One-Shots',
@@ -241,7 +246,8 @@ export const translations = {
       milestones: 'Milestones',
       reward: 'Final Reward',
       progress: 'Progress',
-      empty: 'No active quests.'
+      empty: 'No active quests.',
+      preset_catalog: 'Preset Challenges'
     },
     nutrition: {
       title: 'Health & Nutrition',
@@ -267,7 +273,9 @@ export const translations = {
       breakfast: 'Breakfast ☕',
       main_meal: 'Main Meals 🍽️',
       snack: 'Snack 🍌',
-      cheat: 'Cheat 🍕'
+      cheat: 'Cheat 🍕',
+      all_categories: '🌟 All',
+      logged_today: 'Foods consumed today'
     },
     finances: {
       title: 'Financial Management',
@@ -383,7 +391,8 @@ export const translations = {
       streak_days: 'días seguidos',
       complete: 'Completar',
       completed: 'Completado',
-      empty: 'Sin hábitos registrados.'
+      empty: 'Sin hábitos registrados.',
+      today: 'Hoy'
     },
     tasks: {
       title: 'Tareas Diarias y One-Shots',
@@ -400,7 +409,8 @@ export const translations = {
       milestones: 'Subobjetivos',
       reward: 'Premio Final',
       progress: 'Progreso',
-      empty: 'No hay campañas activas.'
+      empty: 'No hay campañas activas.',
+      preset_catalog: 'Desafíos Predeterminados'
     },
     nutrition: {
       title: 'Salud y Nutrición',
@@ -426,7 +436,9 @@ export const translations = {
       breakfast: 'Desayuno ☕',
       main_meal: 'Comidas Principales 🍽️',
       snack: 'Merienda 🍌',
-      cheat: 'Capricho 🍕'
+      cheat: 'Capricho 🍕',
+      all_categories: '🌟 Todos',
+      logged_today: 'Alimentos consumidos hoy'
     },
     finances: {
       title: 'Gestión Financiera',
@@ -483,163 +495,167 @@ export const translations = {
       notes: 'Notas'
     }
   },
-  ja: {
+  pt: {
     nav: {
-      home: 'ホーム',
-      habits: '習慣',
-      tasks: 'タスク',
-      quests: 'クエスト',
-      nutrition: '栄養',
-      finances: '家計',
-      settings: '設定',
-      shopping: '買い物',
-      health: '健康',
-      treasure: '宝物'
+      home: 'Início',
+      habits: 'Hábitos',
+      tasks: 'Missões',
+      quests: 'Campanhas',
+      nutrition: 'Nutrição',
+      finances: 'Finanças',
+      settings: 'Definições',
+      shopping: 'Compras',
+      health: 'Saúde',
+      treasure: 'Tesouro'
     },
     header: {
-      level: 'レベル',
+      level: 'Nível',
       xp: 'XP',
-      streak: '連続',
-      freezes: 'フリーズ',
-      edit_profile: 'プロフィール編集',
-      player_title: 'キャラクターカード',
-      monthly_medals: '月間メダル',
-      earned_in: '獲得月:',
-      monthly_xp: '今月の獲得XP',
-      top_stat: 'トップ属性',
-      top_habit: 'トップ習慣',
-      top_tasks: '完了したトップ10タスク',
-      habits_regularity: '習慣の継続率 (7日間)',
-      avg_per_day: '平均',
-      habits_in_7_days: '7日間の習慣数',
-      new_start: '新鮮なスタート！',
-      extraordinary_consistency: '驚異的な継続力！',
-      great_rhythm: '素晴らしいリズム！',
-      serene_pace: '着実なペース！'
+      streak: 'Sequência',
+      freezes: 'Escudos',
+      edit_profile: 'Editar Perfil',
+      player_title: 'Ficha de Personagem',
+      monthly_medals: 'MEDALHAS MENSAL',
+      earned_in: 'Desbloqueada em',
+      monthly_xp: 'XP Ganhos este Mês',
+      top_stat: 'Atributo Principal',
+      top_habit: 'Melhor Hábito',
+      top_tasks: 'Top 10 Tarefas Concluídas',
+      habits_regularity: 'Consistência de Hábitos (7 dias)',
+      avg_per_day: 'Média',
+      habits_in_7_days: 'hábitos em 7 dias',
+      new_start: 'Novo Começo!',
+      extraordinary_consistency: 'Consistência Extraordinária!',
+      great_rhythm: 'Ótimo Ritmo!',
+      serene_pace: 'Passo Sereno!'
     },
     home: {
-      title: 'ヒーローダッシュボード',
-      monthly_challenge: '今月のチャレンジ',
-      stats_radar: 'ステータスレーダー',
-      recent_activity: '最近のアクティビティ',
-      pomodoro_timer: 'ポモドーロタイマー',
-      start_session: 'セッション開始',
-      pause: '一時停止',
-      resume: '再開',
-      reset: 'リセット',
-      minutes: '分',
-      target_stat: 'トレーニング対象',
-      xp_reward: '報酬XP',
-      no_activity: '最近のアクティビティはありません。'
+      title: 'Painel do Herói',
+      monthly_challenge: 'Desafio do Mês',
+      stats_radar: 'Radar de Estatísticas',
+      recent_activity: 'Atividade Recente',
+      pomodoro_timer: 'Temporizador Pomodoro',
+      start_session: 'Iniciar Sessão',
+      pause: 'Pausa',
+      resume: 'Retomar',
+      reset: 'Reiniciar',
+      minutes: 'minutos',
+      target_stat: 'Estatística a Treinar',
+      xp_reward: 'Recompensa XP',
+      no_activity: 'Sem atividade recente.'
     },
     habits: {
-      title: '習慣トラッカー',
-      add_habit: '+ 新しい習慣',
-      all: 'すべて',
-      daily: '毎日',
-      weekly: '毎週',
-      monthly: '毎月',
-      streak_days: '日連続',
-      complete: '完了する',
-      completed: '完了済み',
-      empty: '登録された習慣はありません。'
+      title: 'Registo de Hábitos',
+      add_habit: '+ Novo Hábito',
+      all: 'Todos',
+      daily: 'Diários',
+      weekly: 'Semanais',
+      monthly: 'Mensais',
+      streak_days: 'dias seguidos',
+      complete: 'Concluir',
+      completed: 'Concluído',
+      empty: 'Sem hábitos registados.',
+      today: 'Hoje'
     },
     tasks: {
-      title: '今日のタスクとワンショット',
-      add_task: '+ 新しいタスク',
-      daily_planner: '📅 デイリープランナー',
-      due_date: '期限',
-      completed: '完了済み',
-      pending: '未完了',
-      empty: 'このカテゴリーのタスクはありません。'
+      title: 'Tarefas Diárias e One-Shots',
+      add_task: '+ Nova Tarefa',
+      daily_planner: '📅 Planeador Diário',
+      due_date: 'Data Limite',
+      completed: 'Concluídas',
+      pending: 'Por Fazer',
+      empty: 'Sem tarefas nesta categoria.'
     },
     quests: {
-      title: 'クエスト＆キャンペーン',
-      add_quest: '+ 新しいクエスト',
-      milestones: 'マイルストーン',
-      reward: '最終報酬',
-      progress: '進捗',
-      empty: 'アクティブなクエストはありません。'
+      title: 'Campanhas e Desafios',
+      add_quest: '+ Nova Campanha',
+      milestones: 'Subobjetivos',
+      reward: 'Prémio Final',
+      progress: 'Progresso',
+      empty: 'Sem campanhas ativas.',
+      preset_catalog: 'Desafios Predefinidos'
     },
     nutrition: {
-      title: '健康と栄養',
-      calories: 'カロリー',
-      proteins: 'タンパク質',
-      water: '水分',
-      steps: '歩数',
-      weight: '体重',
-      add_food: '+ 食品を追加',
-      scan_ocr: '📷 ラベルスキャン (OCR)',
-      food_db: '保存された食品',
-      consumed: '摂取量',
-      goal: '目標',
-      remaining: '残り',
-      search_food: '食品を検索...',
-      base_grams: '基本グラム (g)',
-      base_calories: '100gあたりのカロリー',
-      base_proteins: 'タンパク質 (g)',
-      piece_weight: '1個の重量 (g)',
-      piece_calories: '1個あたりのカロリー',
-      piece_proteins: '1個あたりのタンパク質',
-      default_category: 'デフォルトの食事カテゴリ',
-      breakfast: '朝食 ☕',
-      main_meal: '主食 🍽️',
-      snack: '間食 🍌',
-      cheat: 'ご褒美 🍕'
+      title: 'Saúde e Nutrição',
+      calories: 'Calorias',
+      proteins: 'Proteínas',
+      water: 'Água',
+      steps: 'Passos',
+      weight: 'Peso',
+      add_food: '+ Adicionar Comida',
+      scan_ocr: '📷 Digitalizar Tabela (OCR)',
+      food_db: 'Alimentos Guardados',
+      consumed: 'Consumidas',
+      goal: 'Meta',
+      remaining: 'Restantes',
+      search_food: 'Pesquisar comida...',
+      base_grams: 'Gramas Base',
+      base_calories: 'Kcal por 100g',
+      base_proteins: 'Proteínas (g)',
+      piece_weight: 'Peso Peça (g)',
+      piece_calories: 'Kcal 1 Peça',
+      piece_proteins: 'Proteínas 1 Peça',
+      default_category: 'Categoria Predefinida',
+      breakfast: 'Pequeno-almoço ☕',
+      main_meal: 'Refeições Principais 🍽️',
+      snack: 'Lanche 🍌',
+      cheat: 'Extravio 🍕',
+      all_categories: '🌟 Todos',
+      logged_today: 'Alimentos consumidos hoje'
     },
     finances: {
-      title: '財務管理',
-      total_balance: '総残高',
-      cash: '現金',
-      add_tx: '+ 取引を追加',
-      income: '収入',
-      expense: '支出',
-      savings_goals: '貯金目標',
-      recent_movements: '最近の移動'
+      title: 'Gestão Financeira',
+      total_balance: 'Saldo Total',
+      cash: 'Dinheiro',
+      add_tx: '+ Transação',
+      income: 'Receita',
+      expense: 'Despesa',
+      savings_goals: 'Metas de Poupança',
+      recent_movements: 'Movimentos Recentes'
     },
     settings: {
-      title: '設定とカスタマイズ',
-      language: 'アプリの言語',
-      language_desc: 'アプリ全体の表示言語を選択します',
-      theme: '表示テーマ',
-      accent: 'アクセントカラー',
-      backup: 'バックアップと復元',
-      export_json: 'データエクスポート (JSON)',
-      import_json: 'データインポート (JSON)',
-      general: '一般設定',
-      penalties: '未達成習慣のペナルティ',
-      animated_bg: 'アニメーション背景',
-      past_edits: '過去データの編集を許可',
-      planner: 'デイリープランナーを有効化',
-      recap: 'ウィークリーレポートを有効化',
-      danger_zone: '危険ゾーン',
-      reset_app: '全データをリセット'
+      title: 'Definições e Personalização',
+      language: 'Idioma da Aplicação',
+      language_desc: 'Selecione o idioma para todas as etiquetas',
+      theme: 'Tema Visual',
+      accent: 'Cor de Acento',
+      backup: 'Cópia de Segurança',
+      export_json: 'Exportar Dados (JSON)',
+      import_json: 'Importar Dados (JSON)',
+      general: 'Opções Gerais',
+      penalties: 'Penalizações por hábitos omitidos',
+      animated_bg: 'Fundo Animado',
+      past_edits: 'Permitir editar dados passados',
+      planner: 'Ativar Planeador Diário',
+      recap: 'Ativar Resumo Semanal',
+      danger_zone: 'Zona de Perigo',
+      reset_app: 'Restabelecer Todos os Dados'
     },
     modal: {
-      scan_ocr_btn: '📷 栄養成分表示をスキャン (OCR)',
-      ocr_analyzing: '写真を解析中...',
-      ocr_show_text: '🔍 OCRで読み取ったテキストを表示',
-      ocr_hide_text: '🙈 OCRテキストを非表示',
-      values_per_100g: '100gあたりの栄養成分',
-      values_per_piece: '🧩 1個/1食あたりの数値 (任意)',
-      exercise_name: '運動名',
-      reps_min: '回数/分',
-      calories_burned: '消費カロリー'
+      scan_ocr_btn: '📷 Digitalizar Tabela Nutricional (OCR)',
+      ocr_analyzing: 'A analisar foto...',
+      ocr_show_text: '🔍 Mostrar texto lido pelo OCR',
+      ocr_hide_text: '🙈 Ocultar texto lido pelo OCR',
+      values_per_100g: 'Valores Nutricionais por 100g',
+      values_per_piece: '🧩 Valores por Peça / Porção (Opcional)',
+      exercise_name: 'Nome do Exercício',
+      reps_min: 'Reps/Min',
+      calories_burned: 'Kcal Queimadas'
     },
     common: {
-      save: '保存',
-      cancel: 'キャンセル',
-      delete: '削除',
-      edit: '編集',
-      confirm: '確認',
-      close: '閉じる',
-      name: '名前',
-      emoji: '絵文字',
-      difficulty: '難易度',
-      primary_stat: '主ステータス',
-      secondary_stat: '副ステータス',
-      description: '説明',
-      notes: 'メモ'
+      save: 'Guardar',
+      cancel: 'Cancelar',
+      delete: 'Eliminar',
+      edit: 'Editar',
+      confirm: 'Confirmar',
+      close: 'Fechar',
+      name: 'Nome',
+      emoji: 'Emoji',
+      difficulty: 'Dificuldade',
+      primary_stat: 'Estatística Primária',
+      secondary_stat: 'Estatística Secundária',
+      description: 'Descrição',
+      notes: 'Notas'
     }
   }
 };
@@ -647,11 +663,11 @@ export const translations = {
 /**
  * Gets a translated string by dot notation key (e.g. 'nav.home')
  * @param {string} key 
- * @param {string} lang 'it' | 'en' | 'es' | 'ja'
+ * @param {string} lang 'it' | 'en' | 'es' | 'pt'
  * @returns {string}
  */
 export function t(key, lang = 'it') {
-  const selectedLang = ['it', 'en', 'es', 'ja'].includes(lang) ? lang : 'it';
+  const selectedLang = ['it', 'en', 'es', 'pt'].includes(lang) ? lang : 'it';
   const keys = key.split('.');
 
   let obj = translations[selectedLang];
