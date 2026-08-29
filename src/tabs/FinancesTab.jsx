@@ -46,10 +46,18 @@ export default function FinancesTab({
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showRecurringModal, setShowRecurringModal] = useState(false);
 
-  // Cash Withdrawal / Transfer Modal
+  // Cash Withdrawal Modal
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawSource, setWithdrawSource] = useState('base'); // 'base' or secondary account id
   const [withdrawAmount, setWithdrawAmount] = useState('');
+
+  // Transfer Between Accounts Modal State
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferSource, setTransferSource] = useState('base');
+  const [transferTarget, setTransferTarget] = useState('cash');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [transferNote, setTransferNote] = useState('');
+  const [transferDate, setTransferDate] = useState(getGameDate());
 
   // Secondary Account Modals
   const [showAddSecModal, setShowAddSecModal] = useState(false);
@@ -80,6 +88,14 @@ export default function FinancesTab({
     if (finances.hideBalances) return '*** €';
     const num = Number(val) || 0;
     return num.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+  };
+
+  // Account Label Helper
+  const getAccountLabel = (accId) => {
+    if (accId === 'base') return '💳 Conto Base';
+    if (accId === 'cash') return '💵 Contanti';
+    const sec = (finances.secondaryAccounts || []).find(a => a.id === accId);
+    return sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Conto Secondario';
   };
 
   const currentMonthPrefix = getGameDate().substring(0, 7);
@@ -246,13 +262,28 @@ export default function FinancesTab({
         const targetAccount = tx.account || 'base';
 
         if (tx.type === 'transfer') {
-          // Internal transfer to cash
-          newCashBalance = (prev.cashBalance || 0) - tx.amount;
-          if (tx.sourceAccount === 'base' || !tx.sourceAccount) {
-            newBalance = prev.balance + tx.amount;
+          const src = tx.sourceAccount || 'base';
+          const dst = tx.targetAccount || tx.account || 'cash';
+
+          // 1. Revert source (+ tx.amount)
+          if (src === 'base') {
+            newBalance += tx.amount;
+          } else if (src === 'cash') {
+            newCashBalance += tx.amount;
           } else {
-            newSecAccounts = (prev.secondaryAccounts || []).map(a => 
-              a.id === tx.sourceAccount ? { ...a, balance: a.balance + tx.amount } : a
+            newSecAccounts = newSecAccounts.map(a => 
+              a.id === src ? { ...a, balance: a.balance + tx.amount } : a
+            );
+          }
+
+          // 2. Revert destination (- tx.amount)
+          if (dst === 'base') {
+            newBalance -= tx.amount;
+          } else if (dst === 'cash') {
+            newCashBalance -= tx.amount;
+          } else {
+            newSecAccounts = newSecAccounts.map(a => 
+              a.id === dst ? { ...a, balance: a.balance - tx.amount } : a
             );
           }
         } else if (targetAccount === 'base') {
@@ -278,6 +309,87 @@ export default function FinancesTab({
     }
   };
 
+  const handleOpenTransferModal = (defaultSource = 'base', defaultTarget = 'cash') => {
+    setTransferSource(defaultSource);
+    let target = defaultTarget;
+    if (defaultSource === target) {
+      target = defaultSource === 'base' ? 'cash' : 'base';
+    }
+    setTransferTarget(target);
+    setTransferAmount('');
+    setTransferNote('');
+    setTransferDate(getGameDate());
+    setShowTransferModal(true);
+  };
+
+  const handleTransferSubmit = (e) => {
+    e.preventDefault();
+    const val = parseFloat(transferAmount.replace(',', '.'));
+    if (isNaN(val) || val <= 0) return;
+    if (transferSource === transferTarget) {
+      alert("Seleziona due conti diversi per effettuare il trasferimento.");
+      return;
+    }
+
+    const srcLabel = getAccountLabel(transferSource);
+    const dstLabel = getAccountLabel(transferTarget);
+    const defaultNote = `↔️ Trasferimento (${srcLabel} ➔ ${dstLabel})`;
+    const note = transferNote.trim() || defaultNote;
+
+    const newTx = {
+      id: 'tx_trf_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      type: 'transfer',
+      amount: val,
+      category: 'trasferimento',
+      sourceAccount: transferSource,
+      targetAccount: transferTarget,
+      account: transferTarget,
+      note: note,
+      date: transferDate || getGameDate(),
+      timestamp: Date.now()
+    };
+
+    setFinances(prev => {
+      let newBalance = prev.balance;
+      let newCashBalance = prev.cashBalance || 0;
+      let newSecAccounts = prev.secondaryAccounts || [];
+
+      // Deduct from source account
+      if (transferSource === 'base') {
+        newBalance -= val;
+      } else if (transferSource === 'cash') {
+        newCashBalance -= val;
+      } else {
+        newSecAccounts = (prev.secondaryAccounts || []).map(a => 
+          a.id === transferSource ? { ...a, balance: a.balance - val } : a
+        );
+      }
+
+      // Add to target account
+      if (transferTarget === 'base') {
+        newBalance += val;
+      } else if (transferTarget === 'cash') {
+        newCashBalance += val;
+      } else {
+        newSecAccounts = (prev.secondaryAccounts || []).map(a => 
+          a.id === transferTarget ? { ...a, balance: a.balance + val } : a
+        );
+      }
+
+      return {
+        ...prev,
+        balance: newBalance,
+        cashBalance: newCashBalance,
+        secondaryAccounts: newSecAccounts,
+        transactions: [newTx, ...(prev.transactions || [])]
+      };
+    });
+
+    setTransferAmount('');
+    setTransferNote('');
+    setShowTransferModal(false);
+  };
+
   const handleWithdrawCashSubmit = (e) => {
     e.preventDefault();
     const val = parseFloat(withdrawAmount.replace(',', '.'));
@@ -296,6 +408,7 @@ export default function FinancesTab({
       category: 'altro_entrata',
       account: 'cash',
       sourceAccount: withdrawSource,
+      targetAccount: 'cash',
       note: `🏧 Prelievo Contanti (da ${sourceName})`,
       date: getGameDate(),
       timestamp: Date.now()
@@ -557,6 +670,13 @@ export default function FinancesTab({
               <span>🔄</span> {activeRecurringCount > 0 ? activeRecurringCount : ''}
             </button>
             <button
+              onClick={() => handleOpenTransferModal('base', 'cash')}
+              style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+              title="Trasferisci denaro tra i tuoi conti"
+            >
+              ↔️ Trasferisci
+            </button>
+            <button
               onClick={() => handleOpenAddTxModal('expense')}
               style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
             >
@@ -640,6 +760,13 @@ export default function FinancesTab({
               🏧 Preleva
             </button>
             <button
+              onClick={() => handleOpenTransferModal('cash', 'base')}
+              style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+              title="Trasferisci denaro tra i tuoi conti"
+            >
+              ↔️ Trasferisci
+            </button>
+            <button
               onClick={() => handleOpenAddTxModal('expense', 'cash')}
               style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
             >
@@ -663,12 +790,21 @@ export default function FinancesTab({
           <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
             🏦 Conti Secondari & Risparmi
           </h3>
-          <button
-            onClick={() => setShowAddSecModal(true)}
-            style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            + Nuovo Conto
-          </button>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={() => handleOpenTransferModal('base', finances.secondaryAccounts?.[0]?.id || 'cash')}
+              style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+              title="Trasferisci denaro tra conti"
+            >
+              ↔️ Trasferisci
+            </button>
+            <button
+              onClick={() => setShowAddSecModal(true)}
+              style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              + Nuovo Conto
+            </button>
+          </div>
         </div>
 
         {(!finances.secondaryAccounts || finances.secondaryAccounts.length === 0) ? (
@@ -714,6 +850,13 @@ export default function FinancesTab({
                     {fmtCurrency(acc.balance)}
                   </div>
                   <div style={{ display: 'flex', gap: '3px' }}>
+                    <button
+                      onClick={() => handleOpenTransferModal(acc.id, 'base')}
+                      style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+                      title="Trasferisci da/verso questo conto"
+                    >
+                      ↔️
+                    </button>
                     <button
                       onClick={() => { setSecActionAmount(''); setSecAccountAction({ account: acc, type: 'deposit' }); }}
                       style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
@@ -818,7 +961,7 @@ export default function FinancesTab({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Filtra Tipo:</span>
               <div style={{ display: 'flex', gap: '4px' }}>
-                {['all', 'expense', 'income'].map(t => (
+                {['all', 'expense', 'income', 'transfer'].map(t => (
                   <button
                     key={t}
                     onClick={() => {
@@ -835,7 +978,7 @@ export default function FinancesTab({
                       cursor: 'pointer'
                     }}
                   >
-                    {t === 'all' ? 'Tutti' : t === 'expense' ? 'Uscite' : 'Entrate'}
+                    {t === 'all' ? 'Tutti' : t === 'expense' ? 'Uscite' : t === 'income' ? 'Entrate' : 'Trasferimenti'}
                   </button>
                 ))}
               </div>
@@ -871,7 +1014,13 @@ export default function FinancesTab({
 
                 const getAccountBadge = (tx) => {
                   if (tx.type === 'transfer') {
-                    return <span style={{ fontSize: '8px', background: 'rgba(234, 179, 8, 0.2)', color: '#eab308', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>🏧 Prelievo</span>;
+                    const srcName = getAccountLabel(tx.sourceAccount || 'base');
+                    const dstName = getAccountLabel(tx.targetAccount || tx.account || 'cash');
+                    return (
+                      <span style={{ fontSize: '8px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>
+                        {srcName} ➔ {dstName}
+                      </span>
+                    );
                   }
                   const accKey = tx.account || 'base';
                   if (accKey === 'cash') {
@@ -898,7 +1047,7 @@ export default function FinancesTab({
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                      <span style={{ fontSize: '15px', flexShrink: 0 }}>{t.type === 'transfer' ? '🏧' : catObj.emoji}</span>
+                      <span style={{ fontSize: '15px', flexShrink: 0 }}>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {t.note || catObj.label}
@@ -911,8 +1060,8 @@ export default function FinancesTab({
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: t.type === 'transfer' ? '#eab308' : (isIncome ? '#22c55e' : '#ef4444') }}>
-                        {t.type === 'transfer' ? '🏧 ' : (isIncome ? '+' : '-')}{fmtCurrency(t.amount)}
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isIncome ? '#22c55e' : '#ef4444') }}>
+                        {t.type === 'transfer' ? '↔️ ' : (isIncome ? '+' : '-')}{fmtCurrency(t.amount)}
                       </span>
                       <button
                         onClick={() => handleDeleteTransaction(t.id)}
@@ -1487,6 +1636,107 @@ export default function FinancesTab({
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   Conferma Prelievo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      {/* MODAL: Trasferimento tra Conti */}
+      {showTransferModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}>
+            <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              ↔️ Trasferimento tra Conti
+            </h3>
+
+            <form onSubmit={handleTransferSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto di Origine (Da)*</label>
+                <select
+                  value={transferSource}
+                  onChange={(e) => {
+                    const newSrc = e.target.value;
+                    setTransferSource(newSrc);
+                    if (newSrc === transferTarget) {
+                      setTransferTarget(newSrc === 'base' ? 'cash' : 'base');
+                    }
+                  }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>
+                  <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
+                  {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto di Destinazione (A)*</label>
+                <select
+                  value={transferTarget}
+                  onChange={(e) => setTransferTarget(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  {transferSource !== 'base' && <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>}
+                  {transferSource !== 'cash' && <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>}
+                  {finances.secondaryAccounts && finances.secondaryAccounts.filter(acc => acc.id !== transferSource).map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo da Trasferire (€)*</label>
+                <input
+                  type="text"
+                  placeholder="0.00"
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  autoFocus
+                  required
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione (Opzionale)</label>
+                <input
+                  type="text"
+                  placeholder="Es. Spostamento risparmi, Ricarica contanti..."
+                  value={transferNote}
+                  onChange={(e) => setTransferNote(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data Operazione</label>
+                <input
+                  type="date"
+                  value={transferDate}
+                  onChange={(e) => setTransferDate(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', border: '1px solid var(--glass-border)', lineHeight: '1.4' }}>
+                💡 I trasferimenti spostano liquidità tra i tuoi conti senza incidere sulle entrate, sulle uscite o sul budget mensile.
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowTransferModal(false)}
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#38bdf8', color: '#000', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Conferma Trasferimento
                 </button>
               </div>
             </form>
