@@ -1641,6 +1641,8 @@ export default function FinancesTab({
             </form>
           </div>
         </div>
+      )}
+
       {/* MODAL: Trasferimento tra Conti */}
       {showTransferModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
