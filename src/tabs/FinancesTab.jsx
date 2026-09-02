@@ -143,39 +143,105 @@ export default function FinancesTab({
     setFinances(prev => ({ ...prev, hideBalances: true }));
   }, []);
 
-  // Auto-process active recurring transactions for current month if not yet processed
+  // Auto-process active recurring transactions for current month on their designated day of month
+  // and auto-revert premature charges from previous buggy execution
   useEffect(() => {
     const todayStr = getGameDate();
     const currentMonthPrefix = todayStr.substring(0, 7);
+    const currentDay = parseInt(todayStr.substring(8, 10), 10);
     const recurringList = finances.recurringTransactions || [];
     if (recurringList.length === 0) return;
 
-    let updatedBalance = finances.balance;
-    const newTxList = [];
+    let updatedBalance = Number(finances.balance) || 0;
+    let updatedCashBalance = Number(finances.cashBalance) || 0;
+    let updatedSecAccounts = (finances.secondaryAccounts || []).map(a => ({
+      ...a,
+      balance: Number(a.balance) || 0
+    }));
+    let updatedTransactions = [...(finances.transactions || [])];
     let stateChanged = false;
 
     const updatedRecurring = recurringList.map(rec => {
       if (!rec.active) return rec;
+      const scheduledDay = parseInt(rec.dayOfMonth || 1, 10);
+      const dayStr = String(scheduledDay).padStart(2, '0');
+      const targetTxDate = `${currentMonthPrefix}-${dayStr}`;
+      const recAccount = rec.account || 'base';
+
+      // 1. RECOVERY / AUTO-HEALING:
+      // If marked as processed for currentMonthPrefix, BUT today is strictly BEFORE the scheduled day
+      // (e.g. rent on day 4 or internet on day 25 was charged prematurely on Sept 1st when currentDay is 2):
+      if (rec.lastProcessedMonth === currentMonthPrefix && currentDay < scheduledDay) {
+        const prematureIdx = updatedTransactions.findIndex(t => 
+          t.type === rec.type &&
+          Math.abs((Number(t.amount) || 0) - (Number(rec.amount) || 0)) < 0.001 &&
+          (t.date === targetTxDate || (t.date && t.date.startsWith(currentMonthPrefix) && (t.id?.startsWith('tx_rec_') || t.note?.includes('(Ricorrente)'))))
+        );
+
+        if (prematureIdx !== -1) {
+          const [removedTx] = updatedTransactions.splice(prematureIdx, 1);
+          const revAmt = Number(removedTx.amount) || 0;
+
+          // Revert balance
+          if (recAccount === 'base') {
+            updatedBalance = rec.type === 'income'
+              ? Math.round((updatedBalance - revAmt) * 100) / 100
+              : Math.round((updatedBalance + revAmt) * 100) / 100;
+          } else if (recAccount === 'cash') {
+            updatedCashBalance = rec.type === 'income'
+              ? Math.round((updatedCashBalance - revAmt) * 100) / 100
+              : Math.round((updatedCashBalance + revAmt) * 100) / 100;
+          } else {
+            updatedSecAccounts = updatedSecAccounts.map(a => {
+              if (a.id !== recAccount) return a;
+              const cur = Number(a.balance) || 0;
+              const newBal = rec.type === 'income' ? cur - revAmt : cur + revAmt;
+              return { ...a, balance: Math.round(newBal * 100) / 100 };
+            });
+          }
+        }
+
+        stateChanged = true;
+        // Reset lastProcessedMonth to prior month so it triggers exactly when scheduledDay arrives!
+        return { ...rec, lastProcessedMonth: shiftMonthKey(currentMonthPrefix, -1) };
+      }
+
+      // 2. NORMAL EXECUTION:
+      // Skip if already processed for this month
       if (rec.lastProcessedMonth === currentMonthPrefix) return rec;
 
-      const dayStr = String(rec.dayOfMonth || 1).padStart(2, '0');
-      const txDate = `${currentMonthPrefix}-${dayStr}`;
+      // DO NOT EXECUTE IF CURRENT DAY HAS NOT YET REACHED DESIGNATED DAY!
+      if (currentDay < scheduledDay) return rec;
 
+      // Designated day reached! Generate transaction
       const generatedTx = {
         id: 'tx_rec_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
         type: rec.type,
         amount: rec.amount,
         category: rec.category,
+        account: recAccount,
         note: `${rec.note || getCategoryObj(rec.category).label} (Ricorrente)`,
-        date: txDate,
+        date: targetTxDate,
         timestamp: Date.now()
       };
 
-      newTxList.push(generatedTx);
-      if (rec.type === 'income') {
-        updatedBalance += rec.amount;
+      updatedTransactions = [generatedTx, ...updatedTransactions];
+
+      if (recAccount === 'base') {
+        updatedBalance = rec.type === 'income'
+          ? Math.round((updatedBalance + rec.amount) * 100) / 100
+          : Math.round((updatedBalance - rec.amount) * 100) / 100;
+      } else if (recAccount === 'cash') {
+        updatedCashBalance = rec.type === 'income'
+          ? Math.round((updatedCashBalance + rec.amount) * 100) / 100
+          : Math.round((updatedCashBalance - rec.amount) * 100) / 100;
       } else {
-        updatedBalance -= rec.amount;
+        updatedSecAccounts = updatedSecAccounts.map(a => {
+          if (a.id !== recAccount) return a;
+          const cur = Number(a.balance) || 0;
+          const newBal = rec.type === 'income' ? cur + rec.amount : cur - rec.amount;
+          return { ...a, balance: Math.round(newBal * 100) / 100 };
+        });
       }
       stateChanged = true;
 
@@ -186,7 +252,9 @@ export default function FinancesTab({
       setFinances(prev => ({
         ...prev,
         balance: updatedBalance,
-        transactions: [...newTxList, ...(prev.transactions || [])],
+        cashBalance: updatedCashBalance,
+        secondaryAccounts: updatedSecAccounts,
+        transactions: updatedTransactions,
         recurringTransactions: updatedRecurring
       }));
     }
