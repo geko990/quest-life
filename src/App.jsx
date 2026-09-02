@@ -151,22 +151,28 @@ export default function App() {
     });
   }, []);
 
-  // 3. Load FileHandle on Start
-  // Sync monthlyChallenge.currentMonth with current game month
+  // Sync monthlyChallenge.currentMonth with current game month and reset/sync points
   useEffect(() => {
     const todayGameDate = getGameDate(settings.dayStartTime);
     const todayMonth = todayGameDate.substring(0, 7);
+    const currentMonthTasksCount = (xpLog || []).filter(
+      l => l.date && l.date.startsWith(todayMonth) && l.isMonthlyTask
+    ).length;
 
-    if (player.monthlyChallenge?.currentMonth !== todayMonth) {
+    if (
+      player.monthlyChallenge?.currentMonth !== todayMonth ||
+      player.monthlyChallenge?.points !== currentMonthTasksCount
+    ) {
       setPlayer(prev => ({
         ...prev,
         monthlyChallenge: {
           ...prev.monthlyChallenge,
-          currentMonth: todayMonth
+          currentMonth: todayMonth,
+          points: currentMonthTasksCount
         }
       }));
     }
-  }, [settings.dayStartTime, player.monthlyChallenge?.currentMonth]);
+  }, [settings.dayStartTime, player.monthlyChallenge?.currentMonth, player.monthlyChallenge?.points, xpLog]);
 
   useEffect(() => {
     async function loadHandle() {
@@ -368,11 +374,15 @@ export default function App() {
         achievedLevel = newLvl;
       }
 
-      const nextMonthlyPoints = (prev.monthlyChallenge?.points || 0) + monthlyPointsAdd;
+      const monthId = getMonthIdentifier(effectiveDate);
+      const isCurrentChallengeMonth = prev.monthlyChallenge?.currentMonth === monthId;
+      const currentMonthBase = isCurrentChallengeMonth
+        ? (prev.monthlyChallenge?.points || 0)
+        : (xpLog || []).filter(l => l.date && l.date.startsWith(monthId) && l.isMonthlyTask).length;
+      const nextMonthlyPoints = currentMonthBase + monthlyPointsAdd;
       const target = prev.monthlyChallenge?.target || 50;
       const medals = [...(prev.monthlyChallenge?.medals || [])];
 
-      const monthId = getMonthIdentifier(effectiveDate);
       const starCounts = getMonthlyStarCounts(monthId, completionLog, oneshots, quests, xpLog);
       const pyramidMet = isMonthlyPyramidMet(starCounts);
 
@@ -417,6 +427,7 @@ export default function App() {
         lastActionDate: todayStr,
         monthlyChallenge: {
           ...prev.monthlyChallenge,
+          currentMonth: monthId,
           points: nextMonthlyPoints,
           medals
         }
@@ -459,8 +470,13 @@ export default function App() {
     setPlayer(prev => {
       const newTotalXp = Math.max(0, prev.totalXp - amount);
       const newLvl = calculateLevelFromXp(newTotalXp);
+      const monthId = getMonthIdentifier(effectiveDate);
+      const isCurrentChallengeMonth = prev.monthlyChallenge?.currentMonth === monthId;
+      const currentMonthBase = isCurrentChallengeMonth
+        ? (prev.monthlyChallenge?.points || 0)
+        : (xpLog || []).filter(l => l.date && l.date.startsWith(monthId) && l.isMonthlyTask).length;
       let monthlyPointsSub = countsForMonthlyMedal ? 1 : 0;
-      const nextMonthlyPoints = Math.max(0, (prev.monthlyChallenge?.points || 0) - monthlyPointsSub);
+      const nextMonthlyPoints = Math.max(0, currentMonthBase - monthlyPointsSub);
 
       return {
         ...prev,
@@ -468,6 +484,7 @@ export default function App() {
         level: newLvl,
         monthlyChallenge: {
           ...prev.monthlyChallenge,
+          currentMonth: monthId,
           points: nextMonthlyPoints
         }
       };

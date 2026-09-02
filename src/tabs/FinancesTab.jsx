@@ -28,6 +28,41 @@ const getCategoryObj = (catId) => {
   return ALL_CATEGORIES.find(c => c.id === catId) || { emoji: '📦', label: 'Altro' };
 };
 
+const MONTH_NAMES_IT = [
+  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+];
+
+const MONTH_NAMES_SHORT_IT = [
+  'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
+  'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'
+];
+
+const formatMonthLabel = (monthKey) => {
+  if (!monthKey || !monthKey.includes('-')) return monthKey || '';
+  const [yr, mo] = monthKey.split('-');
+  const idx = parseInt(mo, 10) - 1;
+  return `${MONTH_NAMES_IT[idx] || mo} ${yr}`;
+};
+
+const formatMonthShort = (monthKey) => {
+  if (!monthKey || !monthKey.includes('-')) return monthKey || '';
+  const [, mo] = monthKey.split('-');
+  const idx = parseInt(mo, 10) - 1;
+  return MONTH_NAMES_SHORT_IT[idx] || mo;
+};
+
+const shiftMonthKey = (monthKey, delta) => {
+  if (!monthKey || !monthKey.includes('-')) return monthKey;
+  const [yrStr, moStr] = monthKey.split('-');
+  const yr = parseInt(yrStr, 10);
+  const mo = parseInt(moStr, 10);
+  const d = new Date(yr, mo - 1 + delta, 1);
+  const newYr = d.getFullYear();
+  const newMo = String(d.getMonth() + 1).padStart(2, '0');
+  return `${newYr}-${newMo}`;
+};
+
 export default function FinancesTab({
   finances = { balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
   setFinances,
@@ -35,7 +70,12 @@ export default function FinancesTab({
   onRewardXp,
   onOpenSettings
 }) {
-  const [activeSubView, setActiveSubView] = useState('transactions'); // 'transactions' | 'categories'
+  const currentMonthPrefix = getGameDate().substring(0, 7);
+  const [activeSubView, setActiveSubView] = useState('transactions'); // 'transactions' | 'categories' | 'history'
+  const [selectedHistoryMonth, setSelectedHistoryMonth] = useState(currentMonthPrefix);
+  const [historyRange, setHistoryRange] = useState('short'); // 'short' (settimanale) | 'long' (mensile 6-12m)
+  const [longPeriodMonthsCount, setLongPeriodMonthsCount] = useState(6); // 6 | 12
+  const [selectedHistoryWeek, setSelectedHistoryWeek] = useState(null);
   const [filterType, setFilterType] = useState('all'); // 'all', 'expense', 'income'
   const [filterCategory, setFilterCategory] = useState('all'); // 'all' or category id
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -97,8 +137,6 @@ export default function FinancesTab({
     const sec = (finances.secondaryAccounts || []).find(a => a.id === accId);
     return sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Conto Secondario';
   };
-
-  const currentMonthPrefix = getGameDate().substring(0, 7);
 
   // Always default to hidden balances (*** €) whenever Finances tab opens
   useEffect(() => {
@@ -350,29 +388,32 @@ export default function FinancesTab({
     };
 
     setFinances(prev => {
-      let newBalance = prev.balance;
-      let newCashBalance = prev.cashBalance || 0;
-      let newSecAccounts = prev.secondaryAccounts || [];
+      let newBalance = Number(prev.balance) || 0;
+      let newCashBalance = Number(prev.cashBalance) || 0;
+      let newSecAccounts = (prev.secondaryAccounts || []).map(a => ({
+        ...a,
+        balance: Number(a.balance) || 0
+      }));
 
-      // Deduct from source account
+      // Deduct from source account (allowing 0 and negative numbers)
       if (transferSource === 'base') {
-        newBalance -= val;
+        newBalance = Math.round((newBalance - val) * 100) / 100;
       } else if (transferSource === 'cash') {
-        newCashBalance -= val;
+        newCashBalance = Math.round((newCashBalance - val) * 100) / 100;
       } else {
-        newSecAccounts = (prev.secondaryAccounts || []).map(a => 
-          a.id === transferSource ? { ...a, balance: a.balance - val } : a
+        newSecAccounts = newSecAccounts.map(a => 
+          a.id === transferSource ? { ...a, balance: Math.round(((Number(a.balance) || 0) - val) * 100) / 100 } : a
         );
       }
 
       // Add to target account
       if (transferTarget === 'base') {
-        newBalance += val;
+        newBalance = Math.round((newBalance + val) * 100) / 100;
       } else if (transferTarget === 'cash') {
-        newCashBalance += val;
+        newCashBalance = Math.round((newCashBalance + val) * 100) / 100;
       } else {
-        newSecAccounts = (prev.secondaryAccounts || []).map(a => 
-          a.id === transferTarget ? { ...a, balance: a.balance + val } : a
+        newSecAccounts = newSecAccounts.map(a => 
+          a.id === transferTarget ? { ...a, balance: Math.round(((Number(a.balance) || 0) + val) * 100) / 100 } : a
         );
       }
 
@@ -415,21 +456,24 @@ export default function FinancesTab({
     };
 
     setFinances(prev => {
-      let newBalance = prev.balance;
-      let newSecAccounts = prev.secondaryAccounts || [];
+      let newBalance = Number(prev.balance) || 0;
+      let newSecAccounts = (prev.secondaryAccounts || []).map(a => ({
+        ...a,
+        balance: Number(a.balance) || 0
+      }));
 
       if (withdrawSource === 'base') {
-        newBalance = prev.balance - val;
+        newBalance = Math.round((newBalance - val) * 100) / 100;
       } else {
-        newSecAccounts = (prev.secondaryAccounts || []).map(a => 
-          a.id === withdrawSource ? { ...a, balance: Math.max(0, a.balance - val) } : a
+        newSecAccounts = newSecAccounts.map(a => 
+          a.id === withdrawSource ? { ...a, balance: Math.round(((Number(a.balance) || 0) - val) * 100) / 100 } : a
         );
       }
 
       return {
         ...prev,
         balance: newBalance,
-        cashBalance: (prev.cashBalance || 0) + val,
+        cashBalance: Math.round(((Number(prev.cashBalance) || 0) + val) * 100) / 100,
         secondaryAccounts: newSecAccounts,
         transactions: [newTx, ...(prev.transactions || [])]
       };
@@ -523,7 +567,10 @@ export default function FinancesTab({
       ...prev,
       secondaryAccounts: (prev.secondaryAccounts || []).map(a => {
         if (a.id !== account.id) return a;
-        const newBal = type === 'deposit' ? a.balance + val : Math.max(0, a.balance - val);
+        const currentBal = Number(a.balance) || 0;
+        const newBal = type === 'deposit'
+          ? Math.round((currentBal + val) * 100) / 100
+          : Math.round((currentBal - val) * 100) / 100;
         return { ...a, balance: newBal };
       })
     }));
@@ -563,6 +610,73 @@ export default function FinancesTab({
   const currentModalCategories = txModalMode === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   const activeRecurringCount = (finances.recurringTransactions || []).filter(r => r.active).length;
+
+  // --- STORICO & GRAFICI CALCULATIONS ---
+  const selMonthTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(selectedHistoryMonth));
+  const selMonthExpenses = selMonthTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  const selMonthIncome = selMonthTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+  const selMonthNet = Math.round((selMonthIncome - selMonthExpenses) * 100) / 100;
+  const selMonthSavingsRate = selMonthIncome > 0 ? Math.round((selMonthNet / selMonthIncome) * 100) : (selMonthExpenses > 0 ? -100 : 0);
+
+  // Breve Periodo: 5 finestre settimanali del mese selezionato (1-7, 8-14, 15-21, 22-28, 29-31)
+  const weeksData = [
+    { id: 1, label: '1-7', shortTitle: '1-7', title: `1 - 7 ${formatMonthShort(selectedHistoryMonth)}`, min: 1, max: 7 },
+    { id: 2, label: '8-14', shortTitle: '8-14', title: `8 - 14 ${formatMonthShort(selectedHistoryMonth)}`, min: 8, max: 14 },
+    { id: 3, label: '15-21', shortTitle: '15-21', title: `15 - 21 ${formatMonthShort(selectedHistoryMonth)}`, min: 15, max: 21 },
+    { id: 4, label: '22-28', shortTitle: '22-28', title: `22 - 28 ${formatMonthShort(selectedHistoryMonth)}`, min: 22, max: 28 },
+    { id: 5, label: '29-31', shortTitle: '29-31', title: `29 - 31 ${formatMonthShort(selectedHistoryMonth)}`, min: 29, max: 31 }
+  ].map(wk => {
+    const txInWeek = selMonthTx.filter(t => {
+      if (!t.date) return false;
+      const parts = t.date.split('-');
+      if (parts.length < 3) return false;
+      const dayNum = parseInt(parts[2], 10);
+      return dayNum >= wk.min && dayNum <= wk.max;
+    });
+    const inc = txInWeek.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const exp = txInWeek.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const net = Math.round((inc - exp) * 100) / 100;
+    return {
+      ...wk,
+      income: inc,
+      expenses: exp,
+      net: net,
+      txCount: txInWeek.length,
+      transactions: txInWeek
+    };
+  });
+
+  const maxWeekVal = Math.max(50, ...weeksData.map(w => Math.max(w.income, w.expenses)));
+
+  // Lungo Periodo: ultimi N mesi (6 o 12)
+  const longMonthsList = [];
+  for (let i = longPeriodMonthsCount - 1; i >= 0; i--) {
+    longMonthsList.push(shiftMonthKey(selectedHistoryMonth, -i));
+  }
+  const longPeriodData = longMonthsList.map(mKey => {
+    const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
+    const inc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const exp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const net = Math.round((inc - exp) * 100) / 100;
+    return {
+      monthKey: mKey,
+      shortLabel: formatMonthShort(mKey),
+      fullLabel: formatMonthLabel(mKey),
+      income: inc,
+      expenses: exp,
+      net: net,
+      isCurrent: mKey === currentMonthPrefix,
+      isSelected: mKey === selectedHistoryMonth
+    };
+  });
+
+  const maxLongVal = Math.max(100, ...longPeriodData.map(m => Math.max(m.income, m.expenses)));
+  const totalPeriodIncome = longPeriodData.reduce((acc, m) => acc + m.income, 0);
+  const totalPeriodExpenses = longPeriodData.reduce((acc, m) => acc + m.expenses, 0);
+  const totalPeriodNet = Math.round((totalPeriodIncome - totalPeriodExpenses) * 100) / 100;
+  const avgMonthlyExpense = Math.round(totalPeriodExpenses / (longPeriodData.length || 1));
+  const avgMonthlyIncome = Math.round(totalPeriodIncome / (longPeriodData.length || 1));
+  const bestSavingsMonth = [...longPeriodData].sort((a, b) => b.net - a.net)[0];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
@@ -900,7 +1014,7 @@ export default function FinancesTab({
         
         {/* Header & Sub-view Switch + Filter Funnel */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-primary)', padding: '2px', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', gap: '3px', background: 'var(--bg-primary)', padding: '2px', borderRadius: '8px' }}>
             <button
               onClick={() => setActiveSubView('transactions')}
               style={{
@@ -909,7 +1023,7 @@ export default function FinancesTab({
                 color: 'var(--text-primary)',
                 fontSize: '10px',
                 fontWeight: activeSubView === 'transactions' ? 'bold' : 'normal',
-                padding: '4px 8px',
+                padding: '4px 7px',
                 borderRadius: '6px',
                 cursor: 'pointer'
               }}
@@ -924,35 +1038,55 @@ export default function FinancesTab({
                 color: 'var(--text-primary)',
                 fontSize: '10px',
                 fontWeight: activeSubView === 'categories' ? 'bold' : 'normal',
-                padding: '4px 8px',
+                padding: '4px 7px',
                 borderRadius: '6px',
                 cursor: 'pointer'
               }}
             >
               📊 Categorie
             </button>
+            <button
+              onClick={() => setActiveSubView('history')}
+              style={{
+                background: activeSubView === 'history' ? 'var(--bg-card)' : 'transparent',
+                border: 'none',
+                color: activeSubView === 'history' ? 'var(--accent-primary, #38bdf8)' : 'var(--text-primary)',
+                fontSize: '10px',
+                fontWeight: activeSubView === 'history' ? 'bold' : 'normal',
+                padding: '4px 7px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+            >
+              📈 Storico
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowFilterModal(!showFilterModal)}
-            style={{
-              background: (filterType !== 'all' || filterCategory !== 'all') ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: (filterType !== 'all' || filterCategory !== 'all') ? '#fff' : 'var(--text-primary)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '8px',
-              padding: '4px 8px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-            title="Filtra movimenti per tipo e categoria"
-          >
-            <span>🌪️ Filtri</span>
-            {(filterType !== 'all' || filterCategory !== 'all') && <span style={{ fontSize: '9px' }}>•</span>}
-          </button>
+          {activeSubView !== 'history' && (
+            <button
+              onClick={() => setShowFilterModal(!showFilterModal)}
+              style={{
+                background: (filterType !== 'all' || filterCategory !== 'all') ? 'var(--accent-primary)' : 'var(--bg-primary)',
+                color: (filterType !== 'all' || filterCategory !== 'all') ? '#fff' : 'var(--text-primary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '8px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Filtra movimenti per tipo e categoria"
+            >
+              <span>🌪️ Filtri</span>
+              {(filterType !== 'all' || filterCategory !== 'all') && <span style={{ fontSize: '9px' }}>•</span>}
+            </button>
+          )}
         </div>
 
         {/* Filter Selection Panel (Toggleable Popup/Row) */}
@@ -1156,6 +1290,426 @@ export default function FinancesTab({
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Content View: Storico & Grafici (Breve e Lungo Periodo) */}
+        {activeSubView === 'history' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            
+            {/* 1. Month Navigator Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+              <button
+                type="button"
+                onClick={() => { setSelectedHistoryMonth(prev => shiftMonthKey(prev, -1)); setSelectedHistoryWeek(null); }}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px' }}
+                title="Mese precedente"
+              >
+                ◀
+              </button>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.3px' }}>
+                  📅 {formatMonthLabel(selectedHistoryMonth)}
+                </div>
+                {selectedHistoryMonth !== currentMonthPrefix && (
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedHistoryMonth(currentMonthPrefix); setSelectedHistoryWeek(null); }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary, #38bdf8)', fontSize: '9px', textDecoration: 'underline', cursor: 'pointer', padding: 0, marginTop: '2px' }}
+                  >
+                    Torna al mese corrente
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => { setSelectedHistoryMonth(prev => shiftMonthKey(prev, 1)); setSelectedHistoryWeek(null); }}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px' }}
+                title="Mese successivo"
+              >
+                ▶
+              </button>
+            </div>
+
+            {/* 2. Monthly Financial Health KPI Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: '#86efac', textTransform: 'uppercase', fontWeight: 'bold' }}>🟢 Entrate Mese</div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: '#4ade80', marginTop: '2px' }}>
+                  +{fmtCurrency(selMonthIncome)}
+                </div>
+              </div>
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>🔴 Uscite Mese</div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: '#f87171', marginTop: '2px' }}>
+                  -{fmtCurrency(selMonthExpenses)}
+                </div>
+              </div>
+              <div style={{ background: selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: selMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                  {selMonthNet >= 0 ? '⚖️ Risparmio Netto' : '⚠️ Deficit Mese'}
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
+                  {selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
+                </div>
+              </div>
+              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>📊 Tasso Risparmio</div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthSavingsRate >= 20 ? '#4ade80' : selMonthSavingsRate >= 0 ? '#fbbf24' : '#ef4444', marginTop: '2px' }}>
+                  {selMonthSavingsRate}%
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Horizon Switcher (Breve Periodo vs Lungo Periodo) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '3px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => { setHistoryRange('short'); setSelectedHistoryWeek(null); }}
+                  style={{
+                    background: historyRange === 'short' ? 'var(--bg-card)' : 'transparent',
+                    border: historyRange === 'short' ? '1px solid var(--glass-border)' : 'none',
+                    color: historyRange === 'short' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    fontSize: '10px',
+                    fontWeight: historyRange === 'short' ? 'bold' : 'normal',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📅 Breve Periodo (Settimanale)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setHistoryRange('long'); setSelectedHistoryWeek(null); }}
+                  style={{
+                    background: historyRange === 'long' ? 'var(--bg-card)' : 'transparent',
+                    border: historyRange === 'long' ? '1px solid var(--glass-border)' : 'none',
+                    color: historyRange === 'long' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    fontSize: '10px',
+                    fontWeight: historyRange === 'long' ? 'bold' : 'normal',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📆 Lungo Periodo (Trend Mesi)
+                </button>
+              </div>
+              {historyRange === 'long' && (
+                <div style={{ display: 'flex', gap: '2px', paddingRight: '2px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setLongPeriodMonthsCount(6)}
+                    style={{
+                      background: longPeriodMonthsCount === 6 ? 'var(--accent-primary)' : 'transparent',
+                      color: longPeriodMonthsCount === 6 ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      padding: '2px 5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    6M
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLongPeriodMonthsCount(12)}
+                    style={{
+                      background: longPeriodMonthsCount === 12 ? 'var(--accent-primary)' : 'transparent',
+                      color: longPeriodMonthsCount === 12 ? '#fff' : 'var(--text-muted)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      padding: '2px 5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    12M
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 4a. Grafico Breve Periodo (Settimane del Mese) */}
+            {historyRange === 'short' && (
+              <div>
+                <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
+                    <span style={{ fontWeight: 'bold' }}>Andamento per settimana ({formatMonthShort(selectedHistoryMonth)})</span>
+                    <div style={{ display: 'flex', gap: '8px', fontSize: '9px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#4ade80', display: 'inline-block' }}></span> Entrate</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#f87171', display: 'inline-block' }}></span> Uscite</span>
+                    </div>
+                  </div>
+
+                  {/* Weekly Bar Chart Container */}
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '90px', gap: '6px', padding: '0 2px', marginBottom: '6px', borderBottom: '1px solid var(--glass-border)' }}>
+                    {weeksData.map(wk => {
+                      const incHeight = Math.max(4, Math.round((wk.income / maxWeekVal) * 75));
+                      const expHeight = Math.max(4, Math.round((wk.expenses / maxWeekVal) * 75));
+                      const isSelected = selectedHistoryWeek === wk.id;
+
+                      return (
+                        <div
+                          key={wk.id}
+                          onClick={() => setSelectedHistoryWeek(isSelected ? null : wk.id)}
+                          style={{
+                            flex: 1,
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            borderRadius: '6px',
+                            background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                            padding: '2px 1px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title={`${wk.title}: +${fmtCurrency(wk.income)} / -${fmtCurrency(wk.expenses)} (Netto: ${fmtCurrency(wk.net)})`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '75px', justifyContent: 'center', width: '100%' }}>
+                            {/* Income Bar */}
+                            <div
+                              style={{
+                                width: '42%',
+                                maxWidth: '12px',
+                                height: `${wk.income > 0 ? incHeight : 3}px`,
+                                background: wk.income > 0 ? '#4ade80' : 'rgba(255,255,255,0.06)',
+                                borderRadius: '3px 3px 1px 1px',
+                                boxShadow: wk.income > 0 ? '0 1px 4px rgba(74, 222, 128, 0.3)' : 'none'
+                              }}
+                            />
+                            {/* Expense Bar */}
+                            <div
+                              style={{
+                                width: '42%',
+                                maxWidth: '12px',
+                                height: `${wk.expenses > 0 ? expHeight : 3}px`,
+                                background: wk.expenses > 0 ? '#f87171' : 'rgba(255,255,255,0.06)',
+                                borderRadius: '3px 3px 1px 1px',
+                                boxShadow: wk.expenses > 0 ? '0 1px 4px rgba(248, 113, 113, 0.3)' : 'none'
+                              }}
+                            />
+                          </div>
+                          <div style={{ fontSize: '8px', color: isSelected ? 'var(--accent-primary, #38bdf8)' : 'var(--text-muted)', fontWeight: isSelected ? 'bold' : 'normal', marginTop: '4px', textAlign: 'center' }}>
+                            {wk.shortTitle}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Net summary pill row under bars */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}>
+                    {weeksData.map(wk => (
+                      <div key={wk.id} style={{ flex: 1, textAlign: 'center' }}>
+                        <span style={{ fontSize: '8px', fontWeight: 'bold', color: wk.net >= 0 ? (wk.net === 0 ? 'var(--text-muted)' : '#4ade80') : '#f87171' }}>
+                          {wk.net > 0 ? '+' : ''}{fmtCurrency(wk.net)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Detail of selected week */}
+                {selectedHistoryWeek && (() => {
+                  const activeWk = weeksData.find(w => w.id === selectedHistoryWeek);
+                  if (!activeWk) return null;
+                  return (
+                    <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary, #38bdf8)' }}>
+                          🔎 Dettaglio: {activeWk.title}
+                        </span>
+                        <span style={{ fontSize: '9px', fontWeight: 'bold', color: activeWk.net >= 0 ? '#4ade80' : '#f87171' }}>
+                          Saldo: {activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)}
+                        </span>
+                      </div>
+                      {activeWk.transactions.length === 0 ? (
+                        <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '4px 0' }}>
+                          Nessun movimento registrato in questa settimana.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '130px', overflowY: 'auto' }}>
+                          {activeWk.transactions.map(t => {
+                            const catObj = getCategoryObj(t.category);
+                            const isInc = t.type === 'income';
+                            return (
+                              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', background: 'var(--bg-secondary)', padding: '4px 6px', borderRadius: '6px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                                  <span>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
+                                  <span style={{ color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.note || catObj.label}</span>
+                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{t.date}</span>
+                                </div>
+                                <span style={{ fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171'), flexShrink: 0 }}>
+                                  {t.type === 'transfer' ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* 4b. Grafico Lungo Periodo (Multi-Mese) */}
+            {historyRange === 'long' && (
+              <div>
+                <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
+                    <span style={{ fontWeight: 'bold' }}>Trend Storico Ultimi {longPeriodMonthsCount} Mesi</span>
+                    <div style={{ display: 'flex', gap: '8px', fontSize: '9px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#4ade80', display: 'inline-block' }}></span> Entrate</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#f87171', display: 'inline-block' }}></span> Uscite</span>
+                    </div>
+                  </div>
+
+                  {/* Multi-Month Bar Chart */}
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '90px', gap: '4px', padding: '0 2px', marginBottom: '6px', borderBottom: '1px solid var(--glass-border)' }}>
+                    {longPeriodData.map(m => {
+                      const incHeight = Math.max(4, Math.round((m.income / maxLongVal) * 75));
+                      const expHeight = Math.max(4, Math.round((m.expenses / maxLongVal) * 75));
+                      const isSelected = selectedHistoryMonth === m.monthKey;
+
+                      return (
+                        <div
+                          key={m.monthKey}
+                          onClick={() => setSelectedHistoryMonth(m.monthKey)}
+                          style={{
+                            flex: 1,
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            borderRadius: '6px',
+                            background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                            padding: '2px 1px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title={`${m.fullLabel}: +${fmtCurrency(m.income)} / -${fmtCurrency(m.expenses)} (Netto: ${fmtCurrency(m.net)})`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '75px', justifyContent: 'center', width: '100%' }}>
+                            {/* Income */}
+                            <div
+                              style={{
+                                width: '42%',
+                                maxWidth: '12px',
+                                height: `${m.income > 0 ? incHeight : 3}px`,
+                                background: m.income > 0 ? '#4ade80' : 'rgba(255,255,255,0.06)',
+                                borderRadius: '3px 3px 1px 1px',
+                                boxShadow: m.income > 0 ? '0 1px 4px rgba(74, 222, 128, 0.3)' : 'none'
+                              }}
+                            />
+                            {/* Expense */}
+                            <div
+                              style={{
+                                width: '42%',
+                                maxWidth: '12px',
+                                height: `${m.expenses > 0 ? expHeight : 3}px`,
+                                background: m.expenses > 0 ? '#f87171' : 'rgba(255,255,255,0.06)',
+                                borderRadius: '3px 3px 1px 1px',
+                                boxShadow: m.expenses > 0 ? '0 1px 4px rgba(248, 113, 113, 0.3)' : 'none'
+                              }}
+                            />
+                          </div>
+                          <div style={{ fontSize: '8px', color: isSelected ? 'var(--accent-primary, #38bdf8)' : 'var(--text-muted)', fontWeight: isSelected ? 'bold' : 'normal', marginTop: '4px', textAlign: 'center' }}>
+                            {m.shortLabel}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Net summary pill row under bars */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
+                    {longPeriodData.map(m => (
+                      <div key={m.monthKey} style={{ flex: 1, textAlign: 'center' }}>
+                        <span style={{ fontSize: '7px', fontWeight: 'bold', color: m.net >= 0 ? (m.net === 0 ? 'var(--text-muted)' : '#4ade80') : '#f87171' }}>
+                          {m.net > 0 ? '+' : ''}{fmtCurrency(m.net)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Long Term Period Aggregate Metrics */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                  <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                    <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>📊 Media Spese Mensili</div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f87171', marginTop: '2px' }}>
+                      -{fmtCurrency(avgMonthlyExpense)}
+                    </div>
+                  </div>
+                  <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                    <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>📈 Media Entrate Mensili</div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#4ade80', marginTop: '2px' }}>
+                      +{fmtCurrency(avgMonthlyIncome)}
+                    </div>
+                  </div>
+                  <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', gridColumn: 'span 2' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>🏦 Risparmio Netto Totale ({longPeriodMonthsCount} Mesi)</div>
+                        <div style={{ fontSize: '14px', fontWeight: '900', color: totalPeriodNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
+                          {totalPeriodNet >= 0 ? '+' : ''}{fmtCurrency(totalPeriodNet)}
+                        </div>
+                      </div>
+                      {bestSavingsMonth && bestSavingsMonth.net > 0 && (
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '8px', color: '#86efac' }}>🌟 Miglior Mese</div>
+                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                            {bestSavingsMonth.fullLabel} (+{fmtCurrency(bestSavingsMonth.net)})
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 5. RPG Financial Health Badge */}
+            <div
+              style={{
+                background: selMonthNet >= 0
+                  ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(15, 23, 42, 0.4))'
+                  : 'linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(15, 23, 42, 0.4))',
+                border: `1px solid ${selMonthNet >= 0 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                borderRadius: '12px',
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}
+            >
+              <span style={{ fontSize: '24px' }}>
+                {selMonthNet >= 0 ? (selMonthSavingsRate >= 30 ? '👑' : '🛡️') : '⚠️'}
+              </span>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: selMonthNet >= 0 ? '#4ade80' : '#f87171' }}>
+                  {selMonthNet >= 0
+                    ? (selMonthSavingsRate >= 30 ? 'Capitale Florido & Crescita' : 'Bilancio in Attivo')
+                    : 'Attenzione al Deficit'}
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
+                  {selMonthNet >= 0
+                    ? `In questo mese hai risparmiato ${fmtCurrency(selMonthNet)}. Il tuo forziere ringrazia!`
+                    : `Le spese di questo mese superano le entrate di ${fmtCurrency(Math.abs(selMonthNet))}. Monitora le categorie secondarie.`}
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 

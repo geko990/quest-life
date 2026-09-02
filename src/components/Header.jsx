@@ -367,7 +367,9 @@ export default function Header({
                   l => l.date && l.date.startsWith(currentMonthId) && l.isMonthlyTask
                 ).length;
                 const targetPoints = player.monthlyChallenge?.target || 50;
-                const displayPoints = Math.max(player.monthlyChallenge?.points || 0, currentMonthPoints);
+                const displayPoints = player.monthlyChallenge?.currentMonth === currentMonthId
+                  ? (player.monthlyChallenge?.points ?? currentMonthPoints)
+                  : currentMonthPoints;
 
                 return (
                   <div style={{ marginTop: '15px' }}>
