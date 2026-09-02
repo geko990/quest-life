@@ -85,6 +85,8 @@ export default function FinancesTab({
   const [txModalMode, setTxModalMode] = useState('expense'); // 'expense' | 'income'
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showRecurringModal, setShowRecurringModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedAccountDetail, setSelectedAccountDetail] = useState(null); // 'base' | 'cash' | accId
 
   // Cash Withdrawal Modal
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -678,6 +680,8 @@ export default function FinancesTab({
   const currentModalCategories = txModalMode === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   const activeRecurringCount = (finances.recurringTransactions || []).filter(r => r.active).length;
+  const baseRecurringCount = (finances.recurringTransactions || []).filter(r => r.active && (r.account === 'base' || !r.account)).length;
+  const cashRecurringCount = (finances.recurringTransactions || []).filter(r => r.active && r.account === 'cash').length;
 
   // --- STORICO & GRAFICI CALCULATIONS ---
   const selMonthTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(selectedHistoryMonth));
@@ -758,24 +762,30 @@ export default function FinancesTab({
         </div>
 
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {/* Total Net Worth Badge */}
-          <div
+          {/* Total Net Worth Button -> Opens History & Charts Popup */}
+          <button
+            type="button"
+            onClick={() => setShowHistoryModal(true)}
             style={{
               background: 'var(--bg-secondary)',
-              border: '1px solid var(--glass-border)',
+              border: '1px solid var(--accent-primary, #38bdf8)',
               borderRadius: '10px',
-              padding: '5px 9px',
+              padding: '5px 10px',
               display: 'flex',
               alignItems: 'center',
-              gap: '5px'
+              gap: '6px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(56, 189, 248, 0.15)'
             }}
-            title="Patrimonio Totale (Somma di tutti i conti)"
+            title="Tocca per aprire lo Storico e i Grafici Finanziari"
           >
+            <span style={{ fontSize: '13px' }}>📈</span>
             <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Totale:</span>
             <span style={{ fontSize: '12px', fontWeight: '900', color: totalPatrimonio >= 0 ? '#38bdf8' : '#ef4444' }}>
               {fmtCurrency(totalPatrimonio)}
             </span>
-          </div>
+            <span style={{ fontSize: '10px', color: 'var(--accent-primary, #38bdf8)' }}>➔</span>
+          </button>
 
           {/* Privacy Eye Toggle */}
           <button
@@ -816,15 +826,108 @@ export default function FinancesTab({
         </div>
       </div>
 
-      {/* 2. Compact Hero Card: Conto Base */}
+      {/* 1b. Top 4 Quick Actions Bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+        <button
+          type="button"
+          onClick={() => { setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
+          style={{
+            background: 'rgba(234, 179, 8, 0.15)',
+            border: '1px solid rgba(234, 179, 8, 0.35)',
+            color: '#fde047',
+            borderRadius: '10px',
+            padding: '8px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '3px'
+          }}
+        >
+          <span style={{ fontSize: '15px' }}>🏧</span>
+          <span>Preleva</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleOpenTransferModal('base', 'cash')}
+          style={{
+            background: 'rgba(56, 189, 248, 0.15)',
+            border: '1px solid rgba(56, 189, 248, 0.35)',
+            color: '#38bdf8',
+            borderRadius: '10px',
+            padding: '8px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '3px'
+          }}
+        >
+          <span style={{ fontSize: '15px' }}>↔️</span>
+          <span>Trasferisci</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleOpenAddTxModal('expense')}
+          style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            color: '#f87171',
+            borderRadius: '10px',
+            padding: '8px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '3px'
+          }}
+        >
+          <span style={{ fontSize: '15px' }}>🔴</span>
+          <span>Uscita</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleOpenAddTxModal('income')}
+          style={{
+            background: 'rgba(34, 197, 94, 0.15)',
+            border: '1px solid rgba(34, 197, 94, 0.35)',
+            color: '#4ade80',
+            borderRadius: '10px',
+            padding: '8px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '3px'
+          }}
+        >
+          <span style={{ fontSize: '15px' }}>🟢</span>
+          <span>Entrata</span>
+        </button>
+      </div>
+
+      {/* 2. Compact Hero Card: Conto Base (Cliccabile per Scheda) */}
       <div
+        onClick={() => setSelectedAccountDetail('base')}
         style={{
           background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))',
           border: '1px solid rgba(255, 255, 255, 0.12)',
           borderRadius: '16px',
           padding: '14px 16px',
           color: '#fff',
-          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.18)'
+          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.18)',
+          cursor: 'pointer'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
@@ -832,44 +935,31 @@ export default function FinancesTab({
             💳 Conto Base
           </div>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <button
-              onClick={() => setShowRecurringModal(true)}
-              style={{
-                background: activeRecurringCount > 0 ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: activeRecurringCount > 0 ? '#60a5fa' : '#cbd5e1',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                fontSize: '10px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="Gestisci Pagamenti ed Entrate Ricorrenti (Stipendio, Affitto...)"
-            >
-              <span>🔄</span> {activeRecurringCount > 0 ? activeRecurringCount : ''}
-            </button>
-            <button
-              onClick={() => handleOpenTransferModal('base', 'cash')}
-              style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-              title="Trasferisci denaro tra i tuoi conti"
-            >
-              ↔️ Trasferisci
-            </button>
-            <button
-              onClick={() => handleOpenAddTxModal('expense')}
-              style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              - Uscita
-            </button>
-            <button
-              onClick={() => handleOpenAddTxModal('income')}
-              style={{ background: '#22c55e', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              + Entrata
-            </button>
+            {baseRecurringCount > 0 && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
+                style={{
+                  background: 'rgba(59, 130, 246, 0.25)',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
+                  color: '#60a5fa',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Gestisci Pagamenti ed Entrate Ricorrenti (Stipendio, Affitto...)"
+              >
+                <span>🔄</span> {baseRecurringCount}
+              </button>
+            )}
+            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '2px' }}>
+              Scheda ➔
+            </span>
           </div>
         </div>
 
@@ -898,7 +988,7 @@ export default function FinancesTab({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', marginBottom: '3px' }}>
             <span style={{ color: '#cbd5e1' }}>🎯 Budget Spesa Mensile</span>
             <span
-              onClick={() => { setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
+              onClick={(e) => { e.stopPropagation(); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
               style={{ color: '#fbbf24', cursor: 'pointer', textDecoration: 'underline' }}
             >
               Lim: {fmtCurrency(finances.monthlyBudget || 1000)} ✏️
@@ -918,15 +1008,17 @@ export default function FinancesTab({
         </div>
       </div>
 
-      {/* 2b. Card Contanti Disponibili */}
+      {/* 2b. Card Contanti Disponibili (Cliccabile per Scheda) */}
       <div
+        onClick={() => setSelectedAccountDetail('cash')}
         style={{
           background: 'linear-gradient(135deg, rgba(20, 83, 45, 0.85), rgba(15, 23, 42, 0.95))',
           border: '1px solid rgba(34, 197, 94, 0.3)',
           borderRadius: '16px',
           padding: '12px 16px',
           color: '#fff',
-          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)'
+          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+          cursor: 'pointer'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -934,32 +1026,31 @@ export default function FinancesTab({
             💵 Contanti Disponibili
           </div>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <button
-              onClick={() => { setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
-              style={{ background: 'rgba(234, 179, 8, 0.25)', border: '1px solid rgba(234, 179, 8, 0.4)', color: '#fde047', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-              title="Preleva contanti dal Conto Base o da un Conto Secondario"
-            >
-              🏧 Preleva
-            </button>
-            <button
-              onClick={() => handleOpenTransferModal('cash', 'base')}
-              style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-              title="Trasferisci denaro tra i tuoi conti"
-            >
-              ↔️ Trasferisci
-            </button>
-            <button
-              onClick={() => handleOpenAddTxModal('expense', 'cash')}
-              style={{ background: '#ef4444', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              - Uscita
-            </button>
-            <button
-              onClick={() => handleOpenAddTxModal('income', 'cash')}
-              style={{ background: '#22c55e', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              + Entrata
-            </button>
+            {cashRecurringCount > 0 && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
+                style={{
+                  background: 'rgba(34, 197, 94, 0.25)',
+                  border: '1px solid rgba(34, 197, 94, 0.4)',
+                  color: '#86efac',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Ricorrenti Contanti"
+              >
+                <span>🔄</span> {cashRecurringCount}
+              </button>
+            )}
+            <span style={{ fontSize: '10px', color: '#86efac', display: 'flex', alignItems: 'center', gap: '2px' }}>
+              Scheda ➔
+            </span>
           </div>
         </div>
 
@@ -967,26 +1058,20 @@ export default function FinancesTab({
           {fmtCurrency(finances.cashBalance || 0)}
         </div>
       </div>
+
+      {/* 3. Card Conti Secondari & Risparmi (Cliccabili per Scheda) */}
       <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
             🏦 Conti Secondari & Risparmi
           </h3>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              onClick={() => handleOpenTransferModal('base', finances.secondaryAccounts?.[0]?.id || 'cash')}
-              style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.4)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-              title="Trasferisci denaro tra conti"
-            >
-              ↔️ Trasferisci
-            </button>
-            <button
-              onClick={() => setShowAddSecModal(true)}
-              style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              + Nuovo Conto
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowAddSecModal(true)}
+            style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            + Nuovo Conto
+          </button>
         </div>
 
         {(!finances.secondaryAccounts || finances.secondaryAccounts.length === 0) ? (
@@ -995,84 +1080,70 @@ export default function FinancesTab({
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {finances.secondaryAccounts.map(acc => (
-              <div
-                key={acc.id}
-                style={{
-                  background: 'var(--bg-primary)',
-                  borderRadius: '10px',
-                  padding: '8px 10px',
-                  border: '1px solid var(--glass-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                  <span style={{ fontSize: '18px', flexShrink: 0 }}>{acc.emoji || '🏦'}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {acc.name}
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '1px' }}>
-                      {acc.interestRate > 0 && (
-                        <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
-                          +{acc.interestRate}% p.a.
+            {finances.secondaryAccounts.map(acc => {
+              const secRecurring = (finances.recurringTransactions || []).filter(r => r.active && r.account === acc.id);
+              return (
+                <div
+                  key={acc.id}
+                  onClick={() => setSelectedAccountDetail(acc.id)}
+                  style={{
+                    background: 'var(--bg-primary)',
+                    borderRadius: '10px',
+                    padding: '8px 10px',
+                    border: '1px solid var(--glass-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0 }}>{acc.emoji || '🏦'}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {acc.name}
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '1px' }}>
+                        {acc.interestRate > 0 && (
+                          <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
+                            +{acc.interestRate}% p.a.
+                          </span>
+                        )}
+                        <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                          {acc.lockPeriodMonths > 0 ? `⏳ Vincolo ${acc.lockPeriodMonths}M` : '🔓 Svincolato'}
                         </span>
-                      )}
-                      <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                        {acc.lockPeriodMonths > 0 ? `⏳ Vincolo ${acc.lockPeriodMonths}M` : '🔓 Svincolato'}
-                      </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
-                    {fmtCurrency(acc.balance)}
-                  </div>
-                  <div style={{ display: 'flex', gap: '3px' }}>
-                    <button
-                      onClick={() => handleOpenTransferModal(acc.id, 'base')}
-                      style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
-                      title="Trasferisci da/verso questo conto"
-                    >
-                      ↔️
-                    </button>
-                    <button
-                      onClick={() => { setSecActionAmount(''); setSecAccountAction({ account: acc, type: 'deposit' }); }}
-                      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
-                      title="Deposita nel conto"
-                    >
-                      +
-                    </button>
-                    <button
-                      onClick={() => { setSecActionAmount(''); setSecAccountAction({ account: acc, type: 'withdraw' }); }}
-                      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
-                      title="Preleva dal conto"
-                    >
-                      -
-                    </button>
-                    {acc.interestRate > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    {secRecurring.length > 0 && (
                       <button
-                        onClick={() => setSecAccountAction({ account: acc, type: 'interest' })}
-                        style={{ background: 'rgba(34, 197, 94, 0.2)', border: '1px solid rgba(34, 197, 94, 0.4)', color: '#22c55e', fontSize: '9px', padding: '3px 6px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
-                        title="Calcola & Accredita Interessi Maturati"
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
+                        style={{
+                          background: 'rgba(56, 189, 248, 0.15)',
+                          border: '1px solid rgba(56, 189, 248, 0.3)',
+                          color: '#38bdf8',
+                          padding: '2px 6px',
+                          borderRadius: '5px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                        title="Ricorrenti per questo conto"
                       >
-                        📈
+                        🔄 {secRecurring.length}
                       </button>
                     )}
-                    <button
-                      onClick={() => handleDeleteSecAccount(acc.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', padding: '1px 3px', cursor: 'pointer' }}
-                      title="Elimina conto"
-                    >
-                      🗑️
-                    </button>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
+                      {fmtCurrency(acc.balance)}
+                    </div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>➔</span>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -1113,48 +1184,28 @@ export default function FinancesTab({
             >
               📊 Categorie
             </button>
-            <button
-              onClick={() => setActiveSubView('history')}
-              style={{
-                background: activeSubView === 'history' ? 'var(--bg-card)' : 'transparent',
-                border: 'none',
-                color: activeSubView === 'history' ? 'var(--accent-primary, #38bdf8)' : 'var(--text-primary)',
-                fontSize: '10px',
-                fontWeight: activeSubView === 'history' ? 'bold' : 'normal',
-                padding: '4px 7px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '3px'
-              }}
-            >
-              📈 Storico
-            </button>
           </div>
 
-          {activeSubView !== 'history' && (
-            <button
-              onClick={() => setShowFilterModal(!showFilterModal)}
-              style={{
-                background: (filterType !== 'all' || filterCategory !== 'all') ? 'var(--accent-primary)' : 'var(--bg-primary)',
-                color: (filterType !== 'all' || filterCategory !== 'all') ? '#fff' : 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '8px',
-                padding: '4px 8px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="Filtra movimenti per tipo e categoria"
-            >
-              <span>🌪️ Filtri</span>
-              {(filterType !== 'all' || filterCategory !== 'all') && <span style={{ fontSize: '9px' }}>•</span>}
-            </button>
-          )}
+          <button
+            onClick={() => setShowFilterModal(!showFilterModal)}
+            style={{
+              background: (filterType !== 'all' || filterCategory !== 'all') ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: (filterType !== 'all' || filterCategory !== 'all') ? '#fff' : 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Filtra movimenti per tipo e categoria"
+          >
+            <span>🌪️ Filtri</span>
+            {(filterType !== 'all' || filterCategory !== 'all') && <span style={{ fontSize: '9px' }}>•</span>}
+          </button>
         </div>
 
         {/* Filter Selection Panel (Toggleable Popup/Row) */}
@@ -1361,10 +1412,27 @@ export default function FinancesTab({
           </div>
         )}
 
-        {/* Content View: Storico & Grafici (Breve e Lungo Periodo) */}
-        {activeSubView === 'history' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      </div>
+
+      {/* MODAL: Storico & Grafici Finanziari (Aperto cliccando il Totale del Tesoro) */}
+      {showHistoryModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                📈 Storico & Grafici Finanziari
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(false)}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', borderRadius: '6px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✖
+              </button>
+            </div>
+
             {/* 1. Month Navigator Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
               <button
@@ -1446,7 +1514,7 @@ export default function FinancesTab({
                     cursor: 'pointer'
                   }}
                 >
-                  📅 Breve Periodo (Settimanale)
+                  📅 Breve (Settimanale)
                 </button>
                 <button
                   type="button"
@@ -1462,7 +1530,7 @@ export default function FinancesTab({
                     cursor: 'pointer'
                   }}
                 >
-                  📆 Lungo Periodo (Trend Mesi)
+                  📆 Lungo (Trend Mesi)
                 </button>
               </div>
               {historyRange === 'long' && (
@@ -1779,9 +1847,269 @@ export default function FinancesTab({
             </div>
 
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
+      {/* MODAL: Scheda Dettaglio Conto */}
+      {selectedAccountDetail !== null && (() => {
+        const isBase = selectedAccountDetail === 'base';
+        const isCash = selectedAccountDetail === 'cash';
+        const secAccount = (!isBase && !isCash)
+          ? (finances.secondaryAccounts || []).find(a => a.id === selectedAccountDetail)
+          : null;
+
+        const accId = isBase ? 'base' : (isCash ? 'cash' : (secAccount?.id || 'base'));
+        const accName = isBase ? 'Conto Base' : (isCash ? 'Contanti Disponibili' : (secAccount?.name || 'Conto Secondario'));
+        const accEmoji = isBase ? '💳' : (isCash ? '💵' : (secAccount?.emoji || '🏦'));
+        const accBalance = isBase ? finances.balance : (isCash ? (finances.cashBalance || 0) : (secAccount?.balance || 0));
+
+        // Transactions belonging to this account
+        const accTxList = (finances.transactions || []).filter(t => (t.account || 'base') === accId);
+        const accMonthTxList = accTxList.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
+        const accMonthIncome = accMonthTxList.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const accMonthExpenses = accMonthTxList.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const accMonthNet = Math.round((accMonthIncome - accMonthExpenses) * 100) / 100;
+
+        // Recurring transactions on this account
+        const accRecurring = (finances.recurringTransactions || []).filter(r => (r.account || 'base') === accId);
+
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '360px', maxHeight: '85vh', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '28px', background: 'var(--bg-primary)', padding: '6px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                    {accEmoji}
+                  </span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                      {accName}
+                    </h3>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {isBase ? 'Conto Principale di Addebito/Accredito' : (isCash ? 'Liquidità fisica nel portafoglio' : 'Conto Risparmi / Secondario')}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAccountDetail(null)}
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', borderRadius: '6px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  ✖
+                </button>
+              </div>
+
+              {/* Saldo Hero */}
+              <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  Saldo Attuale
+                </div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: accBalance >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
+                  {fmtCurrency(accBalance)}
+                </div>
+                {secAccount && (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '6px' }}>
+                    {secAccount.interestRate > 0 && (
+                      <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                        +{secAccount.interestRate}% p.a. interessi
+                      </span>
+                    )}
+                    <span style={{ fontSize: '9px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '4px' }}>
+                      {secAccount.lockPeriodMonths > 0 ? `⏳ Vincolo: ${secAccount.lockPeriodMonths} mesi` : '🔓 Svincolato'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Monthly Performance for this Account */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '8px', color: '#86efac', fontWeight: 'bold' }}>ENTRATE</div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#4ade80', marginTop: '2px' }}>
+                    +{fmtCurrency(accMonthIncome)}
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '8px', color: '#fca5a5', fontWeight: 'bold' }}>USCITE</div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#f87171', marginTop: '2px' }}>
+                    -{fmtCurrency(accMonthExpenses)}
+                  </div>
+                </div>
+                <div style={{ background: accMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${accMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '8px', color: accMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', fontWeight: 'bold' }}>FLUSSO NETTO</div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: accMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
+                    {accMonthNet >= 0 ? '+' : ''}{fmtCurrency(accMonthNet)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick actions for this account */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Operazioni Conto</div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {secAccount && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedAccountDetail(null); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'deposit' }); }}
+                        style={{ flex: 1, minWidth: '80px', padding: '6px', borderRadius: '8px', background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#4ade80', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        + Deposita
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedAccountDetail(null); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'withdraw' }); }}
+                        style={{ flex: 1, minWidth: '80px', padding: '6px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        - Preleva
+                      </button>
+                      {secAccount.interestRate > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedAccountDetail(null); setSecAccountAction({ account: secAccount, type: 'interest' }); }}
+                          style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                          📈 Accredita Interessi
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {isBase && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedAccountDetail(null); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
+                      style={{ flex: 1, minWidth: '120px', padding: '6px', borderRadius: '8px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.3)', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      🎯 Modifica Budget ({fmtCurrency(finances.monthlyBudget || 1000)})
+                    </button>
+                  )}
+                  {isCash && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedAccountDetail(null); setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
+                      style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#fde047', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      🏧 Preleva Contanti
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedAccountDetail(null); handleOpenTransferModal(accId, isBase ? 'cash' : 'base'); }}
+                    style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    ↔️ Trasferisci Denaro
+                  </button>
+                  {secAccount && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedAccountDetail(null); handleDeleteSecAccount(secAccount.id); }}
+                      style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', fontSize: '10px', cursor: 'pointer' }}
+                      title="Elimina conto secondario"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Recurring transactions on this account */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    🔄 Ricorrenti su questo conto ({accRecurring.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedAccountDetail(null); setShowRecurringModal(true); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-primary, #38bdf8)', fontSize: '9px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                  >
+                    Gestisci tutte
+                  </button>
+                </div>
+                {accRecurring.length === 0 ? (
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px' }}>
+                    Nessun pagamento o entrata ricorrente configurato su questo conto.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {accRecurring.map(r => {
+                      const catObj = getCategoryObj(r.category);
+                      const isInc = r.type === 'income';
+                      return (
+                        <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px', fontSize: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{catObj.emoji}</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{r.note || catObj.label}</span>
+                            <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>ogni {r.dayOfMonth}° del mese</span>
+                          </div>
+                          <span style={{ fontWeight: 'bold', color: isInc ? '#22c55e' : '#ef4444' }}>
+                            {isInc ? '+' : '-'}{fmtCurrency(r.amount)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Recent Transactions list for this account */}
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  📜 Movimenti del Conto ({accTxList.length})
+                </div>
+                {accTxList.length === 0 ? (
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                    Nessun movimento registrato su questo conto.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '160px', overflowY: 'auto' }}>
+                    {accTxList.slice(0, 30).map(t => {
+                      const catObj = getCategoryObj(t.category);
+                      const isInc = t.type === 'income';
+                      return (
+                        <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '5px 8px', borderRadius: '6px', fontSize: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                            <span>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
+                            <span style={{ color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {t.note || catObj.label}
+                            </span>
+                            <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{t.date}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171') }}>
+                              {t.type === 'transfer' ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTransaction(t.id)}
+                              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '9px', cursor: 'pointer', padding: 0 }}
+                              title="Elimina movimento"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setSelectedAccountDetail(null)}
+                style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
+              >
+                Chiudi Scheda
+              </button>
+
+            </div>
+          </div>
+        );
+      })()}
 
       {/* MODAL: Nuova Uscita / Entrata */}
       {showAddTxModal && (
