@@ -335,14 +335,24 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   }
 
   if (parsed.finances) {
+    const parseSafeNum = (val, def = 0) => {
+      const n = Number(val);
+      return isNaN(n) ? def : n;
+    };
+
     state.finances = {
-      balance: Number(parsed.finances.balance) || 0,
-      cashBalance: Number(parsed.finances.cashBalance) || 0,
-      monthlyBudget: Number(parsed.finances.monthlyBudget) || 1000,
+      balance: parseSafeNum(parsed.finances.balance, 0),
+      cashBalance: parseSafeNum(parsed.finances.cashBalance, 0),
+      monthlyBudget: parseSafeNum(parsed.finances.monthlyBudget, 1000),
       hideBalances: Boolean(parsed.finances.hideBalances),
       transactions: Array.isArray(parsed.finances.transactions) ? parsed.finances.transactions : [],
       savingGoals: Array.isArray(parsed.finances.savingGoals) ? parsed.finances.savingGoals : [],
-      secondaryAccounts: Array.isArray(parsed.finances.secondaryAccounts) ? parsed.finances.secondaryAccounts : [],
+      secondaryAccounts: Array.isArray(parsed.finances.secondaryAccounts)
+        ? parsed.finances.secondaryAccounts.map(a => ({
+            ...a,
+            balance: parseSafeNum(a.balance, 0)
+          }))
+        : [],
       recurringTransactions: Array.isArray(parsed.finances.recurringTransactions) ? parsed.finances.recurringTransactions : []
     };
   } else {
