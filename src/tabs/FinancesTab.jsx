@@ -64,7 +64,7 @@ const shiftMonthKey = (monthKey, delta) => {
 };
 
 export default function FinancesTab({
-  finances = { balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
+  finances = { baseAccountName: 'Conto Base', balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
   setFinances,
   stats = [],
   onRewardXp,
@@ -87,6 +87,8 @@ export default function FinancesTab({
   const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedAccountDetail, setSelectedAccountDetail] = useState(null); // 'base' | 'cash' | accId
+  const [showRenameBaseModal, setShowRenameBaseModal] = useState(false);
+  const [baseNameInput, setBaseNameInput] = useState('');
 
   // Cash Withdrawal Modal
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -134,10 +136,20 @@ export default function FinancesTab({
 
   // Account Label Helper
   const getAccountLabel = (accId) => {
-    if (accId === 'base') return '💳 Conto Base';
+    if (accId === 'base') return `💳 ${finances.baseAccountName || 'Conto Base'}`;
     if (accId === 'cash') return '💵 Contanti';
     const sec = (finances.secondaryAccounts || []).find(a => a.id === accId);
     return sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Conto Secondario';
+  };
+
+  const handleSaveBaseAccountName = () => {
+    const trimmed = (baseNameInput || '').trim();
+    const finalName = trimmed || 'Conto Base';
+    setFinances(prev => ({
+      ...prev,
+      baseAccountName: finalName
+    }));
+    setShowRenameBaseModal(false);
   };
 
   // Always default to hidden balances (*** €) whenever Finances tab opens
@@ -506,7 +518,7 @@ export default function FinancesTab({
     const val = parseFloat(withdrawAmount.replace(',', '.'));
     if (isNaN(val) || val <= 0) return;
 
-    let sourceName = 'Conto Base';
+    let sourceName = finances.baseAccountName || 'Conto Base';
     if (withdrawSource !== 'base') {
       const sec = (finances.secondaryAccounts || []).find(a => a.id === withdrawSource);
       if (sec) sourceName = `${sec.emoji || '🏦'} ${sec.name}`;
@@ -750,6 +762,48 @@ export default function FinancesTab({
   const avgMonthlyIncome = Math.round(totalPeriodIncome / (longPeriodData.length || 1));
   const bestSavingsMonth = [...longPeriodData].sort((a, b) => b.net - a.net)[0];
 
+  // --- 6-MONTHS OVERVIEW & CHARTS ---
+  const txMonthKeys = Array.from(new Set(
+    (finances.transactions || [])
+      .map(t => (t.date && typeof t.date === 'string' && t.date.length >= 7) ? t.date.substring(0, 7) : null)
+      .filter(Boolean)
+  )).sort();
+
+  let overviewMonthsCount = 6;
+  if (txMonthKeys.length > 0) {
+    const earliestTxMonth = txMonthKeys[0];
+    const [ey, em] = earliestTxMonth.split('-').map(Number);
+    const [cy, cm] = currentMonthPrefix.split('-').map(Number);
+    const diff = (cy - ey) * 12 + (cm - em) + 1;
+    overviewMonthsCount = Math.min(6, Math.max(1, diff));
+  } else {
+    overviewMonthsCount = 1;
+  }
+
+  const overviewMonthsList = [];
+  for (let i = overviewMonthsCount - 1; i >= 0; i--) {
+    overviewMonthsList.push(shiftMonthKey(currentMonthPrefix, -i));
+  }
+
+  const overviewData = overviewMonthsList.map(mKey => {
+    const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
+    const inc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const exp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const net = Math.round((inc - exp) * 100) / 100;
+    return {
+      monthKey: mKey,
+      shortLabel: formatMonthShort(mKey),
+      fullLabel: formatMonthLabel(mKey),
+      income: inc,
+      expenses: exp,
+      net: net,
+      isCurrent: mKey === currentMonthPrefix
+    };
+  });
+
+  const maxOverviewVal = Math.max(100, ...overviewData.map(m => Math.max(m.income, m.expenses)));
+  const remainingBudget = (finances.monthlyBudget || 1000) - monthExpenses;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
       
@@ -784,7 +838,6 @@ export default function FinancesTab({
             <span style={{ fontSize: '12px', fontWeight: '900', color: totalPatrimonio >= 0 ? '#38bdf8' : '#ef4444' }}>
               {fmtCurrency(totalPatrimonio)}
             </span>
-            <span style={{ fontSize: '10px', color: 'var(--accent-primary, #38bdf8)' }}>➔</span>
           </button>
 
           {/* Privacy Eye Toggle */}
@@ -917,145 +970,232 @@ export default function FinancesTab({
         </button>
       </div>
 
-      {/* 2. Compact Hero Card: Conto Base (Cliccabile per Scheda) */}
+      {/* 2. Riepilogo & Grafico Finanziario (ultimi 6 mesi o meno se meno dati) */}
       <div
-        onClick={() => setSelectedAccountDetail('base')}
         style={{
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          background: 'var(--bg-card, #1e293b)',
+          border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.1))',
           borderRadius: '16px',
           padding: '14px 16px',
-          color: '#fff',
-          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.18)',
-          cursor: 'pointer'
+          color: 'var(--text-primary)',
+          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            💳 Conto Base
+        {/* Header Grafico */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            📊 Andamento Finanze ({overviewMonthsCount} {overviewMonthsCount === 1 ? 'Mese' : 'Mesi'})
           </div>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            {baseRecurringCount > 0 && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
-                style={{
-                  background: 'rgba(59, 130, 246, 0.25)',
-                  border: '1px solid rgba(59, 130, 246, 0.4)',
-                  color: '#60a5fa',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Gestisci Pagamenti ed Entrate Ricorrenti (Stipendio, Affitto...)"
-              >
-                <span>🔄</span> {baseRecurringCount}
-              </button>
-            )}
-            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              Scheda ➔
+          <div style={{ display: 'flex', gap: '8px', fontSize: '9px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#4ade80', display: 'inline-block' }}></span> Entrate
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#f87171', display: 'inline-block' }}></span> Uscite
             </span>
           </div>
         </div>
 
-        <div style={{ fontSize: '26px', fontWeight: '900', color: finances.balance >= 0 ? '#38bdf8' : '#ef4444', margin: '2px 0 10px 0' }}>
-          {fmtCurrency(finances.balance)}
+        {/* Grafico a barre */}
+        <div style={{ background: 'var(--bg-primary, rgba(0,0,0,0.2))', borderRadius: '12px', padding: '10px 8px 8px 8px', border: '1px solid var(--glass-border, rgba(255,255,255,0.06))' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '80px', gap: '4px', padding: '0 2px', borderBottom: '1px solid var(--glass-border, rgba(255,255,255,0.08))' }}>
+            {overviewData.map(m => {
+              const incHeight = Math.max(3, Math.round((m.income / maxOverviewVal) * 65));
+              const expHeight = Math.max(3, Math.round((m.expenses / maxOverviewVal) * 65));
+
+              return (
+                <div
+                  key={m.monthKey}
+                  style={{
+                    flex: 1,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    padding: '2px 1px'
+                  }}
+                  title={`${m.fullLabel}: +${fmtCurrency(m.income)} / -${fmtCurrency(m.expenses)} (Netto: ${fmtCurrency(m.net)})`}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '65px', justifyContent: 'center', width: '100%' }}>
+                    {/* Income */}
+                    <div
+                      style={{
+                        width: '40%',
+                        maxWidth: '12px',
+                        height: `${m.income > 0 ? incHeight : 3}px`,
+                        background: m.income > 0 ? '#4ade80' : 'rgba(255,255,255,0.06)',
+                        borderRadius: '3px 3px 1px 1px',
+                        boxShadow: m.income > 0 ? '0 1px 4px rgba(74, 222, 128, 0.3)' : 'none'
+                      }}
+                    />
+                    {/* Expense */}
+                    <div
+                      style={{
+                        width: '40%',
+                        maxWidth: '12px',
+                        height: `${m.expenses > 0 ? expHeight : 3}px`,
+                        background: m.expenses > 0 ? '#f87171' : 'rgba(255,255,255,0.06)',
+                        borderRadius: '3px 3px 1px 1px',
+                        boxShadow: m.expenses > 0 ? '0 1px 4px rgba(248, 113, 113, 0.3)' : 'none'
+                      }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '9px', color: m.isCurrent ? 'var(--accent-primary, #38bdf8)' : 'var(--text-muted, #94a3b8)', fontWeight: m.isCurrent ? 'bold' : 'normal', marginTop: '4px', textAlign: 'center' }}>
+                    {m.shortLabel}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Riga Netto sotto i mesi */}
+          <div style={{ display: 'flex', justifyContent: 'space-around', gap: '4px', marginTop: '4px' }}>
+            {overviewData.map(m => (
+              <div key={m.monthKey} style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ fontSize: '8px', fontWeight: 'bold', color: m.net >= 0 ? (m.net === 0 ? 'var(--text-muted, #94a3b8)' : '#4ade80') : '#f87171' }}>
+                  {m.net > 0 ? '+' : ''}{fmtCurrency(m.net)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Monthly Summary Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-          <div style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <div style={{ fontSize: '9px', color: '#94a3b8' }}>🟢 Entrate Mese</div>
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#4ade80' }}>
-              +{fmtCurrency(monthIncome)}
-            </div>
-          </div>
-          <div style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <div style={{ fontSize: '9px', color: '#94a3b8' }}>🔴 Uscite Mese</div>
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f87171' }}>
-              -{fmtCurrency(monthExpenses)}
-            </div>
-          </div>
-        </div>
-
-        {/* Compact Monthly Budget Bar */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', marginBottom: '3px' }}>
-            <span style={{ color: '#cbd5e1' }}>🎯 Budget Spesa Mensile</span>
+        {/* Sotto il grafico: Barra Budget Spesa Mensile */}
+        <div style={{ background: 'var(--bg-primary, rgba(0,0,0,0.2))', borderRadius: '12px', padding: '10px 12px', border: '1px solid var(--glass-border, rgba(255,255,255,0.06))' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '6px' }}>
+            <span style={{ color: 'var(--text-primary, #f1f5f9)', fontWeight: 'bold' }}>
+              🎯 Budget Spesa Mensile
+            </span>
             <span
-              onClick={(e) => { e.stopPropagation(); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
-              style={{ color: '#fbbf24', cursor: 'pointer', textDecoration: 'underline' }}
+              onClick={() => { setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
+              style={{ color: '#fbbf24', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
+              title="Tocca per modificare il massimale del budget"
             >
-              Lim: {fmtCurrency(finances.monthlyBudget || 1000)} ✏️
+              <span>{fmtCurrency(monthExpenses)} / {fmtCurrency(finances.monthlyBudget || 1000)}</span>
+              <span style={{ fontSize: '11px' }}>✏️</span>
             </span>
           </div>
-          <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+
+          {/* Barra progresso */}
+          <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
             <div
               style={{
                 width: `${budgetPct}%`,
                 height: '100%',
-                background: budgetPct > 90 ? '#ef4444' : budgetPct > 70 ? '#f59e0b' : '#3b82f6',
-                borderRadius: '3px',
+                background: budgetPct > 100 ? '#ef4444' : budgetPct > 80 ? '#f59e0b' : '#3b82f6',
+                borderRadius: '4px',
                 transition: 'width 0.3s'
               }}
             />
           </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '9px', color: 'var(--text-muted, #94a3b8)' }}>
+            <span>Speso finora: {budgetPct}%</span>
+            <span style={{ fontWeight: 'bold', color: remainingBudget >= 0 ? '#4ade80' : '#ef4444' }}>
+              {remainingBudget >= 0 ? `Disponibili: ${fmtCurrency(remainingBudget)}` : `Sforato di: ${fmtCurrency(Math.abs(remainingBudget))}`}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 2b. Card Contanti Disponibili (Cliccabile per Scheda) */}
-      <div
-        onClick={() => setSelectedAccountDetail('cash')}
-        style={{
-          background: 'linear-gradient(135deg, rgba(20, 83, 45, 0.85), rgba(15, 23, 42, 0.95))',
-          border: '1px solid rgba(34, 197, 94, 0.3)',
-          borderRadius: '16px',
-          padding: '12px 16px',
-          color: '#fff',
-          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-          cursor: 'pointer'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            💵 Contanti Disponibili
-          </div>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+      {/* 3. Tessere Contanti e Conto Base */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        {/* Tessera Contanti */}
+        <div
+          onClick={() => setSelectedAccountDetail('cash')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(20, 83, 45, 0.85), rgba(15, 23, 42, 0.95))',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+            borderRadius: '14px',
+            padding: '12px 14px',
+            color: '#fff',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '75px'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              💵 Contanti
+            </span>
             {cashRecurringCount > 0 && (
-              <button
-                type="button"
+              <span
                 onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
                 style={{
                   background: 'rgba(34, 197, 94, 0.25)',
                   border: '1px solid rgba(34, 197, 94, 0.4)',
                   color: '#86efac',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  fontSize: '10px',
+                  padding: '2px 6px',
+                  borderRadius: '5px',
+                  fontSize: '9px',
                   fontWeight: 'bold',
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '3px'
                 }}
                 title="Ricorrenti Contanti"
               >
-                <span>🔄</span> {cashRecurringCount}
-              </button>
+                🔄 {cashRecurringCount}
+              </span>
             )}
-            <span style={{ fontSize: '10px', color: '#86efac', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              Scheda ➔
-            </span>
+          </div>
+          <div style={{ fontSize: '20px', fontWeight: '900', color: (finances.cashBalance || 0) >= 0 ? '#4ade80' : '#ef4444', marginTop: '6px' }}>
+            {fmtCurrency(finances.cashBalance || 0)}
           </div>
         </div>
 
-        <div style={{ fontSize: '24px', fontWeight: '900', color: (finances.cashBalance || 0) >= 0 ? '#4ade80' : '#ef4444', margin: '2px 0 2px 0' }}>
-          {fmtCurrency(finances.cashBalance || 0)}
+        {/* Tessera Conto Base */}
+        <div
+          onClick={() => setSelectedAccountDetail('base')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            borderRadius: '14px',
+            padding: '12px 14px',
+            color: '#fff',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '75px'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              💳 {finances.baseAccountName || 'Conto Base'}
+            </span>
+            {baseRecurringCount > 0 && (
+              <span
+                onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
+                style={{
+                  background: 'rgba(59, 130, 246, 0.25)',
+                  border: '1px solid rgba(59, 130, 246, 0.4)',
+                  color: '#60a5fa',
+                  padding: '2px 6px',
+                  borderRadius: '5px',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
+                title="Ricorrenti Conto Base"
+              >
+                🔄 {baseRecurringCount}
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: '20px', fontWeight: '900', color: finances.balance >= 0 ? '#38bdf8' : '#ef4444', marginTop: '6px' }}>
+            {fmtCurrency(finances.balance)}
+          </div>
         </div>
       </div>
 
@@ -1139,7 +1279,6 @@ export default function FinancesTab({
                     <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
                       {fmtCurrency(acc.balance)}
                     </div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>➔</span>
                   </div>
                 </div>
               );
@@ -1416,8 +1555,14 @@ export default function FinancesTab({
 
       {/* MODAL: Storico & Grafici Finanziari (Aperto cliccando il Totale del Tesoro) */}
       {showHistoryModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div
+          onClick={() => setShowHistoryModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}
+          >
             
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
@@ -1859,7 +2004,7 @@ export default function FinancesTab({
           : null;
 
         const accId = isBase ? 'base' : (isCash ? 'cash' : (secAccount?.id || 'base'));
-        const accName = isBase ? 'Conto Base' : (isCash ? 'Contanti Disponibili' : (secAccount?.name || 'Conto Secondario'));
+        const accName = isBase ? (finances.baseAccountName || 'Conto Base') : (isCash ? 'Contanti Disponibili' : (secAccount?.name || 'Conto Secondario'));
         const accEmoji = isBase ? '💳' : (isCash ? '💵' : (secAccount?.emoji || '🏦'));
         const accBalance = isBase ? finances.balance : (isCash ? (finances.cashBalance || 0) : (secAccount?.balance || 0));
 
@@ -1874,31 +2019,58 @@ export default function FinancesTab({
         const accRecurring = (finances.recurringTransactions || []).filter(r => (r.account || 'base') === accId);
 
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '360px', maxHeight: '85vh', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div
+            onClick={() => setSelectedAccountDetail(null)}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '360px', maxHeight: '85vh', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
               
-              {/* Header */}
+              {/* Header (senza tasto ✖, chiusura al tocco esterno) */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '28px', background: 'var(--bg-primary)', padding: '6px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
                     {accEmoji}
                   </span>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                      {accName}
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                        {accName}
+                      </h3>
+                      {isBase && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBaseNameInput(finances.baseAccountName || 'Conto Base');
+                            setShowRenameBaseModal(true);
+                          }}
+                          style={{
+                            background: 'rgba(56, 189, 248, 0.15)',
+                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                            color: '#38bdf8',
+                            borderRadius: '6px',
+                            padding: '2px 6px',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                          title="Rinomina conto"
+                        >
+                          ✏️ Rinomina
+                        </button>
+                      )}
+                    </div>
                     <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                       {isBase ? 'Conto Principale di Addebito/Accredito' : (isCash ? 'Liquidità fisica nel portafoglio' : 'Conto Risparmi / Secondario')}
                     </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedAccountDetail(null)}
-                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', borderRadius: '6px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  ✖
-                </button>
               </div>
 
               {/* Saldo Hero */}
@@ -1977,13 +2149,25 @@ export default function FinancesTab({
                     </>
                   )}
                   {isBase && (
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedAccountDetail(null); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
-                      style={{ flex: 1, minWidth: '120px', padding: '6px', borderRadius: '8px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.3)', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      🎯 Modifica Budget ({fmtCurrency(finances.monthlyBudget || 1000)})
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBaseNameInput(finances.baseAccountName || 'Conto Base');
+                          setShowRenameBaseModal(true);
+                        }}
+                        style={{ flex: 1, minWidth: '105px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        ✏️ Rinomina Conto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedAccountDetail(null); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
+                        style={{ flex: 1, minWidth: '110px', padding: '6px', borderRadius: '8px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.3)', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        🎯 Budget ({fmtCurrency(finances.monthlyBudget || 1000)})
+                      </button>
+                    </>
                   )}
                   {isCash && (
                     <button
@@ -2097,14 +2281,10 @@ export default function FinancesTab({
                 )}
               </div>
 
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={() => setSelectedAccountDetail(null)}
-                style={{ width: '100%', padding: '10px', borderRadius: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
-              >
-                Chiudi Scheda
-              </button>
+              {/* Hint chiusura al tocco esterno */}
+              <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)', paddingTop: '4px' }}>
+                Tocca all'esterno per chiudere
+              </div>
 
             </div>
           </div>
@@ -2113,8 +2293,14 @@ export default function FinancesTab({
 
       {/* MODAL: Nuova Uscita / Entrata */}
       {showAddTxModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+        <div
+          onClick={() => setShowAddTxModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+          >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: txModalMode === 'expense' ? '#ef4444' : '#22c55e' }}>
               {txModalMode === 'expense' ? '🔴 Registra Uscita' : '🟢 Registra Entrata'}
             </h3>
@@ -2142,7 +2328,7 @@ export default function FinancesTab({
                   onChange={(e) => setTxAccountInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>
+                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
                   <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
@@ -2240,8 +2426,14 @@ export default function FinancesTab({
 
       {/* MODAL: Gestione Pagamenti Ricorrenti */}
       {showRecurringModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}>
+        <div
+          onClick={() => setShowRecurringModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 🔄 Pagamenti Ricorrenti
@@ -2331,8 +2523,14 @@ export default function FinancesTab({
 
       {/* MODAL: Nuovo Conto Secondario */}
       {showAddSecModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+        <div
+          onClick={() => setShowAddSecModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+          >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               🏦 Crea Conto Secondario
             </h3>
@@ -2421,8 +2619,14 @@ export default function FinancesTab({
 
       {/* MODAL: Azione su Conto Secondario */}
       {secAccountAction && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+        <div
+          onClick={() => setSecAccountAction(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+          >
             <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {secAccountAction.account.emoji} {secAccountAction.account.name}
             </h3>
@@ -2493,8 +2697,14 @@ export default function FinancesTab({
 
       {/* MODAL: Modifica Budget Mensile */}
       {showBudgetModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+        <div
+          onClick={() => setShowBudgetModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+          >
             <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               ✏️ Limite Budget Spesa Mensile
             </h3>
@@ -2535,8 +2745,14 @@ export default function FinancesTab({
 
       {/* MODAL: Preleva Contanti */}
       {showWithdrawModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}>
+        <div
+          onClick={() => setShowWithdrawModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+          >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#fde047', display: 'flex', alignItems: 'center', gap: '6px' }}>
               🏧 Preleva Contanti
             </h3>
@@ -2549,7 +2765,7 @@ export default function FinancesTab({
                   onChange={(e) => setWithdrawSource(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>
+                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
                   ))}
@@ -2595,8 +2811,14 @@ export default function FinancesTab({
 
       {/* MODAL: Trasferimento tra Conti */}
       {showTransferModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}>
+        <div
+          onClick={() => setShowTransferModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}
+          >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ↔️ Trasferimento tra Conti
             </h3>
@@ -2615,7 +2837,7 @@ export default function FinancesTab({
                   }}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>
+                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
                   <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
@@ -2630,7 +2852,7 @@ export default function FinancesTab({
                   onChange={(e) => setTransferTarget(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  {transferSource !== 'base' && <option value="base">💳 Conto Base ({fmtCurrency(finances.balance)})</option>}
+                  {transferSource !== 'base' && <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>}
                   {transferSource !== 'cash' && <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>}
                   {finances.secondaryAccounts && finances.secondaryAccounts.filter(acc => acc.id !== transferSource).map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
@@ -2692,6 +2914,52 @@ export default function FinancesTab({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Rinomina Conto Base */}
+      {showRenameBaseModal && (
+        <div
+          onClick={() => setShowRenameBaseModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>✏️ Rinomina Conto Base</h4>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Personalizza il nome del tuo conto principale (es. Intesa Sanpaolo, Fineco, BBVA...)
+            </div>
+            <input
+              type="text"
+              value={baseNameInput}
+              onChange={(e) => setBaseNameInput(e.target.value)}
+              placeholder="Es. Intesa Sanpaolo, Fineco..."
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px', boxSizing: 'border-box' }}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveBaseAccountName();
+                if (e.key === 'Escape') setShowRenameBaseModal(false);
+              }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setShowRenameBaseModal(false)}
+                style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveBaseAccountName}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+              >
+                Salva
+              </button>
+            </div>
           </div>
         </div>
       )}
