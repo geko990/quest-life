@@ -788,7 +788,7 @@ export default function SettingsTab({
 
         {/* Banner Manuale di Utilizzo & Guida dell'App */}
         <div
-          onClick={() => { setManualChapter('finances'); setShowManualModal(true); }}
+          onClick={() => { setManualChapter('rpg'); setShowManualModal(true); }}
           style={{
             background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.15))',
             border: '1px solid rgba(56, 189, 248, 0.4)',
@@ -796,7 +796,6 @@ export default function SettingsTab({
             padding: '14px 16px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
             cursor: 'pointer',
             boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
             transition: 'all 0.2s ease',
@@ -832,9 +831,6 @@ export default function SettingsTab({
               </div>
             </div>
           </div>
-          <span style={{ fontSize: '18px', color: 'var(--accent-primary, #38bdf8)', marginLeft: '8px', flexShrink: 0 }}>
-            ➔
-          </span>
         </div>
 
         {/* Version Badge & App Update */}
