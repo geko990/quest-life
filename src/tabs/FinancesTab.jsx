@@ -78,6 +78,7 @@ export default function FinancesTab({
   const [historyRange, setHistoryRange] = useState('short'); // 'short' (settimanale) | 'long' (mensile 6-12m)
   const [longPeriodMonthsCount, setLongPeriodMonthsCount] = useState(6); // 6 | 12
   const [selectedHistoryWeek, setSelectedHistoryWeek] = useState(null);
+  const [historyAccountFilter, setHistoryAccountFilter] = useState('all'); // 'all' | 'base' | 'cash' | accId
   const [filterType, setFilterType] = useState('all'); // 'all', 'expense', 'income'
   const [filterCategory, setFilterCategory] = useState('all'); // 'all' or category id
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -1025,36 +1026,100 @@ export default function FinancesTab({
   const baseRecurringCount = (finances.recurringTransactions || []).filter(r => r.active && (r.account === 'base' || !r.account)).length;
   const cashRecurringCount = (finances.recurringTransactions || []).filter(r => r.active && r.account === 'cash').length;
 
+  // Helper to compute net delta of a transaction for the selected account scope
+  const getTxDeltaForAccount = (t, accFilter) => {
+    if (accFilter === 'all') {
+      if (t.type === 'income') return Number(t.amount) || 0;
+      if (t.type === 'expense') return -(Number(t.amount) || 0);
+      return 0; // Internal transfers do not change total portfolio net worth
+    }
+    const accId = accFilter;
+    if (t.type === 'transfer') {
+      if (t.transferSource === accId) return -(Number(t.amount) || 0);
+      if (t.transferTarget === accId) return Number(t.amount) || 0;
+      return 0;
+    }
+    const tAcc = t.account || 'base';
+    if (tAcc !== accId) return 0;
+    if (t.type === 'income') return Number(t.amount) || 0;
+    if (t.type === 'expense') return -(Number(t.amount) || 0);
+    return 0;
+  };
+
+  // Current balance today of the selected account scope
+  const currentScopeEndBalance = (() => {
+    if (historyAccountFilter === 'all') return totalPatrimonio;
+    if (historyAccountFilter === 'base') return Number(finances.balance) || 0;
+    if (historyAccountFilter === 'cash') return Number(finances.cashBalance) || 0;
+    const sec = (finances.secondaryAccounts || []).find(a => a.id === historyAccountFilter);
+    return Number(sec?.balance) || 0;
+  })();
+
   // --- STORICO & GRAFICI CALCULATIONS ---
-  const selMonthTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(selectedHistoryMonth));
+  const allHistoryMonthTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(selectedHistoryMonth));
+  const selMonthTx = allHistoryMonthTx.filter(t => {
+    if (historyAccountFilter === 'all') return true;
+    if (t.type === 'transfer') return t.transferSource === historyAccountFilter || t.transferTarget === historyAccountFilter;
+    return (t.account || 'base') === historyAccountFilter;
+  });
+
   const selMonthExpenses = selMonthTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
   const selMonthIncome = selMonthTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
   const selMonthNet = Math.round((selMonthIncome - selMonthExpenses) * 100) / 100;
   const selMonthSavingsRate = selMonthIncome > 0 ? Math.round((selMonthNet / selMonthIncome) * 100) : (selMonthExpenses > 0 ? -100 : 0);
 
-  // Breve Periodo: 5 finestre settimanali del mese selezionato (1-7, 8-14, 15-21, 22-28, 29-31)
-  const weeksData = [
-    { id: 1, label: '1-7', shortTitle: '1-7', title: `1 - 7 ${formatMonthShort(selectedHistoryMonth)}`, min: 1, max: 7 },
-    { id: 2, label: '8-14', shortTitle: '8-14', title: `8 - 14 ${formatMonthShort(selectedHistoryMonth)}`, min: 8, max: 14 },
-    { id: 3, label: '15-21', shortTitle: '15-21', title: `15 - 21 ${formatMonthShort(selectedHistoryMonth)}`, min: 15, max: 21 },
-    { id: 4, label: '22-28', shortTitle: '22-28', title: `22 - 28 ${formatMonthShort(selectedHistoryMonth)}`, min: 22, max: 28 },
-    { id: 5, label: '29-31', shortTitle: '29-31', title: `29 - 31 ${formatMonthShort(selectedHistoryMonth)}`, min: 29, max: 31 }
-  ].map(wk => {
+  const isSelectedCurrentMonth = selectedHistoryMonth === currentMonthPrefix;
+  const todayDayNumber = parseInt(getGameDate().split('-')[2], 10) || 1;
+
+  // Calculate starting balance at the beginning of selectedHistoryMonth (Day 1, 00:00)
+  // All transactions that happened strictly after the start of selectedHistoryMonth:
+  const txAfterMonthStart = (finances.transactions || []).filter(t => t.date && t.date >= `${selectedHistoryMonth}-01`);
+  const netSinceMonthStart = txAfterMonthStart.reduce((acc, t) => acc + getTxDeltaForAccount(t, historyAccountFilter), 0);
+  const monthStartBalance = Math.round((currentScopeEndBalance - netSinceMonthStart) * 100) / 100;
+
+  // Define the 5 standard week windows
+  const weekWindows = [
+    { id: 1, min: 1, max: 7, shortTitle: '1-7', fullTitle: `1 - 7 ${formatMonthShort(selectedHistoryMonth)}` },
+    { id: 2, min: 8, max: 14, shortTitle: '8-14', fullTitle: `8 - 14 ${formatMonthShort(selectedHistoryMonth)}` },
+    { id: 3, min: 15, max: 21, shortTitle: '15-21', fullTitle: `15 - 21 ${formatMonthShort(selectedHistoryMonth)}` },
+    { id: 4, min: 22, max: 28, shortTitle: '22-28', fullTitle: `22 - 28 ${formatMonthShort(selectedHistoryMonth)}` },
+    { id: 5, min: 29, max: 31, shortTitle: '29-31', fullTitle: `29 - 31 ${formatMonthShort(selectedHistoryMonth)}` }
+  ];
+
+  let runningWeekBal = monthStartBalance;
+  const weeksData = weekWindows.map(w => {
+    const isFuture = isSelectedCurrentMonth && (w.min > todayDayNumber);
+    const isCurrentWeek = isSelectedCurrentMonth && (w.min <= todayDayNumber && w.max >= todayDayNumber);
+    const effectiveMaxDay = isCurrentWeek ? todayDayNumber : w.max;
+
     const txInWeek = selMonthTx.filter(t => {
       if (!t.date) return false;
       const parts = t.date.split('-');
       if (parts.length < 3) return false;
       const dayNum = parseInt(parts[2], 10);
-      return dayNum >= wk.min && dayNum <= wk.max;
+      return dayNum >= w.min && dayNum <= effectiveMaxDay;
     });
+
     const inc = txInWeek.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
     const exp = txInWeek.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-    const net = Math.round((inc - exp) * 100) / 100;
+    const net = txInWeek.reduce((acc, t) => acc + getTxDeltaForAccount(t, historyAccountFilter), 0);
+
+    if (!isFuture) {
+      runningWeekBal = Math.round((runningWeekBal + net) * 100) / 100;
+    }
+
     return {
-      ...wk,
+      id: w.id,
+      min: w.min,
+      max: w.max,
+      shortTitle: w.shortTitle,
+      title: w.fullTitle,
       income: inc,
       expenses: exp,
       net: net,
+      balance: runningWeekBal,
+      isFuture: isFuture,
+      isCurrent: isCurrentWeek,
       txCount: txInWeek.length,
       transactions: txInWeek
     };
@@ -1067,11 +1132,26 @@ export default function FinancesTab({
   for (let i = longPeriodMonthsCount - 1; i >= 0; i--) {
     longMonthsList.push(shiftMonthKey(currentMonthPrefix, -i));
   }
+
   const longPeriodData = longMonthsList.map(mKey => {
+    const isCur = mKey === currentMonthPrefix;
     const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
-    const inc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-    const exp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-    const net = Math.round((inc - exp) * 100) / 100;
+    const txForAcc = mTx.filter(t => {
+      if (historyAccountFilter === 'all') return true;
+      if (t.type === 'transfer') return t.transferSource === historyAccountFilter || t.transferTarget === historyAccountFilter;
+      return (t.account || 'base') === historyAccountFilter;
+    });
+
+    const inc = txForAcc.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const exp = txForAcc.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+    const net = txForAcc.reduce((acc, t) => acc + getTxDeltaForAccount(t, historyAccountFilter), 0);
+
+    // Balance at end of this month (tracing backwards from currentScopeEndBalance)
+    const endOfMonthStr = `${mKey}-31`;
+    const txAfterThisMonth = (finances.transactions || []).filter(t => t.date && t.date > endOfMonthStr);
+    const netAfterThisMonth = txAfterThisMonth.reduce((acc, t) => acc + getTxDeltaForAccount(t, historyAccountFilter), 0);
+    const endBal = isCur ? currentScopeEndBalance : Math.round((currentScopeEndBalance - netAfterThisMonth) * 100) / 100;
+
     return {
       monthKey: mKey,
       shortLabel: formatMonthShort(mKey),
@@ -1079,7 +1159,8 @@ export default function FinancesTab({
       income: inc,
       expenses: exp,
       net: net,
-      isCurrent: mKey === currentMonthPrefix,
+      balance: endBal,
+      isCurrent: isCur,
       isSelected: mKey === selectedHistoryMonth
     };
   });
@@ -1092,31 +1173,31 @@ export default function FinancesTab({
   const avgMonthlyIncome = Math.round(totalPeriodIncome / (longPeriodData.length || 1));
   const bestSavingsMonth = [...longPeriodData].sort((a, b) => b.net - a.net)[0];
 
-  // --- HISTORY CONTINUOUS SVG CHARTS (Revolut / Apple Stocks Style) ---
+  // --- HISTORY CONTINUOUS SVG CHARTS (Revolut / Apple Stocks Balance Trajectory) ---
   const histSvgW = 340;
   const histSvgH = 110;
-  const hPadL = 44;
-  const hPadR = 14;
+  const hPadL = 50;
+  const hPadR = 16;
   const hPadT = 14;
   const hPadB = 18;
   const hPlotW = histSvgW - hPadL - hPadR;
   const hPlotH = histSvgH - hPadT - hPadB;
 
-  // 1. Long Period (Monthly Trend)
-  const hLongVals = longPeriodData.map(m => m.net);
-  const hLongMin = Math.min(0, ...hLongVals);
-  const hLongMax = Math.max(100, ...hLongVals);
-  const hLongSpan = hLongMax - hLongMin || 100;
-  const hLongMargin = hLongSpan * 0.18;
-  const hLongYMin = hLongMin - hLongMargin;
-  const hLongYMax = hLongMax + hLongMargin;
+  // 1. Long Period (Monthly Balance Evolution)
+  const hLongBalances = longPeriodData.map(m => m.balance);
+  const hLongMinBal = Math.min(...hLongBalances);
+  const hLongMaxBal = Math.max(...hLongBalances);
+  const hLongBalSpan = hLongMaxBal - hLongMinBal;
+  const hLongBalMargin = hLongBalSpan > 0 ? hLongBalSpan * 0.25 : Math.max(10, Math.abs(hLongMaxBal) * 0.1 || 50);
+  const hLongYMin = hLongMinBal - hLongBalMargin;
+  const hLongYMax = hLongMaxBal + hLongBalMargin;
   const hLongYRange = hLongYMax - hLongYMin || 1;
 
   const hLongPoints = longPeriodData.map((m, idx) => {
     const x = longPeriodData.length > 1
       ? hPadL + (idx / (longPeriodData.length - 1)) * hPlotW
       : hPadL + hPlotW / 2;
-    const y = hPadT + hPlotH - ((m.net - hLongYMin) / hLongYRange) * hPlotH;
+    const y = hPadT + hPlotH - ((m.balance - hLongYMin) / hLongYRange) * hPlotH;
     return { ...m, x, y };
   });
 
@@ -1144,26 +1225,50 @@ export default function FinancesTab({
   const hLongAreaFill = hLongPoints.length > 0
     ? `${hLongLinePath} L ${hLongPoints[hLongPoints.length - 1].x.toFixed(1)},${hLongBottomY} L ${hLongPoints[0].x.toFixed(1)},${hLongBottomY} Z`
     : '';
-  const isLongOverallUp = (hLongPoints[hLongPoints.length - 1]?.net || 0) >= 0;
-  const hLongStrokeColor = isLongOverallUp ? '#38bdf8' : '#f87171';
-  const hLongZeroY = hPadT + hPlotH - ((0 - hLongYMin) / hLongYRange) * hPlotH;
+  const isLongOverallUp = (hLongPoints[hLongPoints.length - 1]?.balance || 0) >= (hLongPoints[0]?.balance || 0);
+  const hLongStrokeColor = isLongOverallUp ? '#4ade80' : '#f87171';
 
-  // 2. Short Period (Weekly Trend)
-  const hWeekVals = weeksData.map(w => w.net);
-  const hWeekMin = Math.min(0, ...hWeekVals);
-  const hWeekMax = Math.max(50, ...hWeekVals);
-  const hWeekSpan = hWeekMax - hWeekMin || 50;
-  const hWeekMargin = hWeekSpan * 0.18;
-  const hWeekYMin = hWeekMin - hWeekMargin;
-  const hWeekYMax = hWeekMax + hWeekMargin;
+  // 2. Short Period (Weekly Balance Trajectory)
+  // Active points only include from Inizio Mese (1°) up to current day (if current month) or end of month
+  const hWeekActivePointsData = [
+    {
+      id: 0,
+      shortTitle: '1°',
+      title: `Inizio Mese (1 ${formatMonthShort(selectedHistoryMonth)})`,
+      balance: monthStartBalance,
+      net: 0,
+      isStart: true
+    }
+  ];
+
+  weeksData.forEach(w => {
+    if (!w.isFuture) {
+      hWeekActivePointsData.push({
+        id: w.id,
+        shortTitle: w.isCurrent ? `Oggi (${todayDayNumber})` : w.shortTitle,
+        title: w.isCurrent ? `Oggi (${todayDayNumber} ${formatMonthShort(selectedHistoryMonth)})` : w.title,
+        balance: w.balance,
+        net: w.net,
+        isCurrent: w.isCurrent
+      });
+    }
+  });
+
+  const hWeekBalances = hWeekActivePointsData.map(p => p.balance);
+  const hWeekMinBal = Math.min(...hWeekBalances);
+  const hWeekMaxBal = Math.max(...hWeekBalances);
+  const hWeekBalSpan = hWeekMaxBal - hWeekMinBal;
+  const hWeekBalMargin = hWeekBalSpan > 0 ? hWeekBalSpan * 0.25 : Math.max(10, Math.abs(hWeekMaxBal) * 0.1 || 50);
+  const hWeekYMin = hWeekMinBal - hWeekBalMargin;
+  const hWeekYMax = hWeekMaxBal + hWeekBalMargin;
   const hWeekYRange = hWeekYMax - hWeekYMin || 1;
 
-  const hWeekPoints = weeksData.map((w, idx) => {
-    const x = weeksData.length > 1
-      ? hPadL + (idx / (weeksData.length - 1)) * hPlotW
+  const hWeekPoints = hWeekActivePointsData.map((pt, idx) => {
+    const x = hWeekActivePointsData.length > 1
+      ? hPadL + (idx / (hWeekActivePointsData.length - 1)) * hPlotW
       : hPadL + hPlotW / 2;
-    const y = hPadT + hPlotH - ((w.net - hWeekYMin) / hWeekYRange) * hPlotH;
-    return { ...w, x, y };
+    const y = hPadT + hPlotH - ((pt.balance - hWeekYMin) / hWeekYRange) * hPlotH;
+    return { ...pt, x, y };
   });
 
   let hWeekLinePath = '';
@@ -1189,9 +1294,8 @@ export default function FinancesTab({
   const hWeekAreaFill = hWeekPoints.length > 0
     ? `${hWeekLinePath} L ${hWeekPoints[hWeekPoints.length - 1].x.toFixed(1)},${hLongBottomY} L ${hWeekPoints[0].x.toFixed(1)},${hLongBottomY} Z`
     : '';
-  const isWeekOverallUp = (hWeekPoints[hWeekPoints.length - 1]?.net || 0) >= 0;
-  const hWeekStrokeColor = isWeekOverallUp ? '#38bdf8' : '#f87171';
-  const hWeekZeroY = hPadT + hPlotH - ((0 - hWeekYMin) / hWeekYRange) * hPlotH;
+  const isWeekOverallUp = (hWeekPoints[hWeekPoints.length - 1]?.balance || 0) >= (hWeekPoints[0]?.balance || 0);
+  const hWeekStrokeColor = isWeekOverallUp ? '#4ade80' : '#f87171';
 
   // --- 6-MONTHS OVERVIEW & CHARTS ---
   const txMonthKeys = Array.from(new Set(
@@ -1430,11 +1534,8 @@ export default function FinancesTab({
           title="Tocca per aprire lo Storico e i Grafici Finanziari"
         >
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>📈 Patrimonio Totale</span>
-              <span style={{ fontSize: '9px', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
-                Storico ➔
-              </span>
+            <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              📈 Patrimonio Totale
             </div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
               {fmtCurrency(activePoint.value)}
@@ -2354,6 +2455,85 @@ export default function FinancesTab({
               </h3>
             </div>
 
+            {/* Account Scope Filter (Tutti i Conti vs Singolo Conto) */}
+            <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '2px 0 4px 0', scrollbarWidth: 'none' }}>
+              <button
+                type="button"
+                onClick={() => { setHistoryAccountFilter('all'); setSelectedHistoryWeek(null); }}
+                style={{
+                  background: historyAccountFilter === 'all' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
+                  color: historyAccountFilter === 'all' ? '#fff' : 'var(--text-secondary)',
+                  border: '1px solid var(--glass-border)',
+                  borderRadius: '8px',
+                  padding: '4px 9px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                🏛️ Patrimonio Totale
+              </button>
+              <button
+                type="button"
+                onClick={() => { setHistoryAccountFilter('base'); setSelectedHistoryWeek(null); }}
+                style={{
+                  background: historyAccountFilter === 'base' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
+                  color: historyAccountFilter === 'base' ? '#fff' : 'var(--text-secondary)',
+                  border: '1px solid var(--glass-border)',
+                  borderRadius: '8px',
+                  padding: '4px 9px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                💳 {finances.baseAccountName || 'Conto Base'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setHistoryAccountFilter('cash'); setSelectedHistoryWeek(null); }}
+                style={{
+                  background: historyAccountFilter === 'cash' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
+                  color: historyAccountFilter === 'cash' ? '#fff' : 'var(--text-secondary)',
+                  border: '1px solid var(--glass-border)',
+                  borderRadius: '8px',
+                  padding: '4px 9px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                💵 Contanti
+              </button>
+              {(finances.secondaryAccounts || []).map(acc => (
+                <button
+                  key={acc.id}
+                  type="button"
+                  onClick={() => { setHistoryAccountFilter(acc.id); setSelectedHistoryWeek(null); }}
+                  style={{
+                    background: historyAccountFilter === acc.id ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
+                    color: historyAccountFilter === acc.id ? '#fff' : 'var(--text-secondary)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '8px',
+                    padding: '4px 9px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }}
+                >
+                  {acc.emoji || '🏦'} {acc.name}
+                </button>
+              ))}
+            </div>
+
             {/* 1. Month Navigator Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
               <button
@@ -2492,13 +2672,17 @@ export default function FinancesTab({
               )}
             </div>
 
-            {/* 4a. Grafico Breve Periodo (Settimane del Mese - Stile Borsa / Revolut) */}
+            {/* 4a. Grafico Breve Periodo (Andamento Saldo Settimanale - Stile Borsa / Revolut) */}
             {historyRange === 'short' && (
               <div>
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                    <span style={{ fontWeight: 'bold' }}>Andamento per settimana ({formatMonthShort(selectedHistoryMonth)})</span>
-                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Saldo netto settimanale</span>
+                    <span style={{ fontWeight: 'bold' }}>
+                      Andamento Saldo ({formatMonthShort(selectedHistoryMonth)})
+                    </span>
+                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
+                      {isSelectedCurrentMonth ? `Fino a oggi (${todayDayNumber} ${formatMonthShort(selectedHistoryMonth)})` : 'Mese completo'}
+                    </span>
                   </div>
 
                   {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
@@ -2510,22 +2694,15 @@ export default function FinancesTab({
                       </linearGradient>
                     </defs>
 
-                    {/* Griglia Max, Zero, Min */}
+                    {/* Griglia Max e Min */}
                     <line x1={hPadL} y1={hPadT + 2} x2={histSvgW - hPadR} y2={hPadT + 2} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
                     <text x={hPadL - 4} y={hPadT + 5} textAnchor="end" fill="var(--text-muted)" fontSize="8">
-                      {fmtCompactCurrency(hWeekMax)}
+                      {fmtCompactCurrency(hWeekMaxBal)}
                     </text>
-
-                    {hWeekZeroY >= hPadT && hWeekZeroY <= hLongBottomY && (
-                      <>
-                        <line x1={hPadL} y1={hWeekZeroY} x2={histSvgW - hPadR} y2={hWeekZeroY} stroke="rgba(255,255,255,0.15)" strokeDasharray="2 2" />
-                        <text x={hPadL - 4} y={hWeekZeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="8">0€</text>
-                      </>
-                    )}
 
                     <line x1={hPadL} y1={hLongBottomY} x2={histSvgW - hPadR} y2={hLongBottomY} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
                     <text x={hPadL - 4} y={hLongBottomY + 3} textAnchor="end" fill="var(--text-muted)" fontSize="8">
-                      {fmtCompactCurrency(hWeekMin)}
+                      {fmtCompactCurrency(hWeekMinBal)}
                     </text>
 
                     {/* Gradient Area Fill */}
@@ -2544,30 +2721,16 @@ export default function FinancesTab({
                       />
                     )}
 
-                    {/* Vertical guideline for active week */}
-                    {(() => {
-                      const activeWkPt = hWeekPoints.find(p => p.id === selectedHistoryWeek);
-                      if (!activeWkPt) return null;
-                      return (
-                        <line
-                          x1={activeWkPt.x}
-                          y1={hPadT}
-                          x2={activeWkPt.x}
-                          y2={hLongBottomY}
-                          stroke="#38bdf8"
-                          strokeDasharray="2 2"
-                        />
-                      );
-                    })()}
-
-                    {/* Dots per ogni settimana */}
+                    {/* Dots per ogni punto attivo */}
                     {hWeekPoints.map(pt => {
-                      const isSel = pt.id === selectedHistoryWeek;
+                      const isSel = pt.id !== 0 && pt.id === selectedHistoryWeek;
                       return (
                         <g
                           key={pt.id}
-                          onClick={() => setSelectedHistoryWeek(isSel ? null : pt.id)}
-                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            if (pt.id !== 0) setSelectedHistoryWeek(isSel ? null : pt.id);
+                          }}
+                          style={{ cursor: pt.id !== 0 ? 'pointer' : 'default' }}
                         >
                           <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
                           {isSel && <circle cx={pt.x} cy={pt.y} r="7" fill="#38bdf8" fillOpacity="0.3" />}
@@ -2575,7 +2738,7 @@ export default function FinancesTab({
                             cx={pt.x}
                             cy={pt.y}
                             r={isSel ? "4.5" : "3.5"}
-                            fill={isSel ? '#fff' : (pt.net >= 0 ? '#4ade80' : '#f87171')}
+                            fill={isSel ? '#fff' : (pt.balance >= monthStartBalance ? '#4ade80' : '#f87171')}
                             stroke={isSel ? '#38bdf8' : 'var(--bg-card)'}
                             strokeWidth={isSel ? "2" : "1.5"}
                           />
@@ -2585,13 +2748,29 @@ export default function FinancesTab({
                   </svg>
 
                   {/* Settimane labels & Saldi sotto il grafico */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 8}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>
-                    {hWeekPoints.map(pt => {
-                      const isSel = pt.id === selectedHistoryWeek;
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 10}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>
+                    {/* Inizio Mese point */}
+                    <div style={{ textAlign: 'center', padding: '2px 3px', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>1° Inizio</div>
+                      <div style={{ fontSize: '8px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                        {fmtCurrency(monthStartBalance)}
+                      </div>
+                    </div>
+
+                    {weeksData.map(wk => {
+                      const isSel = selectedHistoryWeek === wk.id;
+                      if (wk.isFuture) {
+                        return (
+                          <div key={wk.id} style={{ textAlign: 'center', padding: '2px 3px', opacity: 0.35 }}>
+                            <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{wk.shortTitle}</div>
+                            <div style={{ fontSize: '7px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Futuro</div>
+                          </div>
+                        );
+                      }
                       return (
                         <div
-                          key={pt.id}
-                          onClick={() => setSelectedHistoryWeek(isSel ? null : pt.id)}
+                          key={wk.id}
+                          onClick={() => setSelectedHistoryWeek(isSel ? null : wk.id)}
                           style={{
                             textAlign: 'center',
                             cursor: 'pointer',
@@ -2600,11 +2779,11 @@ export default function FinancesTab({
                             background: isSel ? 'rgba(56, 189, 248, 0.18)' : 'transparent'
                           }}
                         >
-                          <div style={{ fontSize: '9px', fontWeight: isSel ? 'bold' : 'normal', color: isSel ? '#38bdf8' : 'var(--text-muted)' }}>
-                            {pt.shortTitle}
+                          <div style={{ fontSize: '9px', fontWeight: isSel ? 'bold' : 'normal', color: isSel ? '#38bdf8' : (wk.isCurrent ? '#38bdf8' : 'var(--text-muted)') }}>
+                            {wk.isCurrent ? `Oggi (${todayDayNumber})` : wk.shortTitle}
                           </div>
-                          <div style={{ fontSize: '8px', fontWeight: 'bold', color: pt.net >= 0 ? '#4ade80' : '#f87171', marginTop: '1px' }}>
-                            {pt.net > 0 ? '+' : ''}{fmtCurrency(pt.net)}
+                          <div style={{ fontSize: '8px', fontWeight: 'bold', color: wk.balance >= monthStartBalance ? '#4ade80' : '#f87171', marginTop: '1px' }}>
+                            {fmtCurrency(wk.balance)}
                           </div>
                         </div>
                       );
@@ -2623,7 +2802,7 @@ export default function FinancesTab({
                           🔎 Dettaglio: {activeWk.title}
                         </span>
                         <span style={{ fontSize: '9px', fontWeight: 'bold', color: activeWk.net >= 0 ? '#4ade80' : '#f87171' }}>
-                          Saldo: {activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)}
+                          Saldo: {fmtCurrency(activeWk.balance)} ({activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)})
                         </span>
                       </div>
                       {activeWk.transactions.length === 0 ? (
@@ -2656,13 +2835,13 @@ export default function FinancesTab({
               </div>
             )}
 
-            {/* 4b. Grafico Lungo Periodo (Multi-Mese - Stile Borsa / Revolut) */}
+            {/* 4b. Grafico Lungo Periodo (Evoluzione Saldo Multi-Mese - Stile Borsa / Revolut) */}
             {historyRange === 'long' && (
               <div>
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                    <span style={{ fontWeight: 'bold' }}>Trend Storico Ultimi {longPeriodMonthsCount} Mesi</span>
-                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Risparmio netto mensile</span>
+                    <span style={{ fontWeight: 'bold' }}>Evoluzione Saldo ({longPeriodMonthsCount} Mesi)</span>
+                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Saldo a fine mese</span>
                   </div>
 
                   {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
@@ -2674,22 +2853,15 @@ export default function FinancesTab({
                       </linearGradient>
                     </defs>
 
-                    {/* Griglia Max, Zero, Min */}
+                    {/* Griglia Max e Min */}
                     <line x1={hPadL} y1={hPadT + 2} x2={histSvgW - hPadR} y2={hPadT + 2} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
                     <text x={hPadL - 4} y={hPadT + 5} textAnchor="end" fill="var(--text-muted)" fontSize="8">
-                      {fmtCompactCurrency(hLongMax)}
+                      {fmtCompactCurrency(hLongMaxBal)}
                     </text>
-
-                    {hLongZeroY >= hPadT && hLongZeroY <= hLongBottomY && (
-                      <>
-                        <line x1={hPadL} y1={hLongZeroY} x2={histSvgW - hPadR} y2={hLongZeroY} stroke="rgba(255,255,255,0.15)" strokeDasharray="2 2" />
-                        <text x={hPadL - 4} y={hLongZeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="8">0€</text>
-                      </>
-                    )}
 
                     <line x1={hPadL} y1={hLongBottomY} x2={histSvgW - hPadR} y2={hLongBottomY} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
                     <text x={hPadL - 4} y={hLongBottomY + 3} textAnchor="end" fill="var(--text-muted)" fontSize="8">
-                      {fmtCompactCurrency(hLongMin)}
+                      {fmtCompactCurrency(hLongMinBal)}
                     </text>
 
                     {/* Gradient Area Fill */}
@@ -2742,7 +2914,7 @@ export default function FinancesTab({
                             cx={pt.x}
                             cy={pt.y}
                             r={isSel ? "4.5" : "3.5"}
-                            fill={isSel ? '#fff' : (pt.net >= 0 ? '#4ade80' : '#f87171')}
+                            fill={isSel ? '#fff' : (pt.balance >= (hLongPoints[0]?.balance || 0) ? '#4ade80' : '#f87171')}
                             stroke={isSel ? '#38bdf8' : 'var(--bg-card)'}
                             strokeWidth={isSel ? "2" : "1.5"}
                           />
@@ -2773,8 +2945,8 @@ export default function FinancesTab({
                           <div style={{ fontSize: '9px', fontWeight: isSel ? 'bold' : 'normal', color: isSel ? '#38bdf8' : 'var(--text-muted)' }}>
                             {pt.shortLabel}
                           </div>
-                          <div style={{ fontSize: '7px', fontWeight: 'bold', color: pt.net >= 0 ? '#4ade80' : '#f87171', marginTop: '1px' }}>
-                            {pt.net > 0 ? '+' : ''}{fmtCurrency(pt.net)}
+                          <div style={{ fontSize: '7px', fontWeight: 'bold', color: pt.balance >= (hLongPoints[0]?.balance || 0) ? '#4ade80' : '#f87171', marginTop: '1px' }}>
+                            {fmtCurrency(pt.balance)}
                           </div>
                         </div>
                       );
@@ -2968,11 +3140,11 @@ export default function FinancesTab({
         return (
           <div
             onClick={() => setSelectedAccountDetail(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '360px', maxHeight: '85vh', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '360px', maxHeight: '100%', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
               
               {/* Header (senza tasto ✖, chiusura al tocco esterno) */}
@@ -2999,7 +3171,7 @@ export default function FinancesTab({
                             border: '1px solid rgba(56, 189, 248, 0.3)',
                             color: '#38bdf8',
                             borderRadius: '6px',
-                            padding: '2px 6px',
+                            padding: '2px 7px',
                             fontSize: '10px',
                             fontWeight: 'bold',
                             cursor: 'pointer',
@@ -3040,6 +3212,31 @@ export default function FinancesTab({
                     </span>
                   </div>
                 )}
+                <div style={{ marginTop: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHistoryAccountFilter(accId);
+                      setSelectedAccountDetail(null);
+                      setShowHistoryModal(true);
+                    }}
+                    style={{
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      color: '#38bdf8',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    📈 Storico & Grafico di questo Conto
+                  </button>
+                </div>
                 {isSuperUser && (
                   <div style={{ marginTop: '8px' }}>
                     <button
