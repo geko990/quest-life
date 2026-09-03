@@ -191,7 +191,7 @@ export function isMonthlyPyramidMet(starCounts) {
     return (starCounts[3] || 0) >= 5 && (starCounts[4] || 0) >= 3 && (starCounts[5] || 0) >= 2;
 }
 
-export { forceUpdateApp, checkAppUpdate } from './pwaManager';
+export { forceUpdateApp, checkAppUpdate, checkForAppUpdate, onUpdateAvailable, isUpdateAvailable, getLatestDetectedVersion } from './pwaManager';
 
 
 
