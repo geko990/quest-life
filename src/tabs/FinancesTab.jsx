@@ -194,6 +194,27 @@ export default function FinancesTab({
     return sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Conto Secondario';
   };
 
+  const renderAccountBadge = (tx) => {
+    if (tx.type === 'transfer') {
+      const srcName = getAccountLabel(tx.sourceAccount || 'base');
+      const dstName = getAccountLabel(tx.targetAccount || tx.account || 'cash');
+      return (
+        <span style={{ fontSize: '8px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>
+          {srcName} ➔ {dstName}
+        </span>
+      );
+    }
+    const accKey = tx.account || 'base';
+    if (accKey === 'cash') {
+      return <span style={{ fontSize: '8px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💵 Contanti</span>;
+    }
+    if (accKey !== 'base') {
+      const sec = (finances.secondaryAccounts || []).find(a => a.id === accKey);
+      return <span style={{ fontSize: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Secondo'}</span>;
+    }
+    return <span style={{ fontSize: '8px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💳 Base</span>;
+  };
+
   const handleSaveBaseAccountName = () => {
     const trimmed = (baseNameInput || '').trim();
     const finalName = trimmed || 'Conto Base';
@@ -1003,10 +1024,10 @@ export default function FinancesTab({
 
   const maxWeekVal = Math.max(50, ...weeksData.map(w => Math.max(w.income, w.expenses)));
 
-  // Lungo Periodo: ultimi N mesi (6 o 12)
+  // Lungo Periodo: ultimi N mesi (6 o 12) calcolati a ritroso dal mese corrente
   const longMonthsList = [];
   for (let i = longPeriodMonthsCount - 1; i >= 0; i--) {
-    longMonthsList.push(shiftMonthKey(selectedHistoryMonth, -i));
+    longMonthsList.push(shiftMonthKey(currentMonthPrefix, -i));
   }
   const longPeriodData = longMonthsList.map(mKey => {
     const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
@@ -1195,8 +1216,8 @@ export default function FinancesTab({
       {/* 1. Header Compact Navigation Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            💰 Il Tesoro dell'Eroe
+          <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            💰 Tesoro dell'Eroe
           </h2>
         </div>
 
@@ -1209,17 +1230,20 @@ export default function FinancesTab({
               background: 'var(--bg-secondary)',
               border: '1px solid var(--accent-primary, #38bdf8)',
               borderRadius: '10px',
-              padding: '5px 10px',
+              padding: '5px 8px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               cursor: 'pointer',
               boxShadow: '0 2px 8px rgba(56, 189, 248, 0.15)'
             }}
             title="Tocca per aprire lo Storico e i Dettagli Finanziari"
           >
-            <span style={{ fontSize: '13px' }}>📊</span>
-            <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 'bold' }}>Dettagli</span>
+            <span style={{ fontSize: '11px' }}>📈</span>
+            <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Tot:</span>
+            <span style={{ fontSize: '12px', fontWeight: '900', color: totalPatrimonio >= 0 ? '#38bdf8' : '#ef4444' }}>
+              {fmtCurrency(totalPatrimonio)}
+            </span>
           </button>
 
           {/* Privacy Eye Toggle */}
@@ -2179,13 +2203,6 @@ export default function FinancesTab({
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 📈 Storico & Grafici Finanziari
               </h3>
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(false)}
-                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', borderRadius: '6px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                ✖
-              </button>
             </div>
 
             {/* 1. Month Navigator Header */}
@@ -2474,7 +2491,10 @@ export default function FinancesTab({
                       return (
                         <div
                           key={m.monthKey}
-                          onClick={() => setSelectedHistoryMonth(m.monthKey)}
+                          onClick={() => {
+                            setSelectedHistoryMonth(m.monthKey);
+                            setSelectedHistoryWeek(null);
+                          }}
                           style={{
                             flex: 1,
                             height: '100%',
@@ -2483,12 +2503,14 @@ export default function FinancesTab({
                             justifyContent: 'flex-end',
                             alignItems: 'center',
                             cursor: 'pointer',
-                            borderRadius: '6px',
-                            background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                            borderRadius: '8px',
+                            background: isSelected ? 'rgba(56, 189, 248, 0.22)' : 'transparent',
+                            border: isSelected ? '1.5px solid #38bdf8' : '1.5px solid transparent',
+                            boxShadow: isSelected ? '0 0 10px rgba(56, 189, 248, 0.35)' : 'none',
                             padding: '2px 1px',
                             transition: 'all 0.15s ease'
                           }}
-                          title={`${m.fullLabel}: +${fmtCurrency(m.income)} / -${fmtCurrency(m.expenses)} (Netto: ${fmtCurrency(m.net)})`}
+                          title={`Tocca per dettagli ${m.fullLabel}: +${fmtCurrency(m.income)} / -${fmtCurrency(m.expenses)} (Netto: ${fmtCurrency(m.net)})`}
                         >
                           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '75px', justifyContent: 'center', width: '100%' }}>
                             {/* Income */}
@@ -2531,6 +2553,10 @@ export default function FinancesTab({
                         </span>
                       </div>
                     ))}
+                  </div>
+
+                  <div style={{ textAlign: 'center', fontSize: '9px', color: 'var(--accent-primary, #38bdf8)', marginTop: '8px', fontWeight: '500' }}>
+                    👆 Tocca un mese nel grafico per visualizzarne subito i movimenti e le statistiche
                   </div>
                 </div>
 
@@ -2599,6 +2625,91 @@ export default function FinancesTab({
                     : `Le spese di questo mese superano le entrate di ${fmtCurrency(Math.abs(selMonthNet))}. Monitora le categorie secondarie.`}
                 </div>
               </div>
+            </div>
+
+            {/* 6. Dettaglio Completo Movimenti del Mese Selezionato */}
+            <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>📜 Movimenti di {formatMonthLabel(selectedHistoryMonth)}</span>
+                  <span style={{ fontSize: '9px', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: 'var(--accent-primary, #38bdf8)', fontWeight: 'bold' }}>
+                    {selMonthTx.length}
+                  </span>
+                </div>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: selMonthNet >= 0 ? '#4ade80' : '#f87171' }}>
+                  Netto: {selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
+                </span>
+              </div>
+
+              {selMonthTx.length === 0 ? (
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '10px 0', textAlign: 'center' }}>
+                  Nessun movimento registrato in {formatMonthLabel(selectedHistoryMonth)}.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '250px', overflowY: 'auto', paddingRight: '2px' }}>
+                  {selMonthTx
+                    .slice()
+                    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+                    .map(t => {
+                      const catObj = getCategoryObj(t.category);
+                      const isInc = t.type === 'income';
+                      const isTrans = t.type === 'transfer';
+
+                      return (
+                        <div
+                          key={t.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            background: 'var(--bg-secondary)',
+                            padding: '7px 8px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--glass-border)',
+                            gap: '6px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: '15px', flexShrink: 0 }}>{isTrans ? '↔️' : catObj.emoji}</span>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {t.note || catObj.label}
+                              </div>
+                              <div style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px', flexWrap: 'wrap' }}>
+                                <span>{t.date}</span>
+                                {renderAccountBadge(t)}
+                                {t.excludeFromBudget && (
+                                  <span style={{ fontSize: '8px', background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                    ⚪ Fuori Budget
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: isTrans ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171') }}>
+                              {isTrans ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTransaction(t.id)}
+                              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '1px' }}
+                              title="Elimina movimento"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+
+            {/* Hint tocco esterno per chiudere */}
+            <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)', paddingTop: '2px' }}>
+              Tocca all'esterno per chiudere
             </div>
 
           </div>
