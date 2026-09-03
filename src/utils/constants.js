@@ -1,5 +1,5 @@
-export const BUILD_TIME = '2026-09-03T16:20:22.736Z';
-export const APP_VERSION = '5.9.176';
+export const BUILD_TIME = '2026-09-03T22:22:14.032Z';
+export const APP_VERSION = '5.9.177';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -522,3 +522,74 @@ export const CHALLENGE_TEMPLATES = [
         }))
     }
 ];
+
+export const CLOUDFLARE_WORKER_CODE = `export default {
+  async fetch(request, env, ctx) {
+    // 1. Gestione Preflight CORS (permette le chiamate da browser e PWA)
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }
+
+    // 2. Estrazione dell'URL bersaglio da ?url=
+    const reqUrl = new URL(request.url);
+    const targetUrl = reqUrl.searchParams.get("url");
+
+    if (!targetUrl) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Parametro ?url= mancante",
+          esempio: \`\${reqUrl.origin}/?url=https://query1.finance.yahoo.com/v8/finance/chart/SWDA.MI?interval=1d&range=1d\` 
+        }), 
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+          }
+        }
+      );
+    }
+
+    try {
+      // 3. Inoltro richiesta a Yahoo Finance con User-Agent di un browser reale (evita il blocco bot)
+      const response = await fetch(targetUrl, {
+        method: "GET",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "Accept": "application/json, text/plain, */*",
+          "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
+        },
+      });
+
+      const body = await response.text();
+
+      // 4. Restituzione dei dati JSON a Quest Life con CORS sbloccato
+      return new Response(body, {
+        status: response.status,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "*",
+          "Cache-Control": "public, max-age=60", // Cache 1 minuto
+        },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    }
+  },
+};`;
