@@ -4,18 +4,17 @@ let swRegistration = null;
 let updateAvailableCallbacks = [];
 let isUpdating = false;
 let userHasTouched = false;
+let latestDetectedVersion = null;
 
 /**
- * Track user interaction (touch/click/key) so we know if user is actively using the app
+ * Check whether a newer version has already been detected
  */
-function trackUserInteraction() {
-  const handler = () => {
-    userHasTouched = true;
-  };
-  window.addEventListener('touchstart', handler, { capture: true, passive: true });
-  window.addEventListener('pointerdown', handler, { capture: true, passive: true });
-  window.addEventListener('mousedown', handler, { capture: true, passive: true });
-  window.addEventListener('keydown', handler, { capture: true, passive: true });
+export function getLatestDetectedVersion() {
+  return latestDetectedVersion;
+}
+
+export function isUpdateAvailable() {
+  return Boolean(latestDetectedVersion && latestDetectedVersion !== APP_VERSION);
 }
 
 /**
@@ -23,10 +22,16 @@ function trackUserInteraction() {
  */
 export function onUpdateAvailable(callback) {
   updateAvailableCallbacks.push(callback);
+  if (latestDetectedVersion && latestDetectedVersion !== APP_VERSION) {
+    try {
+      callback(latestDetectedVersion);
+    } catch (e) {}
+  }
 }
 
 function notifyUpdateAvailable(newVersion) {
   if (!newVersion || newVersion === APP_VERSION) return;
+  latestDetectedVersion = newVersion;
   updateAvailableCallbacks.forEach((cb) => {
     try {
       cb(newVersion);
@@ -34,6 +39,28 @@ function notifyUpdateAvailable(newVersion) {
       console.error('[PWA] Error in update callback:', e);
     }
   });
+}
+
+/**
+ * Actively query server for new version (used by Settings check)
+ */
+export async function checkForAppUpdate() {
+  try {
+    if (swRegistration) {
+      swRegistration.update().catch(() => {});
+    }
+    const res = await fetch('./version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.version && data.version !== APP_VERSION) {
+        notifyUpdateAvailable(data.version);
+        return { updateAvailable: true, newVersion: data.version };
+      }
+    }
+  } catch (err) {
+    // Offline or network error
+  }
+  return { updateAvailable: false, currentVersion: APP_VERSION };
 }
 
 /**

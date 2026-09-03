@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
-import { forceUpdateApp } from '../utils/helpers';
+import { forceUpdateApp, checkForAppUpdate, onUpdateAvailable, isUpdateAvailable } from '../utils/helpers';
 import UserManualModal from '../components/UserManualModal';
 
 export default function SettingsTab({
@@ -26,6 +26,50 @@ export default function SettingsTab({
   const [editingPreset, setEditingPreset] = useState(null);
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualChapter, setManualChapter] = useState('finances');
+
+  // PWA Update State: active only when a new version is available
+  const [hasUpdate, setHasUpdate] = useState(isUpdateAvailable());
+  const [newVersionTag, setNewVersionTag] = useState(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [manualCheckMsg, setManualCheckMsg] = useState(null);
+
+  useEffect(() => {
+    // 1. Listen for background update notifications
+    onUpdateAvailable((ver) => {
+      setHasUpdate(true);
+      setNewVersionTag(ver);
+    });
+
+    // 2. Query server on mount
+    checkForAppUpdate().then((res) => {
+      if (res && res.updateAvailable) {
+        setHasUpdate(true);
+        setNewVersionTag(res.newVersion);
+      }
+    });
+  }, []);
+
+  const handleManualCheck = async () => {
+    setCheckingUpdate(true);
+    setManualCheckMsg(null);
+    try {
+      const res = await checkForAppUpdate();
+      if (res && res.updateAvailable) {
+        setHasUpdate(true);
+        setNewVersionTag(res.newVersion);
+        setManualCheckMsg(`Aggiornamento v${res.newVersion} disponibile!`);
+      } else {
+        setHasUpdate(false);
+        setManualCheckMsg("L'app è già aggiornata!");
+        setTimeout(() => setManualCheckMsg(null), 3500);
+      }
+    } catch (e) {
+      setManualCheckMsg("Impossibile verificare ora.");
+      setTimeout(() => setManualCheckMsg(null), 3000);
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
 
   const safeSettings = settings || {};
   const safePlayer = player || {};
@@ -819,28 +863,59 @@ export default function SettingsTab({
           </span>
         </div>
 
-        {/* Version Badge & Force Update */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '20px 0 40px 0', width: '100%' }}>
+        {/* Version Badge & App Update */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '16px 0 36px 0', width: '100%', gap: '8px' }}>
           <button
-            onClick={() => forceUpdateApp(true)}
-            className="btn-primary"
+            type="button"
+            onClick={hasUpdate ? () => forceUpdateApp(false) : handleManualCheck}
+            disabled={!hasUpdate && checkingUpdate}
             style={{
-              padding: '10px 24px',
+              padding: '10px 26px',
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: 'bold',
-              border: 'none',
-              cursor: 'pointer',
+              border: hasUpdate ? 'none' : '1px solid var(--glass-border)',
+              background: hasUpdate ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-secondary)',
+              color: hasUpdate ? '#ffffff' : 'var(--text-muted)',
+              cursor: hasUpdate ? 'pointer' : 'pointer',
+              opacity: hasUpdate ? 1 : 0.6,
+              boxShadow: hasUpdate ? '0 0 16px rgba(56, 189, 248, 0.6), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              margin: '0 auto 10px auto'
+              transition: 'all 0.25s ease'
             }}
+            title={hasUpdate ? "Tocca per installare subito l'aggiornamento" : "Tocca per verificare se ci sono nuovi aggiornamenti"}
           >
-            🔄 Forza Aggiornamento PWA
+            <span>{hasUpdate ? '🚀' : (checkingUpdate ? '⏳' : '🔄')}</span>
+            <span>{checkingUpdate ? 'Verifica in corso...' : (hasUpdate ? `Aggiorna app (${newVersionTag || 'nuova versione'})` : 'Aggiorna app')}</span>
           </button>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center' }}>
+
+          {/* Status Message */}
+          {hasUpdate ? (
+            <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 'bold' }}>
+              ✨ Nuovo aggiornamento pronto! Tocca il pulsante per installarlo.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                {manualCheckMsg || "✓ Nessun aggiornamento disponibile (app aggiornata)"}
+              </div>
+              {!manualCheckMsg && (
+                <button
+                  type="button"
+                  onClick={handleManualCheck}
+                  disabled={checkingUpdate}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary, #38bdf8)', fontSize: '10px', textDecoration: 'underline', cursor: 'pointer', padding: '2px 0' }}
+                >
+                  {checkingUpdate ? 'Verifica in corso...' : '🔍 Controlla disponibilità aggiornamenti'}
+                </button>
+              )}
+            </div>
+          )}
+
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '4px' }}>
             RPG Life v{APP_VERSION} {BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })})` : ''}
           </div>
         </div>
