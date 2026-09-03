@@ -152,11 +152,38 @@ export default function FinancesTab({
   // Budget Form State
   const [budgetInput, setBudgetInput] = useState(finances.monthlyBudget || 1000);
 
+  // Stock Chart Interactive Point State
+  const [selectedChartPointIndex, setSelectedChartPointIndex] = useState(null);
+
+  // Super User Recurring Edit States
+  const [showEditRecurringModal, setShowEditRecurringModal] = useState(false);
+  const [editingRecurring, setEditingRecurring] = useState(null);
+  const [editRecNote, setEditRecNote] = useState('');
+  const [editRecAmount, setEditRecAmount] = useState('');
+  const [editRecType, setEditRecType] = useState('expense');
+  const [editRecCategory, setEditRecCategory] = useState('cibo');
+  const [editRecAccount, setEditRecAccount] = useState('base');
+  const [editRecDay, setEditRecDay] = useState(1);
+  const [editRecExcludeBudget, setEditRecExcludeBudget] = useState(false);
+  const [editRecActive, setEditRecActive] = useState(true);
+
   // Currency Formatter Helper
   const fmtCurrency = (val) => {
     if (finances.hideBalances) return '*** €';
     const num = Number(val) || 0;
     return num.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+  };
+
+  const fmtCompactCurrency = (val) => {
+    if (finances.hideBalances) return '***';
+    const num = Number(val) || 0;
+    if (Math.abs(num) >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M€';
+    }
+    if (Math.abs(num) >= 1000) {
+      return (num / 1000).toFixed(1) + 'k€';
+    }
+    return Math.round(num) + '€';
   };
 
   // Account Label Helper
@@ -613,6 +640,54 @@ export default function FinancesTab({
     }
   };
 
+  const handleOpenEditRecurring = (rec) => {
+    if (!isSuperUser) return;
+    setEditingRecurring(rec);
+    setEditRecNote(rec.note || '');
+    setEditRecAmount(String(rec.amount || ''));
+    setEditRecType(rec.type || 'expense');
+    setEditRecCategory(rec.category || 'cibo');
+    setEditRecAccount(rec.account || 'base');
+    setEditRecDay(rec.dayOfMonth || 1);
+    setEditRecExcludeBudget(Boolean(rec.excludeFromBudget));
+    setEditRecActive(rec.active !== false);
+    setShowEditRecurringModal(true);
+  };
+
+  const handleSaveEditedRecurring = (e) => {
+    if (e) e.preventDefault();
+    if (!editingRecurring) return;
+    const parsedAmount = Math.round((parseFloat(String(editRecAmount).replace(',', '.')) || 0) * 100) / 100;
+    if (parsedAmount <= 0) {
+      alert('Inserisci un importo valido maggiore di 0.');
+      return;
+    }
+    const parsedDay = Math.max(1, Math.min(31, parseInt(editRecDay, 10) || 1));
+
+    setFinances(prev => ({
+      ...prev,
+      recurringTransactions: (prev.recurringTransactions || []).map(r => {
+        if (r.id === editingRecurring.id) {
+          return {
+            ...r,
+            note: editRecNote.trim(),
+            amount: parsedAmount,
+            type: editRecType,
+            category: editRecCategory,
+            account: editRecAccount,
+            dayOfMonth: parsedDay,
+            excludeFromBudget: editRecType === 'expense' ? editRecExcludeBudget : false,
+            active: editRecActive
+          };
+        }
+        return r;
+      })
+    }));
+
+    setShowEditRecurringModal(false);
+    setEditingRecurring(null);
+  };
+
   const handleSaveBudget = (e) => {
     e.preventDefault();
     const val = parseFloat(budgetInput);
@@ -1000,6 +1075,120 @@ export default function FinancesTab({
   const maxOverviewVal = Math.max(100, ...overviewData.map(m => Math.max(m.income, m.expenses)));
   const remainingBudget = (finances.monthlyBudget || 1000) - monthBudgetExpenses;
 
+  // --- PATRIMONIO OVER TIME (STOCK CHART) ---
+  const chartPoints = useMemo(() => {
+    if (!overviewMonthsList || overviewMonthsList.length === 0) {
+      return [{ key: 'cur', label: 'Oggi', fullLabel: 'Oggi', value: totalPatrimonio, net: 0, isCurrent: true }];
+    }
+
+    if (overviewMonthsList.length === 1) {
+      const curKey = overviewMonthsList[0];
+      const curTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(curKey));
+      const curInc = curTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const curExp = curTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const curNet = Math.round((curInc - curExp) * 100) / 100;
+      const startVal = Math.round((totalPatrimonio - curNet) * 100) / 100;
+      return [
+        { key: 'start', label: 'Inizio', fullLabel: 'Inizio Mese', value: startVal, net: 0, isCurrent: false },
+        { key: curKey, label: 'Oggi', fullLabel: formatMonthLabel(curKey), value: totalPatrimonio, net: curNet, isCurrent: true }
+      ];
+    }
+
+    return overviewMonthsList.map(mKey => {
+      const txAfter = (finances.transactions || []).filter(t => {
+        if (!t.date || typeof t.date !== 'string' || t.date.length < 7) return false;
+        return t.date.substring(0, 7) > mKey;
+      });
+      const incAfter = txAfter.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const expAfter = txAfter.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const netAfter = incAfter - expAfter;
+      const monthPatrimonio = Math.round((totalPatrimonio - netAfter) * 100) / 100;
+
+      const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
+      const mInc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const mExp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const mNet = Math.round((mInc - mExp) * 100) / 100;
+
+      return {
+        key: mKey,
+        label: formatMonthShort(mKey),
+        fullLabel: formatMonthLabel(mKey),
+        value: monthPatrimonio,
+        net: mNet,
+        isCurrent: mKey === currentMonthPrefix
+      };
+    });
+  }, [overviewMonthsList, finances.transactions, totalPatrimonio, currentMonthPrefix]);
+
+  const svgW = 330;
+  const svgH = 110;
+  const pLeft = 44;
+  const pRight = 14;
+  const pTop = 14;
+  const pBottom = 18;
+  const plotWidth = svgW - pLeft - pRight;
+  const plotHeight = svgH - pTop - pBottom;
+
+  const cVals = chartPoints.map(p => p.value);
+  const minCVal = Math.min(...cVals);
+  const maxCVal = Math.max(...cVals);
+  const cSpan = maxCVal - minCVal;
+  const cMargin = cSpan > 0 ? cSpan * 0.18 : (Math.abs(maxCVal) * 0.15 || 50);
+  const sYMin = minCVal - cMargin;
+  const sYMax = maxCVal + cMargin;
+  const sYRange = sYMax - sYMin || 1;
+
+  const plottedPoints = chartPoints.map((p, idx) => {
+    const x = chartPoints.length > 1
+      ? pLeft + (idx / (chartPoints.length - 1)) * plotWidth
+      : pLeft + plotWidth / 2;
+    const y = pTop + plotHeight - ((p.value - sYMin) / sYRange) * plotHeight;
+    return { ...p, x, y };
+  });
+
+  let linePathD = '';
+  if (plottedPoints.length === 1) {
+    linePathD = `M ${plottedPoints[0].x - 20},${plottedPoints[0].y} L ${plottedPoints[0].x + 20},${plottedPoints[0].y}`;
+  } else if (plottedPoints.length === 2) {
+    linePathD = `M ${plottedPoints[0].x.toFixed(1)},${plottedPoints[0].y.toFixed(1)} L ${plottedPoints[1].x.toFixed(1)},${plottedPoints[1].y.toFixed(1)}`;
+  } else {
+    linePathD = `M ${plottedPoints[0].x.toFixed(1)},${plottedPoints[0].y.toFixed(1)}`;
+    for (let i = 0; i < plottedPoints.length - 1; i++) {
+      const p0 = plottedPoints[i === 0 ? 0 : i - 1];
+      const p1 = plottedPoints[i];
+      const p2 = plottedPoints[i + 1];
+      const p3 = plottedPoints[i + 2] || p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      linePathD += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+  }
+
+  const pFirst = plottedPoints[0];
+  const pLast = plottedPoints[plottedPoints.length - 1];
+  const bottomY = pTop + plotHeight;
+  const areaFillD = `${linePathD} L ${pLast.x.toFixed(1)},${bottomY} L ${pFirst.x.toFixed(1)},${bottomY} Z`;
+
+  const totalChartDelta = Math.round((pLast.value - pFirst.value) * 100) / 100;
+  const isOverallChartPositive = totalChartDelta >= 0;
+  const chartStrokeColor = isOverallChartPositive ? '#38bdf8' : '#f87171';
+
+  const activeChartIndex = (selectedChartPointIndex !== null && selectedChartPointIndex >= 0 && selectedChartPointIndex < plottedPoints.length)
+    ? selectedChartPointIndex
+    : plottedPoints.length - 1;
+  const activePoint = plottedPoints[activeChartIndex] || pLast;
+  const activeDelta = Math.round((activePoint.value - pFirst.value) * 100) / 100;
+  const activeDeltaPct = pFirst.value !== 0 ? Math.round(((activeDelta / Math.abs(pFirst.value)) * 100) * 10) / 10 : 0;
+  const isPointPositive = activeDelta >= 0;
+
+  const yGridTop = pTop + 4;
+  const yGridMid = pTop + plotHeight / 2;
+  const yGridBottom = bottomY - 2;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
       
@@ -1027,13 +1216,10 @@ export default function FinancesTab({
               cursor: 'pointer',
               boxShadow: '0 2px 8px rgba(56, 189, 248, 0.15)'
             }}
-            title="Tocca per aprire lo Storico e i Grafici Finanziari"
+            title="Tocca per aprire lo Storico e i Dettagli Finanziari"
           >
-            <span style={{ fontSize: '13px' }}>📈</span>
-            <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Totale:</span>
-            <span style={{ fontSize: '12px', fontWeight: '900', color: totalPatrimonio >= 0 ? '#38bdf8' : '#ef4444' }}>
-              {fmtCurrency(totalPatrimonio)}
-            </span>
+            <span style={{ fontSize: '13px' }}>📊</span>
+            <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 'bold' }}>Dettagli</span>
           </button>
 
           {/* Privacy Eye Toggle */}
@@ -1075,98 +1261,7 @@ export default function FinancesTab({
         </div>
       </div>
 
-      {/* 1b. Top 4 Quick Actions Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-        <button
-          type="button"
-          onClick={() => { setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
-          style={{
-            background: 'rgba(234, 179, 8, 0.15)',
-            border: '1px solid rgba(234, 179, 8, 0.35)',
-            color: '#fde047',
-            borderRadius: '10px',
-            padding: '8px 4px',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px'
-          }}
-        >
-          <span style={{ fontSize: '15px' }}>🏧</span>
-          <span>Preleva</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleOpenTransferModal('base', 'cash')}
-          style={{
-            background: 'rgba(56, 189, 248, 0.15)',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
-            color: '#38bdf8',
-            borderRadius: '10px',
-            padding: '8px 4px',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px'
-          }}
-        >
-          <span style={{ fontSize: '15px' }}>↔️</span>
-          <span>Trasferisci</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleOpenAddTxModal('expense')}
-          style={{
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-            color: '#f87171',
-            borderRadius: '10px',
-            padding: '8px 4px',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px'
-          }}
-        >
-          <span style={{ fontSize: '15px' }}>🔴</span>
-          <span>Uscita</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleOpenAddTxModal('income')}
-          style={{
-            background: 'rgba(34, 197, 94, 0.15)',
-            border: '1px solid rgba(34, 197, 94, 0.35)',
-            color: '#4ade80',
-            borderRadius: '10px',
-            padding: '8px 4px',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '3px'
-          }}
-        >
-          <span style={{ fontSize: '15px' }}>🟢</span>
-          <span>Entrata</span>
-        </button>
-      </div>
-
-      {/* 2. Riepilogo & Grafico Finanziario (ultimi 6 mesi o meno se meno dati) */}
+      {/* 2. Grafico Andamento Patrimonio (Stile Borsa / Mercati) */}
       <div
         style={{
           background: 'var(--bg-card, #1e293b)',
@@ -1177,86 +1272,168 @@ export default function FinancesTab({
           boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px'
+          gap: '10px'
         }}
       >
-        {/* Header Grafico */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            📊 Andamento Finanze ({overviewMonthsCount} {overviewMonthsCount === 1 ? 'Mese' : 'Mesi'})
+        {/* Header con Patrimonio Hero e Variazione */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              📈 Patrimonio Totale
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
+              {fmtCurrency(activePoint.value)}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', fontSize: '11px', flexWrap: 'wrap' }}>
+              <span style={{
+                color: isPointPositive ? '#4ade80' : '#f87171',
+                fontWeight: 'bold',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '2px'
+              }}>
+                <span>{isPointPositive ? '▲' : '▼'}</span>
+                <span>{isPointPositive ? '+' : ''}{fmtCurrency(activeDelta)}</span>
+                <span>({isPointPositive ? '+' : ''}{activeDeltaPct}%)</span>
+              </span>
+              <span style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '10px' }}>
+                {activePoint.isCurrent ? `(negli ultimi ${chartPoints.length} mesi)` : `(${activePoint.fullLabel})`}
+              </span>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', fontSize: '9px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#4ade80', display: 'inline-block' }}></span> Entrate
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#f87171', display: 'inline-block' }}></span> Uscite
+
+          <div style={{ textAlign: 'right' }}>
+            <span
+              onClick={() => setSelectedChartPointIndex(null)}
+              style={{
+                fontSize: '9px',
+                background: selectedChartPointIndex !== null ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: selectedChartPointIndex !== null ? '#38bdf8' : 'var(--text-muted)',
+                padding: '3px 6px',
+                borderRadius: '6px',
+                cursor: selectedChartPointIndex !== null ? 'pointer' : 'default',
+                fontWeight: 'bold'
+              }}
+              title="Reimposta visualizzazione sul patrimonio attuale"
+            >
+              {selectedChartPointIndex !== null ? '↺ Torna a Oggi' : `${chartPoints.length} Mesi`}
             </span>
           </div>
         </div>
 
-        {/* Grafico a barre */}
-        <div style={{ background: 'var(--bg-primary, rgba(0,0,0,0.2))', borderRadius: '12px', padding: '10px 8px 8px 8px', border: '1px solid var(--glass-border, rgba(255,255,255,0.06))' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '80px', gap: '4px', padding: '0 2px', borderBottom: '1px solid var(--glass-border, rgba(255,255,255,0.08))' }}>
-            {overviewData.map(m => {
-              const incHeight = Math.max(3, Math.round((m.income / maxOverviewVal) * 65));
-              const expHeight = Math.max(3, Math.round((m.expenses / maxOverviewVal) * 65));
+        {/* Grafico SVG Continuo Andamento Borsa */}
+        <div style={{ background: 'var(--bg-primary, rgba(0,0,0,0.25))', borderRadius: '12px', padding: '8px 4px 6px 4px', border: '1px solid var(--glass-border, rgba(255,255,255,0.06))', position: 'relative' }}>
+          <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+            <defs>
+              <linearGradient id="patrimonioStockGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={chartStrokeColor} stopOpacity="0.32" />
+                <stop offset="100%" stopColor={chartStrokeColor} stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
 
+            {/* Linee Guida Orizzontali (Griglia Asse Y) */}
+            <line x1={pLeft} y1={yGridTop} x2={svgW - pRight} y2={yGridTop} stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+            <text x={pLeft - 4} y={yGridTop + 3} textAnchor="end" fill="var(--text-muted, #94a3b8)" fontSize="8" fontFamily="sans-serif">
+              {fmtCompactCurrency(maxCVal)}
+            </text>
+
+            <line x1={pLeft} y1={yGridMid} x2={svgW - pRight} y2={yGridMid} stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
+            <text x={pLeft - 4} y={yGridMid + 3} textAnchor="end" fill="var(--text-muted, #94a3b8)" fontSize="8" fontFamily="sans-serif">
+              {fmtCompactCurrency((maxCVal + minCVal) / 2)}
+            </text>
+
+            <line x1={pLeft} y1={yGridBottom} x2={svgW - pRight} y2={yGridBottom} stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+            <text x={pLeft - 4} y={yGridBottom + 3} textAnchor="end" fill="var(--text-muted, #94a3b8)" fontSize="8" fontFamily="sans-serif">
+              {fmtCompactCurrency(minCVal)}
+            </text>
+
+            {/* Riempimento ad Area con Gradiente */}
+            {areaFillD && (
+              <path d={areaFillD} fill="url(#patrimonioStockGrad)" />
+            )}
+
+            {/* Linea Continua Andamento */}
+            {linePathD && (
+              <path
+                d={linePathD}
+                fill="none"
+                stroke={chartStrokeColor}
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ filter: `drop-shadow(0 2px 6px ${chartStrokeColor}44)` }}
+              />
+            )}
+
+            {/* Indicatore Verticale punto attivo */}
+            <line
+              x1={activePoint.x}
+              y1={pTop}
+              x2={activePoint.x}
+              y2={bottomY}
+              stroke="rgba(255,255,255,0.2)"
+              strokeDasharray="2 2"
+            />
+
+            {/* Punti Interattivi su ciascun mese */}
+            {plottedPoints.map((pt, idx) => {
+              const isSelected = idx === activeChartIndex;
+              return (
+                <g
+                  key={pt.key}
+                  onClick={() => setSelectedChartPointIndex(idx)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {/* Invisible larger touch target */}
+                  <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+                  {/* Outer halo when selected */}
+                  {isSelected && (
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r="7"
+                      fill={chartStrokeColor}
+                      fillOpacity="0.25"
+                    />
+                  )}
+                  {/* Point circle */}
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={isSelected ? "4.5" : "3"}
+                    fill={isSelected ? '#fff' : chartStrokeColor}
+                    stroke={isSelected ? chartStrokeColor : 'var(--bg-card, #1e293b)'}
+                    strokeWidth={isSelected ? "2" : "1.5"}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* Etichette Mesi lungo l'asse X */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${pLeft - 10}px`, paddingRight: `${pRight - 6}px`, marginTop: '2px' }}>
+            {plottedPoints.map((pt, idx) => {
+              const isSelected = idx === activeChartIndex;
               return (
                 <div
-                  key={m.monthKey}
+                  key={pt.key}
+                  onClick={() => setSelectedChartPointIndex(idx)}
                   style={{
-                    flex: 1,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    padding: '2px 1px'
+                    fontSize: '9px',
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    color: isSelected ? '#38bdf8' : 'var(--text-muted, #94a3b8)',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    background: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                    transition: 'all 0.15s ease'
                   }}
-                  title={`${m.fullLabel}: +${fmtCurrency(m.income)} / -${fmtCurrency(m.expenses)} (Netto: ${fmtCurrency(m.net)})`}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '65px', justifyContent: 'center', width: '100%' }}>
-                    {/* Income */}
-                    <div
-                      style={{
-                        width: '40%',
-                        maxWidth: '12px',
-                        height: `${m.income > 0 ? incHeight : 3}px`,
-                        background: m.income > 0 ? '#4ade80' : 'rgba(255,255,255,0.06)',
-                        borderRadius: '3px 3px 1px 1px',
-                        boxShadow: m.income > 0 ? '0 1px 4px rgba(74, 222, 128, 0.3)' : 'none'
-                      }}
-                    />
-                    {/* Expense */}
-                    <div
-                      style={{
-                        width: '40%',
-                        maxWidth: '12px',
-                        height: `${m.expenses > 0 ? expHeight : 3}px`,
-                        background: m.expenses > 0 ? '#f87171' : 'rgba(255,255,255,0.06)',
-                        borderRadius: '3px 3px 1px 1px',
-                        boxShadow: m.expenses > 0 ? '0 1px 4px rgba(248, 113, 113, 0.3)' : 'none'
-                      }}
-                    />
-                  </div>
-                  <div style={{ fontSize: '9px', color: m.isCurrent ? 'var(--accent-primary, #38bdf8)' : 'var(--text-muted, #94a3b8)', fontWeight: m.isCurrent ? 'bold' : 'normal', marginTop: '4px', textAlign: 'center' }}>
-                    {m.shortLabel}
-                  </div>
+                  {pt.label}
                 </div>
               );
             })}
-          </div>
-
-          {/* Riga Netto sotto i mesi */}
-          <div style={{ display: 'flex', justifyContent: 'space-around', gap: '4px', marginTop: '4px' }}>
-            {overviewData.map(m => (
-              <div key={m.monthKey} style={{ flex: 1, textAlign: 'center' }}>
-                <span style={{ fontSize: '8px', fontWeight: 'bold', color: m.net >= 0 ? (m.net === 0 ? 'var(--text-muted, #94a3b8)' : '#4ade80') : '#f87171' }}>
-                  {m.net > 0 ? '+' : ''}{fmtCurrency(m.net)}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -1296,6 +1473,101 @@ export default function FinancesTab({
             </span>
           </div>
         </div>
+      </div>
+
+      {/* 3. 4 Bottoni Rapidi (posizionati ergonomicamente sotto il grafico per un facile tocco col pollice) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+        <button
+          type="button"
+          onClick={() => { setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
+          style={{
+            background: 'rgba(234, 179, 8, 0.15)',
+            border: '1px solid rgba(234, 179, 8, 0.35)',
+            color: '#fde047',
+            borderRadius: '12px',
+            padding: '10px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span style={{ fontSize: '18px' }}>🏧</span>
+          <span>Preleva</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleOpenTransferModal('base', 'cash')}
+          style={{
+            background: 'rgba(56, 189, 248, 0.15)',
+            border: '1px solid rgba(56, 189, 248, 0.35)',
+            color: '#38bdf8',
+            borderRadius: '12px',
+            padding: '10px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span style={{ fontSize: '18px' }}>↔️</span>
+          <span>Trasferisci</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleOpenAddTxModal('expense')}
+          style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            color: '#f87171',
+            borderRadius: '12px',
+            padding: '10px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span style={{ fontSize: '18px' }}>🔴</span>
+          <span>Uscita</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleOpenAddTxModal('income')}
+          style={{
+            background: 'rgba(34, 197, 94, 0.15)',
+            border: '1px solid rgba(34, 197, 94, 0.35)',
+            color: '#4ade80',
+            borderRadius: '12px',
+            padding: '10px 4px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span style={{ fontSize: '18px' }}>🟢</span>
+          <span>Entrata</span>
+        </button>
       </div>
 
       {/* 3. Tessere Contanti e Conto Base */}
@@ -2617,18 +2889,36 @@ export default function FinancesTab({
                     {accRecurring.map(r => {
                       const catObj = getCategoryObj(r.category);
                       const isInc = r.type === 'income';
-                      return (
-                        <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px', fontSize: '10px' }}>
+                        <div
+                          key={r.id}
+                          onClick={() => {
+                            if (isSuperUser) {
+                              handleOpenEditRecurring(r);
+                            }
+                          }}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            background: 'var(--bg-primary)',
+                            padding: '6px 8px',
+                            borderRadius: '6px',
+                            fontSize: '10px',
+                            cursor: isSuperUser ? 'pointer' : 'default',
+                            border: isSuperUser ? '1px dashed rgba(234, 179, 8, 0.4)' : 'none'
+                          }}
+                          title={isSuperUser ? 'Super User: tocca per modificare la regola ricorrente' : undefined}
+                        >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span>{catObj.emoji}</span>
                             <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{r.note || catObj.label}</span>
                             <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>ogni {r.dayOfMonth}° del mese</span>
+                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title="Modifica regola (Super User)">✏️</span>}
                           </div>
                           <span style={{ fontWeight: 'bold', color: isInc ? '#22c55e' : '#ef4444' }}>
                             {isInc ? '+' : '-'}{fmtCurrency(r.amount)}
                           </span>
                         </div>
-                      );
                     })}
                   </div>
                 )}
@@ -2852,17 +3142,18 @@ export default function FinancesTab({
             onClick={(e) => e.stopPropagation()}
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 🔄 Pagamenti Ricorrenti
               </h3>
-              <button
-                onClick={() => setShowRecurringModal(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer' }}
-              >
-                ✖
-              </button>
             </div>
+
+            {isSuperUser && (
+              <div style={{ fontSize: '10px', color: '#eab308', background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(234, 179, 8, 0.25)', padding: '6px 8px', borderRadius: '8px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>🔓</span>
+                <span>Super User attivo: tocca una regola per modificarla.</span>
+              </div>
+            )}
 
             {(!finances.recurringTransactions || finances.recurringTransactions.length === 0) ? (
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
@@ -2877,25 +3168,31 @@ export default function FinancesTab({
                   return (
                     <div
                       key={rec.id}
+                      onClick={() => isSuperUser && handleOpenEditRecurring(rec)}
                       style={{
                         background: 'var(--bg-primary)',
                         borderRadius: '10px',
                         padding: '10px',
-                        border: '1px solid var(--glass-border)',
+                        border: isSuperUser ? '1px dashed rgba(234, 179, 8, 0.4)' : '1px solid var(--glass-border)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        opacity: rec.active ? 1 : 0.6
+                        opacity: rec.active ? 1 : 0.6,
+                        cursor: isSuperUser ? 'pointer' : 'default'
                       }}
+                      title={isSuperUser ? 'Super User: tocca per modificare la regola' : undefined}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                         <span style={{ fontSize: '18px', flexShrink: 0 }}>{catObj.emoji}</span>
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {rec.note || catObj.label}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {rec.note || catObj.label}
+                            </span>
+                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title="Modifica regola (Super User)">✏️</span>}
                           </div>
                           <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                            Mensile (giorno {rec.dayOfMonth || 1})
+                            Mensile (giorno {rec.dayOfMonth || 1}) {rec.excludeFromBudget && '• ⚪ Fuori Budget'}
                           </div>
                         </div>
                       </div>
@@ -2905,15 +3202,27 @@ export default function FinancesTab({
                           {isIncome ? '+' : '-'}{fmtCurrency(rec.amount)}
                         </span>
                         <div style={{ display: 'flex', gap: '4px' }}>
+                          {isSuperUser && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleOpenEditRecurring(rec); }}
+                              style={{ background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                              title="Modifica regola ricorrente"
+                            >
+                              ✏️
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleToggleRecurringActive(rec.id)}
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleToggleRecurringActive(rec.id); }}
                             style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: rec.active ? '#22c55e' : 'var(--text-muted)', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
                             title={rec.active ? 'Metti in pausa' : 'Attiva'}
                           >
                             {rec.active ? '▶️' : '⏸️'}
                           </button>
                           <button
-                            onClick={() => handleDeleteRecurring(rec.id)}
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteRecurring(rec.id); }}
                             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer', padding: '1px' }}
                             title="Elimina regola"
                           >
@@ -3645,6 +3954,155 @@ export default function FinancesTab({
                   style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
                 >
                   Aggiorna
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Modifica Spesa/Entrata Ricorrente (Super User) */}
+      {showEditRecurringModal && editingRecurring && (
+        <div
+          onClick={() => setShowEditRecurringModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '330px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <h4 style={{ margin: 0, fontSize: '15px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🔓 Modifica Ricorrente (Super User)
+            </h4>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Modifica importo, giorno, categoria o conto della regola periodica.
+            </div>
+
+            <form onSubmit={handleSaveEditedRecurring} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Tipo Movimento</label>
+                <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setEditRecType('expense')}
+                    style={{ flex: 1, padding: '7px', borderRadius: '8px', border: 'none', background: editRecType === 'expense' ? '#ef4444' : 'var(--bg-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    🔴 Uscita
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditRecType('income')}
+                    style={{ flex: 1, padding: '7px', borderRadius: '8px', border: 'none', background: editRecType === 'income' ? '#22c55e' : 'var(--bg-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    🟢 Entrata
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo (€)*</label>
+                <input
+                  type="text"
+                  value={editRecAmount}
+                  onChange={(e) => setEditRecAmount(e.target.value)}
+                  placeholder="0.00"
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto</label>
+                <select
+                  value={editRecAccount}
+                  onChange={(e) => setEditRecAccount(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'}</option>
+                  <option value="cash">💵 Contanti</option>
+                  {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria</label>
+                <select
+                  value={editRecCategory}
+                  onChange={(e) => setEditRecCategory(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  {(editRecType === 'expense' ? expenseCategories : incomeCategories).map(c => (
+                    <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Descrizione / Nota</label>
+                <input
+                  type="text"
+                  value={editRecNote}
+                  onChange={(e) => setEditRecNote(e.target.value)}
+                  placeholder="Es. Affitto, Bolletta luce, Stipendio..."
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Giorno del mese</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={editRecDay}
+                    onChange={(e) => setEditRecDay(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-primary)', cursor: 'pointer', paddingBottom: '8px' }}>
+                    <input
+                      type="checkbox"
+                      checked={editRecActive}
+                      onChange={(e) => setEditRecActive(e.target.checked)}
+                      style={{ width: '15px', height: '15px' }}
+                    />
+                    <span>Attiva</span>
+                  </label>
+                </div>
+              </div>
+
+              {editRecType === 'expense' && (
+                <div style={{ background: 'var(--bg-primary)', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={!editRecExcludeBudget}
+                      onChange={(e) => setEditRecExcludeBudget(!e.target.checked)}
+                      style={{ width: '15px', height: '15px' }}
+                    />
+                    <span>🎯 Scala dal Budget Mensile</span>
+                  </label>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditRecurringModal(false)}
+                  style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Salva Modifiche
                 </button>
               </div>
             </form>
