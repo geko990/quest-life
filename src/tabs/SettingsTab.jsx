@@ -278,56 +278,6 @@ export default function SettingsTab({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* Banner Manuale di Utilizzo & Guida dell'App */}
-        <div
-          onClick={() => { setManualChapter('finances'); setShowManualModal(true); }}
-          style={{
-            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.15))',
-            border: '1px solid rgba(56, 189, 248, 0.4)',
-            borderRadius: '16px',
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                background: 'rgba(56, 189, 248, 0.2)',
-                border: '1px solid rgba(56, 189, 248, 0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '22px',
-                flexShrink: 0
-              }}
-            >
-              📖
-            </div>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Manuale di Utilizzo & Guide
-                <span style={{ fontSize: '9px', background: 'var(--accent-primary, #38bdf8)', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
-                  GUIDA
-                </span>
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
-                Scopri tutte le funzioni: RPG, Finanze, Cloudflare ETF, Abitudini e Nutrizione
-              </div>
-            </div>
-          </div>
-          <span style={{ fontSize: '18px', color: 'var(--accent-primary, #38bdf8)', marginLeft: '8px', flexShrink: 0 }}>
-            ➔
-          </span>
-        </div>
-
         {/* Group 1: Gameplay */}
         <div className="glass-panel" style={{ overflow: 'hidden' }}>
           <div
@@ -816,6 +766,57 @@ export default function SettingsTab({
               )}
             </div>
           )}
+        </div>
+
+        {/* Banner Manuale di Utilizzo & Guida dell'App */}
+        <div
+          onClick={() => { setManualChapter('finances'); setShowManualModal(true); }}
+          style={{
+            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.15))',
+            border: '1px solid rgba(56, 189, 248, 0.4)',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+            transition: 'all 0.2s ease',
+            margin: '6px 0'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'rgba(56, 189, 248, 0.2)',
+                border: '1px solid rgba(56, 189, 248, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '22px',
+                flexShrink: 0
+              }}
+            >
+              📖
+            </div>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Manuale di Utilizzo & Guide
+                <span style={{ fontSize: '9px', background: 'var(--accent-primary, #38bdf8)', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
+                  GUIDA
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
+                Scopri tutte le funzioni: RPG, Finanze, Cloudflare ETF, Abitudini e Nutrizione
+              </div>
+            </div>
+          </div>
+          <span style={{ fontSize: '18px', color: 'var(--accent-primary, #38bdf8)', marginLeft: '8px', flexShrink: 0 }}>
+            ➔
+          </span>
         </div>
 
         {/* Version Badge & Force Update */}
