@@ -148,6 +148,8 @@ export default function FinancesTab({
   const [invNotes, setInvNotes] = useState('');
   const [isSyncingQuotes, setIsSyncingQuotes] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState(null);
+  const [showSyncHelpModal, setShowSyncHelpModal] = useState(false);
+  const [customProxyInput, setCustomProxyInput] = useState(finances.customQuotesProxy || '');
 
   // Budget Form State
   const [budgetInput, setBudgetInput] = useState(finances.monthlyBudget || 1000);
@@ -898,6 +900,17 @@ export default function FinancesTab({
     setQuickPriceTarget(null);
   };
 
+  const handleSaveCustomProxy = (e) => {
+    e.preventDefault();
+    const val = (customProxyInput || '').trim();
+    setFinances(prev => ({
+      ...prev,
+      customQuotesProxy: val
+    }));
+    setShowSyncHelpModal(false);
+    alert(val ? "✅ Proxy personalizzato salvato con successo!" : "Proxy personalizzato rimosso. Verranno usati i server proxy di fallback.");
+  };
+
   const handleSyncOnlineQuotes = async (silent = false) => {
     const list = finances.investments || [];
     const withTickers = list.filter(i => i.ticker);
@@ -913,31 +926,56 @@ export default function FinancesTab({
 
     const updatedInvestments = await Promise.all(list.map(async (inv) => {
       if (!inv.ticker) return inv;
-      try {
-        const symbol = inv.ticker.trim().toUpperCase();
-        const url = `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`;
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
+      const symbol = inv.ticker.trim().toUpperCase();
 
-        if (res.ok) {
-          const data = await res.json();
-          const meta = data?.chart?.result?.[0]?.meta;
-          const price = meta?.regularMarketPrice;
-          if (price && typeof price === 'number' && price > 0) {
-            updatedCount++;
-            return {
-              ...inv,
-              currentPrice: Math.round(price * 100) / 100,
-              lastUpdated: getGameDate()
-            };
+      // Waterfall di endpoint per superare blocchi CORS
+      const endpoints = [];
+
+      // 1. Proxy personalizzato configurato dall'utente (es. Cloudflare Worker personale)
+      if (finances.customQuotesProxy) {
+        const cleanProxy = finances.customQuotesProxy.replace(/\/$/, '');
+        endpoints.push(`${cleanProxy}/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`);
+      }
+
+      // 2. Allorigins raw
+      endpoints.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`);
+
+      // 3. Allorigins get JSON wrapper
+      endpoints.push(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`);
+
+      let foundPrice = null;
+
+      for (const targetUrl of endpoints) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4500);
+          const res = await fetch(targetUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (!res.ok) continue;
+
+          let data = await res.json();
+          if (data?.contents) {
+            try { data = JSON.parse(data.contents); } catch (e) {}
           }
+          const p = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          if (p && typeof p === 'number' && p > 0) {
+            foundPrice = p;
+            break;
+          }
+        } catch (err) {
+          // Prova il prossimo proxy nella cascata
         }
-        failedCount++;
-        return inv;
-      } catch (err) {
+      }
+
+      if (foundPrice !== null) {
+        updatedCount++;
+        return {
+          ...inv,
+          currentPrice: Math.round(foundPrice * 100) / 100,
+          lastUpdated: getGameDate()
+        };
+      } else {
         failedCount++;
         return inv;
       }
@@ -954,9 +992,9 @@ export default function FinancesTab({
       if (updatedCount > 0 && failedCount === 0) {
         alert(`✅ Sincronizzazione completata! Aggiornate ${updatedCount} quote con successo.`);
       } else if (updatedCount > 0 && failedCount > 0) {
-        alert(`⚠️ Aggiornate ${updatedCount} quote. Per ${failedCount} posizioni il mercato estero o il proxy non ha risposto: puoi aggiornarle manualmente con l'icona ✏️.`);
+        alert(`⚠️ Aggiornate ${updatedCount} quote su ${updatedCount + failedCount}. Per le posizioni non risposte puoi aggiornare manualmente con l'icona ✏️.`);
       } else {
-        alert(`ℹ️ Impossibile raggiungere il fornitore quotazioni online da questa connessione. Puoi aggiornare i prezzi manualmente con un tocco sull'icona ✏️ accanto a ogni quota.`);
+        setShowSyncHelpModal(true);
       }
     }
     setSyncStatusMsg(null);
@@ -1053,6 +1091,107 @@ export default function FinancesTab({
   const avgMonthlyExpense = Math.round(totalPeriodExpenses / (longPeriodData.length || 1));
   const avgMonthlyIncome = Math.round(totalPeriodIncome / (longPeriodData.length || 1));
   const bestSavingsMonth = [...longPeriodData].sort((a, b) => b.net - a.net)[0];
+
+  // --- HISTORY CONTINUOUS SVG CHARTS (Revolut / Apple Stocks Style) ---
+  const histSvgW = 340;
+  const histSvgH = 110;
+  const hPadL = 44;
+  const hPadR = 14;
+  const hPadT = 14;
+  const hPadB = 18;
+  const hPlotW = histSvgW - hPadL - hPadR;
+  const hPlotH = histSvgH - hPadT - hPadB;
+
+  // 1. Long Period (Monthly Trend)
+  const hLongVals = longPeriodData.map(m => m.net);
+  const hLongMin = Math.min(0, ...hLongVals);
+  const hLongMax = Math.max(100, ...hLongVals);
+  const hLongSpan = hLongMax - hLongMin || 100;
+  const hLongMargin = hLongSpan * 0.18;
+  const hLongYMin = hLongMin - hLongMargin;
+  const hLongYMax = hLongMax + hLongMargin;
+  const hLongYRange = hLongYMax - hLongYMin || 1;
+
+  const hLongPoints = longPeriodData.map((m, idx) => {
+    const x = longPeriodData.length > 1
+      ? hPadL + (idx / (longPeriodData.length - 1)) * hPlotW
+      : hPadL + hPlotW / 2;
+    const y = hPadT + hPlotH - ((m.net - hLongYMin) / hLongYRange) * hPlotH;
+    return { ...m, x, y };
+  });
+
+  let hLongLinePath = '';
+  if (hLongPoints.length === 1) {
+    hLongLinePath = `M ${hLongPoints[0].x - 20},${hLongPoints[0].y} L ${hLongPoints[0].x + 20},${hLongPoints[0].y}`;
+  } else if (hLongPoints.length === 2) {
+    hLongLinePath = `M ${hLongPoints[0].x.toFixed(1)},${hLongPoints[0].y.toFixed(1)} L ${hLongPoints[1].x.toFixed(1)},${hLongPoints[1].y.toFixed(1)}`;
+  } else if (hLongPoints.length > 2) {
+    hLongLinePath = `M ${hLongPoints[0].x.toFixed(1)},${hLongPoints[0].y.toFixed(1)}`;
+    for (let i = 0; i < hLongPoints.length - 1; i++) {
+      const p0 = hLongPoints[i === 0 ? 0 : i - 1];
+      const p1 = hLongPoints[i];
+      const p2 = hLongPoints[i + 1];
+      const p3 = hLongPoints[i + 2] || p2;
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      hLongLinePath += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+  }
+
+  const hLongBottomY = hPadT + hPlotH;
+  const hLongAreaFill = hLongPoints.length > 0
+    ? `${hLongLinePath} L ${hLongPoints[hLongPoints.length - 1].x.toFixed(1)},${hLongBottomY} L ${hLongPoints[0].x.toFixed(1)},${hLongBottomY} Z`
+    : '';
+  const isLongOverallUp = (hLongPoints[hLongPoints.length - 1]?.net || 0) >= 0;
+  const hLongStrokeColor = isLongOverallUp ? '#38bdf8' : '#f87171';
+  const hLongZeroY = hPadT + hPlotH - ((0 - hLongYMin) / hLongYRange) * hPlotH;
+
+  // 2. Short Period (Weekly Trend)
+  const hWeekVals = weeksData.map(w => w.net);
+  const hWeekMin = Math.min(0, ...hWeekVals);
+  const hWeekMax = Math.max(50, ...hWeekVals);
+  const hWeekSpan = hWeekMax - hWeekMin || 50;
+  const hWeekMargin = hWeekSpan * 0.18;
+  const hWeekYMin = hWeekMin - hWeekMargin;
+  const hWeekYMax = hWeekMax + hWeekMargin;
+  const hWeekYRange = hWeekYMax - hWeekYMin || 1;
+
+  const hWeekPoints = weeksData.map((w, idx) => {
+    const x = weeksData.length > 1
+      ? hPadL + (idx / (weeksData.length - 1)) * hPlotW
+      : hPadL + hPlotW / 2;
+    const y = hPadT + hPlotH - ((w.net - hWeekYMin) / hWeekYRange) * hPlotH;
+    return { ...w, x, y };
+  });
+
+  let hWeekLinePath = '';
+  if (hWeekPoints.length === 1) {
+    hWeekLinePath = `M ${hWeekPoints[0].x - 20},${hWeekPoints[0].y} L ${hWeekPoints[0].x + 20},${hWeekPoints[0].y}`;
+  } else if (hWeekPoints.length === 2) {
+    hWeekLinePath = `M ${hWeekPoints[0].x.toFixed(1)},${hWeekPoints[0].y.toFixed(1)} L ${hWeekPoints[1].x.toFixed(1)},${hWeekPoints[1].y.toFixed(1)}`;
+  } else if (hWeekPoints.length > 2) {
+    hWeekLinePath = `M ${hWeekPoints[0].x.toFixed(1)},${hWeekPoints[0].y.toFixed(1)}`;
+    for (let i = 0; i < hWeekPoints.length - 1; i++) {
+      const p0 = hWeekPoints[i === 0 ? 0 : i - 1];
+      const p1 = hWeekPoints[i];
+      const p2 = hWeekPoints[i + 1];
+      const p3 = hWeekPoints[i + 2] || p2;
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      hWeekLinePath += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+  }
+
+  const hWeekAreaFill = hWeekPoints.length > 0
+    ? `${hWeekLinePath} L ${hWeekPoints[hWeekPoints.length - 1].x.toFixed(1)},${hLongBottomY} L ${hWeekPoints[0].x.toFixed(1)},${hLongBottomY} Z`
+    : '';
+  const isWeekOverallUp = (hWeekPoints[hWeekPoints.length - 1]?.net || 0) >= 0;
+  const hWeekStrokeColor = isWeekOverallUp ? '#38bdf8' : '#f87171';
+  const hWeekZeroY = hPadT + hPlotH - ((0 - hWeekYMin) / hWeekYRange) * hPlotH;
 
   // --- 6-MONTHS OVERVIEW & CHARTS ---
   const txMonthKeys = Array.from(new Set(
@@ -1222,30 +1361,6 @@ export default function FinancesTab({
         </div>
 
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {/* Total Net Worth Button -> Opens History & Charts Popup */}
-          <button
-            type="button"
-            onClick={() => setShowHistoryModal(true)}
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--accent-primary, #38bdf8)',
-              borderRadius: '10px',
-              padding: '5px 8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(56, 189, 248, 0.15)'
-            }}
-            title="Tocca per aprire lo Storico e i Dettagli Finanziari"
-          >
-            <span style={{ fontSize: '11px' }}>📈</span>
-            <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Tot:</span>
-            <span style={{ fontSize: '12px', fontWeight: '900', color: totalPatrimonio >= 0 ? '#38bdf8' : '#ef4444' }}>
-              {fmtCurrency(totalPatrimonio)}
-            </span>
-          </button>
-
           {/* Privacy Eye Toggle */}
           <button
             onClick={handleTogglePrivacy}
@@ -1253,7 +1368,7 @@ export default function FinancesTab({
               background: 'var(--bg-secondary)',
               border: '1px solid var(--glass-border)',
               borderRadius: '10px',
-              padding: '6px 10px',
+              padding: '6px 12px',
               fontSize: '14px',
               cursor: 'pointer',
               color: 'var(--text-primary)',
@@ -1299,11 +1414,27 @@ export default function FinancesTab({
           gap: '10px'
         }}
       >
-        {/* Header con Patrimonio Hero e Variazione */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* Header con Patrimonio Hero e Variazione (Toccabile per aprire Storico e Grafici) */}
+        <div
+          onClick={() => setShowHistoryModal(true)}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            cursor: 'pointer',
+            padding: '2px 4px',
+            margin: '-2px -4px',
+            borderRadius: '8px',
+            transition: 'background 0.15s ease'
+          }}
+          title="Tocca per aprire lo Storico e i Grafici Finanziari"
+        >
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              📈 Patrimonio Totale
+            <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>📈 Patrimonio Totale</span>
+              <span style={{ fontSize: '9px', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.25)', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
+                Storico ➔
+              </span>
             </div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
               {fmtCurrency(activePoint.value)}
@@ -1799,28 +1930,46 @@ export default function FinancesTab({
 
           <div style={{ display: 'flex', gap: '6px' }}>
             {investmentsList.some(i => i.ticker) && (
-              <button
-                type="button"
-                onClick={() => handleSyncOnlineQuotes(false)}
-                disabled={isSyncingQuotes}
-                style={{
-                  background: 'rgba(56, 189, 248, 0.15)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
-                  color: '#38bdf8',
-                  padding: '3px 7px',
-                  borderRadius: '6px',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  cursor: isSyncingQuotes ? 'wait' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Sincronizza quotazioni online via mercato"
-              >
-                <span>{isSyncingQuotes ? '⏳' : '🌐'}</span>
-                <span>{isSyncingQuotes ? 'Sync...' : 'Aggiorna'}</span>
-              </button>
+              <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => handleSyncOnlineQuotes(false)}
+                  disabled={isSyncingQuotes}
+                  style={{
+                    background: 'rgba(56, 189, 248, 0.15)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    color: '#38bdf8',
+                    padding: '3px 7px',
+                    borderRadius: '6px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    cursor: isSyncingQuotes ? 'wait' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Sincronizza quotazioni online via mercato"
+                >
+                  <span>{isSyncingQuotes ? '⏳' : '🌐'}</span>
+                  <span>{isSyncingQuotes ? 'Sync...' : 'Aggiorna'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSyncHelpModal(true)}
+                  style={{
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--glass-border)',
+                    color: 'var(--text-secondary)',
+                    padding: '3px 6px',
+                    borderRadius: '6px',
+                    fontSize: '10px',
+                    cursor: 'pointer'
+                  }}
+                  title="Impostazioni Proxy e Sincronizzazione"
+                >
+                  ⚙️
+                </button>
+              </div>
             )}
 
             <button
@@ -2191,11 +2340,11 @@ export default function FinancesTab({
       {showHistoryModal && (
         <div
           onClick={() => setShowHistoryModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '420px', maxHeight: '90vh', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '420px', maxHeight: '100%', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 12px 36px rgba(0,0,0,0.5)' }}
           >
             
             {/* Modal Header */}
@@ -2343,85 +2492,123 @@ export default function FinancesTab({
               )}
             </div>
 
-            {/* 4a. Grafico Breve Periodo (Settimane del Mese) */}
+            {/* 4a. Grafico Breve Periodo (Settimane del Mese - Stile Borsa / Revolut) */}
             {historyRange === 'short' && (
               <div>
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
                     <span style={{ fontWeight: 'bold' }}>Andamento per settimana ({formatMonthShort(selectedHistoryMonth)})</span>
-                    <div style={{ display: 'flex', gap: '8px', fontSize: '9px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#4ade80', display: 'inline-block' }}></span> Entrate</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#f87171', display: 'inline-block' }}></span> Uscite</span>
-                    </div>
+                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Saldo netto settimanale</span>
                   </div>
 
-                  {/* Weekly Bar Chart Container */}
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '90px', gap: '6px', padding: '0 2px', marginBottom: '6px', borderBottom: '1px solid var(--glass-border)' }}>
-                    {weeksData.map(wk => {
-                      const incHeight = Math.max(4, Math.round((wk.income / maxWeekVal) * 75));
-                      const expHeight = Math.max(4, Math.round((wk.expenses / maxWeekVal) * 75));
-                      const isSelected = selectedHistoryWeek === wk.id;
+                  {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
+                  <svg viewBox={`0 0 ${histSvgW} ${histSvgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                    <defs>
+                      <linearGradient id="histWeekGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={hWeekStrokeColor} stopOpacity="0.35" />
+                        <stop offset="100%" stopColor={hWeekStrokeColor} stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
 
+                    {/* Griglia Max, Zero, Min */}
+                    <line x1={hPadL} y1={hPadT + 2} x2={histSvgW - hPadR} y2={hPadT + 2} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
+                    <text x={hPadL - 4} y={hPadT + 5} textAnchor="end" fill="var(--text-muted)" fontSize="8">
+                      {fmtCompactCurrency(hWeekMax)}
+                    </text>
+
+                    {hWeekZeroY >= hPadT && hWeekZeroY <= hLongBottomY && (
+                      <>
+                        <line x1={hPadL} y1={hWeekZeroY} x2={histSvgW - hPadR} y2={hWeekZeroY} stroke="rgba(255,255,255,0.15)" strokeDasharray="2 2" />
+                        <text x={hPadL - 4} y={hWeekZeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="8">0€</text>
+                      </>
+                    )}
+
+                    <line x1={hPadL} y1={hLongBottomY} x2={histSvgW - hPadR} y2={hLongBottomY} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
+                    <text x={hPadL - 4} y={hLongBottomY + 3} textAnchor="end" fill="var(--text-muted)" fontSize="8">
+                      {fmtCompactCurrency(hWeekMin)}
+                    </text>
+
+                    {/* Gradient Area Fill */}
+                    {hWeekAreaFill && <path d={hWeekAreaFill} fill="url(#histWeekGrad)" />}
+
+                    {/* Continuous Spline Line */}
+                    {hWeekLinePath && (
+                      <path
+                        d={hWeekLinePath}
+                        fill="none"
+                        stroke={hWeekStrokeColor}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ filter: `drop-shadow(0 2px 5px ${hWeekStrokeColor}44)` }}
+                      />
+                    )}
+
+                    {/* Vertical guideline for active week */}
+                    {(() => {
+                      const activeWkPt = hWeekPoints.find(p => p.id === selectedHistoryWeek);
+                      if (!activeWkPt) return null;
+                      return (
+                        <line
+                          x1={activeWkPt.x}
+                          y1={hPadT}
+                          x2={activeWkPt.x}
+                          y2={hLongBottomY}
+                          stroke="#38bdf8"
+                          strokeDasharray="2 2"
+                        />
+                      );
+                    })()}
+
+                    {/* Dots per ogni settimana */}
+                    {hWeekPoints.map(pt => {
+                      const isSel = pt.id === selectedHistoryWeek;
+                      return (
+                        <g
+                          key={pt.id}
+                          onClick={() => setSelectedHistoryWeek(isSel ? null : pt.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+                          {isSel && <circle cx={pt.x} cy={pt.y} r="7" fill="#38bdf8" fillOpacity="0.3" />}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r={isSel ? "4.5" : "3.5"}
+                            fill={isSel ? '#fff' : (pt.net >= 0 ? '#4ade80' : '#f87171')}
+                            stroke={isSel ? '#38bdf8' : 'var(--bg-card)'}
+                            strokeWidth={isSel ? "2" : "1.5"}
+                          />
+                        </g>
+                      );
+                    })}
+                  </svg>
+
+                  {/* Settimane labels & Saldi sotto il grafico */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 8}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>
+                    {hWeekPoints.map(pt => {
+                      const isSel = pt.id === selectedHistoryWeek;
                       return (
                         <div
-                          key={wk.id}
-                          onClick={() => setSelectedHistoryWeek(isSelected ? null : wk.id)}
+                          key={pt.id}
+                          onClick={() => setSelectedHistoryWeek(isSel ? null : pt.id)}
                           style={{
-                            flex: 1,
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-end',
-                            alignItems: 'center',
+                            textAlign: 'center',
                             cursor: 'pointer',
-                            borderRadius: '6px',
-                            background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
-                            padding: '2px 1px',
-                            transition: 'all 0.15s ease'
+                            padding: '2px 4px',
+                            borderRadius: '4px',
+                            background: isSel ? 'rgba(56, 189, 248, 0.18)' : 'transparent'
                           }}
-                          title={`${wk.title}: +${fmtCurrency(wk.income)} / -${fmtCurrency(wk.expenses)} (Netto: ${fmtCurrency(wk.net)})`}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '75px', justifyContent: 'center', width: '100%' }}>
-                            {/* Income Bar */}
-                            <div
-                              style={{
-                                width: '42%',
-                                maxWidth: '12px',
-                                height: `${wk.income > 0 ? incHeight : 3}px`,
-                                background: wk.income > 0 ? '#4ade80' : 'rgba(255,255,255,0.06)',
-                                borderRadius: '3px 3px 1px 1px',
-                                boxShadow: wk.income > 0 ? '0 1px 4px rgba(74, 222, 128, 0.3)' : 'none'
-                              }}
-                            />
-                            {/* Expense Bar */}
-                            <div
-                              style={{
-                                width: '42%',
-                                maxWidth: '12px',
-                                height: `${wk.expenses > 0 ? expHeight : 3}px`,
-                                background: wk.expenses > 0 ? '#f87171' : 'rgba(255,255,255,0.06)',
-                                borderRadius: '3px 3px 1px 1px',
-                                boxShadow: wk.expenses > 0 ? '0 1px 4px rgba(248, 113, 113, 0.3)' : 'none'
-                              }}
-                            />
+                          <div style={{ fontSize: '9px', fontWeight: isSel ? 'bold' : 'normal', color: isSel ? '#38bdf8' : 'var(--text-muted)' }}>
+                            {pt.shortTitle}
                           </div>
-                          <div style={{ fontSize: '8px', color: isSelected ? 'var(--accent-primary, #38bdf8)' : 'var(--text-muted)', fontWeight: isSelected ? 'bold' : 'normal', marginTop: '4px', textAlign: 'center' }}>
-                            {wk.shortTitle}
+                          <div style={{ fontSize: '8px', fontWeight: 'bold', color: pt.net >= 0 ? '#4ade80' : '#f87171', marginTop: '1px' }}>
+                            {pt.net > 0 ? '+' : ''}{fmtCurrency(pt.net)}
                           </div>
                         </div>
                       );
                     })}
-                  </div>
-
-                  {/* Net summary pill row under bars */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}>
-                    {weeksData.map(wk => (
-                      <div key={wk.id} style={{ flex: 1, textAlign: 'center' }}>
-                        <span style={{ fontSize: '8px', fontWeight: 'bold', color: wk.net >= 0 ? (wk.net === 0 ? 'var(--text-muted)' : '#4ade80') : '#f87171' }}>
-                          {wk.net > 0 ? '+' : ''}{fmtCurrency(wk.net)}
-                        </span>
-                      </div>
-                    ))}
                   </div>
                 </div>
 
@@ -2469,94 +2656,133 @@ export default function FinancesTab({
               </div>
             )}
 
-            {/* 4b. Grafico Lungo Periodo (Multi-Mese) */}
+            {/* 4b. Grafico Lungo Periodo (Multi-Mese - Stile Borsa / Revolut) */}
             {historyRange === 'long' && (
               <div>
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
                     <span style={{ fontWeight: 'bold' }}>Trend Storico Ultimi {longPeriodMonthsCount} Mesi</span>
-                    <div style={{ display: 'flex', gap: '8px', fontSize: '9px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#4ade80', display: 'inline-block' }}></span> Entrate</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '7px', height: '7px', borderRadius: '2px', background: '#f87171', display: 'inline-block' }}></span> Uscite</span>
-                    </div>
+                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Risparmio netto mensile</span>
                   </div>
 
-                  {/* Multi-Month Bar Chart */}
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '90px', gap: '4px', padding: '0 2px', marginBottom: '6px', borderBottom: '1px solid var(--glass-border)' }}>
-                    {longPeriodData.map(m => {
-                      const incHeight = Math.max(4, Math.round((m.income / maxLongVal) * 75));
-                      const expHeight = Math.max(4, Math.round((m.expenses / maxLongVal) * 75));
-                      const isSelected = selectedHistoryMonth === m.monthKey;
+                  {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
+                  <svg viewBox={`0 0 ${histSvgW} ${histSvgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                    <defs>
+                      <linearGradient id="histLongGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={hLongStrokeColor} stopOpacity="0.35" />
+                        <stop offset="100%" stopColor={hLongStrokeColor} stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
 
+                    {/* Griglia Max, Zero, Min */}
+                    <line x1={hPadL} y1={hPadT + 2} x2={histSvgW - hPadR} y2={hPadT + 2} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
+                    <text x={hPadL - 4} y={hPadT + 5} textAnchor="end" fill="var(--text-muted)" fontSize="8">
+                      {fmtCompactCurrency(hLongMax)}
+                    </text>
+
+                    {hLongZeroY >= hPadT && hLongZeroY <= hLongBottomY && (
+                      <>
+                        <line x1={hPadL} y1={hLongZeroY} x2={histSvgW - hPadR} y2={hLongZeroY} stroke="rgba(255,255,255,0.15)" strokeDasharray="2 2" />
+                        <text x={hPadL - 4} y={hLongZeroY + 3} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="8">0€</text>
+                      </>
+                    )}
+
+                    <line x1={hPadL} y1={hLongBottomY} x2={histSvgW - hPadR} y2={hLongBottomY} stroke="rgba(255,255,255,0.07)" strokeDasharray="3 3" />
+                    <text x={hPadL - 4} y={hLongBottomY + 3} textAnchor="end" fill="var(--text-muted)" fontSize="8">
+                      {fmtCompactCurrency(hLongMin)}
+                    </text>
+
+                    {/* Gradient Area Fill */}
+                    {hLongAreaFill && <path d={hLongAreaFill} fill="url(#histLongGrad)" />}
+
+                    {/* Continuous Spline Line */}
+                    {hLongLinePath && (
+                      <path
+                        d={hLongLinePath}
+                        fill="none"
+                        stroke={hLongStrokeColor}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ filter: `drop-shadow(0 2px 5px ${hLongStrokeColor}44)` }}
+                      />
+                    )}
+
+                    {/* Vertical guideline for active month */}
+                    {(() => {
+                      const selPt = hLongPoints.find(p => p.monthKey === selectedHistoryMonth);
+                      if (!selPt) return null;
+                      return (
+                        <line
+                          x1={selPt.x}
+                          y1={hPadT}
+                          x2={selPt.x}
+                          y2={hLongBottomY}
+                          stroke="#38bdf8"
+                          strokeDasharray="2 2"
+                        />
+                      );
+                    })()}
+
+                    {/* Dots per ogni mese */}
+                    {hLongPoints.map(pt => {
+                      const isSel = pt.monthKey === selectedHistoryMonth;
+                      return (
+                        <g
+                          key={pt.monthKey}
+                          onClick={() => {
+                            setSelectedHistoryMonth(pt.monthKey);
+                            setSelectedHistoryWeek(null);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+                          {isSel && <circle cx={pt.x} cy={pt.y} r="7" fill="#38bdf8" fillOpacity="0.3" />}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r={isSel ? "4.5" : "3.5"}
+                            fill={isSel ? '#fff' : (pt.net >= 0 ? '#4ade80' : '#f87171')}
+                            stroke={isSel ? '#38bdf8' : 'var(--bg-card)'}
+                            strokeWidth={isSel ? "2" : "1.5"}
+                          />
+                        </g>
+                      );
+                    })}
+                  </svg>
+
+                  {/* Mesi labels & Saldi sotto il grafico */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 8}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>
+                    {hLongPoints.map(pt => {
+                      const isSel = pt.monthKey === selectedHistoryMonth;
                       return (
                         <div
-                          key={m.monthKey}
+                          key={pt.monthKey}
                           onClick={() => {
-                            setSelectedHistoryMonth(m.monthKey);
+                            setSelectedHistoryMonth(pt.monthKey);
                             setSelectedHistoryWeek(null);
                           }}
                           style={{
-                            flex: 1,
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-end',
-                            alignItems: 'center',
+                            textAlign: 'center',
                             cursor: 'pointer',
-                            borderRadius: '8px',
-                            background: isSelected ? 'rgba(56, 189, 248, 0.22)' : 'transparent',
-                            border: isSelected ? '1.5px solid #38bdf8' : '1.5px solid transparent',
-                            boxShadow: isSelected ? '0 0 10px rgba(56, 189, 248, 0.35)' : 'none',
-                            padding: '2px 1px',
-                            transition: 'all 0.15s ease'
+                            padding: '2px 3px',
+                            borderRadius: '4px',
+                            background: isSel ? 'rgba(56, 189, 248, 0.18)' : 'transparent'
                           }}
-                          title={`Tocca per dettagli ${m.fullLabel}: +${fmtCurrency(m.income)} / -${fmtCurrency(m.expenses)} (Netto: ${fmtCurrency(m.net)})`}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '75px', justifyContent: 'center', width: '100%' }}>
-                            {/* Income */}
-                            <div
-                              style={{
-                                width: '42%',
-                                maxWidth: '12px',
-                                height: `${m.income > 0 ? incHeight : 3}px`,
-                                background: m.income > 0 ? '#4ade80' : 'rgba(255,255,255,0.06)',
-                                borderRadius: '3px 3px 1px 1px',
-                                boxShadow: m.income > 0 ? '0 1px 4px rgba(74, 222, 128, 0.3)' : 'none'
-                              }}
-                            />
-                            {/* Expense */}
-                            <div
-                              style={{
-                                width: '42%',
-                                maxWidth: '12px',
-                                height: `${m.expenses > 0 ? expHeight : 3}px`,
-                                background: m.expenses > 0 ? '#f87171' : 'rgba(255,255,255,0.06)',
-                                borderRadius: '3px 3px 1px 1px',
-                                boxShadow: m.expenses > 0 ? '0 1px 4px rgba(248, 113, 113, 0.3)' : 'none'
-                              }}
-                            />
+                          <div style={{ fontSize: '9px', fontWeight: isSel ? 'bold' : 'normal', color: isSel ? '#38bdf8' : 'var(--text-muted)' }}>
+                            {pt.shortLabel}
                           </div>
-                          <div style={{ fontSize: '8px', color: isSelected ? 'var(--accent-primary, #38bdf8)' : 'var(--text-muted)', fontWeight: isSelected ? 'bold' : 'normal', marginTop: '4px', textAlign: 'center' }}>
-                            {m.shortLabel}
+                          <div style={{ fontSize: '7px', fontWeight: 'bold', color: pt.net >= 0 ? '#4ade80' : '#f87171', marginTop: '1px' }}>
+                            {pt.net > 0 ? '+' : ''}{fmtCurrency(pt.net)}
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  {/* Net summary pill row under bars */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
-                    {longPeriodData.map(m => (
-                      <div key={m.monthKey} style={{ flex: 1, textAlign: 'center' }}>
-                        <span style={{ fontSize: '7px', fontWeight: 'bold', color: m.net >= 0 ? (m.net === 0 ? 'var(--text-muted)' : '#4ade80') : '#f87171' }}>
-                          {m.net > 0 ? '+' : ''}{fmtCurrency(m.net)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
                   <div style={{ textAlign: 'center', fontSize: '9px', color: 'var(--accent-primary, #38bdf8)', marginTop: '8px', fontWeight: '500' }}>
-                    👆 Tocca un mese nel grafico per visualizzarne subito i movimenti e le statistiche
+                    👆 Tocca un punto o un mese nel grafico per visualizzarne subito i movimenti e le statistiche
                   </div>
                 </div>
 
@@ -4217,6 +4443,78 @@ export default function FinancesTab({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Sincronizzazione Mercati & Configurazione Proxy */}
+      {showSyncHelpModal && (
+        <div
+          onClick={() => setShowSyncHelpModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '400px', maxHeight: '100%', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 12px 36px rgba(0,0,0,0.5)' }}
+          >
+            <div>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                🌐 Sincronizzazione Mercati
+              </h3>
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '3px' }}>
+                Come funzionano le quotazioni online degli investimenti
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', fontSize: '11px', lineHeight: '1.45', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div>
+                🔒 <b style={{ color: 'var(--text-primary)' }}>Blocco CORS dei browser:</b> Per sicurezza, i browser mobili (iOS Safari, Android Chrome) impediscono a qualsiasi sito o PWA di chiamare direttamente Yahoo Finance senza un proxy intermedio.
+              </div>
+              <div>
+                ✏️ <b style={{ color: '#38bdf8' }}>Aggiornamento Rapido:</b> Puoi aggiornare qualsiasi quota in 2 secondi toccando l'icona della matita ✏️ accanto al prezzo nella tessera investimenti.
+              </div>
+              <div>
+                ⚡ <b style={{ color: '#4ade80' }}>Sincronizzazione Automatica:</b> L'app prova automaticamente diversi nodi di rete pubblici (come allorigins). Tuttavia, le reti telefoniche o i nodi sovraccarichi possono rallentare o bloccare le richieste.
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveCustomProxy} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'block' }}>
+                  Proxy Personale (Opzionale, es. Cloudflare Worker)
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://mio-proxy.workers.dev"
+                  value={customProxyInput}
+                  onChange={(e) => setCustomProxyInput(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '4px', boxSizing: 'border-box' }}
+                />
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                  Se possiedi un Cloudflare Worker gratuito (100.000 richieste/giorno senza limiti), incolla qui il suo URL. Lascia vuoto per usare i server di fallback predefiniti.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowSyncHelpModal(false)}
+                  style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Chiudi
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary, #38bdf8)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Salva Configurazione
+                </button>
+              </div>
+            </form>
+
+            <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)' }}>
+              Tocca all'esterno per chiudere
+            </div>
           </div>
         </div>
       )}
