@@ -59,50 +59,58 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'var(--bg-card, #1e293b)',
-          border: '1px solid var(--glass-border, rgba(255,255,255,0.12))',
-          borderRadius: '20px',
+          background: 'linear-gradient(180deg, #161f30 0%, #0f172a 100%)',
+          border: '1px solid rgba(56, 189, 248, 0.25)',
+          borderRadius: '24px',
           width: '100%',
-          maxWidth: '650px',
+          maxWidth: '660px',
           height: '100%',
           maxHeight: '100%',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 45px rgba(0, 0, 0, 0.6)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(56, 189, 248, 0.08)',
           overflow: 'hidden'
         }}
       >
         {/* Header del Manuale */}
         <div
           style={{
-            padding: '12px 18px',
-            borderBottom: '1px solid var(--glass-border)',
+            padding: '14px 20px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             textAlign: 'center',
-            background: 'var(--bg-secondary)',
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(10px)',
             flexShrink: 0
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>📖</span>
-            <h2 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)' }}>
-              Manuale di Utilizzo Quest Life
-            </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '20px', filter: 'drop-shadow(0 0 8px rgba(56, 189, 248, 0.6))' }}>📖</span>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <h2 style={{ margin: 0, fontSize: '15px', fontWeight: '900', letterSpacing: '0.4px', color: '#f8fafc' }}>
+                  Grimorio di Quest Life
+                </h2>
+                <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '2px 7px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.4)', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                  Guida Ufficiale
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Barra di Navigazione Capitoli (Pillole orizzontali scorrevoli) */}
+        {/* Barra di Navigazione Capitoli (Pillole runiche orizzontali scorrevoli) */}
         <div
           className="no-scrollbar"
           style={{
             display: 'flex',
-            gap: '6px',
+            gap: '8px',
             overflowX: 'auto',
-            padding: '10px 16px',
-            background: 'var(--bg-primary)',
-            borderBottom: '1px solid var(--glass-border)',
+            padding: '10px 18px',
+            background: 'rgba(15, 23, 42, 0.45)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
             flexShrink: 0
           }}
         >
@@ -114,41 +122,50 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                 type="button"
                 onClick={() => setActiveChapter(ch.id)}
                 style={{
-                  background: isSel ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-secondary)',
-                  color: isSel ? '#ffffff' : 'var(--text-secondary)',
-                  border: isSel ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
-                  boxShadow: isSel ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
-                  borderRadius: '10px',
-                  padding: '6px 12px',
+                  background: isSel
+                    ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
+                    : 'rgba(30, 41, 59, 0.6)',
+                  color: isSel ? '#ffffff' : '#94a3b8',
+                  border: isSel
+                    ? '1px solid #38bdf8'
+                    : '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: isSel
+                    ? '0 0 16px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                    : 'none',
+                  borderRadius: '12px',
+                  padding: '7px 13px',
                   fontSize: '11px',
-                  fontWeight: 'bold',
+                  fontWeight: isSel ? '800' : '600',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transform: isSel ? 'scale(1.02)' : 'scale(1)'
                 }}
               >
-                <span>{ch.icon}</span>
+                <span style={{ fontSize: '14px', filter: isSel ? 'drop-shadow(0 0 4px rgba(255,255,255,0.6))' : 'none' }}>{ch.icon}</span>
                 <span>{ch.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Area di Contenuto del Capitolo (Scrollabile) */}
+        {/* Area di Contenuto del Capitolo (Scrollabile a tutta altezza senza footer superfluo) */}
         <div
+          className="no-scrollbar"
           style={{
-            padding: '20px',
+            padding: '20px 22px 30px 22px',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '18px',
-            color: 'var(--text-primary)',
+            gap: '20px',
+            color: '#e2e8f0',
             fontSize: '13px',
-            lineHeight: '1.55'
+            lineHeight: '1.6',
+            flex: 1
           }}
         >
 
@@ -157,258 +174,325 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
           {/* ========================================================== */}
           {activeChapter === 'rpg' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '26px' }}>⚔️</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Meccaniche RPG: Livelli, XP & Statistiche
+              {/* Hero Banner Capitolo */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(30, 41, 59, 0.4) 100%)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>⚔️</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#f8fafc' }}>
+                    La Tua Vita è il Gioco di Ruolo Definitivo
                   </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Come trasformare la tua vita reale in un gioco di ruolo coinvolgente
-                  </div>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', lineHeight: '1.45' }}>
+                  "Non sei uno spettatore passivo della tua esistenza: ogni singola azione reale si converte in Esperienza tangibile per potenziare il tuo eroe."
                 </div>
               </div>
 
+              {/* I 6 Attributi Primari */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🛡️ I 6 Attributi Primari del Giocatore
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Ogni azione, abitudine o missione completata assegna punti esperienza (XP) che sviluppano attributi specifici del tuo personaggio:
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🛡️</span>
+                  <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#f1f5f9', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    I 6 Attributi Primari del Personaggio
+                  </h4>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                  Completando abitudini e missioni guadagni punti XP che sviluppano specifici tratti del tuo profilo:
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <b>💪 Forza (STR):</b> Allenamento fisico, resistenza, pesistica, disciplina e sforzi intensi.
+                  <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <b style={{ color: '#ef4444' }}>💪 STR (Forza):</b> Allenamento con i pesi, calisthenics, resistenza fisica e docce fredde.
                   </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <b>⚡ Destrezza (DEX):</b> Velocità, rapidità mentale, produttività, agilità e multitasking efficace.
+                  <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <b style={{ color: '#38bdf8' }}>⚡ DEX (Destrezza):</b> Zero procrastinazione, agilità, produttività chirurgica e velocità d'azione.
                   </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <b>🛡️ Costituzione (CON):</b> Idratazione, sonno ristoratore, alimentazione sana e recupero.
+                  <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <b style={{ color: '#22c55e' }}>🛡️ CON (Costituzione):</b> Sonno ristoratore, idratazione corretta, postura e recupero fisiologico.
                   </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <b>🧠 Intelligenza (INT):</b> Studio, lettura, corsi formativi, coding e problem solving.
+                  <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <b style={{ color: '#818cf8' }}>🧠 INT (Intelligenza):</b> Studio, lettura vorace di saggi, coding, corsi e apprendimento continuo.
                   </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <b>✨ Saggezza (WIS):</b> Meditazione, mindfulness, riflessione serale, gratitudine e benessere emotivo.
+                  <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <b style={{ color: '#f59e0b' }}>✨ WIS (Saggezza):</b> Meditazione quotidiana, mindfulness, riflessione serale e gestione dello stress.
                   </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <b>👑 Carisma (CHA):</b> Relazioni sociali, public speaking, leadership, comunicazione ed empatia.
+                  <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                    <b style={{ color: '#ec4899' }}>👑 CHA (Carisma):</b> Relazioni autentiche, public speaking, gentilezza, networking ed empatia.
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📈 Livelli, Titoli & Curva di Esperienza
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Il tuo livello generale sale accumulando XP complessivi. Man mano che sali di livello sblocchi nuovi titoli onorifici (da <i>Novizio</i> a <i>Leggenda Vivente</i>).
+              {/* Livelli, Titoli e Moltiplicatore */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <b style={{ color: '#38bdf8', fontSize: '13px' }}>📈 Livelli & Rango</b>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                    Accumulando XP sblocchi nuovi livelli e titoli onorifici (da <i>Novizio</i> fino a <i>Paladino</i> e <i>Leggenda</i>). La barra XP misura la tua evoluzione nel tempo.
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <b style={{ color: '#f59e0b', fontSize: '13px' }}>🔥 Streak & Moltiplicatore</b>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                    La costanza è il tuo moltiplicatore: completare le abitudini ogni giorno aumenta gli XP guadagnati. Non interrompere la catena!
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🔥 Streak (Serie Consecutive) & Moltiplicatore
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Mantenere una serie attiva completando le tue abitudini giorno dopo giorno aumenta il tuo moltiplicatore di XP. Se salti un giorno, la serie si azzera, ma puoi usare uno scudo protettivo o un giorno di riposo per preservarla!
-                </div>
+              {/* Pro Tip Box */}
+              <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11.5px', lineHeight: '1.45', color: '#fde68a' }}>
+                💡 <b>Consiglio dell'Eroe:</b> La costanza batte l'intensità. Tre piccole abitudini completate ogni singolo giorno per un mese generano un impatto dieci volte superiore rispetto a uno sforzo colossale isolato.
               </div>
             </>
           )}
 
           {/* ========================================================== */}
-          {/* CAPITOLO 3: ABITUDINI & ROUTINE                          */}
+          {/* CAPITOLO 2: ABITUDINI & ROUTINE                          */}
           {/* ========================================================== */}
           {activeChapter === 'habits' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '26px' }}>🎯</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Abitudini (Habits) & Giornate Tipo
+              {/* Hero Banner Capitolo */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(30, 41, 59, 0.4) 100%)',
+                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>🎯</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#f8fafc' }}>
+                    L'Arte della Costanza Automatica
                   </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Costruire costanza quotidiana attraverso abitudini atomic e routine del mattino e della sera
-                  </div>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', lineHeight: '1.45' }}>
+                  "I veri campioni non dipendono dalla motivazione temporanea: creano sistemi e routine inattaccabili."
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  ✅ Come tracciare le Abitudini Quotidiane
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Le abitudini sono azioni ricorrenti che ripeti ogni giorno (o in specifici giorni della settimana).
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li>Tocca il cerchio a destra per contrassegnare l'abitudine come completata per la data odierna.</li>
-                    <li>Tieni premuto o tocca per visualizzare i dettagli, le note, la serie storica e le statistiche di completamento.</li>
-                    <li>Puoi assegnare ad ogni abitudine un orario ideale della giornata (Mattina, Pomeriggio, Sera, Notte) per visualizzarle ordinate nella tua timeline.</li>
-                  </ul>
+              {/* Come tracciare */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#4ade80', fontSize: '13px' }}>⚡ Gestione Semplice & Rapida</b>
+                <ul style={{ margin: '4px 0 0 16px', padding: 0, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                  <li><b>Spunta al volo:</b> Tocca il cerchio a destra per completare l'azione e incassare immediatamente i tuoi XP.</li>
+                  <li><b>Fasce Orarie:</b> Assegna a ogni abitudine un momento del giorno (<i>Mattina, Pomeriggio, Sera</i>) per dare un flusso armonico alla tua giornata.</li>
+                  <li><b>Dettagli & Cronistoria:</b> Tocca l'abitudine per analizzare le tue serie passate e le percentuali di successo mensili.</li>
+                </ul>
+              </div>
+
+              {/* Giornate Tipo */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#38bdf8', fontSize: '13px' }}>💼 Giornate Tipo (Il Tuo Copilota Quotidiano)</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.45' }}>
+                  In <b>Impostazioni &gt; Giornate Tipo</b> puoi configurare modelli completi (es. <i>"Giorno di Lavoro Focalizzato"</i> o <i>"Domenica di Ricarica"</i>). Ciascun modello contiene una sequenza oraria guidata che azzera la stanchezza decisionale: ti basta seguire la scaletta.
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  💼 Giornate Tipo (Modelli di Routine)
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  In <b>Impostazioni &gt; Giornate Tipo</b> puoi configurare modelli predefiniti (ad es. <i>"Giorno Lavorativo"</i>, <i>"Giorno di Riposo"</i>, <i>"Sessione di Studio"</i>). Ciascun modello contiene una sequenza oraria di passi guidati che ti permettono di affrontare la giornata con la massima chiarezza e zero fatica decisionale.
-                </div>
+              {/* Pro Tip Box */}
+              <div style={{ background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11.5px', lineHeight: '1.45', color: '#bbf7d0' }}>
+                💡 <b>Consiglio dell'Eroe:</b> Associa sempre una nuova abitudine a un'azione che fai già in automatico (es. <i>"Subito dopo il caffè del mattino, berrò un bicchiere d'acqua ed eseguirò 2 minuti di stretching"</i>). È il principio del concatenamento delle abitudini atomiche.
               </div>
             </>
           )}
 
           {/* ========================================================== */}
-          {/* CAPITOLO 4: MISSIONI & CAMPAGNE                          */}
+          {/* CAPITOLO 3: MISSIONI & CAMPAGNE                          */}
           {/* ========================================================== */}
           {activeChapter === 'quests' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '26px' }}>🗺️</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Missioni (Quests) & Campagne Epiche
+              {/* Hero Banner Capitolo */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(30, 41, 59, 0.4) 100%)',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>🗺️</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#f8fafc' }}>
+                    Dalle Azioni ai Grandi Traguardi
                   </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Distinguere i compiti giornalieri dai grandi progetti a tappe
-                  </div>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', lineHeight: '1.45' }}>
+                  "Le abitudini mantengono solida la tua fortezza; le missioni ti spingono a esplorare e conquistare territori sconosciuti."
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📜 Differenza tra Abitudini e Missioni
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Mentre le <b>Abitudini</b> sono comportamenti che si ripetono per sempre (es. bere 2L d'acqua), le <b>Missioni</b> sono task concreti con un obiettivo e una fine (es. "Riparare la bicicletta", "Consegnare il report trimestrale").
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🏔️ Campagne Epiche a Tappe (Milestones)
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Le Campagne sono sfide di lunga durata (es. 30 giorni o più) suddivise in sotto-missioni giornaliere sequenziali:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li><b>Campagna Docce Fredde (30 giorni):</b> per allenare forza di volontà e resistenza.</li>
-                    <li><b>Campagna Digital Detox (7 giorni):</b> per riconquistare la concentrazione e limitare l'uso passivo dello smartphone.</li>
-                    <li>Puoi creare campagne personalizzate per qualsiasi tuo grande progetto di vita!</li>
+              {/* Differenza fondamentale chiarita */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#fbbf24', fontSize: '13px' }}>⚖️ Abitudini vs Missioni: La Differenza Chiave</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                  Un dubbio comune: cosa inserire come abitudine e cosa come missione?
+                  <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                    <li><b>Abitudini (Habits):</b> Riti ciclici infiniti che ripeti ogni giorno (es. bere 2L d'acqua, camminare 8.000 passi, meditare 10 min).</li>
+                    <li><b>Missioni (Quests):</b> Obiettivi specifici con un inizio e una conclusione definita (es. <i>"Rinnovare il passaporto"</i>, <i>"Riparare la bici"</i>, <i>"Consegnare il report"</i>).</li>
                   </ul>
                 </div>
+              </div>
+
+              {/* Campagne Epiche */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#38bdf8', fontSize: '13px' }}>🏔️ Campagne a Tappe (Sfide di Lungo Periodo)</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.45' }}>
+                  Le <b>Campagne</b> scompongono una sfida imponente (es. 30 o più giorni) in tappe giornaliere sequenziali:
+                  <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                    <li><b>Campagna Docce Fredde (30 gg):</b> Allena forza di volontà e resistenza mentale.</li>
+                    <li><b>Campagna Digital Detox (7 gg):</b> Ripristina la concentrazione e riduce la dipendenza da smartphone.</li>
+                    <li><b>Campagne Personalizzate:</b> Crea la tua avventura per qualsiasi tuo grande progetto di vita!</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Pro Tip Box */}
+              <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11.5px', lineHeight: '1.45', color: '#fde68a' }}>
+                💡 <b>Consiglio dell'Eroe:</b> Suddividi i grandi progetti in sotto-missioni da massimo 25-30 minuti. Il cervello adora spuntare vittorie frequenti: l'inerzia positiva generata ti renderà inarrestabile.
               </div>
             </>
           )}
 
           {/* ========================================================== */}
-          {/* CAPITOLO 5: NUTRIZIONE & SALUTE                           */}
+          {/* CAPITOLO 4: NUTRIZIONE & SALUTE                           */}
           {/* ========================================================== */}
           {activeChapter === 'nutrition' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '26px' }}>🥗</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Nutrizione, Macro & Scanner Etichette OCR
+              {/* Hero Banner Capitolo */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(30, 41, 59, 0.4) 100%)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>🥗</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#f8fafc' }}>
+                    Il Carburante del Tuo Avatar
                   </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Diario pasti, bilancio calorico, pesate e scanner per etichette nutrizionali
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', lineHeight: '1.45' }}>
+                  "Il tuo corpo fisico è l'armatura con cui affronti il mondo reale: un guerriero d'élite non può combattere con carburante scadente."
+                </div>
+              </div>
+
+              {/* I 3 Macronutrienti */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <b style={{ color: '#f87171', fontSize: '13px' }}>🥩 I 3 Macro: I Mattoni della Tua Energia</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                  Imposta il tuo fabbisogno calorico giornaliero (TDEE) nella scheda Nutrizione e monitora i tuoi obiettivi:
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                    <b style={{ color: '#ef4444' }}>🔴 Proteine (4 kcal/g):</b> Fondamentali per rigenerare la massa muscolare, accelerare il metabolismo e garantire sazietà prolungata.
+                  </div>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', border: '1px solid rgba(234, 179, 8, 0.2)' }}>
+                    <b style={{ color: '#eab308' }}>🟡 Carboidrati (4 kcal/g):</b> Il carburante primario per la concentrazione cerebrale e la potenza durante gli allenamenti.
+                  </div>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                    <b style={{ color: '#38bdf8' }}>🔵 Grassi Buoni (9 kcal/g):</b> Il pilastro indispensabile per l'equilibrio ormonale, il cervello e la salute cellulare.
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🥩 Calorie e Macronutrienti (I 3 Macro)
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Nella scheda <b>Nutrizione</b> puoi impostare il tuo fabbisogno calorico giornaliero (TDEE) e gli obiettivi dei 3 macro:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li><b>🔴 Proteine (4 kcal/g):</b> Fondamentali per massa magra, muscoli e sazietà.</li>
-                    <li><b>🟡 Carboidrati (4 kcal/g):</b> La fonte energetica primaria per cervello e allenamento.</li>
-                    <li><b>🔵 Grassi (9 kcal/g):</b> Essenziali per equilibrio ormonale e salute cellulare.</li>
-                  </ul>
+              {/* Scanner OCR & Trend del Peso */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <b style={{ color: '#38bdf8', fontSize: '13px' }}>📷 Scanner OCR Etichette</b>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                    Zero perdite di tempo a digitare: tocca il tasto fotocamera, inquadra la tabella nutrizionale e l'OCR compila calorie e macro in 2 secondi.
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <b style={{ color: '#4ade80', fontSize: '13px' }}>⚖️ Media Mobile a 7 Giorni</b>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
+                    Non farti ingannare dalle oscillazioni quotidiane di liquidi e sale. L'app calcola la media a 7 giorni per rivelare il tuo trend reale.
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📷 Scanner OCR per Etichette Alimentari
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Puoi aggiungere alimenti in 3 secondi usando la fotocamera del tuo cellulare:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li>Tocca il pulsante <b>"📷 Scansiona Etichetta"</b> quando inserisci un nuovo cibo.</li>
-                    <li>Inquadra la tabella nutrizionale sul retro della confezione: il motore OCR riconosce automaticamente calorie, proteine, carboidrati e grassi per 100g e compila la scheda per te!</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  ⚖️ Registro Pesate & Trend del Peso
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Registra il tuo peso al mattino a digiuno. L'app calcola la media mobile a 7 giorni per eliminare le normali fluttuazioni di liquidi e mostrarti la reale direzione del tuo trend corporeo.
-                </div>
+              {/* Pro Tip Box */}
+              <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11.5px', lineHeight: '1.45', color: '#fca5a5' }}>
+                💡 <b>Consiglio dell'Eroe:</b> Pesati sempre al mattino a digiuno, dopo essere andato in bagno. La costanza della misurazione batte l'ansia del singolo giorno: guarda solo la linea della media settimanale.
               </div>
             </>
           )}
 
           {/* ========================================================== */}
-          {/* CAPITOLO 6: DATI, BACKUP & PWA OFFLINE                    */}
+          {/* CAPITOLO 5: DATI, BACKUP & PWA OFFLINE                    */}
           {/* ========================================================== */}
           {activeChapter === 'data' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '26px' }}>💾</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Salvataggio Dati, Backup & Installazione PWA
+              {/* Hero Banner Capitolo */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(30, 41, 59, 0.4) 100%)',
+                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>💾</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#f8fafc' }}>
+                    Il Tuo Santuario Digitale Privato
                   </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Massima privacy: 100% offline, salvataggio su file e installazione su smartphone
-                  </div>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', lineHeight: '1.45' }}>
+                  "I tuoi progressi, i tuoi pensieri e i tuoi dati patrimoniali appartengono esclusivamente a te. Zero tracker, zero server terzi."
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🔒 Privacy Totale & Salvataggio Locale
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Quest Life non invia i tuoi dati sensibili a nessun server esterno. Tutto viene memorizzato direttamente nel database del tuo browser (IndexedDB / LocalStorage).
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📦 Esporta & Importa Backup JSON
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  In <b>Impostazioni &gt; Dati & Database</b>:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li><b>Esporta Dati:</b> Scarica in 1 secondo un file <code>quest_life_backup_....json</code> contenente tutte le tue statistiche, abitudini, finanze e pasti. Si consiglia di effettuare un backup settimanale.</li>
-                    <li><b>Importa Dati:</b> Ripristina il tuo intero profilo su qualsiasi dispositivo caricando il file JSON.</li>
-                    <li><b>Collega Database Locale (PC/Mac):</b> Tramite File System Access API puoi scegliere un file sul tuo computer: ogni modifica si salverà in tempo reale su disco!</li>
+              {/* Privacy & Backup */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#a78bfa', fontSize: '13px' }}>🔒 Sovranità Assoluta dei Tuoi Dati</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                  Quest Life è concepita con filosofia <b>Local-First</b>:
+                  <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                    <li><b>100% Offline:</b> L'applicazione risiede nella memoria del tuo browser (IndexedDB) e funziona ovunque, anche in modalità aereo.</li>
+                    <li><b>Esportazione JSON in 1 Secondo:</b> In <b>Impostazioni &gt; Dati</b> puoi scaricare con un tocco il file completo di backup per archiviarlo su drive, inviartelo via mail o importarlo su un altro dispositivo.</li>
+                    <li><b>Collegamento Database Locale (PC/Mac):</b> Tramite File System Access API puoi salvare un file direttamente nella cartella del computer: ogni modifica si salverà in tempo reale su disco.</li>
                   </ul>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📱 Come Installare Quest Life come App (PWA)
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Quest Life è una Progressive Web App (PWA) funzionante anche senza connessione internet:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li><b>Su iPhone / iPad (Safari):</b> Tocca il pulsante Condividi (icona quadrato con freccia in su) &gt; seleziona <b>"Aggiungi alla schermata Home"</b>.</li>
-                    <li><b>Su Android (Chrome):</b> Tocca i 3 puntini in alto a destra &gt; seleziona <b>"Installa applicazione"</b> (o "Aggiungi a schermata Home").</li>
+              {/* Installazione PWA */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#38bdf8', fontSize: '13px' }}>📱 Installazione come App Nativa (PWA)</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.45' }}>
+                  Puoi installare Quest Life senza passare dagli store:
+                  <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                    <li><b>Su iPhone / iPad (Safari):</b> Tocca il pulsante Condividi (quadrato con freccia in alto) &gt; seleziona <b>"Aggiungi alla schermata Home"</b>.</li>
+                    <li><b>Su Android (Chrome):</b> Tocca i tre puntini in alto a destra &gt; seleziona <b>"Installa applicazione"</b> (o "Aggiungi a schermata Home").</li>
                   </ul>
                 </div>
+              </div>
+
+              {/* Pro Tip Box */}
+              <div style={{ background: 'rgba(139, 92, 246, 0.08)', border: '1px solid rgba(139, 92, 246, 0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11.5px', lineHeight: '1.45', color: '#ddd6fe' }}>
+                💡 <b>Consiglio dell'Eroe:</b> Prendi la sana abitudine di esportare un file di backup ogni domenica sera durante il tuo review settimanale. Pochi secondi per custodire anni di crescita personale.
               </div>
             </>
           )}
@@ -418,23 +502,34 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
           {/* ========================================================== */}
           {activeChapter === 'finances' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '24px' }}>💰</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Finanze, Tesoro & Portafoglio ETF
+              {/* Hero Banner Capitolo */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(30, 41, 59, 0.4) 100%)',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>💰</span>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#f8fafc' }}>
+                    Costruisci la Tua Fortezza Economica
                   </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Gestione conti correnti, budget mensile, spese ricorrenti e sincronizzazione mercati
-                  </div>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', lineHeight: '1.45' }}>
+                  "Nessun avventuriero è davvero libero se è schiavo del disordine economico. La disciplina finanziaria è la tua armatura più solida."
                 </div>
               </div>
 
               {/* Box Finestra Segreta / Doppio Tocco */}
               <div
                 style={{
-                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(30, 41, 59, 0.6))',
-                  border: '1.5px solid var(--accent-gold, #f59e0b)',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(30, 41, 59, 0.6))',
+                  border: '1.5px solid #f59e0b',
                   borderRadius: '14px',
                   padding: '14px 16px',
                   display: 'flex',
@@ -444,19 +539,17 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '20px' }}>🗝️</span>
-                  <b style={{ fontSize: '13px', color: 'var(--accent-gold, #f59e0b)' }}>
+                  <b style={{ fontSize: '13px', color: '#fbbf24' }}>
                     Come Accedere: La Finestra Nascosta del Tesoro
                   </b>
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                  Per proteggere la tua privacy patrimoniale in pubblico o sul posto di lavoro, la schermata <b>Finanze & Tesoro</b> è volutamente nascosta.
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                  Perché la scheda Finanze non è visibile tra le normali linguette in basso? Perché quando usi l'app in pubblico, sui mezzi o in ufficio, nessuno deve sbirciare il tuo saldo o i tuoi investimenti.
                   <br />
-                  Nella barra di navigazione in basso a destra c'è l'icona <b>"Opzioni" (⚙️)</b>:
-                  <ul style={{ margin: '6px 0 2px 18px', padding: 0 }}>
-                    <li><b>Doppio tocco rapido su "Opzioni" (⚙️):</b> Apre all'istante la finestra segreta <b>Tesoro & Finanze (💰)</b>.</li>
-                    <li><b>Un altro tocco:</b> Ti riporta immediatamente alla schermata delle Opzioni normali.</li>
+                  <ul style={{ margin: '8px 0 2px 16px', padding: 0 }}>
+                    <li>👉 <b>Doppio tocco rapido su "Opzioni" (⚙️):</b> Nella barra di navigazione in basso a destra, fai due tocchi rapidi su Opzioni: si aprirà istantaneamente la schermata segreta <b>Tesoro & Finanze (💰)</b>.</li>
+                    <li>👉 <b>Un tocco singolo:</b> Ti riporta immediatamente alle Opzioni normali.</li>
                   </ul>
-                  In questo modo il saldo dei tuoi conti, il patrimonio netto e gli investimenti restano sempre protetti da sguardi indiscreti.
                 </div>
               </div>
 
@@ -464,9 +557,9 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               <div
                 style={{
                   background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(30, 41, 59, 0.6))',
-                  border: '1.5px solid var(--accent-primary, #38bdf8)',
+                  border: '1.5px solid #38bdf8',
                   borderRadius: '14px',
-                  padding: '14px 16px',
+                  padding: '16px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '12px'
@@ -475,7 +568,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '20px' }}>⚡</span>
-                    <b style={{ fontSize: '13px', color: 'var(--accent-primary, #38bdf8)' }}>
+                    <b style={{ fontSize: '13px', color: '#38bdf8' }}>
                       Guida Cloudflare Workers per Aggiornamento ETF
                     </b>
                   </div>
@@ -483,11 +576,11 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                     type="button"
                     onClick={handleCopyWorkerCode}
                     style={{
-                      background: copiedCode ? '#22c55e' : 'var(--accent-primary, #38bdf8)',
+                      background: copiedCode ? '#22c55e' : '#0284c7',
                       color: '#ffffff',
                       border: 'none',
-                      padding: '6px 14px',
-                      borderRadius: '8px',
+                      padding: '7px 14px',
+                      borderRadius: '10px',
                       fontSize: '11px',
                       fontWeight: 'bold',
                       cursor: 'pointer',
@@ -503,42 +596,31 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                   </button>
                 </div>
 
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Perché serve? <b>Yahoo Finance</b> e i browser mobili bloccano le richieste dirette per motivi di sicurezza (blocco CORS). Creando un tuo Cloudflare Worker personale gratuito (100.000 richieste al giorno gratis!), aggiri questo blocco istantaneamente senza limiti.
+                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                  <b>Perché serve?</b> I browser mobili impediscono per sicurezza di contattare direttamente Yahoo Finance (blocco CORS). Con un tuo Worker personale gratuito su Cloudflare (100.000 richieste al giorno gratis!), ottieni quotazioni aggiornate al millesimo in totale autonomia.
                 </div>
 
                 {/* Passaggi passo passo */}
-                <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
-                    📝 Procedura passo-passo da seguire su Cloudflare:
+                <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+                  <b style={{ color: '#f8fafc' }}>📝 I 4 Passaggi Semplici su Cloudflare:</b>
+                  <div>
+                    <b>1. Crea il Worker:</b> Vai su <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>dash.cloudflare.com</a> &gt; <i>Workers & Pages</i> &gt; <i>Create Application</i> &gt; scegli <b>Hello World</b> &gt; clicca <b>Deploy</b>.
                   </div>
                   <div>
-                    <b>1. Crea il Worker:</b> Entra su <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>dash.cloudflare.com</a>, vai su <i>Workers & Pages</i> &gt; <i>Create Application</i> &gt; scegli <b>Hello World</b> &gt; clicca <b>Deploy</b>.
+                    <b>2. Modifica il codice:</b> Clicca sul pulsante <b>"Edit code"</b> in alto a destra.
                   </div>
                   <div>
-                    <b>2. Modifica il codice:</b> Clicca sul pulsante <b>"Edit code"</b> (o "Quick edit") in alto a destra.
+                    <b>3. Incolla il codice:</b> Nel file <code>worker.js</code> a sinistra, cancella tutto e premi il tasto sopra <b>"Copia Codice Worker"</b>, quindi incollalo nell'editor. Clicca <b>Deploy</b>.
                   </div>
                   <div>
-                    <b>3. Incolla il codice:</b> Nell'editor a sinistra (file <code>worker.js</code>), <u>cancella tutto il testo presente</u> e clicca il tasto qui sopra <b>"Copia Codice Worker"</b>, quindi incollalo nell'editor.
-                  </div>
-                  <div>
-                    <b>4. Pubblica:</b> Clicca su <b>"Deploy"</b> in alto a destra.
-                  </div>
-                  <div>
-                    <b>5. Copia il link del Worker:</b> Torna alla pagina principale del tuo Worker. Vedrai l'indirizzo pubblico assegnato, ad esempio:
-                    <div style={{ background: 'var(--bg-secondary)', padding: '4px 8px', borderRadius: '6px', fontFamily: 'monospace', color: '#38bdf8', marginTop: '3px', fontSize: '11px', display: 'inline-block' }}>
-                      https://mio-proxy.tuonome.workers.dev
-                    </div>
-                  </div>
-                  <div>
-                    <b>6. Incolla in Quest Life:</b> Vai nella scheda <b>Finanze</b> di quest'app, nella sezione <b>Investimenti</b> tocca il fulmine <b>⚡</b> accanto ad "Aggiorna Prezzi", incolla l'URL del tuo Worker e tocca <b>Salva Configurazione</b>. Fatto!
+                    <b>4. Collega a Quest Life:</b> Copia l'indirizzo del tuo Worker (es. <code>https://nome-worker.tuonome.workers.dev</code>), entra nel Tesoro di Quest Life, tocca il fulmine <b>⚡</b> accanto ad <i>Aggiorna Prezzi</i> e incollalo nel campo <b>Proxy Personale</b>. Fatto!
                   </div>
                 </div>
 
                 {/* Blocco Codice */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Codice Completo per worker.js:</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 'bold' }}>Codice Completo per worker.js:</span>
                     <button
                       type="button"
                       onClick={handleCopyWorkerCode}
@@ -556,7 +638,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                       fontSize: '11px',
                       color: '#a5f3fc',
                       overflowX: 'auto',
-                      maxHeight: '180px',
+                      maxHeight: '160px',
                       margin: 0,
                       fontFamily: 'monospace'
                     }}
@@ -566,63 +648,39 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                 </div>
 
                 {/* Guida Ticker ETF */}
-                <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.25)', borderRadius: '10px', padding: '10px', fontSize: '11px', lineHeight: '1.4' }}>
-                  <b style={{ color: '#fbbf24' }}>💡 Come scrivere i Ticker degli ETF per Yahoo Finance:</b>
-                  <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}>
-                    Yahoo Finance richiede il suffisso della borsa su cui è quotato lo strumento:
+                <div style={{ background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.2)', borderRadius: '10px', padding: '10px', fontSize: '11px', lineHeight: '1.45' }}>
+                  <b style={{ color: '#fbbf24' }}>💡 Suffissi Borse per Yahoo Finance:</b>
+                  <div style={{ marginTop: '4px', color: '#cbd5e1' }}>
+                    Yahoo richiede il suffisso della borsa su cui è quotato lo strumento:
                     <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
                       <li><b>Borsa Italiana (Milano):</b> aggiungi <code>.MI</code> (es. <code>SWDA.MI</code>, <code>CSSPX.MI</code>, <code>LCWD.MI</code>, <code>SMEA.MI</code>)</li>
                       <li><b>Xetra (Germania):</b> aggiungi <code>.DE</code> (es. <code>VWCE.DE</code>, <code>EUNL.DE</code>, <code>IS3N.DE</code>)</li>
-                      <li><b>Azioni USA:</b> usa il ticker pulito (es. <code>AAPL</code>, <code>MSFT</code>, <code>NVDA</code>)</li>
+                      <li><b>Azioni USA:</b> senza suffisso (es. <code>AAPL</code>, <code>MSFT</code>, <code>NVDA</code>)</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
-              {/* Spiegazione generale Gestione Finanze */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🏛️ Gestione dei Conti & Patrimonio
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Il tuo patrimonio totale è la somma di:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li><b>💳 Conto Base:</b> Il tuo conto corrente principale per entrate e spese di tutti i giorni.</li>
-                    <li><b>💵 Contanti:</b> Il denaro liquido che porti nel portafoglio.</li>
-                    <li><b>🏦 Conti Secondari:</b> Puoi creare conti deposito, conti risparmio o investimenti, scegliendo se sono vincolati a tempo o svincolati, e specificando un eventuale tasso di interesse attivo annuo per calcolare la rendita passiva!</li>
-                    <li><b>📈 Investimenti & PAC:</b> Il controvalore totale calcolato dal prezzo attuale delle quote dei tuoi ETF moltiplicato per il numero di quote possedute.</li>
+              {/* Conti e Budget */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#f59e0b', fontSize: '13px' }}>🏛️ I 4 Pilastri del Patrimonio</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                  <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
+                    <li><b>💳 Conto Base:</b> Il conto per la vita di tutti i giorni.</li>
+                    <li><b>💵 Contanti:</b> La liquidità fisica nel portafoglio.</li>
+                    <li><b>🏦 Conti Secondari & Deposito:</b> Conti vincolati o svincolati con tasso di interesse annuo calcolato in tempo reale!</li>
+                    <li><b>📈 Investimenti & PAC:</b> Valore totale calcolato dal prezzo delle quote moltiplicato per i titoli posseduti.</li>
                   </ul>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📊 Budget Mensile & Categorie
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  All'inizio di ogni mese, Quest Life confronta le entrate totali con le uscite. Ciascuna spesa viene assegnata a una categoria (Alimentari, Svago, Casa, Trasporti, Salute, ecc.). Puoi impostare un budget massimo mensile per tenere sotto controllo il tasso di risparmio e ricevere badge RPG in base alla tua disciplina finanziaria.
-                </div>
+              {/* Pro Tip Box */}
+              <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', padding: '12px 14px', fontSize: '11.5px', lineHeight: '1.45', color: '#fde68a' }}>
+                💡 <b>Consiglio dell'Eroe:</b> Il segreto della ricchezza non è prevedere il mercato, ma la costanza dell'accumulo. Tratta i tuoi investimenti come una missione a lungo termine: lascia che il tempo e l'interesse composto combattano al tuo fianco.
               </div>
             </>
           )}
 
-        </div>
-
-        {/* Footer info touch outside */}
-        <div
-          style={{
-            padding: '8px 16px',
-            borderTop: '1px solid var(--glass-border)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: 'var(--bg-secondary)',
-            flexShrink: 0
-          }}
-        >
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            Tocca all'esterno per chiudere
-          </div>
         </div>
 
       </div>
