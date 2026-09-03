@@ -4499,11 +4499,11 @@ export default function FinancesTab({
       {showEditRecurringModal && editingRecurring && (
         <div
           onClick={() => setShowEditRecurringModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '330px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '340px', maxHeight: '100%', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
               🔓 Modifica Ricorrente (Super User)
@@ -4568,7 +4568,7 @@ export default function FinancesTab({
                   onChange={(e) => setEditRecCategory(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  {(editRecType === 'expense' ? expenseCategories : incomeCategories).map(c => (
+                  {(editRecType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).map(c => (
                     <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
                   ))}
                 </select>
