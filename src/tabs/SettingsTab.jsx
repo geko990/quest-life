@@ -346,9 +346,9 @@ export default function SettingsTab({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    🔓 Modifica Dati Passati, Storico & Cibi
+                    🔓 Super User: Modifica Avanzata (Saldi Conti, Cibi & Storico)
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Abilita la modifica e cancellazione avanzata dei cibi nel database, degli alimenti loggati e dei dati nello Storico Salute</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Abilita la modifica manuale dei saldi dei conti nel Tesoro, la correzione dei cibi nel database e dei dati nello Storico</div>
                 </div>
                 <input
                   type="checkbox"

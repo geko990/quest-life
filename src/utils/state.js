@@ -68,7 +68,8 @@ export function getInitialState() {
       transactions: [],
       savingGoals: [],
       secondaryAccounts: [],
-      recurringTransactions: []
+      recurringTransactions: [],
+      investments: []
     },
     health: {
       calories: { goal: 1600, consumed: 0, burned: 0 },
@@ -354,10 +355,23 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       secondaryAccounts: Array.isArray(parsed.finances.secondaryAccounts)
         ? parsed.finances.secondaryAccounts.map(a => ({
             ...a,
-            balance: parseSafeNum(a.balance, 0)
+            balance: parseSafeNum(a.balance, 0),
+            interestFrequency: a.interestFrequency || 'monthly'
           }))
         : [],
-      recurringTransactions: Array.isArray(parsed.finances.recurringTransactions) ? parsed.finances.recurringTransactions : []
+      recurringTransactions: Array.isArray(parsed.finances.recurringTransactions) ? parsed.finances.recurringTransactions : [],
+      investments: Array.isArray(parsed.finances.investments)
+        ? parsed.finances.investments.map(inv => ({
+            id: inv.id || ('inv_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
+            name: inv.name || 'Investimento',
+            ticker: (inv.ticker || '').trim().toUpperCase(),
+            shares: parseSafeNum(inv.shares, 0),
+            buyPrice: parseSafeNum(inv.buyPrice, 0),
+            currentPrice: parseSafeNum(inv.currentPrice, parseSafeNum(inv.buyPrice, 0)),
+            lastUpdated: inv.lastUpdated || null,
+            notes: inv.notes || ''
+          }))
+        : []
     };
   } else {
     state.finances = {
@@ -369,7 +383,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       transactions: [],
       savingGoals: [],
       secondaryAccounts: [],
-      recurringTransactions: []
+      recurringTransactions: [],
+      investments: []
     };
   }
 
