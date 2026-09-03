@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 
-export default function UserManualModal({ isOpen, onClose, initialChapter = 'finances' }) {
+export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg' }) {
   const [activeChapter, setActiveChapter] = useState(initialChapter);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  useEffect(() => {
+    if (initialChapter) {
+      setActiveChapter(initialChapter);
+    }
+  }, [initialChapter, isOpen]);
 
   if (!isOpen) return null;
 
@@ -25,12 +31,12 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'fin
   };
 
   const chapters = [
-    { id: 'finances', label: '💰 Finanze & ETF', icon: '💰' },
-    { id: 'rpg', label: '⚔️ RPG & Meccaniche', icon: '⚔️' },
-    { id: 'habits', label: '🎯 Abitudini & Routine', icon: '🎯' },
-    { id: 'quests', label: '🗺️ Missioni & Campagne', icon: '🗺️' },
-    { id: 'nutrition', label: '🥗 Nutrizione & Salute', icon: '🥗' },
-    { id: 'data', label: '💾 Backup & PWA', icon: '💾' }
+    { id: 'rpg', label: 'RPG & Meccaniche', icon: '⚔️' },
+    { id: 'habits', label: 'Abitudini & Routine', icon: '🎯' },
+    { id: 'quests', label: 'Missioni & Campagne', icon: '🗺️' },
+    { id: 'nutrition', label: 'Nutrizione & Salute', icon: '🥗' },
+    { id: 'data', label: 'Backup & PWA', icon: '💾' },
+    { id: 'finances', label: 'Finanze & ETF', icon: '💰' }
   ];
 
   return (
@@ -41,11 +47,13 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'fin
         inset: 0,
         zIndex: 10000,
         background: 'rgba(0, 0, 0, 0.72)',
-        backdropFilter: 'blur(5px)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '24px 14px'
+        padding: '65px 14px 72px 14px',
+        boxSizing: 'border-box'
       }}
     >
       <div
@@ -56,7 +64,8 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'fin
           borderRadius: '20px',
           width: '100%',
           maxWidth: '650px',
-          maxHeight: '90vh',
+          height: '100%',
+          maxHeight: '100%',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 20px 45px rgba(0, 0, 0, 0.6)',
@@ -66,48 +75,22 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'fin
         {/* Header del Manuale */}
         <div
           style={{
-            padding: '16px 20px',
+            padding: '12px 18px',
             borderBottom: '1px solid var(--glass-border)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
+            textAlign: 'center',
             background: 'var(--bg-secondary)',
             flexShrink: 0
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '24px' }}>📖</span>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)' }}>
-                Manuale di Utilizzo Quest Life
-              </h2>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                Guida interattiva a tutte le funzioni e integrazioni dell'app
-              </div>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>📖</span>
+            <h2 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)' }}>
+              Manuale di Utilizzo Quest Life
+            </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--text-secondary)',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              lineHeight: 1
-            }}
-            title="Chiudi manuale"
-          >
-            ✕
-          </button>
         </div>
 
         {/* Barra di Navigazione Capitoli (Pillole orizzontali scorrevoli) */}
@@ -170,170 +153,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'fin
         >
 
           {/* ========================================================== */}
-          {/* CAPITOLO 1: FINANZE & ETF (CON GUIDA CLOUDFLARE WORKER)    */}
-          {/* ========================================================== */}
-          {activeChapter === 'finances' && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-                <span style={{ fontSize: '26px' }}>💰</span>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    Finanze, Tesoro & Portafoglio ETF
-                  </h3>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    Gestione conti correnti, budget mensile, spese ricorrenti e sincronizzazione mercati
-                  </div>
-                </div>
-              </div>
-
-              {/* Sezione Cloudflare Workers in Evidenza */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(30, 41, 59, 0.6))',
-                  border: '1.5px solid var(--accent-primary, #38bdf8)',
-                  borderRadius: '14px',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '20px' }}>⚡</span>
-                    <b style={{ fontSize: '14px', color: 'var(--accent-primary, #38bdf8)' }}>
-                      Guida Cloudflare Workers per Aggiornamento ETF
-                    </b>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyWorkerCode}
-                    style={{
-                      background: copiedCode ? '#22c55e' : 'var(--accent-primary, #38bdf8)',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    <span>{copiedCode ? '✓' : '📋'}</span>
-                    <span>{copiedCode ? 'Codice Copiato!' : 'Copia Codice Worker'}</span>
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Perché serve? <b>Yahoo Finance</b> e i browser mobili bloccano le richieste dirette per motivi di sicurezza (blocco CORS). Creando un tuo Cloudflare Worker personale gratuito (100.000 richieste al giorno gratis!), aggiri questo blocco istantaneamente senza limiti.
-                </div>
-
-                {/* Passaggi passo passo */}
-                <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
-                    📝 Procedura passo-passo da seguire su Cloudflare:
-                  </div>
-                  <div>
-                    <b>1. Crea il Worker:</b> Entra su <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>dash.cloudflare.com</a>, vai su <i>Workers & Pages</i> &gt; <i>Create Application</i> &gt; scegli <b>Hello World</b> &gt; clicca <b>Deploy</b>.
-                  </div>
-                  <div>
-                    <b>2. Modifica il codice:</b> Clicca sul pulsante <b>"Edit code"</b> (o "Quick edit") in alto a destra.
-                  </div>
-                  <div>
-                    <b>3. Incolla il codice:</b> Nell'editor a sinistra (file <code>worker.js</code>), <u>cancella tutto il testo presente</u> e clicca il tasto qui sopra <b>"Copia Codice Worker"</b>, quindi incollalo nell'editor.
-                  </div>
-                  <div>
-                    <b>4. Pubblica:</b> Clicca su <b>"Deploy"</b> (o "Save and deploy") in alto a destra.
-                  </div>
-                  <div>
-                    <b>5. Copia il link del Worker:</b> Torna alla pagina principale del tuo Worker. Vedrai l'indirizzo pubblico assegnato, ad esempio:
-                    <div style={{ background: 'var(--bg-secondary)', padding: '4px 8px', borderRadius: '6px', fontFamily: 'monospace', color: '#38bdf8', marginTop: '3px', fontSize: '11px', display: 'inline-block' }}>
-                      https://mio-proxy.tuonome.workers.dev
-                    </div>
-                  </div>
-                  <div>
-                    <b>6. Incolla in Quest Life:</b> Vai nella scheda <b>Finanze</b> di quest'app, nella sezione <b>Investimenti</b> tocca il fulmine <b>⚡</b> accanto ad "Aggiorna Prezzi", incolla l'URL del tuo Worker e tocca <b>Salva Configurazione</b>. Fatto!
-                  </div>
-                </div>
-
-                {/* Blocco Codice */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Codice Completo per worker.js:</span>
-                    <button
-                      type="button"
-                      onClick={handleCopyWorkerCode}
-                      style={{ background: 'none', border: 'none', color: '#38bdf8', fontSize: '10px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                    >
-                      {copiedCode ? 'Copiato!' : 'Copia codice'}
-                    </button>
-                  </div>
-                  <pre
-                    style={{
-                      background: '#090d16',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px',
-                      padding: '10px',
-                      fontSize: '11px',
-                      color: '#a5f3fc',
-                      overflowX: 'auto',
-                      maxHeight: '180px',
-                      margin: 0,
-                      fontFamily: 'monospace'
-                    }}
-                  >
-                    {CLOUDFLARE_WORKER_CODE}
-                  </pre>
-                </div>
-
-                {/* Guida Ticker ETF */}
-                <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.25)', borderRadius: '10px', padding: '10px', fontSize: '11px', lineHeight: '1.4' }}>
-                  <b style={{ color: '#fbbf24' }}>💡 Come scrivere i Ticker degli ETF per Yahoo Finance:</b>
-                  <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}>
-                    Yahoo Finance richiede il suffisso della borsa su cui è quotato lo strumento:
-                    <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
-                      <li><b>Borsa Italiana (Milano):</b> aggiungi <code>.MI</code> (es. <code>SWDA.MI</code>, <code>CSSPX.MI</code>, <code>LCWD.MI</code>, <code>SMEA.MI</code>)</li>
-                      <li><b>Xetra (Germania):</b> aggiungi <code>.DE</code> (es. <code>VWCE.DE</code>, <code>EUNL.DE</code>, <code>IS3N.DE</code>)</li>
-                      <li><b>Azioni USA:</b> usa il ticker pulito (es. <code>AAPL</code>, <code>MSFT</code>, <code>NVDA</code>)</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Spiegazione generale Gestione Finanze */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  🏛️ Gestione dei Conti & Patrimonio
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Il tuo patrimonio totale è la somma di:
-                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
-                    <li><b>💳 Conto Base:</b> Il tuo conto corrente principale per entrate e spese di tutti i giorni.</li>
-                    <li><b>💵 Contanti:</b> Il denaro liquido che porti nel portafoglio.</li>
-                    <li><b>🏦 Conti Secondari:</b> Puoi creare conti deposito, conti risparmio o investimenti, scegliendo se sono vincolati a tempo o svincolati, e specificando un eventuale tasso di interesse attivo annuo per calcolare la rendita passiva!</li>
-                    <li><b>📈 Investimenti & PAC:</b> Il controvalore totale calcolato dal prezzo attuale delle quote dei tuoi ETF moltiplicato per il numero di quote possedute.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  📊 Budget Mensile & Categorie
-                </h4>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  All'inizio di ogni mese, Quest Life confronta le entrate totali con le uscite. Ciascuna spesa viene assegnata a una categoria (Alimentari, Svago, Casa, Trasporti, Salute, ecc.). Puoi impostare un budget massimo mensile per tenere sotto controllo il tasso di risparmio e ricevere badge RPG in base alla tua disciplina finanziaria.
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ========================================================== */}
-          {/* CAPITOLO 2: RPG & MECCANICHE DI GIOCO                     */}
+          {/* CAPITOLO 1: RPG & MECCANICHE DI GIOCO                     */}
           {/* ========================================================== */}
           {activeChapter === 'rpg' && (
             <>
@@ -593,40 +413,216 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'fin
             </>
           )}
 
+          {/* ========================================================== */}
+          {/* CAPITOLO 6: FINANZE & ETF (CON GUIDA CLOUDFLARE E SEGRETO)  */}
+          {/* ========================================================== */}
+          {activeChapter === 'finances' && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
+                <span style={{ fontSize: '24px' }}>💰</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                    Finanze, Tesoro & Portafoglio ETF
+                  </h3>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                    Gestione conti correnti, budget mensile, spese ricorrenti e sincronizzazione mercati
+                  </div>
+                </div>
+              </div>
+
+              {/* Box Finestra Segreta / Doppio Tocco */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(30, 41, 59, 0.6))',
+                  border: '1.5px solid var(--accent-gold, #f59e0b)',
+                  borderRadius: '14px',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>🗝️</span>
+                  <b style={{ fontSize: '13px', color: 'var(--accent-gold, #f59e0b)' }}>
+                    Come Accedere: La Finestra Nascosta del Tesoro
+                  </b>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                  Per proteggere la tua privacy patrimoniale in pubblico o sul posto di lavoro, la schermata <b>Finanze & Tesoro</b> è volutamente nascosta.
+                  <br />
+                  Nella barra di navigazione in basso a destra c'è l'icona <b>"Opzioni" (⚙️)</b>:
+                  <ul style={{ margin: '6px 0 2px 18px', padding: 0 }}>
+                    <li><b>Doppio tocco rapido su "Opzioni" (⚙️):</b> Apre all'istante la finestra segreta <b>Tesoro & Finanze (💰)</b>.</li>
+                    <li><b>Un altro tocco:</b> Ti riporta immediatamente alla schermata delle Opzioni normali.</li>
+                  </ul>
+                  In questo modo il saldo dei tuoi conti, il patrimonio netto e gli investimenti restano sempre protetti da sguardi indiscreti.
+                </div>
+              </div>
+
+              {/* Sezione Cloudflare Workers in Evidenza */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(30, 41, 59, 0.6))',
+                  border: '1.5px solid var(--accent-primary, #38bdf8)',
+                  borderRadius: '14px',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>⚡</span>
+                    <b style={{ fontSize: '13px', color: 'var(--accent-primary, #38bdf8)' }}>
+                      Guida Cloudflare Workers per Aggiornamento ETF
+                    </b>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyWorkerCode}
+                    style={{
+                      background: copiedCode ? '#22c55e' : 'var(--accent-primary, #38bdf8)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '6px 14px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    <span>{copiedCode ? '✓' : '📋'}</span>
+                    <span>{copiedCode ? 'Codice Copiato!' : 'Copia Codice Worker'}</span>
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  Perché serve? <b>Yahoo Finance</b> e i browser mobili bloccano le richieste dirette per motivi di sicurezza (blocco CORS). Creando un tuo Cloudflare Worker personale gratuito (100.000 richieste al giorno gratis!), aggiri questo blocco istantaneamente senza limiti.
+                </div>
+
+                {/* Passaggi passo passo */}
+                <div style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                    📝 Procedura passo-passo da seguire su Cloudflare:
+                  </div>
+                  <div>
+                    <b>1. Crea il Worker:</b> Entra su <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>dash.cloudflare.com</a>, vai su <i>Workers & Pages</i> &gt; <i>Create Application</i> &gt; scegli <b>Hello World</b> &gt; clicca <b>Deploy</b>.
+                  </div>
+                  <div>
+                    <b>2. Modifica il codice:</b> Clicca sul pulsante <b>"Edit code"</b> (o "Quick edit") in alto a destra.
+                  </div>
+                  <div>
+                    <b>3. Incolla il codice:</b> Nell'editor a sinistra (file <code>worker.js</code>), <u>cancella tutto il testo presente</u> e clicca il tasto qui sopra <b>"Copia Codice Worker"</b>, quindi incollalo nell'editor.
+                  </div>
+                  <div>
+                    <b>4. Pubblica:</b> Clicca su <b>"Deploy"</b> in alto a destra.
+                  </div>
+                  <div>
+                    <b>5. Copia il link del Worker:</b> Torna alla pagina principale del tuo Worker. Vedrai l'indirizzo pubblico assegnato, ad esempio:
+                    <div style={{ background: 'var(--bg-secondary)', padding: '4px 8px', borderRadius: '6px', fontFamily: 'monospace', color: '#38bdf8', marginTop: '3px', fontSize: '11px', display: 'inline-block' }}>
+                      https://mio-proxy.tuonome.workers.dev
+                    </div>
+                  </div>
+                  <div>
+                    <b>6. Incolla in Quest Life:</b> Vai nella scheda <b>Finanze</b> di quest'app, nella sezione <b>Investimenti</b> tocca il fulmine <b>⚡</b> accanto ad "Aggiorna Prezzi", incolla l'URL del tuo Worker e tocca <b>Salva Configurazione</b>. Fatto!
+                  </div>
+                </div>
+
+                {/* Blocco Codice */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Codice Completo per worker.js:</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyWorkerCode}
+                      style={{ background: 'none', border: 'none', color: '#38bdf8', fontSize: '10px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                    >
+                      {copiedCode ? 'Copiato!' : 'Copia codice'}
+                    </button>
+                  </div>
+                  <pre
+                    style={{
+                      background: '#090d16',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      fontSize: '11px',
+                      color: '#a5f3fc',
+                      overflowX: 'auto',
+                      maxHeight: '180px',
+                      margin: 0,
+                      fontFamily: 'monospace'
+                    }}
+                  >
+                    {CLOUDFLARE_WORKER_CODE}
+                  </pre>
+                </div>
+
+                {/* Guida Ticker ETF */}
+                <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.25)', borderRadius: '10px', padding: '10px', fontSize: '11px', lineHeight: '1.4' }}>
+                  <b style={{ color: '#fbbf24' }}>💡 Come scrivere i Ticker degli ETF per Yahoo Finance:</b>
+                  <div style={{ marginTop: '4px', color: 'var(--text-secondary)' }}>
+                    Yahoo Finance richiede il suffisso della borsa su cui è quotato lo strumento:
+                    <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
+                      <li><b>Borsa Italiana (Milano):</b> aggiungi <code>.MI</code> (es. <code>SWDA.MI</code>, <code>CSSPX.MI</code>, <code>LCWD.MI</code>, <code>SMEA.MI</code>)</li>
+                      <li><b>Xetra (Germania):</b> aggiungi <code>.DE</code> (es. <code>VWCE.DE</code>, <code>EUNL.DE</code>, <code>IS3N.DE</code>)</li>
+                      <li><b>Azioni USA:</b> usa il ticker pulito (es. <code>AAPL</code>, <code>MSFT</code>, <code>NVDA</code>)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Spiegazione generale Gestione Finanze */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  🏛️ Gestione dei Conti & Patrimonio
+                </h4>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  Il tuo patrimonio totale è la somma di:
+                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
+                    <li><b>💳 Conto Base:</b> Il tuo conto corrente principale per entrate e spese di tutti i giorni.</li>
+                    <li><b>💵 Contanti:</b> Il denaro liquido che porti nel portafoglio.</li>
+                    <li><b>🏦 Conti Secondari:</b> Puoi creare conti deposito, conti risparmio o investimenti, scegliendo se sono vincolati a tempo o svincolati, e specificando un eventuale tasso di interesse attivo annuo per calcolare la rendita passiva!</li>
+                    <li><b>📈 Investimenti & PAC:</b> Il controvalore totale calcolato dal prezzo attuale delle quote dei tuoi ETF moltiplicato per il numero di quote possedute.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  📊 Budget Mensile & Categorie
+                </h4>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  All'inizio di ogni mese, Quest Life confronta le entrate totali con le uscite. Ciascuna spesa viene assegnata a una categoria (Alimentari, Svago, Casa, Trasporti, Salute, ecc.). Puoi impostare un budget massimo mensile per tenere sotto controllo il tasso di risparmio e ricevere badge RPG in base alla tua disciplina finanziaria.
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
 
-        {/* Footer con pulsante di chiusura rapida */}
+        {/* Footer info touch outside */}
         <div
           style={{
-            padding: '12px 20px',
+            padding: '8px 16px',
             borderTop: '1px solid var(--glass-border)',
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
             background: 'var(--bg-secondary)',
             flexShrink: 0
           }}
         >
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-            Quest Life v5.9 • Manuale Ufficiale
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
+            Tocca all'esterno per chiudere
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              padding: '8px 20px',
-              borderRadius: '10px',
-              border: 'none',
-              background: 'var(--accent-primary, #38bdf8)',
-              color: '#ffffff',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-            }}
-          >
-            Chiudi Manuale
-          </button>
         </div>
 
       </div>
