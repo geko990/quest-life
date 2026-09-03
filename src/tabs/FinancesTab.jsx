@@ -2449,28 +2449,65 @@ export default function FinancesTab({
           >
             
             {/* Modal Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px', flexShrink: 0 }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 📈 Storico & Grafici Finanziari
               </h3>
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(false)}
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-secondary)',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  lineHeight: 1
+                }}
+                title="Chiudi"
+              >
+                ✕
+              </button>
             </div>
 
             {/* Account Scope Filter (Tutti i Conti vs Singolo Conto) */}
-            <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', padding: '2px 0 4px 0', scrollbarWidth: 'none' }}>
+            <div
+              className="no-scrollbar"
+              style={{
+                display: 'flex',
+                gap: '6px',
+                flexWrap: 'wrap',
+                flexShrink: 0,
+                padding: '2px 0 4px 0',
+                alignItems: 'center'
+              }}
+            >
               <button
                 type="button"
                 onClick={() => { setHistoryAccountFilter('all'); setSelectedHistoryWeek(null); }}
                 style={{
                   background: historyAccountFilter === 'all' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
                   color: historyAccountFilter === 'all' ? '#fff' : 'var(--text-secondary)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '8px',
-                  padding: '4px 9px',
-                  fontSize: '10px',
+                  border: historyAccountFilter === 'all' ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
+                  boxShadow: historyAccountFilter === 'all' ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
+                  borderRadius: '9px',
+                  padding: '6px 11px',
+                  fontSize: '11px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 🏛️ Patrimonio Totale
@@ -2481,14 +2518,19 @@ export default function FinancesTab({
                 style={{
                   background: historyAccountFilter === 'base' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
                   color: historyAccountFilter === 'base' ? '#fff' : 'var(--text-secondary)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '8px',
-                  padding: '4px 9px',
-                  fontSize: '10px',
+                  border: historyAccountFilter === 'base' ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
+                  boxShadow: historyAccountFilter === 'base' ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
+                  borderRadius: '9px',
+                  padding: '6px 11px',
+                  fontSize: '11px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 💳 {finances.baseAccountName || 'Conto Base'}
@@ -2499,14 +2541,19 @@ export default function FinancesTab({
                 style={{
                   background: historyAccountFilter === 'cash' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
                   color: historyAccountFilter === 'cash' ? '#fff' : 'var(--text-secondary)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '8px',
-                  padding: '4px 9px',
-                  fontSize: '10px',
+                  border: historyAccountFilter === 'cash' ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
+                  boxShadow: historyAccountFilter === 'cash' ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
+                  borderRadius: '9px',
+                  padding: '6px 11px',
+                  fontSize: '11px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 💵 Contanti
@@ -2519,14 +2566,19 @@ export default function FinancesTab({
                   style={{
                     background: historyAccountFilter === acc.id ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
                     color: historyAccountFilter === acc.id ? '#fff' : 'var(--text-secondary)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '8px',
-                    padding: '4px 9px',
-                    fontSize: '10px',
+                    border: historyAccountFilter === acc.id ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
+                    boxShadow: historyAccountFilter === acc.id ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
+                    borderRadius: '9px',
+                    padding: '6px 11px',
+                    fontSize: '11px',
                     fontWeight: 'bold',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.15s ease'
                   }}
                 >
                   {acc.emoji || '🏦'} {acc.name}
@@ -2535,7 +2587,7 @@ export default function FinancesTab({
             </div>
 
             {/* 1. Month Navigator Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', flexShrink: 0 }}>
               <button
                 type="button"
                 onClick={() => { setSelectedHistoryMonth(prev => shiftMonthKey(prev, -1)); setSelectedHistoryWeek(null); }}
@@ -2569,7 +2621,7 @@ export default function FinancesTab({
             </div>
 
             {/* 2. Monthly Financial Health KPI Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flexShrink: 0 }}>
               <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
                 <div style={{ fontSize: '9px', color: '#86efac', textTransform: 'uppercase', fontWeight: 'bold' }}>🟢 Entrate Mese</div>
                 <div style={{ fontSize: '15px', fontWeight: '900', color: '#4ade80', marginTop: '2px' }}>
@@ -2599,20 +2651,22 @@ export default function FinancesTab({
             </div>
 
             {/* 3. Horizon Switcher (Breve Periodo vs Lungo Periodo) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '3px', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '4px', borderRadius: '10px', border: '1px solid var(--glass-border)', flexShrink: 0 }}>
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button
                   type="button"
                   onClick={() => { setHistoryRange('short'); setSelectedHistoryWeek(null); }}
                   style={{
                     background: historyRange === 'short' ? 'var(--bg-card)' : 'transparent',
-                    border: historyRange === 'short' ? '1px solid var(--glass-border)' : 'none',
+                    border: historyRange === 'short' ? '1px solid var(--glass-border)' : '1px solid transparent',
                     color: historyRange === 'short' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: historyRange === 'short' ? 'bold' : 'normal',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
+                    padding: '5px 12px',
+                    borderRadius: '7px',
+                    cursor: 'pointer',
+                    boxShadow: historyRange === 'short' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
                 >
                   📅 Breve (Settimanale)
@@ -2622,20 +2676,22 @@ export default function FinancesTab({
                   onClick={() => { setHistoryRange('long'); setSelectedHistoryWeek(null); }}
                   style={{
                     background: historyRange === 'long' ? 'var(--bg-card)' : 'transparent',
-                    border: historyRange === 'long' ? '1px solid var(--glass-border)' : 'none',
+                    border: historyRange === 'long' ? '1px solid var(--glass-border)' : '1px solid transparent',
                     color: historyRange === 'long' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: historyRange === 'long' ? 'bold' : 'normal',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
+                    padding: '5px 12px',
+                    borderRadius: '7px',
+                    cursor: 'pointer',
+                    boxShadow: historyRange === 'long' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
                 >
                   📆 Lungo (Trend Mesi)
                 </button>
               </div>
               {historyRange === 'long' && (
-                <div style={{ display: 'flex', gap: '2px', paddingRight: '2px' }}>
+                <div style={{ display: 'flex', gap: '4px', paddingRight: '4px' }}>
                   <button
                     type="button"
                     onClick={() => setLongPeriodMonthsCount(6)}
@@ -2643,10 +2699,10 @@ export default function FinancesTab({
                       background: longPeriodMonthsCount === 6 ? 'var(--accent-primary)' : 'transparent',
                       color: longPeriodMonthsCount === 6 ? '#fff' : 'var(--text-muted)',
                       border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '9px',
+                      borderRadius: '5px',
+                      fontSize: '10px',
                       fontWeight: 'bold',
-                      padding: '2px 5px',
+                      padding: '3px 7px',
                       cursor: 'pointer'
                     }}
                   >
@@ -2659,10 +2715,10 @@ export default function FinancesTab({
                       background: longPeriodMonthsCount === 12 ? 'var(--accent-primary)' : 'transparent',
                       color: longPeriodMonthsCount === 12 ? '#fff' : 'var(--text-muted)',
                       border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '9px',
+                      borderRadius: '5px',
+                      fontSize: '10px',
                       fontWeight: 'bold',
-                      padding: '2px 5px',
+                      padding: '3px 7px',
                       cursor: 'pointer'
                     }}
                   >
@@ -2674,7 +2730,7 @@ export default function FinancesTab({
 
             {/* 4a. Grafico Breve Periodo (Andamento Saldo Settimanale - Stile Borsa / Revolut) */}
             {historyRange === 'short' && (
-              <div>
+              <div style={{ flexShrink: 0 }}>
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
                     <span style={{ fontWeight: 'bold' }}>
@@ -2837,7 +2893,7 @@ export default function FinancesTab({
 
             {/* 4b. Grafico Lungo Periodo (Evoluzione Saldo Multi-Mese - Stile Borsa / Revolut) */}
             {historyRange === 'long' && (
-              <div>
+              <div style={{ flexShrink: 0 }}>
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
                     <span style={{ fontWeight: 'bold' }}>Evoluzione Saldo ({longPeriodMonthsCount} Mesi)</span>
@@ -3005,7 +3061,8 @@ export default function FinancesTab({
                 padding: '10px 12px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px'
+                gap: '10px',
+                flexShrink: 0
               }}
             >
               <span style={{ fontSize: '24px' }}>
@@ -3026,7 +3083,7 @@ export default function FinancesTab({
             </div>
 
             {/* 6. Dettaglio Completo Movimenti del Mese Selezionato */}
-            <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>📜 Movimenti di {formatMonthLabel(selectedHistoryMonth)}</span>
