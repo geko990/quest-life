@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getGameDate } from '../utils/helpers';
+import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
+import UserManualModal from '../components/UserManualModal';
 
 const EXPENSE_CATEGORIES = [
   { id: 'cibo', label: 'Cibo & Ristorante', emoji: '🍕' },
@@ -151,6 +153,26 @@ export default function FinancesTab({
   const [syncStatusMsg, setSyncStatusMsg] = useState(null);
   const [showSyncHelpModal, setShowSyncHelpModal] = useState(false);
   const [customProxyInput, setCustomProxyInput] = useState(finances.customQuotesProxy || '');
+  const [showWorkerGuideInModal, setShowWorkerGuideInModal] = useState(false);
+  const [copiedWorkerCodeInFinances, setCopiedWorkerCodeInFinances] = useState(false);
+  const [showManualModalInFinances, setShowManualModalInFinances] = useState(false);
+
+  const handleCopyWorkerCodeInFinances = async () => {
+    try {
+      await navigator.clipboard.writeText(CLOUDFLARE_WORKER_CODE);
+      setCopiedWorkerCodeInFinances(true);
+      setTimeout(() => setCopiedWorkerCodeInFinances(false), 2500);
+    } catch (e) {
+      const textArea = document.createElement("textarea");
+      textArea.value = CLOUDFLARE_WORKER_CODE;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopiedWorkerCodeInFinances(true);
+      setTimeout(() => setCopiedWorkerCodeInFinances(false), 2500);
+    }
+  };
 
   // Budget Form State
   const [budgetInput, setBudgetInput] = useState(finances.monthlyBudget || 1000);
@@ -4725,17 +4747,95 @@ export default function FinancesTab({
                 🔒 <b style={{ color: 'var(--text-primary)' }}>Blocco CORS dei browser:</b> Per sicurezza, i browser mobili (iOS Safari, Android Chrome) impediscono a qualsiasi sito o PWA di chiamare direttamente Yahoo Finance senza un proxy intermedio.
               </div>
               <div>
-                ✏️ <b style={{ color: '#38bdf8' }}>Aggiornamento Rapido:</b> Puoi aggiornare qualsiasi quota in 2 secondi toccando l'icona della matita ✏️ accanto al prezzo nella tessera investimenti.
-              </div>
-              <div>
                 ⚡ <b style={{ color: '#4ade80' }}>Sincronizzazione Automatica:</b> L'app prova automaticamente diversi nodi di rete pubblici (come allorigins). Tuttavia, le reti telefoniche o i nodi sovraccarichi possono rallentare o bloccare le richieste.
               </div>
+            </div>
+
+            {/* Box Guida Rapida Cloudflare Worker con Codice Copiabile */}
+            <div
+              style={{
+                background: 'rgba(56, 189, 248, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '12px',
+                padding: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                <b style={{ fontSize: '12px', color: 'var(--accent-primary, #38bdf8)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>⚡</span> Configura Cloudflare Worker (1 min)
+                </b>
+                <button
+                  type="button"
+                  onClick={handleCopyWorkerCodeInFinances}
+                  style={{
+                    background: copiedWorkerCodeInFinances ? '#22c55e' : 'var(--accent-primary, #38bdf8)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '7px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <span>{copiedWorkerCodeInFinances ? '✓' : '📋'}</span>
+                  <span>{copiedWorkerCodeInFinances ? 'Copiato!' : 'Copia Codice'}</span>
+                </button>
+              </div>
+
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                1. Su <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>dash.cloudflare.com</a> crea un Worker <b>Hello World</b>.<br/>
+                2. Clicca su <b>Edit code</b>, cancella tutto il codice e incolla il codice copiato.<br/>
+                3. Clicca <b>Deploy</b>, copia l'URL (es. <code>https://tuo-proxy.workers.dev</code>) e incollalo qui sotto!
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowWorkerGuideInModal(!showWorkerGuideInModal)}
+                  style={{ background: 'transparent', border: 'none', color: '#38bdf8', fontSize: '10px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                >
+                  {showWorkerGuideInModal ? '▲ Nascondi anteprima codice' : '▼ Mostra anteprima codice'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowSyncHelpModal(false); setShowManualModalInFinances(true); }}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '10px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+                >
+                  📖 Manuale Completo
+                </button>
+              </div>
+
+              {showWorkerGuideInModal && (
+                <pre
+                  style={{
+                    background: '#090d16',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    fontSize: '10px',
+                    color: '#a5f3fc',
+                    overflowX: 'auto',
+                    maxHeight: '130px',
+                    margin: 0,
+                    fontFamily: 'monospace'
+                  }}
+                >
+                  {CLOUDFLARE_WORKER_CODE}
+                </pre>
+              )}
             </div>
 
             <form onSubmit={handleSaveCustomProxy} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'block' }}>
-                  Proxy Personale (Opzionale, es. Cloudflare Worker)
+                  Proxy Personale (Incolla l'URL del tuo Cloudflare Worker)
                 </label>
                 <input
                   type="text"
@@ -4745,7 +4845,7 @@ export default function FinancesTab({
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '4px', boxSizing: 'border-box' }}
                 />
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '3px' }}>
-                  Se possiedi un Cloudflare Worker gratuito (100.000 richieste/giorno senza limiti), incolla qui il suo URL. Lascia vuoto per usare i server di fallback predefiniti.
+                  Una volta incollato, tutte le richieste di aggiornamento prezzi useranno il tuo Worker istantaneamente.
                 </div>
               </div>
 
@@ -4772,6 +4872,13 @@ export default function FinancesTab({
           </div>
         </div>
       )}
+
+      {/* Modal Manuale di Utilizzo accessibile dalle Finanze */}
+      <UserManualModal
+        isOpen={showManualModalInFinances}
+        onClose={() => setShowManualModalInFinances(false)}
+        initialChapter="finances"
+      />
 
     </div>
   );
