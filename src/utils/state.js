@@ -60,6 +60,7 @@ export function getInitialState() {
       lastNutritionDate: null
     },
     finances: {
+      baseAccountName: 'Conto Base',
       balance: 0,
       cashBalance: 0,
       monthlyBudget: 1000,
@@ -341,6 +342,9 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     };
 
     state.finances = {
+      baseAccountName: (parsed.finances.baseAccountName && typeof parsed.finances.baseAccountName === 'string')
+        ? parsed.finances.baseAccountName.trim() || 'Conto Base'
+        : 'Conto Base',
       balance: parseSafeNum(parsed.finances.balance, 0),
       cashBalance: parseSafeNum(parsed.finances.cashBalance, 0),
       monthlyBudget: parseSafeNum(parsed.finances.monthlyBudget, 1000),
@@ -357,6 +361,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     };
   } else {
     state.finances = {
+      baseAccountName: 'Conto Base',
       balance: 0,
       cashBalance: 0,
       monthlyBudget: 1000,
