@@ -64,12 +64,14 @@ const shiftMonthKey = (monthKey, delta) => {
 };
 
 export default function FinancesTab({
-  finances = { baseAccountName: 'Conto Base', balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [] },
+  finances = { baseAccountName: 'Conto Base', balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [], investments: [] },
   setFinances,
   stats = [],
+  settings = {},
   onRewardXp,
   onOpenSettings
 }) {
+  const isSuperUser = Boolean(settings?.allowPastEdits);
   const currentMonthPrefix = getGameDate().substring(0, 7);
   const [activeSubView, setActiveSubView] = useState('transactions'); // 'transactions' | 'categories' | 'history'
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState(currentMonthPrefix);
@@ -89,6 +91,13 @@ export default function FinancesTab({
   const [selectedAccountDetail, setSelectedAccountDetail] = useState(null); // 'base' | 'cash' | accId
   const [showRenameBaseModal, setShowRenameBaseModal] = useState(false);
   const [baseNameInput, setBaseNameInput] = useState('');
+
+  // Super User Edit Balance Modal State
+  const [showEditBalanceModal, setShowEditBalanceModal] = useState(false);
+  const [editBalanceTarget, setEditBalanceTarget] = useState('base');
+  const [editBalanceValue, setEditBalanceValue] = useState('');
+  const [editBalanceSecRate, setEditBalanceSecRate] = useState('');
+  const [editBalanceSecFreq, setEditBalanceSecFreq] = useState('monthly');
 
   // Cash Withdrawal Modal
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -113,6 +122,7 @@ export default function FinancesTab({
   const [txAccountInput, setTxAccountInput] = useState('base'); // 'base' | 'cash' | secondary account id
   const [noteInput, setNoteInput] = useState('');
   const [dateInput, setDateInput] = useState(getGameDate());
+  const [affectsBudgetInput, setAffectsBudgetInput] = useState(true);
   const [isRecurring, setIsRecurring] = useState(false);
   const [recDay, setRecDay] = useState(1);
 
@@ -122,7 +132,22 @@ export default function FinancesTab({
   const [secBalance, setSecBalance] = useState('');
   const [secRate, setSecRate] = useState('3.5');
   const [secLockMonths, setSecLockMonths] = useState('0'); // '0', '6', '12', '24'
+  const [secInterestFreq, setSecInterestFreq] = useState('monthly'); // 'daily', 'monthly', 'quarterly', 'annual'
   const [secActionAmount, setSecActionAmount] = useState('');
+
+  // Investments Form & Modal States
+  const [showAddInvestmentModal, setShowAddInvestmentModal] = useState(false);
+  const [showQuickPriceModal, setShowQuickPriceModal] = useState(false);
+  const [quickPriceTarget, setQuickPriceTarget] = useState(null);
+  const [quickPriceValue, setQuickPriceValue] = useState('');
+  const [invName, setInvName] = useState('');
+  const [invTicker, setInvTicker] = useState('');
+  const [invShares, setInvShares] = useState('');
+  const [invBuyPrice, setInvBuyPrice] = useState('');
+  const [invCurrentPrice, setInvCurrentPrice] = useState('');
+  const [invNotes, setInvNotes] = useState('');
+  const [isSyncingQuotes, setIsSyncingQuotes] = useState(false);
+  const [syncStatusMsg, setSyncStatusMsg] = useState(null);
 
   // Budget Form State
   const [budgetInput, setBudgetInput] = useState(finances.monthlyBudget || 1000);
@@ -236,6 +261,7 @@ export default function FinancesTab({
         account: recAccount,
         note: `${rec.note || getCategoryObj(rec.category).label} (Ricorrente)`,
         date: targetTxDate,
+        excludeFromBudget: rec.type === 'expense' ? Boolean(rec.excludeFromBudget) : false,
         timestamp: Date.now()
       };
 
@@ -277,8 +303,9 @@ export default function FinancesTab({
   // Month Statistics for Conto Base
   const monthTransactions = (finances.transactions || []).filter(t => t.date && t.date.startsWith(currentMonthPrefix));
   const monthExpenses = monthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  const monthBudgetExpenses = monthTransactions.filter(t => t.type === 'expense' && !t.excludeFromBudget).reduce((acc, t) => acc + t.amount, 0);
   const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const budgetPct = Math.min(100, Math.round((monthExpenses / (finances.monthlyBudget || 1)) * 100));
+  const budgetPct = Math.min(100, Math.round((monthBudgetExpenses / (finances.monthlyBudget || 1)) * 100));
 
   // Category Expenses & Income Breakdown
   const catExpensesMap = {};
@@ -303,6 +330,7 @@ export default function FinancesTab({
     setAmountInput('');
     setNoteInput('');
     setDateInput(getGameDate());
+    setAffectsBudgetInput(true);
     setIsRecurring(false);
     setRecDay(1);
     setShowAddTxModal(true);
@@ -321,6 +349,7 @@ export default function FinancesTab({
       account: txAccountInput,
       note: noteInput.trim(),
       date: dateInput,
+      excludeFromBudget: txModalMode === 'expense' ? !affectsBudgetInput : false,
       timestamp: Date.now()
     };
 
@@ -336,6 +365,7 @@ export default function FinancesTab({
         frequency: 'monthly',
         dayOfMonth: parseInt(recDay) || 1,
         lastProcessedMonth: currentMonthPrefix,
+        excludeFromBudget: txModalMode === 'expense' ? !affectsBudgetInput : false,
         active: true
       };
       newRecurring = [recItem, ...newRecurring];
@@ -601,9 +631,10 @@ export default function FinancesTab({
     const newAcc = {
       id: 'sec_' + Date.now(),
       name: secName.trim(),
-      emoji: secEmoji || '🏦',
+      emoji: secEmoji || '🛡️',
       balance: initialBal,
       interestRate: rate,
+      interestFrequency: secInterestFreq || 'monthly',
       lockPeriodMonths: parseInt(secLockMonths) || 0,
       createdAt: getGameDate()
     };
@@ -615,6 +646,7 @@ export default function FinancesTab({
 
     setSecName('');
     setSecBalance('');
+    setSecInterestFreq('monthly');
     setShowAddSecModal(false);
   };
 
@@ -624,21 +656,21 @@ export default function FinancesTab({
     const { account, type } = secAccountAction;
 
     if (type === 'interest') {
-      const interestEarned = Math.round((account.balance * (account.interestRate / 100)) * 100) / 100;
-      if (interestEarned <= 0) {
-        alert("Nessun interesse maturato disponibile su questo saldo!");
-        setSecAccountAction(null);
+      const interestEarned = Math.round(parseFloat(String(secActionAmount).replace(',', '.')) * 100) / 100;
+      if (isNaN(interestEarned) || interestEarned <= 0) {
+        alert("Inserisci un importo valido di interessi maturati!");
         return;
       }
 
       setFinances(prev => ({
         ...prev,
         secondaryAccounts: (prev.secondaryAccounts || []).map(a => 
-          a.id === account.id ? { ...a, balance: a.balance + interestEarned } : a
+          a.id === account.id ? { ...a, balance: Math.round((a.balance + interestEarned) * 100) / 100 } : a
         )
       }));
       alert(`📈 Accredito effettuato! Maturati +${interestEarned} € di interessi!`);
       setSecAccountAction(null);
+      setSecActionAmount('');
       return;
     }
 
@@ -670,10 +702,174 @@ export default function FinancesTab({
     }
   };
 
-  // Total Net Worth (Conto Base + Contanti + Secondary Accounts)
+  // Super User Balance Edit Handler
+  const handleSaveEditedBalance = () => {
+    const val = parseFloat(String(editBalanceValue).replace(',', '.'));
+    if (isNaN(val)) return;
+
+    setFinances(prev => {
+      if (editBalanceTarget === 'base') {
+        return { ...prev, balance: val };
+      }
+      if (editBalanceTarget === 'cash') {
+        return { ...prev, cashBalance: val };
+      }
+      return {
+        ...prev,
+        secondaryAccounts: (prev.secondaryAccounts || []).map(a => {
+          if (a.id !== editBalanceTarget) return a;
+          const newRate = parseFloat(String(editBalanceSecRate).replace(',', '.'));
+          return {
+            ...a,
+            balance: val,
+            interestRate: isNaN(newRate) ? a.interestRate : newRate,
+            interestFrequency: editBalanceSecFreq || a.interestFrequency || 'monthly'
+          };
+        })
+      };
+    });
+    setShowEditBalanceModal(false);
+  };
+
+  // --- INVESTMENTS LOGIC ---
+  const investmentsList = finances.investments || [];
+  const totalInvested = investmentsList.reduce((acc, inv) => acc + ((Number(inv.shares) || 0) * (Number(inv.buyPrice) || 0)), 0);
+  const totalInvestmentsValue = investmentsList.reduce((acc, inv) => acc + ((Number(inv.shares) || 0) * (Number(inv.currentPrice || inv.buyPrice) || 0)), 0);
+  const totalInvestmentsGain = totalInvestmentsValue - totalInvested;
+  const totalInvestmentsGainPct = totalInvested > 0 ? ((totalInvestmentsGain / totalInvested) * 100) : 0;
+
+  const handleOpenAddInvestment = () => {
+    setInvName('');
+    setInvTicker('');
+    setInvShares('');
+    setInvBuyPrice('');
+    setInvCurrentPrice('');
+    setInvNotes('');
+    setShowAddInvestmentModal(true);
+  };
+
+  const handleSaveInvestment = (e) => {
+    e.preventDefault();
+    if (!invName.trim()) return;
+    const sharesNum = parseFloat(String(invShares).replace(',', '.')) || 0;
+    const buyNum = parseFloat(String(invBuyPrice).replace(',', '.')) || 0;
+    const curNum = parseFloat(String(invCurrentPrice || invBuyPrice).replace(',', '.')) || buyNum;
+
+    const newInv = {
+      id: 'inv_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      name: invName.trim(),
+      ticker: (invTicker || '').trim().toUpperCase(),
+      shares: sharesNum,
+      buyPrice: buyNum,
+      currentPrice: curNum,
+      lastUpdated: getGameDate(),
+      notes: invNotes.trim()
+    };
+
+    setFinances(prev => ({
+      ...prev,
+      investments: [newInv, ...(prev.investments || [])]
+    }));
+
+    setShowAddInvestmentModal(false);
+  };
+
+  const handleDeleteInvestment = (invId) => {
+    if (window.confirm("Eliminare questa posizione di investimento?")) {
+      setFinances(prev => ({
+        ...prev,
+        investments: (prev.investments || []).filter(i => i.id !== invId)
+      }));
+    }
+  };
+
+  const handleQuickPriceSave = (e) => {
+    e.preventDefault();
+    if (!quickPriceTarget) return;
+    const val = parseFloat(String(quickPriceValue).replace(',', '.'));
+    if (isNaN(val) || val < 0) return;
+
+    setFinances(prev => ({
+      ...prev,
+      investments: (prev.investments || []).map(inv => 
+        inv.id === quickPriceTarget.id 
+          ? { ...inv, currentPrice: val, lastUpdated: getGameDate() }
+          : inv
+      )
+    }));
+
+    setShowQuickPriceModal(false);
+    setQuickPriceTarget(null);
+  };
+
+  const handleSyncOnlineQuotes = async (silent = false) => {
+    const list = finances.investments || [];
+    const withTickers = list.filter(i => i.ticker);
+    if (withTickers.length === 0) {
+      if (!silent) alert("Nessun investimento ha un Ticker configurato (es. VWCE.DE, SWDA.MI, AAPL).");
+      return;
+    }
+
+    setIsSyncingQuotes(true);
+    setSyncStatusMsg('Connessione ai mercati in corso...');
+    let updatedCount = 0;
+    let failedCount = 0;
+
+    const updatedInvestments = await Promise.all(list.map(async (inv) => {
+      if (!inv.ticker) return inv;
+      try {
+        const symbol = inv.ticker.trim().toUpperCase();
+        const url = `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const meta = data?.chart?.result?.[0]?.meta;
+          const price = meta?.regularMarketPrice;
+          if (price && typeof price === 'number' && price > 0) {
+            updatedCount++;
+            return {
+              ...inv,
+              currentPrice: Math.round(price * 100) / 100,
+              lastUpdated: getGameDate()
+            };
+          }
+        }
+        failedCount++;
+        return inv;
+      } catch (err) {
+        failedCount++;
+        return inv;
+      }
+    }));
+
+    setFinances(prev => ({
+      ...prev,
+      investments: updatedInvestments
+    }));
+    setIsSyncingQuotes(false);
+    localStorage.setItem('quest_life_last_invest_sync', getGameDate());
+
+    if (!silent) {
+      if (updatedCount > 0 && failedCount === 0) {
+        alert(`✅ Sincronizzazione completata! Aggiornate ${updatedCount} quote con successo.`);
+      } else if (updatedCount > 0 && failedCount > 0) {
+        alert(`⚠️ Aggiornate ${updatedCount} quote. Per ${failedCount} posizioni il mercato estero o il proxy non ha risposto: puoi aggiornarle manualmente con l'icona ✏️.`);
+      } else {
+        alert(`ℹ️ Impossibile raggiungere il fornitore quotazioni online da questa connessione. Puoi aggiornare i prezzi manualmente con un tocco sull'icona ✏️ accanto a ogni quota.`);
+      }
+    }
+    setSyncStatusMsg(null);
+  };
+
+  // Total Net Worth (Conto Base + Contanti + Secondary Accounts + Investimenti)
   const secondaryAccountsTotal = (finances.secondaryAccounts || []).reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
   const cashTotal = Number(finances.cashBalance) || 0;
-  const totalPatrimonio = (Number(finances.balance) || 0) + cashTotal + secondaryAccountsTotal;
+  const totalPatrimonio = (Number(finances.balance) || 0) + cashTotal + secondaryAccountsTotal + totalInvestmentsValue;
 
   // Filtered Transactions
   const filteredTransactions = (finances.transactions || []).filter(t => {
@@ -802,7 +998,7 @@ export default function FinancesTab({
   });
 
   const maxOverviewVal = Math.max(100, ...overviewData.map(m => Math.max(m.income, m.expenses)));
-  const remainingBudget = (finances.monthlyBudget || 1000) - monthExpenses;
+  const remainingBudget = (finances.monthlyBudget || 1000) - monthBudgetExpenses;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px' }}>
@@ -1075,7 +1271,7 @@ export default function FinancesTab({
               style={{ color: '#fbbf24', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
               title="Tocca per modificare il massimale del budget"
             >
-              <span>{fmtCurrency(monthExpenses)} / {fmtCurrency(finances.monthlyBudget || 1000)}</span>
+              <span>{fmtCurrency(monthBudgetExpenses)} / {fmtCurrency(finances.monthlyBudget || 1000)}</span>
               <span style={{ fontSize: '11px' }}>✏️</span>
             </span>
           </div>
@@ -1287,7 +1483,144 @@ export default function FinancesTab({
         )}
       </div>
 
-      {/* 4. Tessera Unificata: Movimenti & Categorie (con Imbuto Filtro 🌪️) */}
+      {/* 4. Card Portafoglio Investimenti & ETF */}
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span>📈 Investimenti & ETF</span>
+            </h3>
+            {investmentsList.length > 0 && (
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Valore: <b style={{ color: 'var(--text-primary)' }}>{fmtCurrency(totalInvestmentsValue)}</b>
+                {' • '}
+                P&L: <b style={{ color: totalInvestmentsGain >= 0 ? '#4ade80' : '#f87171' }}>
+                  {totalInvestmentsGain >= 0 ? '+' : ''}{fmtCurrency(totalInvestmentsGain)} ({totalInvestmentsGainPct >= 0 ? '+' : ''}{totalInvestmentsGainPct.toFixed(2)}%)
+                </b>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {investmentsList.some(i => i.ticker) && (
+              <button
+                type="button"
+                onClick={() => handleSyncOnlineQuotes(false)}
+                disabled={isSyncingQuotes}
+                style={{
+                  background: 'rgba(56, 189, 248, 0.15)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  color: '#38bdf8',
+                  padding: '3px 7px',
+                  borderRadius: '6px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  cursor: isSyncingQuotes ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Sincronizza quotazioni online via mercato"
+              >
+                <span>{isSyncingQuotes ? '⏳' : '🌐'}</span>
+                <span>{isSyncingQuotes ? 'Sync...' : 'Aggiorna'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleOpenAddInvestment}
+              style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              + Investimento
+            </button>
+          </div>
+        </div>
+
+        {investmentsList.length === 0 ? (
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>
+            Nessun investimento registrato. Aggiungi ad es. un ETF (VWCE, SWDA), azioni o fondi per tracciarne l'andamento!
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {investmentsList.map(inv => {
+              const shares = Number(inv.shares) || 0;
+              const buyPrice = Number(inv.buyPrice) || 0;
+              const curPrice = Number(inv.currentPrice || inv.buyPrice) || 0;
+              const posValue = shares * curPrice;
+              const posCost = shares * buyPrice;
+              const posGain = posValue - posCost;
+              const posGainPct = posCost > 0 ? ((posGain / posCost) * 100) : 0;
+
+              return (
+                <div
+                  key={inv.id}
+                  style={{
+                    background: 'var(--bg-primary)',
+                    borderRadius: '10px',
+                    padding: '8px 10px',
+                    border: '1px solid var(--glass-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '8px'
+                  }}
+                >
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {inv.name}
+                      </span>
+                      {inv.ticker && (
+                        <span style={{ fontSize: '8px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold', flexShrink: 0 }}>
+                          {inv.ticker}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '2px' }}>
+                      <span>{shares} quote</span>
+                      <span>•</span>
+                      <span>PMC: {fmtCurrency(buyPrice)}</span>
+                      <span>•</span>
+                      <span
+                        onClick={() => {
+                          setQuickPriceTarget(inv);
+                          setQuickPriceValue(String(curPrice));
+                          setShowQuickPriceModal(true);
+                        }}
+                        style={{ color: '#fbbf24', cursor: 'pointer', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+                        title="Tocca per aggiornare manualmente il prezzo"
+                      >
+                        Prezzo: {fmtCurrency(curPrice)} ✏️
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                      {fmtCurrency(posValue)}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 'bold', color: posGain >= 0 ? '#4ade80' : '#f87171' }}>
+                      {posGain >= 0 ? '+' : ''}{fmtCurrency(posGain)} ({posGainPct >= 0 ? '+' : ''}{posGainPct.toFixed(1)}%)
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteInvestment(inv.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '2px' }}
+                    title="Elimina posizione"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 5. Tessera Unificata: Movimenti & Categorie (con Imbuto Filtro 🌪️) */}
       <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
         
         {/* Header & Sub-view Switch + Filter Funnel */}
@@ -1447,6 +1780,11 @@ export default function FinancesTab({
                         <div style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
                           <span>{t.date}</span>
                           {getAccountBadge(t)}
+                          {t.excludeFromBudget && (
+                            <span style={{ fontSize: '8px', background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>
+                              ⚪ Fuori Budget
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2085,12 +2423,43 @@ export default function FinancesTab({
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '6px' }}>
                     {secAccount.interestRate > 0 && (
                       <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                        +{secAccount.interestRate}% p.a. interessi
+                        +{secAccount.interestRate}% p.a. {secAccount.interestFrequency === 'daily' ? 'giornaliero' : (secAccount.interestFrequency === 'quarterly' ? 'trimestrale' : (secAccount.interestFrequency === 'annual' ? 'annuale' : 'mensile'))}
                       </span>
                     )}
                     <span style={{ fontSize: '9px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '4px' }}>
                       {secAccount.lockPeriodMonths > 0 ? `⏳ Vincolo: ${secAccount.lockPeriodMonths} mesi` : '🔓 Svincolato'}
                     </span>
+                  </div>
+                )}
+                {isSuperUser && (
+                  <div style={{ marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditBalanceTarget(accId);
+                        setEditBalanceValue(String(accBalance));
+                        if (secAccount) {
+                          setEditBalanceSecRate(String(secAccount.interestRate || '0'));
+                          setEditBalanceSecFreq(secAccount.interestFrequency || 'monthly');
+                        }
+                        setShowEditBalanceModal(true);
+                      }}
+                      style={{
+                        background: 'rgba(234, 179, 8, 0.15)',
+                        border: '1px solid rgba(234, 179, 8, 0.4)',
+                        color: '#eab308',
+                        borderRadius: '6px',
+                        padding: '4px 10px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      🔓 Modifica Saldo (Super User)
+                    </button>
                   </div>
                 )}
               </div>
@@ -2140,7 +2509,17 @@ export default function FinancesTab({
                       {secAccount.interestRate > 0 && (
                         <button
                           type="button"
-                          onClick={() => { setSelectedAccountDetail(null); setSecAccountAction({ account: secAccount, type: 'interest' }); }}
+                          onClick={() => {
+                            setSelectedAccountDetail(null);
+                            const freq = secAccount.interestFrequency || 'monthly';
+                            let divisor = 12;
+                            if (freq === 'daily') divisor = 365;
+                            if (freq === 'quarterly') divisor = 4;
+                            if (freq === 'annual') divisor = 1;
+                            const accrued = Math.round(((secAccount.balance * (secAccount.interestRate / 100)) / divisor) * 100) / 100;
+                            setSecActionAmount(String(accrued > 0 ? accrued : '0'));
+                            setSecAccountAction({ account: secAccount, type: 'interest' });
+                          }}
                           style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                         >
                           📈 Accredita Interessi
@@ -2176,6 +2555,23 @@ export default function FinancesTab({
                       style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#fde047', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       🏧 Preleva Contanti
+                    </button>
+                  )}
+                  {isSuperUser && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditBalanceTarget(accId);
+                        setEditBalanceValue(String(accBalance));
+                        if (secAccount) {
+                          setEditBalanceSecRate(String(secAccount.interestRate || '0'));
+                          setEditBalanceSecFreq(secAccount.interestFrequency || 'monthly');
+                        }
+                        setShowEditBalanceModal(true);
+                      }}
+                      style={{ flex: 1, minWidth: '110px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      🔓 Modifica Saldo
                     </button>
                   )}
                   <button
@@ -2371,6 +2767,28 @@ export default function FinancesTab({
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
+
+              {/* Budget Exclusion Option (Only for Expenses) */}
+              {txModalMode === 'expense' && (
+                <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '2px' }}>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={affectsBudgetInput}
+                      onChange={(e) => setAffectsBudgetInput(e.target.checked)}
+                      style={{ width: '15px', height: '15px', marginTop: '1px', cursor: 'pointer' }}
+                    />
+                    <div>
+                      <div>🎯 Scala dal Budget Spesa Mensile</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'normal', marginTop: '2px', lineHeight: '1.3' }}>
+                        {affectsBudgetInput
+                          ? 'Questa spesa verrà conteggiata nel budget mensile.'
+                          : 'Esclusa dal budget (ideale per bollette, affitti, mutui e spese fisse).'}
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              )}
 
               {/* Recurring Payment Option */}
               <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '2px' }}>
@@ -2597,6 +3015,22 @@ export default function FinancesTab({
                 </div>
               </div>
 
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Frequenza Accredito</label>
+                  <select
+                    value={secInterestFreq}
+                    onChange={(e) => setSecInterestFreq(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                  >
+                    <option value="daily">Giornaliero (1/365 p.a.)</option>
+                    <option value="monthly">Mensile (1/12 p.a.)</option>
+                    <option value="quarterly">Trimestrale (1/4 p.a.)</option>
+                    <option value="annual">Annuale</option>
+                  </select>
+                </div>
+              </div>
+
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <button
                   type="button"
@@ -2632,12 +3066,24 @@ export default function FinancesTab({
             </h3>
 
             {secAccountAction.type === 'interest' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <form onSubmit={handleSecAccountActionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
-                  Calcolo degli interessi del <b>{secAccountAction.account.interestRate}% p.a.</b> sul saldo attuale di <b>{fmtCurrency(secAccountAction.account.balance)}</b>.
+                  Interessi calcolati sul saldo attuale di <b>{fmtCurrency(secAccountAction.account.balance)}</b> al <b>{secAccountAction.account.interestRate}% p.a.</b> ({secAccountAction.account.interestFrequency === 'daily' ? 'Giornaliero 1/365' : (secAccountAction.account.interestFrequency === 'quarterly' ? 'Trimestrale 1/4' : (secAccountAction.account.interestFrequency === 'annual' ? 'Annuale' : 'Mensile 1/12'))}).
                 </p>
-                <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold', color: '#22c55e' }}>
-                  Interessi Maturati: +{fmtCurrency((secAccountAction.account.balance * secAccountAction.account.interestRate) / 100)}
+
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo Interessi da Accreditare (€)*</label>
+                  <input
+                    type="text"
+                    value={secActionAmount}
+                    onChange={(e) => setSecActionAmount(e.target.value)}
+                    autoFocus
+                    required
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: '#22c55e', fontSize: '16px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Puoi modificare liberamente la cifra per allinearla a quella esatta della tua banca.
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
@@ -2649,14 +3095,13 @@ export default function FinancesTab({
                     Annulla
                   </button>
                   <button
-                    type="button"
-                    onClick={handleSecAccountActionSubmit}
+                    type="submit"
                     style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#22c55e', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                   >
                     Accredita
                   </button>
                 </div>
-              </div>
+              </form>
             ) : (
               <form onSubmit={handleSecAccountActionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
@@ -2960,6 +3405,249 @@ export default function FinancesTab({
                 Salva
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Modifica Saldo (Super User) */}
+      {showEditBalanceModal && (
+        <div
+          onClick={() => setShowEditBalanceModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <h4 style={{ margin: 0, fontSize: '15px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🔓 Modifica Saldo (Super User)
+            </h4>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Correzione diretta del saldo per <b>{getAccountLabel(editBalanceTarget)}</b>.
+            </div>
+
+            <div>
+              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nuovo Saldo (€)*</label>
+              <input
+                type="text"
+                value={editBalanceValue}
+                onChange={(e) => setEditBalanceValue(e.target.value)}
+                placeholder="0.00"
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                autoFocus
+              />
+            </div>
+
+            {editBalanceTarget !== 'base' && editBalanceTarget !== 'cash' && (
+              <>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Tasso Interesse (% p.a.)</label>
+                  <input
+                    type="text"
+                    value={editBalanceSecRate}
+                    onChange={(e) => setEditBalanceSecRate(e.target.value)}
+                    placeholder="3.5"
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Frequenza Accredito</label>
+                  <select
+                    value={editBalanceSecFreq}
+                    onChange={(e) => setEditBalanceSecFreq(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                  >
+                    <option value="daily">Giornaliero (1/365 p.a.)</option>
+                    <option value="monthly">Mensile (1/12 p.a.)</option>
+                    <option value="quarterly">Trimestrale (1/4 p.a.)</option>
+                    <option value="annual">Annuale</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            <div style={{ fontSize: '10px', color: '#eab308', background: 'rgba(234, 179, 8, 0.1)', padding: '8px', borderRadius: '6px', border: '1px solid rgba(234, 179, 8, 0.2)' }}>
+              ⚠️ Questa operazione sovrascrive direttamente il saldo senza registrare movimenti fittizi nello storico.
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setShowEditBalanceModal(false)}
+                style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEditedBalance}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+              >
+                Salva Modifiche
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Nuovo Investimento / ETF */}
+      {showAddInvestmentModal && (
+        <div
+          onClick={() => setShowAddInvestmentModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '340px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}
+          >
+            <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              📈 Aggiungi Investimento o ETF
+            </h4>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Inserisci le quote acquistate e il ticker di borsa per tracciarne l'andamento.
+            </div>
+
+            <form onSubmit={handleSaveInvestment} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nome Strumento*</label>
+                <input
+                  type="text"
+                  value={invName}
+                  onChange={(e) => setInvName(e.target.value)}
+                  placeholder="Es. Vanguard FTSE All-World, S&P 500, Apple..."
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Ticker di Mercato (Opzionale)</label>
+                <input
+                  type="text"
+                  value={invTicker}
+                  onChange={(e) => setInvTicker(e.target.value)}
+                  placeholder="Es. VWCE.DE, SWDA.MI, CSSPX.MI, AAPL..."
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Usato per la sincronizzazione online automatica delle quotazioni.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>N° Quote*</label>
+                  <input
+                    type="text"
+                    value={invShares}
+                    onChange={(e) => setInvShares(e.target.value)}
+                    placeholder="Es. 10.5"
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                    required
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Carico PMC (€)*</label>
+                  <input
+                    type="text"
+                    value={invBuyPrice}
+                    onChange={(e) => setInvBuyPrice(e.target.value)}
+                    placeholder="Es. 115.40"
+                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Attuale di Mercato (€)</label>
+                <input
+                  type="text"
+                  value={invCurrentPrice}
+                  onChange={(e) => setInvCurrentPrice(e.target.value)}
+                  placeholder="Se vuoto, usa il prezzo di carico"
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Note / Piattaforma (Opzionale)</label>
+                <input
+                  type="text"
+                  value={invNotes}
+                  onChange={(e) => setInvNotes(e.target.value)}
+                  placeholder="Es. Scalable Capital, Directa, Degiro..."
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAddInvestmentModal(false)}
+                  style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Salva Investimento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Aggiornamento Rapido Prezzo Investimento */}
+      {showQuickPriceModal && quickPriceTarget && (
+        <div
+          onClick={() => setShowQuickPriceModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '300px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)' }}>
+              ✏️ Aggiorna Prezzo: {quickPriceTarget.name}
+            </h4>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+              Prezzo medio di carico: <b>{fmtCurrency(quickPriceTarget.buyPrice)}</b>
+            </div>
+
+            <form onSubmit={handleQuickPriceSave} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Corrente di Mercato (€)*</label>
+                <input
+                  type="text"
+                  value={quickPriceValue}
+                  onChange={(e) => setQuickPriceValue(e.target.value)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '16px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickPriceModal(false)}
+                  style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Aggiorna
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

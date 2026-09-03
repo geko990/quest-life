@@ -1347,6 +1347,7 @@ export default function App() {
             finances={finances}
             setFinances={setFinances}
             stats={stats}
+            settings={settings}
             onRewardXp={handleRewardXp}
             onOpenSettings={() => setActiveTab('settings')}
           />
