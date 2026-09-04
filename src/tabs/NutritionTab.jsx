@@ -32,6 +32,7 @@ export default function NutritionTab({
   const [showMealsModal, setShowMealsModal] = useState(initialModal === 'meals');
   const [showExercisesModal, setShowExercisesModal] = useState(initialModal === 'workouts');
   const [showQuickMealModal, setShowQuickMealModal] = useState(false);
+  const [quickMealSearch, setQuickMealSearch] = useState('');
 
   const handleCloseMealsModal = () => {
     setShowMealsModal(false);
@@ -974,10 +975,14 @@ export default function NutritionTab({
         {/* QUICK MEAL & ONLINE SEARCH MODAL */}
         <QuickMealModal
           isOpen={showQuickMealModal}
-          onClose={() => setShowQuickMealModal(false)}
+          onClose={() => {
+            setShowQuickMealModal(false);
+            setQuickMealSearch('');
+          }}
           onAddMeal={handleAddQuickMeal}
           defaultCategory={activeMealCategory !== 'all' ? activeMealCategory : 'main'}
           existingFoodDatabase={health.foodDatabase || []}
+          initialSearch={quickMealSearch}
         />
       </>
     );
@@ -988,7 +993,7 @@ export default function NutritionTab({
       {/* Tab Header with Circle Switcher (🛒 in Health / 🍎 in Shopping) */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {activeMainTab === 'health' ? '🍎 Diario Salute' : '🛒 Lista della Spesa'}
+          {activeMainTab === 'health' ? '🍎 Diario della salute' : '🛒 Lista della Spesa'}
         </h2>
 
         {/* Top-Right Circular Switcher Button */}
@@ -1010,41 +1015,20 @@ export default function NutritionTab({
             transition: 'all 0.2s ease',
             flexShrink: 0
           }}
-          title={activeMainTab === 'health' ? 'Apri Lista della Spesa' : 'Torna al Diario Salute'}
+          title={activeMainTab === 'health' ? 'Apri Lista della Spesa' : 'Torna al Diario della salute'}
         >
           {activeMainTab === 'health' ? '🛒' : '🍎'}
         </button>
       </div>
 
-      {/* TAB 1: DIARIO SALUTE */}
+      {/* TAB 1: DIARIO DELLA SALUTE */}
       {activeMainTab === 'health' && (
         <>
           {/* Main Calorie Dashboard */}
           <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Allenamento = Rimaste</div>
-              </div>
-              <button
-                onClick={() => setShowMealsModal(true)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '10px',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  background: 'var(--accent-gradient, #7c3aed)',
-                  color: '#ffffff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
-                }}
-              >
-                🍴 Registro Pasti
-              </button>
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Allenamento = Rimaste</div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
@@ -1586,11 +1570,15 @@ export default function NutritionTab({
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                    Database Alimenti (3 per riga)
+                    Database Alimenti
                   </h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
-                      onClick={() => setShowQuickMealModal(true)}
+                      onClick={() => {
+                        setQuickMealSearch(searchQuery || '');
+                        setShowMealsModal(false);
+                        setShowQuickMealModal(true);
+                      }}
                       style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '6px', padding: '2px 7px', cursor: 'pointer' }}
                     >
                       🌐 Cerca Online
@@ -1749,6 +1737,37 @@ export default function NutritionTab({
                     })
                   )}
                 </div>
+
+                {searchQuery && searchQuery.trim().length >= 2 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickMealSearch(searchQuery.trim());
+                      setShowMealsModal(false);
+                      setShowQuickMealModal(true);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      marginTop: '12px',
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px dashed rgba(56, 189, 248, 0.4)',
+                      borderRadius: '12px',
+                      color: '#38bdf8',
+                      fontSize: '11.5px',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span>🌐</span>
+                    <span>Cerca "{searchQuery.trim()}" su Internet (Open Food Facts)</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -2376,10 +2395,14 @@ export default function NutritionTab({
       {/* QUICK MEAL & ONLINE SEARCH MODAL */}
       <QuickMealModal
         isOpen={showQuickMealModal}
-        onClose={() => setShowQuickMealModal(false)}
+        onClose={() => {
+          setShowQuickMealModal(false);
+          setQuickMealSearch('');
+        }}
         onAddMeal={handleAddQuickMeal}
         defaultCategory={activeMealCategory !== 'all' ? activeMealCategory : 'main'}
         existingFoodDatabase={health.foodDatabase || []}
+        initialSearch={quickMealSearch}
       />
     </section>
   );
