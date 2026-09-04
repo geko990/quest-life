@@ -175,7 +175,35 @@ export default function FinancesTab({
   const [isSyncingQuotes, setIsSyncingQuotes] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState(null);
   const [showSyncHelpModal, setShowSyncHelpModal] = useState(false);
-  const [customProxyInput, setCustomProxyInput] = useState(finances.customQuotesProxy || '');
+  const [customProxyInput, setCustomProxyInput] = useState(() => {
+    if (finances.customQuotesProxy && typeof finances.customQuotesProxy === 'string') {
+      return finances.customQuotesProxy;
+    }
+    try {
+      return (localStorage.getItem('questlife_custom_quotes_proxy') || '').trim();
+    } catch (e) {
+      return '';
+    }
+  });
+
+  // Keep customProxyInput and finances.customQuotesProxy synchronized with localStorage across updates
+  useEffect(() => {
+    if (finances.customQuotesProxy && typeof finances.customQuotesProxy === 'string') {
+      const val = finances.customQuotesProxy.trim();
+      setCustomProxyInput(val);
+      try {
+        localStorage.setItem('questlife_custom_quotes_proxy', val);
+      } catch (e) {}
+    } else {
+      try {
+        const stored = (localStorage.getItem('questlife_custom_quotes_proxy') || '').trim();
+        if (stored) {
+          setCustomProxyInput(stored);
+          setFinances(prev => ({ ...prev, customQuotesProxy: stored }));
+        }
+      } catch (e) {}
+    }
+  }, [finances.customQuotesProxy, setFinances]);
   const [showWorkerGuideInModal, setShowWorkerGuideInModal] = useState(false);
   const [copiedWorkerCodeInFinances, setCopiedWorkerCodeInFinances] = useState(false);
   const [showManualModalInFinances, setShowManualModalInFinances] = useState(false);
@@ -1040,6 +1068,14 @@ export default function FinancesTab({
   const handleSaveCustomProxy = (e) => {
     e.preventDefault();
     const val = (customProxyInput || '').trim();
+    try {
+      if (val) {
+        localStorage.setItem('questlife_custom_quotes_proxy', val);
+      } else {
+        localStorage.removeItem('questlife_custom_quotes_proxy');
+      }
+    } catch (err) {}
+
     setFinances(prev => ({
       ...prev,
       customQuotesProxy: val
@@ -1069,8 +1105,14 @@ export default function FinancesTab({
       const endpoints = [];
 
       // 1. Proxy personalizzato configurato dall'utente (es. Cloudflare Worker personale)
-      if (finances.customQuotesProxy) {
-        const cleanProxy = finances.customQuotesProxy.replace(/\/$/, '');
+      let activeProxy = (finances.customQuotesProxy || '').trim();
+      if (!activeProxy) {
+        try {
+          activeProxy = (localStorage.getItem('questlife_custom_quotes_proxy') || '').trim();
+        } catch (e) {}
+      }
+      if (activeProxy) {
+        const cleanProxy = activeProxy.replace(/\/$/, '');
         endpoints.push(`${cleanProxy}/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`);
       }
 

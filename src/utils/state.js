@@ -69,7 +69,8 @@ export function getInitialState() {
       savingGoals: [],
       secondaryAccounts: [],
       recurringTransactions: [],
-      investments: []
+      investments: [],
+      customQuotesProxy: ''
     },
     health: {
       calories: { goal: 1600, consumed: 0, burned: 0 },
@@ -342,6 +343,21 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       return isNaN(n) ? def : n;
     };
 
+    let proxyVal = '';
+    if (parsed.finances.customQuotesProxy && typeof parsed.finances.customQuotesProxy === 'string') {
+      proxyVal = parsed.finances.customQuotesProxy.trim();
+    } else {
+      try {
+        proxyVal = (localStorage.getItem('questlife_custom_quotes_proxy') || '').trim();
+      } catch (e) {}
+    }
+
+    if (proxyVal) {
+      try {
+        localStorage.setItem('questlife_custom_quotes_proxy', proxyVal);
+      } catch (e) {}
+    }
+
     state.finances = {
       baseAccountName: (parsed.finances.baseAccountName && typeof parsed.finances.baseAccountName === 'string')
         ? parsed.finances.baseAccountName.trim() || 'Conto Base'
@@ -371,9 +387,15 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
             lastUpdated: inv.lastUpdated || null,
             notes: inv.notes || ''
           }))
-        : []
+        : [],
+      customQuotesProxy: proxyVal
     };
   } else {
+    let fallbackProxy = '';
+    try {
+      fallbackProxy = (localStorage.getItem('questlife_custom_quotes_proxy') || '').trim();
+    } catch (e) {}
+
     state.finances = {
       baseAccountName: 'Conto Base',
       balance: 0,
@@ -384,7 +406,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       savingGoals: [],
       secondaryAccounts: [],
       recurringTransactions: [],
-      investments: []
+      investments: [],
+      customQuotesProxy: fallbackProxy
     };
   }
 
