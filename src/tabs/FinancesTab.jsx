@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getGameDate } from '../utils/helpers';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 import UserManualModal from '../components/UserManualModal';
@@ -65,6 +65,24 @@ const shiftMonthKey = (monthKey, delta) => {
   return `${newYr}-${newMo}`;
 };
 
+const formatDateShort = (dateStr) => {
+  if (!dateStr || !dateStr.includes('-')) return dateStr || '';
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return dateStr;
+  const day = parseInt(parts[2], 10);
+  const moIdx = parseInt(parts[1], 10) - 1;
+  return `${day} ${MONTH_NAMES_SHORT_IT[moIdx] || parts[1]}`;
+};
+
+const formatDateFull = (dateStr) => {
+  if (!dateStr || !dateStr.includes('-')) return dateStr || '';
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return dateStr;
+  const day = parseInt(parts[2], 10);
+  const moIdx = parseInt(parts[1], 10) - 1;
+  return `${day} ${MONTH_NAMES_IT[moIdx] || parts[1]} ${parts[0]}`;
+};
+
 export default function FinancesTab({
   finances = { baseAccountName: 'Conto Base', balance: 0, cashBalance: 0, monthlyBudget: 1000, hideBalances: false, transactions: [], savingGoals: [], secondaryAccounts: [], recurringTransactions: [], investments: [] },
   setFinances,
@@ -85,8 +103,13 @@ export default function FinancesTab({
   const [filterCategory, setFilterCategory] = useState('all'); // 'all' or category id
   const [showFilterModal, setShowFilterModal] = useState(false);
 
+  // Swipe gesture refs for chart
+  const chartTouchStartX = useRef(0);
+  const chartTouchStartY = useRef(0);
+
   // Modals
   const [showAddTxModal, setShowAddTxModal] = useState(false);
+  const [editingTxId, setEditingTxId] = useState(null);
   const [txModalMode, setTxModalMode] = useState('expense'); // 'expense' | 'income'
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showRecurringModal, setShowRecurringModal] = useState(false);
@@ -397,6 +420,7 @@ export default function FinancesTab({
   };
 
   const handleOpenAddTxModal = (mode, defaultAccount = 'base') => {
+    setEditingTxId(null);
     setTxModalMode(mode);
     setTxAccountInput(defaultAccount);
     setCategoryInput(mode === 'income' ? 'stipendio' : 'cibo');
@@ -409,10 +433,99 @@ export default function FinancesTab({
     setShowAddTxModal(true);
   };
 
+  const handleOpenEditTransaction = (tx) => {
+    setEditingTxId(tx.id);
+    setTxModalMode(tx.type === 'income' ? 'income' : 'expense');
+    setTxAccountInput(tx.account || 'base');
+    setCategoryInput(tx.category || (tx.type === 'income' ? 'stipendio' : 'cibo'));
+    setAmountInput(String(tx.amount || ''));
+    setNoteInput(tx.note || '');
+    setDateInput(tx.date || getGameDate());
+    setAffectsBudgetInput(tx.excludeFromBudget !== true);
+    setIsRecurring(false);
+    setShowAddTxModal(true);
+  };
+
   const handleSaveTransaction = (e) => {
     e.preventDefault();
     const val = parseFloat(amountInput.replace(',', '.'));
     if (isNaN(val) || val <= 0) return;
+
+    if (editingTxId) {
+      setFinances(prev => {
+        const oldTx = (prev.transactions || []).find(t => t.id === editingTxId);
+        if (!oldTx) return prev;
+
+        let newBalance = prev.balance;
+        let newCashBalance = prev.cashBalance || 0;
+        let newSecAccounts = [...(prev.secondaryAccounts || [])];
+
+        const oldAmt = Number(oldTx.amount) || 0;
+        const oldTarget = oldTx.account || 'base';
+
+        // 1. Revert old transaction effect
+        if (oldTx.type === 'transfer') {
+          const src = oldTx.sourceAccount || 'base';
+          const dst = oldTx.targetAccount || oldTx.account || 'cash';
+          if (src === 'base') newBalance += oldAmt;
+          else if (src === 'cash') newCashBalance += oldAmt;
+          else newSecAccounts = newSecAccounts.map(a => a.id === src ? { ...a, balance: a.balance + oldAmt } : a);
+
+          if (dst === 'base') newBalance -= oldAmt;
+          else if (dst === 'cash') newCashBalance -= oldAmt;
+          else newSecAccounts = newSecAccounts.map(a => a.id === dst ? { ...a, balance: a.balance - oldAmt } : a);
+        } else if (oldTarget === 'base') {
+          newBalance = oldTx.type === 'income' ? newBalance - oldAmt : newBalance + oldAmt;
+        } else if (oldTarget === 'cash') {
+          newCashBalance = oldTx.type === 'income' ? (prev.cashBalance || 0) - oldAmt : (prev.cashBalance || 0) + oldAmt;
+        } else {
+          newSecAccounts = newSecAccounts.map(a => {
+            if (a.id !== oldTarget) return a;
+            const restoredBal = oldTx.type === 'income' ? a.balance - oldAmt : a.balance + oldAmt;
+            return { ...a, balance: restoredBal };
+          });
+        }
+
+        // 2. Apply updated transaction effect
+        if (txAccountInput === 'base') {
+          newBalance = txModalMode === 'income' ? newBalance + val : newBalance - val;
+        } else if (txAccountInput === 'cash') {
+          newCashBalance = txModalMode === 'income' ? newCashBalance + val : newCashBalance - val;
+        } else {
+          newSecAccounts = newSecAccounts.map(a => {
+            if (a.id !== txAccountInput) return a;
+            const updatedBal = txModalMode === 'income' ? a.balance + val : a.balance - val;
+            return { ...a, balance: updatedBal };
+          });
+        }
+
+        const updatedTxList = (prev.transactions || []).map(t => {
+          if (t.id !== editingTxId) return t;
+          return {
+            ...t,
+            type: txModalMode,
+            amount: val,
+            category: categoryInput,
+            account: txAccountInput,
+            note: noteInput.trim(),
+            date: dateInput,
+            excludeFromBudget: txModalMode === 'expense' ? !affectsBudgetInput : false
+          };
+        });
+
+        return {
+          ...prev,
+          balance: newBalance,
+          cashBalance: newCashBalance,
+          secondaryAccounts: newSecAccounts,
+          transactions: updatedTxList
+        };
+      });
+
+      setEditingTxId(null);
+      setShowAddTxModal(false);
+      return;
+    }
 
     const newTx = {
       id: 'tx_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
@@ -471,6 +584,7 @@ export default function FinancesTab({
       };
     });
 
+    setEditingTxId(null);
     setShowAddTxModal(false);
   };
 
@@ -1319,6 +1433,46 @@ export default function FinancesTab({
   const isWeekOverallUp = (hWeekPoints[hWeekPoints.length - 1]?.balance || 0) >= (hWeekPoints[0]?.balance || 0);
   const hWeekStrokeColor = isWeekOverallUp ? '#4ade80' : '#f87171';
 
+  const historyAccountsList = useMemo(() => [
+    { id: 'all', titleName: 'Saldo Totale', emoji: '🏛️' },
+    { id: 'base', titleName: finances.baseAccountName || 'Conto Base', emoji: '💳' },
+    { id: 'cash', titleName: 'Contanti', emoji: '💵' },
+    ...(finances.secondaryAccounts || []).map(a => ({ id: a.id, titleName: a.name, emoji: a.emoji || '🏦' }))
+  ], [finances.baseAccountName, finances.secondaryAccounts]);
+
+  const currentHistoryAccountObj = useMemo(() => {
+    return historyAccountsList.find(a => a.id === historyAccountFilter) || historyAccountsList[0];
+  }, [historyAccountsList, historyAccountFilter]);
+
+  const cycleHistoryAccount = (direction) => {
+    const currentIndex = historyAccountsList.findIndex(a => a.id === historyAccountFilter);
+    const safeIdx = currentIndex >= 0 ? currentIndex : 0;
+    const nextIdx = (safeIdx + direction + historyAccountsList.length) % historyAccountsList.length;
+    setHistoryAccountFilter(historyAccountsList[nextIdx].id);
+    setSelectedHistoryWeek(null);
+  };
+
+  const handleChartTouchStart = (e) => {
+    if (e.touches && e.touches[0]) {
+      chartTouchStartX.current = e.touches[0].clientX;
+      chartTouchStartY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleChartTouchEnd = (e) => {
+    if (e.changedTouches && e.changedTouches[0]) {
+      const deltaX = e.changedTouches[0].clientX - chartTouchStartX.current;
+      const deltaY = e.changedTouches[0].clientY - chartTouchStartY.current;
+      if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX < 0) {
+          cycleHistoryAccount(1);
+        } else {
+          cycleHistoryAccount(-1);
+        }
+      }
+    }
+  };
+
   // --- 6-MONTHS OVERVIEW & CHARTS ---
   const txMonthKeys = Array.from(new Set(
     (finances.transactions || [])
@@ -1362,48 +1516,152 @@ export default function FinancesTab({
   const remainingBudget = (finances.monthlyBudget || 1000) - monthBudgetExpenses;
 
   // --- PATRIMONIO OVER TIME (STOCK CHART) ---
-  const chartPoints = useMemo(() => {
-    if (!overviewMonthsList || overviewMonthsList.length === 0) {
-      return [{ key: 'cur', label: 'Oggi', fullLabel: 'Oggi', value: totalPatrimonio, net: 0, isCurrent: true }];
+  const { chartPoints, chartGranularity } = useMemo(() => {
+    const todayStr = getGameDate();
+    const allTx = finances.transactions || [];
+
+    // Filter valid dates
+    const validTxDates = allTx
+      .map(t => t.date)
+      .filter(d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d));
+
+    const minTxDate = validTxDates.length > 0
+      ? validTxDates.reduce((min, d) => (d < min ? d : min), todayStr)
+      : todayStr;
+
+    // Calculate total days span between minTxDate and todayStr
+    const parseDateUtc = (dStr) => {
+      const [y, m, d] = dStr.split('-').map(Number);
+      return Date.UTC(y, m - 1, d);
+    };
+
+    const daysSpan = Math.max(1, Math.round((parseDateUtc(todayStr) - parseDateUtc(minTxDate)) / (86400000)));
+
+    // Adaptive granularity:
+    // <= 90 days: day by day
+    // 91 - 240 days: weekly (every 7 days)
+    // > 240 days: monthly
+    let granularity = 'day';
+    if (daysSpan > 240) {
+      granularity = 'month';
+    } else if (daysSpan > 90) {
+      granularity = 'week';
     }
 
-    if (overviewMonthsList.length === 1) {
-      const curKey = overviewMonthsList[0];
-      const curTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(curKey));
-      const curInc = curTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      const curExp = curTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      const curNet = Math.round((curInc - curExp) * 100) / 100;
-      const startVal = Math.round((totalPatrimonio - curNet) * 100) / 100;
-      return [
-        { key: 'start', label: 'Inizio', fullLabel: 'Inizio Mese', value: startVal, net: 0, isCurrent: false },
-        { key: curKey, label: 'Oggi', fullLabel: formatMonthLabel(curKey), value: totalPatrimonio, net: curNet, isCurrent: true }
-      ];
-    }
+    if (granularity === 'month') {
+      if (!overviewMonthsList || overviewMonthsList.length === 0) {
+        return {
+          chartPoints: [{ key: 'cur', label: 'Oggi', fullLabel: 'Oggi', value: totalPatrimonio, net: 0, isCurrent: true }],
+          chartGranularity: 'month'
+        };
+      }
 
-    return overviewMonthsList.map(mKey => {
-      const txAfter = (finances.transactions || []).filter(t => {
-        if (!t.date || typeof t.date !== 'string' || t.date.length < 7) return false;
-        return t.date.substring(0, 7) > mKey;
+      const points = overviewMonthsList.map(mKey => {
+        const txAfter = allTx.filter(t => {
+          if (!t.date || typeof t.date !== 'string' || t.date.length < 7) return false;
+          return t.date.substring(0, 7) > mKey;
+        });
+        const incAfter = txAfter.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const expAfter = txAfter.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const netAfter = incAfter - expAfter;
+        const monthPatrimonio = Math.round((totalPatrimonio - netAfter) * 100) / 100;
+
+        const mTx = allTx.filter(t => t.date && t.date.startsWith(mKey));
+        const mInc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const mExp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const mNet = Math.round((mInc - mExp) * 100) / 100;
+
+        return {
+          key: mKey,
+          label: formatMonthShort(mKey),
+          fullLabel: formatMonthLabel(mKey),
+          value: monthPatrimonio,
+          net: mNet,
+          isCurrent: mKey === currentMonthPrefix
+        };
       });
-      const incAfter = txAfter.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      const expAfter = txAfter.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      const netAfter = incAfter - expAfter;
-      const monthPatrimonio = Math.round((totalPatrimonio - netAfter) * 100) / 100;
 
-      const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
-      const mInc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      const mExp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-      const mNet = Math.round((mInc - mExp) * 100) / 100;
+      return { chartPoints: points, chartGranularity: 'month' };
+    }
 
+    // Daily or Weekly:
+    // Determine start date: if daysSpan < 14, pad to at least 14 days before today
+    const minDaysToShow = 14;
+    let effectiveStartDateStr = minTxDate;
+    if (daysSpan < minDaysToShow) {
+      const padDate = new Date(parseDateUtc(todayStr) - (minDaysToShow - 1) * 86400000);
+      const py = padDate.getUTCFullYear();
+      const pm = String(padDate.getUTCMonth() + 1).padStart(2, '0');
+      const pd = String(padDate.getUTCDate()).padStart(2, '0');
+      effectiveStartDateStr = `${py}-${pm}-${pd}`;
+    }
+
+    // Build array of all days
+    const dayKeys = [];
+    let curTime = parseDateUtc(effectiveStartDateStr);
+    const endTime = parseDateUtc(todayStr);
+    while (curTime <= endTime) {
+      const dt = new Date(curTime);
+      const y = dt.getUTCFullYear();
+      const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(dt.getUTCDate()).padStart(2, '0');
+      dayKeys.push(`${y}-${m}-${d}`);
+      curTime += 86400000;
+    }
+
+    // Map transactions net by date
+    const txNetByDate = {};
+    for (const t of allTx) {
+      if (!t.date || typeof t.date !== 'string') continue;
+      const dKey = t.date.substring(0, 10);
+      if (!txNetByDate[dKey]) txNetByDate[dKey] = 0;
+      if (t.type === 'income') txNetByDate[dKey] += (Number(t.amount) || 0);
+      else if (t.type === 'expense') txNetByDate[dKey] -= (Number(t.amount) || 0);
+    }
+
+    // Compute daily balance backwards from today
+    const dailyValues = new Array(dayKeys.length);
+    let runningVal = totalPatrimonio;
+    for (let i = dayKeys.length - 1; i >= 0; i--) {
+      dailyValues[i] = Math.round(runningVal * 100) / 100;
+      const dayNet = txNetByDate[dayKeys[i]] || 0;
+      runningVal -= dayNet;
+    }
+
+    if (granularity === 'day') {
+      const points = dayKeys.map((dKey, idx) => ({
+        key: dKey,
+        label: formatDateShort(dKey),
+        fullLabel: formatDateFull(dKey),
+        value: dailyValues[idx],
+        net: Math.round((txNetByDate[dKey] || 0) * 100) / 100,
+        isCurrent: dKey === todayStr
+      }));
+      return { chartPoints: points, chartGranularity: 'day' };
+    }
+
+    // Granularity === 'week': sample every 7 days (including the first and last day)
+    const weekIndices = [];
+    for (let i = 0; i < dayKeys.length; i += 7) {
+      weekIndices.push(i);
+    }
+    if (weekIndices[weekIndices.length - 1] !== dayKeys.length - 1) {
+      weekIndices.push(dayKeys.length - 1);
+    }
+
+    const points = weekIndices.map(idx => {
+      const dKey = dayKeys[idx];
       return {
-        key: mKey,
-        label: formatMonthShort(mKey),
-        fullLabel: formatMonthLabel(mKey),
-        value: monthPatrimonio,
-        net: mNet,
-        isCurrent: mKey === currentMonthPrefix
+        key: dKey,
+        label: formatDateShort(dKey),
+        fullLabel: formatDateFull(dKey),
+        value: dailyValues[idx],
+        net: Math.round((txNetByDate[dKey] || 0) * 100) / 100,
+        isCurrent: dKey === todayStr
       };
     });
+
+    return { chartPoints: points, chartGranularity: 'week' };
   }, [overviewMonthsList, finances.transactions, totalPatrimonio, currentMonthPrefix]);
 
   const svgW = 330;
@@ -1431,6 +1689,20 @@ export default function FinancesTab({
     const y = pTop + plotHeight - ((p.value - sYMin) / sYRange) * plotHeight;
     return { ...p, x, y };
   });
+
+  const displayLabels = useMemo(() => {
+    const n = plottedPoints.length;
+    if (n <= 7) return plottedPoints.map((pt, idx) => ({ pt, idx }));
+    const count = Math.min(5, n);
+    const step = (n - 1) / (count - 1);
+    const selectedIndices = new Set();
+    for (let i = 0; i < count; i++) {
+      selectedIndices.add(Math.round(i * step));
+    }
+    return Array.from(selectedIndices)
+      .sort((a, b) => a - b)
+      .map(idx => ({ pt: plottedPoints[idx], idx }));
+  }, [plottedPoints]);
 
   let linePathD = '';
   if (plottedPoints.length === 1) {
@@ -1575,14 +1847,16 @@ export default function FinancesTab({
                 <span>({isPointPositive ? '+' : ''}{activeDeltaPct}%)</span>
               </span>
               <span style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '10px' }}>
-                {activePoint.isCurrent ? `(negli ultimi ${chartPoints.length} mesi)` : `(${activePoint.fullLabel})`}
+                {activePoint.isCurrent
+                  ? (chartGranularity === 'day' ? `(negli ultimi ${chartPoints.length} giorni)` : chartGranularity === 'week' ? `(nelle ultime ${chartPoints.length} settimane)` : `(negli ultimi ${chartPoints.length} mesi)`)
+                  : `(${activePoint.fullLabel})`}
               </span>
             </div>
           </div>
 
           <div style={{ textAlign: 'right' }}>
             <span
-              onClick={() => setSelectedChartPointIndex(null)}
+              onClick={(e) => { e.stopPropagation(); setSelectedChartPointIndex(null); }}
               style={{
                 fontSize: '9px',
                 background: selectedChartPointIndex !== null ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
@@ -1594,7 +1868,9 @@ export default function FinancesTab({
               }}
               title="Reimposta visualizzazione sul patrimonio attuale"
             >
-              {selectedChartPointIndex !== null ? '↺ Torna a Oggi' : `${chartPoints.length} Mesi`}
+              {selectedChartPointIndex !== null
+                ? '↺ Torna a Oggi'
+                : (chartGranularity === 'day' ? `${chartPoints.length} Giorni` : chartGranularity === 'week' ? `${chartPoints.length} Settimane` : `${chartPoints.length} Mesi`)}
             </span>
           </div>
         </div>
@@ -1653,9 +1929,10 @@ export default function FinancesTab({
               strokeDasharray="2 2"
             />
 
-            {/* Punti Interattivi su ciascun mese */}
+            {/* Punti Interattivi su ciascun punto */}
             {plottedPoints.map((pt, idx) => {
               const isSelected = idx === activeChartIndex;
+              const showDot = plottedPoints.length <= 25 || isSelected || (pt.net !== 0);
               return (
                 <g
                   key={pt.key}
@@ -1663,7 +1940,7 @@ export default function FinancesTab({
                   style={{ cursor: 'pointer' }}
                 >
                   {/* Invisible larger touch target */}
-                  <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+                  <circle cx={pt.x} cy={pt.y} r={plottedPoints.length > 25 ? "8" : "14"} fill="transparent" />
                   {/* Outer halo when selected */}
                   {isSelected && (
                     <circle
@@ -1675,22 +1952,24 @@ export default function FinancesTab({
                     />
                   )}
                   {/* Point circle */}
-                  <circle
-                    cx={pt.x}
-                    cy={pt.y}
-                    r={isSelected ? "4.5" : "3"}
-                    fill={isSelected ? '#fff' : chartStrokeColor}
-                    stroke={isSelected ? chartStrokeColor : 'var(--bg-card, #1e293b)'}
-                    strokeWidth={isSelected ? "2" : "1.5"}
-                  />
+                  {showDot && (
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={isSelected ? "4.5" : (plottedPoints.length > 30 ? "2" : "3")}
+                      fill={isSelected ? '#fff' : chartStrokeColor}
+                      stroke={isSelected ? chartStrokeColor : 'var(--bg-card, #1e293b)'}
+                      strokeWidth={isSelected ? "2" : "1.2"}
+                    />
+                  )}
                 </g>
               );
             })}
           </svg>
 
-          {/* Etichette Mesi lungo l'asse X */}
+          {/* Etichette lungo l'asse X */}
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${pLeft - 10}px`, paddingRight: `${pRight - 6}px`, marginTop: '2px' }}>
-            {plottedPoints.map((pt, idx) => {
+            {displayLabels.map(({ pt, idx }) => {
               const isSelected = idx === activeChartIndex;
               return (
                 <div
@@ -2329,23 +2608,28 @@ export default function FinancesTab({
                 return (
                   <div
                     key={t.id}
+                    onClick={() => handleOpenEditTransaction(t)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       background: 'var(--bg-primary)',
-                      padding: '6px 8px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--glass-border)'
+                      padding: '11px 12px',
+                      minHeight: '50px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--glass-border)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
                     }}
+                    title="Tocca per modificare questo movimento"
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                      <span style={{ fontSize: '15px', flexShrink: 0 }}>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
+                      <span style={{ fontSize: '18px', flexShrink: 0 }}>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {t.note || catObj.label}
                         </div>
-                        <div style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
+                        <div style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px', flexWrap: 'wrap' }}>
                           <span>{t.date}</span>
                           {getAccountBadge(t)}
                           {t.excludeFromBudget && (
@@ -2357,13 +2641,30 @@ export default function FinancesTab({
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isIncome ? '#22c55e' : '#ef4444') }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isIncome ? '#22c55e' : '#ef4444') }}>
                         {t.type === 'transfer' ? '↔️ ' : (isIncome ? '+' : '-')}{fmtCurrency(t.amount)}
                       </span>
                       <button
-                        onClick={() => handleDeleteTransaction(t.id)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '1px' }}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTransaction(t.id);
+                        }}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.2)',
+                          color: '#f87171',
+                          borderRadius: '6px',
+                          width: '24px',
+                          height: '24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '10px',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
                         title="Elimina movimento"
                       >
                         🗑️
@@ -2499,115 +2800,6 @@ export default function FinancesTab({
               </button>
             </div>
 
-            {/* Account Scope Filter (Tutti i Conti vs Singolo Conto) */}
-            <div
-              className="no-scrollbar"
-              style={{
-                display: 'flex',
-                gap: '6px',
-                flexWrap: 'wrap',
-                flexShrink: 0,
-                padding: '2px 0 4px 0',
-                alignItems: 'center'
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => { setHistoryAccountFilter('all'); setSelectedHistoryWeek(null); }}
-                style={{
-                  background: historyAccountFilter === 'all' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
-                  color: historyAccountFilter === 'all' ? '#fff' : 'var(--text-secondary)',
-                  border: historyAccountFilter === 'all' ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
-                  boxShadow: historyAccountFilter === 'all' ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
-                  borderRadius: '9px',
-                  padding: '6px 11px',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                🏛️ Patrimonio Totale
-              </button>
-              <button
-                type="button"
-                onClick={() => { setHistoryAccountFilter('base'); setSelectedHistoryWeek(null); }}
-                style={{
-                  background: historyAccountFilter === 'base' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
-                  color: historyAccountFilter === 'base' ? '#fff' : 'var(--text-secondary)',
-                  border: historyAccountFilter === 'base' ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
-                  boxShadow: historyAccountFilter === 'base' ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
-                  borderRadius: '9px',
-                  padding: '6px 11px',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                💳 {finances.baseAccountName || 'Conto Base'}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setHistoryAccountFilter('cash'); setSelectedHistoryWeek(null); }}
-                style={{
-                  background: historyAccountFilter === 'cash' ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
-                  color: historyAccountFilter === 'cash' ? '#fff' : 'var(--text-secondary)',
-                  border: historyAccountFilter === 'cash' ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
-                  boxShadow: historyAccountFilter === 'cash' ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
-                  borderRadius: '9px',
-                  padding: '6px 11px',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                💵 Contanti
-              </button>
-              {(finances.secondaryAccounts || []).map(acc => (
-                <button
-                  key={acc.id}
-                  type="button"
-                  onClick={() => { setHistoryAccountFilter(acc.id); setSelectedHistoryWeek(null); }}
-                  style={{
-                    background: historyAccountFilter === acc.id ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-primary)',
-                    color: historyAccountFilter === acc.id ? '#fff' : 'var(--text-secondary)',
-                    border: historyAccountFilter === acc.id ? '1px solid var(--accent-primary, #38bdf8)' : '1px solid var(--glass-border)',
-                    boxShadow: historyAccountFilter === acc.id ? '0 2px 8px rgba(56, 189, 248, 0.35)' : 'none',
-                    borderRadius: '9px',
-                    padding: '6px 11px',
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {acc.emoji || '🏦'} {acc.name}
-                </button>
-              ))}
-            </div>
-
             {/* 1. Month Navigator Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', flexShrink: 0 }}>
               <button
@@ -2642,127 +2834,168 @@ export default function FinancesTab({
               </button>
             </div>
 
-            {/* 2. Monthly Financial Health KPI Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flexShrink: 0 }}>
-              <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: '#86efac', textTransform: 'uppercase', fontWeight: 'bold' }}>🟢 Entrate Mese</div>
-                <div style={{ fontSize: '15px', fontWeight: '900', color: '#4ade80', marginTop: '2px' }}>
-                  +{fmtCurrency(selMonthIncome)}
-                </div>
-              </div>
-              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>🔴 Uscite Mese</div>
-                <div style={{ fontSize: '15px', fontWeight: '900', color: '#f87171', marginTop: '2px' }}>
-                  -{fmtCurrency(selMonthExpenses)}
-                </div>
-              </div>
-              <div style={{ background: selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: selMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>
-                  {selMonthNet >= 0 ? '⚖️ Risparmio Netto' : '⚠️ Deficit Mese'}
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
-                  {selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
-                </div>
-              </div>
-              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>📊 Tasso Risparmio</div>
-                <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthSavingsRate >= 20 ? '#4ade80' : selMonthSavingsRate >= 0 ? '#fbbf24' : '#ef4444', marginTop: '2px' }}>
-                  {selMonthSavingsRate}%
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Horizon Switcher (Breve Periodo vs Lungo Periodo) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '4px', borderRadius: '10px', border: '1px solid var(--glass-border)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <button
-                  type="button"
-                  onClick={() => { setHistoryRange('short'); setSelectedHistoryWeek(null); }}
-                  style={{
-                    background: historyRange === 'short' ? 'var(--bg-card)' : 'transparent',
-                    border: historyRange === 'short' ? '1px solid var(--glass-border)' : '1px solid transparent',
-                    color: historyRange === 'short' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    fontSize: '11px',
-                    fontWeight: historyRange === 'short' ? 'bold' : 'normal',
-                    padding: '5px 12px',
-                    borderRadius: '7px',
-                    cursor: 'pointer',
-                    boxShadow: historyRange === 'short' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  📅 Breve (Settimanale)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setHistoryRange('long'); setSelectedHistoryWeek(null); }}
-                  style={{
-                    background: historyRange === 'long' ? 'var(--bg-card)' : 'transparent',
-                    border: historyRange === 'long' ? '1px solid var(--glass-border)' : '1px solid transparent',
-                    color: historyRange === 'long' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    fontSize: '11px',
-                    fontWeight: historyRange === 'long' ? 'bold' : 'normal',
-                    padding: '5px 12px',
-                    borderRadius: '7px',
-                    cursor: 'pointer',
-                    boxShadow: historyRange === 'long' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  📆 Lungo (Trend Mesi)
-                </button>
-              </div>
-              {historyRange === 'long' && (
-                <div style={{ display: 'flex', gap: '4px', paddingRight: '4px' }}>
+            {/* 2. Chart Card con Swipe Orizzontale per Conti e Bottone Calendario 📅 */}
+            <div
+              onTouchStart={handleChartTouchStart}
+              onTouchEnd={handleChartTouchEnd}
+              style={{
+                background: 'var(--bg-primary)',
+                padding: '12px 10px',
+                borderRadius: '14px',
+                border: '1px solid var(--glass-border)',
+                flexShrink: 0,
+                userSelect: 'none'
+              }}
+            >
+              {/* Chart Card Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <button
                     type="button"
-                    onClick={() => setLongPeriodMonthsCount(6)}
+                    onClick={() => cycleHistoryAccount(-1)}
                     style={{
-                      background: longPeriodMonthsCount === 6 ? 'var(--accent-primary)' : 'transparent',
-                      color: longPeriodMonthsCount === 6 ? '#fff' : 'var(--text-muted)',
-                      border: 'none',
-                      borderRadius: '5px',
-                      fontSize: '10px',
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)',
+                      borderRadius: '6px',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontSize: '13px',
                       fontWeight: 'bold',
-                      padding: '3px 7px',
-                      cursor: 'pointer'
+                      padding: 0
                     }}
+                    title="Conto precedente (o swipe a destra)"
                   >
-                    6M
+                    ‹
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setLongPeriodMonthsCount(12)}
-                    style={{
-                      background: longPeriodMonthsCount === 12 ? 'var(--accent-primary)' : 'transparent',
-                      color: longPeriodMonthsCount === 12 ? '#fff' : 'var(--text-muted)',
-                      border: 'none',
-                      borderRadius: '5px',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                      padding: '3px 7px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    12M
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 4a. Grafico Breve Periodo (Andamento Saldo Settimanale - Stile Borsa / Revolut) */}
-            {historyRange === 'short' && (
-              <div style={{ flexShrink: 0 }}>
-                <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                    <span style={{ fontWeight: 'bold' }}>
-                      Andamento Saldo ({formatMonthShort(selectedHistoryMonth)})
-                    </span>
-                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                      {isSelectedCurrentMonth ? `Fino a oggi (${todayDayNumber} ${formatMonthShort(selectedHistoryMonth)})` : 'Mese completo'}
-                    </span>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>{currentHistoryAccountObj.emoji}</span>
+                      <span>
+                        {historyRange === 'short'
+                          ? `Andamento ${currentHistoryAccountObj.titleName} (${formatMonthShort(selectedHistoryMonth)})`
+                          : `Evoluzione ${currentHistoryAccountObj.titleName} (${longPeriodMonthsCount}M)`}
+                      </span>
+                    </div>
+                    {/* Indicatore a punti dei conti */}
+                    <div style={{ display: 'flex', gap: '3px', marginTop: '2px', alignItems: 'center' }}>
+                      {historyAccountsList.map(acc => (
+                        <span
+                          key={acc.id}
+                          onClick={() => { setHistoryAccountFilter(acc.id); setSelectedHistoryWeek(null); }}
+                          style={{
+                            width: acc.id === historyAccountFilter ? '12px' : '5px',
+                            height: '5px',
+                            borderRadius: '3px',
+                            background: acc.id === historyAccountFilter ? 'var(--accent-primary, #38bdf8)' : 'rgba(255,255,255,0.2)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          title={acc.titleName}
+                        />
+                      ))}
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => cycleHistoryAccount(1)}
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--glass-border)',
+                      color: 'var(--text-primary)',
+                      borderRadius: '6px',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      padding: 0
+                    }}
+                    title="Conto successivo (o swipe a sinistra)"
+                  >
+                    ›
+                  </button>
+                </div>
 
+                {/* Selettore 6M/12M se lungo periodo + Bottone Toggle Calendario 📅 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {historyRange === 'long' && (
+                    <div style={{ display: 'flex', gap: '2px', background: 'var(--bg-secondary)', borderRadius: '6px', padding: '2px', border: '1px solid var(--glass-border)' }}>
+                      <button
+                        type="button"
+                        onClick={() => setLongPeriodMonthsCount(6)}
+                        style={{
+                          background: longPeriodMonthsCount === 6 ? 'var(--accent-primary)' : 'transparent',
+                          color: longPeriodMonthsCount === 6 ? '#fff' : 'var(--text-muted)',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          padding: '2px 5px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        6M
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLongPeriodMonthsCount(12)}
+                        style={{
+                          background: longPeriodMonthsCount === 12 ? 'var(--accent-primary)' : 'transparent',
+                          color: longPeriodMonthsCount === 12 ? '#fff' : 'var(--text-muted)',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          padding: '2px 5px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        12M
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHistoryRange(prev => prev === 'short' ? 'long' : 'short');
+                      setSelectedHistoryWeek(null);
+                    }}
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '8px',
+                      padding: '4px 8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                    title={historyRange === 'short' ? "Passa a vista Trend Mesi" : "Passa a vista Settimanale"}
+                  >
+                    <span>📅</span>
+                    <span style={{ fontSize: '9px', color: 'var(--accent-primary, #38bdf8)' }}>
+                      {historyRange === 'short' ? 'Sett.' : 'Mesi'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2a. Grafico Breve Periodo (Andamento Saldo Settimanale - Stile Borsa / Revolut) */}
+              {historyRange === 'short' && (
+                <div>
                   {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
                   <svg viewBox={`0 0 ${histSvgW} ${histSvgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
                     <defs>
@@ -2867,61 +3100,59 @@ export default function FinancesTab({
                       );
                     })}
                   </div>
-                </div>
 
-                {/* Detail of selected week */}
-                {selectedHistoryWeek && (() => {
-                  const activeWk = weeksData.find(w => w.id === selectedHistoryWeek);
-                  if (!activeWk) return null;
-                  return (
-                    <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary, #38bdf8)' }}>
-                          🔎 Dettaglio: {activeWk.title}
-                        </span>
-                        <span style={{ fontSize: '9px', fontWeight: 'bold', color: activeWk.net >= 0 ? '#4ade80' : '#f87171' }}>
-                          Saldo: {fmtCurrency(activeWk.balance)} ({activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)})
-                        </span>
-                      </div>
-                      {activeWk.transactions.length === 0 ? (
-                        <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '4px 0' }}>
-                          Nessun movimento registrato in questa settimana.
+                  {/* Dettaglio della settimana selezionata */}
+                  {selectedHistoryWeek && (() => {
+                    const activeWk = weeksData.find(w => w.id === selectedHistoryWeek);
+                    if (!activeWk) return null;
+                    return (
+                      <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary, #38bdf8)' }}>
+                            🔎 Dettaglio: {activeWk.title}
+                          </span>
+                          <span style={{ fontSize: '9px', fontWeight: 'bold', color: activeWk.net >= 0 ? '#4ade80' : '#f87171' }}>
+                            Saldo: {fmtCurrency(activeWk.balance)} ({activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)})
+                          </span>
                         </div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '130px', overflowY: 'auto' }}>
-                          {activeWk.transactions.map(t => {
-                            const catObj = getCategoryObj(t.category);
-                            const isInc = t.type === 'income';
-                            return (
-                              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', background: 'var(--bg-secondary)', padding: '4px 6px', borderRadius: '6px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                                  <span>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
-                                  <span style={{ color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.note || catObj.label}</span>
-                                  <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{t.date}</span>
+                        {activeWk.transactions.length === 0 ? (
+                          <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '4px 0' }}>
+                            Nessun movimento registrato in questa settimana.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '130px', overflowY: 'auto' }}>
+                            {activeWk.transactions.map(t => {
+                              const catObj = getCategoryObj(t.category);
+                              const isInc = t.type === 'income';
+                              return (
+                                <div
+                                  key={t.id}
+                                  onClick={() => handleOpenEditTransaction(t)}
+                                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px', cursor: 'pointer' }}
+                                  title="Tocca per modificare questo movimento"
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                                    <span>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
+                                    <span style={{ color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.note || catObj.label}</span>
+                                    <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{t.date}</span>
+                                  </div>
+                                  <span style={{ fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171'), flexShrink: 0 }}>
+                                    {t.type === 'transfer' ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
+                                  </span>
                                 </div>
-                                <span style={{ fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171'), flexShrink: 0 }}>
-                                  {t.type === 'transfer' ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
-            {/* 4b. Grafico Lungo Periodo (Evoluzione Saldo Multi-Mese - Stile Borsa / Revolut) */}
-            {historyRange === 'long' && (
-              <div style={{ flexShrink: 0 }}>
-                <div style={{ background: 'var(--bg-primary)', padding: '12px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                    <span style={{ fontWeight: 'bold' }}>Evoluzione Saldo ({longPeriodMonthsCount} Mesi)</span>
-                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Saldo a fine mese</span>
-                  </div>
-
+              {/* 2b. Grafico Lungo Periodo (Evoluzione Saldo Multi-Mese - Stile Borsa / Revolut) */}
+              {historyRange === 'long' && (
+                <div>
                   {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
                   <svg viewBox={`0 0 ${histSvgW} ${histSvgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
                     <defs>
@@ -2958,7 +3189,7 @@ export default function FinancesTab({
                       />
                     )}
 
-                    {/* Vertical guideline for active month */}
+                    {/* Guideline verticale per il mese selezionato */}
                     {(() => {
                       const selPt = hLongPoints.find(p => p.monthKey === selectedHistoryMonth);
                       if (!selPt) return null;
@@ -3031,48 +3262,31 @@ export default function FinancesTab({
                     })}
                   </div>
 
-                  <div style={{ textAlign: 'center', fontSize: '9px', color: 'var(--accent-primary, #38bdf8)', marginTop: '8px', fontWeight: '500' }}>
-                    👆 Tocca un punto o un mese nel grafico per visualizzarne subito i movimenti e le statistiche
-                  </div>
-                </div>
-
-                {/* Long Term Period Aggregate Metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-                  <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>📊 Media Spese Mensili</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f87171', marginTop: '2px' }}>
-                      -{fmtCurrency(avgMonthlyExpense)}
-                    </div>
-                  </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
-                    <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>📈 Media Entrate Mensili</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#4ade80', marginTop: '2px' }}>
-                      +{fmtCurrency(avgMonthlyIncome)}
-                    </div>
-                  </div>
-                  <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', gridColumn: 'span 2' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>🏦 Risparmio Netto Totale ({longPeriodMonthsCount} Mesi)</div>
-                        <div style={{ fontSize: '14px', fontWeight: '900', color: totalPeriodNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
-                          {totalPeriodNet >= 0 ? '+' : ''}{fmtCurrency(totalPeriodNet)}
-                        </div>
+                  {/* Metriche Aggregate di Lungo Periodo */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '8px' }}>
+                    <div style={{ background: 'var(--bg-secondary)', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>📊 Media Spese</div>
+                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#f87171', marginTop: '1px' }}>
+                        -{fmtCurrency(avgMonthlyExpense)}
                       </div>
-                      {bestSavingsMonth && bestSavingsMonth.net > 0 && (
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '8px', color: '#86efac' }}>🌟 Miglior Mese</div>
-                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                            {bestSavingsMonth.fullLabel} (+{fmtCurrency(bestSavingsMonth.net)})
-                          </div>
-                        </div>
-                      )}
+                    </div>
+                    <div style={{ background: 'var(--bg-secondary)', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>📈 Media Entrate</div>
+                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#4ade80', marginTop: '1px' }}>
+                        +{fmtCurrency(avgMonthlyIncome)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* 5. RPG Financial Health Badge */}
+              {/* Hint swipe / frecce */}
+              <div style={{ textAlign: 'center', fontSize: '8px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                ↔️ Scorri in orizzontale o tocca ‹ › per cambiare conto
+              </div>
+            </div>
+
+            {/* 3. RPG Financial Health Badge */}
             <div
               style={{
                 background: selMonthNet >= 0
@@ -3093,7 +3307,7 @@ export default function FinancesTab({
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: selMonthNet >= 0 ? '#4ade80' : '#f87171' }}>
                   {selMonthNet >= 0
-                    ? (selMonthSavingsRate >= 30 ? 'Capitale Florido & Crescita' : 'Bilancio in Attivo')
+                    ? (selMonthSavingsRate >= 30 ? 'Capitale Florido & in Crescita' : 'Bilancio in Attivo')
                     : 'Attenzione al Deficit'}
                 </div>
                 <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
@@ -3104,7 +3318,37 @@ export default function FinancesTab({
               </div>
             </div>
 
-            {/* 6. Dettaglio Completo Movimenti del Mese Selezionato */}
+            {/* 4. Monthly Financial Health KPI Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flexShrink: 0 }}>
+              <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: '#86efac', textTransform: 'uppercase', fontWeight: 'bold' }}>🟢 Entrate Mese</div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: '#4ade80', marginTop: '2px' }}>
+                  +{fmtCurrency(selMonthIncome)}
+                </div>
+              </div>
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>🔴 Uscite Mese</div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: '#f87171', marginTop: '2px' }}>
+                  -{fmtCurrency(selMonthExpenses)}
+                </div>
+              </div>
+              <div style={{ background: selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: selMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                  {selMonthNet >= 0 ? '⚖️ Risparmio Netto' : '⚠️ Deficit Mese'}
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
+                  {selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
+                </div>
+              </div>
+              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>📊 Tasso Risparmio</div>
+                <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthSavingsRate >= 20 ? '#4ade80' : selMonthSavingsRate >= 0 ? '#fbbf24' : '#ef4444', marginTop: '2px' }}>
+                  {selMonthSavingsRate}%
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Dettaglio Completo Movimenti del Mese Selezionato */}
             <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -3119,11 +3363,11 @@ export default function FinancesTab({
               </div>
 
               {selMonthTx.length === 0 ? (
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '10px 0', textAlign: 'center' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '14px 0', textAlign: 'center' }}>
                   Nessun movimento registrato in {formatMonthLabel(selectedHistoryMonth)}.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '250px', overflowY: 'auto', paddingRight: '2px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto', paddingRight: '2px' }}>
                   {selMonthTx
                     .slice()
                     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
@@ -3135,28 +3379,34 @@ export default function FinancesTab({
                       return (
                         <div
                           key={t.id}
+                          onClick={() => handleOpenEditTransaction(t)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             background: 'var(--bg-secondary)',
-                            padding: '7px 8px',
-                            borderRadius: '8px',
+                            padding: '12px 14px',
+                            minHeight: '54px',
+                            borderRadius: '12px',
                             border: '1px solid var(--glass-border)',
-                            gap: '6px'
+                            gap: '10px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            boxSizing: 'border-box'
                           }}
+                          title="Tocca per modificare questo movimento"
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, flex: 1 }}>
-                            <span style={{ fontSize: '15px', flexShrink: 0 }}>{isTrans ? '↔️' : catObj.emoji}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: '20px', flexShrink: 0 }}>{isTrans ? '↔️' : catObj.emoji}</span>
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {t.note || catObj.label}
                               </div>
-                              <div style={{ fontSize: '8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px', flexWrap: 'wrap' }}>
+                              <div style={{ fontSize: '9px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', flexWrap: 'wrap' }}>
                                 <span>{t.date}</span>
                                 {renderAccountBadge(t)}
                                 {t.excludeFromBudget && (
-                                  <span style={{ fontSize: '8px', background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  <span style={{ fontSize: '8px', background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
                                     ⚪ Fuori Budget
                                   </span>
                                 )}
@@ -3164,14 +3414,29 @@ export default function FinancesTab({
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-                            <span style={{ fontSize: '11px', fontWeight: 'bold', color: isTrans ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171') }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '13px', fontWeight: 'bold', color: isTrans ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171') }}>
                               {isTrans ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
                             </span>
                             <button
                               type="button"
-                              onClick={() => handleDeleteTransaction(t.id)}
-                              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '1px' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTransaction(t.id);
+                              }}
+                              style={{
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                color: '#f87171',
+                                borderRadius: '6px',
+                                width: '26px',
+                                height: '26px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                cursor: 'pointer'
+                              }}
                               title="Elimina movimento"
                             >
                               🗑️
@@ -3601,7 +3866,9 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: txModalMode === 'expense' ? '#ef4444' : '#22c55e' }}>
-              {txModalMode === 'expense' ? '🔴 Registra Uscita' : '🟢 Registra Entrata'}
+              {editingTxId
+                ? (txModalMode === 'expense' ? '🔴 Modifica Uscita' : '🟢 Modifica Entrata')
+                : (txModalMode === 'expense' ? '🔴 Registra Uscita' : '🟢 Registra Entrata')}
             </h3>
 
             <form onSubmit={handleSaveTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -3662,7 +3929,9 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data Prima Esecuzione</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                  {editingTxId ? 'Data Movimento' : 'Data Prima Esecuzione'}
+                </label>
                 <input
                   type="date"
                   value={dateInput}
@@ -3693,37 +3962,39 @@ export default function FinancesTab({
                 </div>
               )}
 
-              {/* Recurring Payment Option */}
-              <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '2px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={isRecurring}
-                    onChange={(e) => setIsRecurring(e.target.checked)}
-                    style={{ width: '15px', height: '15px', cursor: 'pointer' }}
-                  />
-                  <span>🔄 Rendi Pagamento Ricorrente</span>
-                </label>
+              {/* Recurring Payment Option (Only for new transactions) */}
+              {!editingTxId && (
+                <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '2px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={isRecurring}
+                      onChange={(e) => setIsRecurring(e.target.checked)}
+                      style={{ width: '15px', height: '15px', cursor: 'pointer' }}
+                    />
+                    <span>🔄 Rendi Pagamento Ricorrente</span>
+                  </label>
 
-                {isRecurring && (
-                  <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                      Si ripeterà automaticamente ogni mese nel giorno stabilito.
+                  {isRecurring && (
+                    <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                        Si ripeterà automaticamente ogni mese nel giorno stabilito.
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Giorno del mese:</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={recDay}
+                          onChange={(e) => setRecDay(e.target.value)}
+                          style={{ width: '60px', padding: '4px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '12px', textAlign: 'center' }}
+                        />
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Giorno del mese:</span>
-                      <input
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={recDay}
-                        onChange={(e) => setRecDay(e.target.value)}
-                        style={{ width: '60px', padding: '4px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '12px', textAlign: 'center' }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <button
@@ -3737,7 +4008,7 @@ export default function FinancesTab({
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: txModalMode === 'expense' ? '#ef4444' : '#22c55e', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Salva
+                  {editingTxId ? 'Aggiorna' : 'Salva'}
                 </button>
               </div>
             </form>
