@@ -1070,25 +1070,26 @@ export default function App() {
         player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings
       };
       const jsonStr = JSON.stringify(fullStateObj, null, 2);
-      const filename = `rpg-life-backup-${new Date().toISOString().split('T')[0]}.json`;
+      const filename = 'quest-life-backup.json';
       const blob = new Blob([jsonStr], { type: 'application/json' });
 
-      // iOS Web Share API support (opens native Share sheet to save directly to Files)
+      // iOS / Android Web Share API support (opens native Share sheet to save directly to Files / Drive)
       if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/json' })] })) {
         try {
           const file = new File([blob], filename, { type: 'application/json' });
           await navigator.share({
             files: [file],
-            title: 'RPG Life Backup',
-            text: 'Backup file di RPG Life'
+            title: 'Quest Life Backup',
+            text: 'Backup file di Quest Life'
           });
-          return;
         } catch (shareErr) {
-          if (shareErr.name === 'AbortError') return;
+          console.log('Share dismissed or cancelled:', shareErr);
         }
+        // Always exit to avoid triggering a second download simultaneously
+        return;
       }
 
-      // Standard Blob URL download
+      // Standard Blob URL download fallback
       const url = URL.createObjectURL(blob);
       const dlAnchorElem = document.createElement('a');
       dlAnchorElem.href = url;
