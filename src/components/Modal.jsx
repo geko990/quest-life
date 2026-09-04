@@ -2193,7 +2193,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   </span>
                 </div>
 
-                {/* Inline -1 and +1 glass buttons inside popup! */}
+                {/* Inline -1 and +1 glass buttons inside popup (taller & tactile) */}
                 <div className="flex items-center justify-center gap-3">
                   <button
                     type="button"
@@ -2201,9 +2201,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       const nextVal = Math.max(0, Number(currentGlasses) - 1);
                       setForm(prev => ({ ...prev, value: nextVal }));
                     }}
-                    className="flex-1 py-3 bg-[var(--bg-secondary)] border border-cyan-500/30 text-cyan-400 rounded-xl font-bold text-xs hover:bg-cyan-500/10 cursor-pointer transition-all"
+                    className="flex-1 min-h-[58px] py-3.5 px-3 bg-[var(--bg-secondary)] border border-cyan-500/30 text-cyan-400 rounded-2xl font-bold text-xs hover:bg-cyan-500/10 active:scale-95 cursor-pointer transition-all flex flex-col items-center justify-center gap-0.5 shadow-sm"
                   >
-                    -1 Bicchiere (-0.2L)
+                    <span className="text-base font-extrabold leading-none">− 1</span>
+                    <span className="text-[11px] font-semibold opacity-90">Bicchiere (-0.2L)</span>
                   </button>
                   <button
                     type="button"
@@ -2211,9 +2212,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       const nextVal = Number(currentGlasses) + 1;
                       setForm(prev => ({ ...prev, value: nextVal }));
                     }}
-                    className="flex-1 py-3 bg-cyan-500 text-white rounded-xl font-bold text-xs hover:brightness-110 cursor-pointer shadow-md transition-all"
+                    className="flex-1 min-h-[58px] py-3.5 px-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-2xl font-bold text-xs hover:brightness-110 active:scale-95 cursor-pointer shadow-lg shadow-cyan-500/20 transition-all flex flex-col items-center justify-center gap-0.5"
                   >
-                    +1 Bicchiere (+0.2L)
+                    <span className="text-base font-extrabold leading-none">+ 1</span>
+                    <span className="text-[11px] font-semibold opacity-95">Bicchiere (+0.2L)</span>
                   </button>
                 </div>
 
