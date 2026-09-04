@@ -414,12 +414,20 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                 </div>
               </div>
 
+              {/* Pasti Rapidi & Ricerca Online */}
+              <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '14px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <b style={{ color: '#38bdf8', fontSize: '13px' }}>🍽️ Inserimento Rapido & Ricerca Online</b>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.45' }}>
+                  Tocca direttamente il <b>grande cerchio delle Calorie Rimaste</b>: puoi inserire al volo un piatto manuale oppure <b>cercare qualsiasi alimento online</b> su Open Food Facts per estrarre istantaneamente calorie e proteine e salvarlo nel tuo database personale con un solo tocco!
+                </div>
+              </div>
+
               {/* Scanner OCR & Trend del Peso */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <b style={{ color: '#38bdf8', fontSize: '13px' }}>📷 Scanner OCR Etichette</b>
+                  <b style={{ color: '#a78bfa', fontSize: '13px' }}>📷 Scanner OCR Etichette</b>
                   <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                    Zero perdite di tempo a digitare: tocca il tasto fotocamera, inquadra la tabella nutrizionale e l'OCR compila calorie e macro in 2 secondi.
+                    Zero perdite di tempo: inquadra la tabella nutrizionale sulla confezione e l'OCR legge e compila calorie e macro in 2 secondi.
                   </div>
                 </div>
                 <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
