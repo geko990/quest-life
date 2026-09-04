@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QuickMealModal from '../components/QuickMealModal';
 
 export default function NutritionTab({
   activeTab,
@@ -30,11 +31,88 @@ export default function NutritionTab({
 
   const [showMealsModal, setShowMealsModal] = useState(initialModal === 'meals');
   const [showExercisesModal, setShowExercisesModal] = useState(initialModal === 'workouts');
+  const [showQuickMealModal, setShowQuickMealModal] = useState(false);
 
   const handleCloseMealsModal = () => {
     setShowMealsModal(false);
     if (setInitialModal) setInitialModal(null);
     if (onCloseOverlay) onCloseOverlay();
+  };
+
+  const handleAddQuickMeal = ({
+    name,
+    emoji,
+    category,
+    calories,
+    proteins,
+    grams,
+    saveToDb,
+    baseGrams,
+    baseCalories,
+    baseProteins,
+    brand,
+    imageUrl
+  }) => {
+    const targetCat = category || 'main';
+    const calNum = Number(calories) || 0;
+    const protNum = Number(proteins) || 0;
+    const foodDbId = 'fd_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+    const newLoggedFood = {
+      id: 'meal_food_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      foodId: foodDbId,
+      name: name,
+      emoji: emoji || '🍽️',
+      calories: calNum,
+      proteins: protNum,
+      grams: grams || '100g',
+      category: targetCat
+    };
+
+    setHealth(prev => {
+      const updatedMeals = {
+        ...(prev.meals || {}),
+        [targetCat]: [...((prev.meals && prev.meals[targetCat]) || []), newLoggedFood]
+      };
+
+      const allMealItems = Object.values(updatedMeals).flat();
+      const newTotalCal = allMealItems.reduce((acc, item) => acc + (Number(item.calories) || 0), 0);
+      const newTotalProt = Math.round(allMealItems.reduce((acc, item) => acc + (Number(item.proteins) || 0), 0) * 10) / 10;
+
+      let newFoodDatabase = [...(prev.foodDatabase || [])];
+
+      if (saveToDb) {
+        const exists = newFoodDatabase.some(f => f.name && f.name.trim().toLowerCase() === name.trim().toLowerCase());
+        if (!exists) {
+          const newDbItem = {
+            id: foodDbId,
+            name: name,
+            emoji: emoji || '🍽️',
+            baseGrams: baseGrams || 100,
+            baseCalories: baseCalories !== undefined ? baseCalories : calNum,
+            baseProteins: baseProteins !== undefined ? baseProteins : protNum,
+            category: targetCat === 'breakfast' ? 'breakfast' : (targetCat === 'snack' ? 'snack' : 'lunch'),
+            brand: brand || null,
+            imageUrl: imageUrl || null
+          };
+          newFoodDatabase = [newDbItem, ...newFoodDatabase];
+        }
+      }
+
+      return {
+        ...prev,
+        calories: {
+          ...prev.calories,
+          consumed: newTotalCal
+        },
+        proteins: {
+          ...prev.proteins,
+          consumed: newTotalProt
+        },
+        meals: updatedMeals,
+        foodDatabase: newFoodDatabase
+      };
+    });
   };
 
   const handleCloseExercisesModal = () => {
@@ -892,6 +970,15 @@ export default function NutritionTab({
             </div>
           </div>
         )}
+
+        {/* QUICK MEAL & ONLINE SEARCH MODAL */}
+        <QuickMealModal
+          isOpen={showQuickMealModal}
+          onClose={() => setShowQuickMealModal(false)}
+          onAddMeal={handleAddQuickMeal}
+          defaultCategory={activeMealCategory !== 'all' ? activeMealCategory : 'main'}
+          existingFoodDatabase={health.foodDatabase || []}
+        />
       </>
     );
   }
@@ -961,11 +1048,11 @@ export default function NutritionTab({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
-              {/* Calorie Progress Ring */}
+              {/* Calorie Progress Ring (Tap to open Quick Meal & Online Search Modal) */}
               <div
-                onClick={() => setShowMealsModal(true)}
+                onClick={() => setShowQuickMealModal(true)}
                 style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                title="Apri registro pasti"
+                title="Tocca per inserire pasto rapido o cercare online"
               >
                 <svg width="130" height="130" viewBox="0 0 140 140">
                   <circle
@@ -992,6 +1079,9 @@ export default function NutritionTab({
                   <span style={{ fontSize: '22px', fontWeight: 'bold', fontFamily: 'Orbitron, sans-serif', color: 'var(--text-primary)' }}>{caloriesRemaining}</span>
                   <span style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                     Rimaste
+                  </span>
+                  <span style={{ fontSize: '8.5px', color: '#38bdf8', marginTop: '2px', fontWeight: 'bold', letterSpacing: '0.2px' }}>
+                    + Inserisci
                   </span>
                 </div>
               </div>
@@ -1498,14 +1588,22 @@ export default function NutritionTab({
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
                     Database Alimenti (3 per riga)
                   </h4>
-                  <button
-                    onClick={() => {
-                      onOpenModal('food');
-                    }}
-                    style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
-                    ➕ Nuovo Cibo
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      onClick={() => setShowQuickMealModal(true)}
+                      style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '6px', padding: '2px 7px', cursor: 'pointer' }}
+                    >
+                      🌐 Cerca Online
+                    </button>
+                    <button
+                      onClick={() => {
+                        onOpenModal('food');
+                      }}
+                      style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      ➕ Nuovo Cibo
+                    </button>
+                  </div>
                 </div>
 
                 {settings?.allowPastEdits ? (
@@ -2274,6 +2372,15 @@ export default function NutritionTab({
           </div>
         </div>
       )}
+
+      {/* QUICK MEAL & ONLINE SEARCH MODAL */}
+      <QuickMealModal
+        isOpen={showQuickMealModal}
+        onClose={() => setShowQuickMealModal(false)}
+        onAddMeal={handleAddQuickMeal}
+        defaultCategory={activeMealCategory !== 'all' ? activeMealCategory : 'main'}
+        existingFoodDatabase={health.foodDatabase || []}
+      />
     </section>
   );
 }
