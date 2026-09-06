@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Modal from './components/Modal';
 import DailyPlannerModal from './components/DailyPlannerModal';
 import MedalCelebrationModal from './components/MedalCelebrationModal';
+import AppleHealthModal from './components/AppleHealthModal';
 import HomeTab from './tabs/HomeTab';
 import HabitsTab from './tabs/HabitsTab';
 import MissionsTab from './tabs/MissionsTab';
@@ -16,6 +17,7 @@ import { getInitialState, sanitizeState } from './utils/state';
 import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp, getMonthlyStarCounts, isMonthlyPyramidMet } from './utils/helpers';
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
+import { parseSyncPayload, applyHealthSync, cleanSyncUrl } from './utils/appleHealthSync';
 
 class TabErrorBoundary extends React.Component {
   constructor(props) {
@@ -127,6 +129,8 @@ export default function App() {
   const [showGlobalWorkoutsLog, setShowGlobalWorkoutsLog] = useState(false);
   const [showGlobalMealsLog, setShowGlobalMealsLog] = useState(false);
   const [unlockedMedalCelebration, setUnlockedMedalCelebration] = useState(null);
+  const [showAppleHealthModal, setShowAppleHealthModal] = useState(false);
+  const [syncBanner, setSyncBanner] = useState(null);
 
   const handleOpenWorkoutsLog = () => {
     setShowGlobalWorkoutsLog(true);
@@ -619,6 +623,54 @@ export default function App() {
       );
     }
   };
+
+  // 8b. Apple Health & iOS Shortcuts Sync Handler
+  const handleExecuteSync = useCallback((rawPayload) => {
+    const payload = parseSyncPayload(rawPayload);
+    if (!payload) return { success: false, actions: [] };
+
+    const todayStr = getGameDate(settings.dayStartTime);
+    const res = applyHealthSync({
+      payload,
+      habits,
+      completionLog,
+      todayStr,
+      setHealth,
+      onToggleHabit: handleToggleHabit,
+      onRewardXp: handleRewardXp
+    });
+
+    if (res.success) {
+      setSyncBanner({
+        message: res.actions.join(' • '),
+        timestamp: Date.now()
+      });
+      setTimeout(() => setSyncBanner(null), 6500);
+    }
+    return res;
+  }, [settings.dayStartTime, habits, completionLog, handleToggleHabit, handleRewardXp]);
+
+  // Auto-sync from URL parameters on startup or query change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const search = window.location.search;
+    if (search && (
+      search.includes('steps=') ||
+      search.includes('step=') ||
+      search.includes('passi=') ||
+      search.includes('burned=') ||
+      search.includes('habit=') ||
+      search.includes('consumed=') ||
+      search.includes('mindfulness=') ||
+      search.includes('sync=')
+    )) {
+      const timer = setTimeout(() => {
+        handleExecuteSync(search);
+        cleanSyncUrl();
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [handleExecuteSync]);
 
   const handleToggleOneshot = (id, dateStr) => {
     const os = oneshots.find(o => o.id === id);
@@ -1319,6 +1371,7 @@ export default function App() {
             stats={stats}
             onRewardXp={handleRewardXp}
             settings={settings}
+            onOpenAppleHealthModal={() => setShowAppleHealthModal(true)}
           />
         );
       case 'settings':
@@ -1340,6 +1393,7 @@ export default function App() {
             onRepairStreaks={handleRepairStreaks}
             onReset={handleReset}
             onApplyPresetDay={handleApplyPresetDay}
+            onOpenAppleHealthModal={() => setShowAppleHealthModal(true)}
           />
         );
       case 'finances':
@@ -1577,6 +1631,64 @@ export default function App() {
           starCounts={unlockedMedalCelebration.starCounts}
           onClose={() => setUnlockedMedalCelebration(null)}
         />
+      )}
+
+      {/* APPLE HEALTH & SHORTCUTS SYNC MODAL */}
+      <AppleHealthModal
+        isOpen={showAppleHealthModal}
+        onClose={() => setShowAppleHealthModal(false)}
+        onSyncFromClipboard={handleExecuteSync}
+        currentSteps={health?.steps?.current || 0}
+        currentBurned={health?.calories?.burned || 0}
+        habits={habits}
+      />
+
+      {/* FLOATING SYNC TOAST NOTIFICATION */}
+      {syncBanner && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10000,
+            maxWidth: '92%',
+            width: '420px',
+            background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.95))',
+            border: '1px solid rgba(168, 85, 247, 0.5)',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.2)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            backdropFilter: 'blur(8px)'
+          }}
+        >
+          <span style={{ fontSize: '22px' }}>🍎</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Apple Salute / Comandi Rapidi
+            </div>
+            <div style={{ fontSize: '12px', fontWeight: '500', color: '#f1f5f9', marginTop: '2px', wordBreak: 'break-word' }}>
+              {syncBanner.message}
+            </div>
+          </div>
+          <button
+            onClick={() => setSyncBanner(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#94a3b8',
+              fontSize: '16px',
+              cursor: 'pointer',
+              padding: '2px 6px'
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );

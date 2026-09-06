@@ -19,7 +19,8 @@ export default function SettingsTab({
   onFixData,
   onRepairStreaks,
   onReset,
-  onApplyPresetDay
+  onApplyPresetDay,
+  onOpenAppleHealthModal
 }) {
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [showPresetModal, setShowPresetModal] = useState(false);
@@ -675,6 +676,37 @@ export default function SettingsTab({
                     style={{ padding: '8px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
                   >
                     🔗 Collega File Database su Disco
+                  </button>
+                )}
+              </div>
+
+              {/* Section: Apple Health & iOS Shortcuts Integration */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🍎 Apple Salute & Automazioni iOS (Shortcuts)</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                  Sincronizza passi e calorie da Apple Salute o spunta abitudini (es. Duolingo) automaticamente tramite i Comandi Rapidi di iPhone.
+                </p>
+                {onOpenAppleHealthModal && (
+                  <button
+                    onClick={onOpenAppleHealthModal}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    ⚙️ Configura Comando Rapido & Sincronizza
                   </button>
                 )}
               </div>
