@@ -8,8 +8,8 @@ export default function AppleHealthModal({
   currentBurned = 0,
   habits = []
 }) {
-  const [activeTab, setActiveTab] = useState('health'); // 'health' | 'duolingo' | 'test'
-  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [activeTab, setActiveTab] = useState('duolingo'); // 'duolingo' | 'health' | 'test'
+  const [copiedKey, setCopiedKey] = useState(null);
   const [testSteps, setTestSteps] = useState('8500');
   const [testBurned, setTestBurned] = useState('420');
   const [testHabit, setTestHabit] = useState('Duolingo');
@@ -21,13 +21,18 @@ export default function AppleHealthModal({
     ? (window.location.origin + window.location.pathname).replace(/\/+$/, '') + '/'
     : 'https://geko990.github.io/quest-life/';
 
-  const sampleHealthUrl = `${baseUrl}?steps=[SommaPassi]&burned=[SommaCalorie]`;
-  const sampleHabitUrl = `${baseUrl}?habit=Duolingo`;
+  // Schema speciale webapp:// per aprire direttamente la Web App salvata sulla schermata Home invece di Safari
+  const webappBaseUrl = baseUrl.replace(/^https?:\/\//, 'webapp://');
+  
+  const sampleWebappHabitUrl = `${webappBaseUrl}?habit=Duolingo`;
+  const sampleHttpHabitUrl = `${baseUrl}?habit=Duolingo`;
+  const sampleWebappHealthUrl = `${webappBaseUrl}?steps=[SommaPassi]&burned=[SommaCalorie]`;
+  const sampleHttpHealthUrl = `${baseUrl}?steps=[SommaPassi]&burned=[SommaCalorie]`;
 
-  const handleCopy = (text) => {
+  const handleCopy = (text, key) => {
     navigator.clipboard.writeText(text);
-    setCopiedUrl(true);
-    setTimeout(() => setCopiedUrl(false), 2000);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2500);
   };
 
   const handleManualSyncClipboard = async () => {
@@ -38,17 +43,17 @@ export default function AppleHealthModal({
       }
       const text = await navigator.clipboard.readText();
       if (!text || text.trim() === '') {
-        setSyncStatus({ type: 'error', text: 'Gli appunti sono vuoti.' });
+        setSyncStatus({ type: 'error', text: 'Gli appunti sono vuoti. Copia prima i dati dal comando rapido!' });
         return;
       }
       const res = onSyncFromClipboard(text);
       if (res && res.success) {
-        setSyncStatus({ type: 'success', text: `Sincronizzato con successo: ${res.actions.join(', ')}` });
+        setSyncStatus({ type: 'success', text: `✓ Sincronizzato con successo: ${res.actions.join(', ')}` });
       } else {
-        setSyncStatus({ type: 'error', text: 'Nessun dato di sync valido trovato negli appunti.' });
+        setSyncStatus({ type: 'error', text: 'Nessun parametro valido trovato negli appunti (?habit=... o ?steps=...).' });
       }
     } catch (err) {
-      setSyncStatus({ type: 'error', text: 'Permesso appunti negato o errore nella lettura.' });
+      setSyncStatus({ type: 'error', text: 'Permesso appunti negato o tocco non registrato da iOS.' });
     }
   };
 
@@ -68,8 +73,9 @@ export default function AppleHealthModal({
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        background: 'rgba(0,0,0,0.75)',
-        backdropFilter: 'blur(5px)',
+        background: 'rgba(0,0,0,0.78)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -80,7 +86,7 @@ export default function AppleHealthModal({
       <div
         style={{
           background: 'var(--bg-primary, #12131e)',
-          border: '1px solid var(--glass-border, rgba(255,255,255,0.1))',
+          border: '1px solid var(--glass-border, rgba(255,255,255,0.12))',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '520px',
@@ -110,7 +116,7 @@ export default function AppleHealthModal({
                 Apple Salute & Automazioni iOS
               </h3>
               <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary, #94a3b8)' }}>
-                Sincronizza passi, calorie e spunta abitudini con Comandi Rapidi
+                Apri direttamente la PWA della Home Screen e sincronizza le attività
               </p>
             </div>
           </div>
@@ -182,22 +188,6 @@ export default function AppleHealthModal({
           }}
         >
           <button
-            onClick={() => setActiveTab('health')}
-            style={{
-              flex: 1,
-              padding: '8px 4px',
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === 'health' ? '2px solid #8b5cf6' : '2px solid transparent',
-              color: activeTab === 'health' ? '#fff' : 'var(--text-secondary, #94a3b8)',
-              fontWeight: activeTab === 'health' ? 'bold' : 'normal',
-              fontSize: '11px',
-              cursor: 'pointer'
-            }}
-          >
-            👟 Passi & Calorie
-          </button>
-          <button
             onClick={() => setActiveTab('duolingo')}
             style={{
               flex: 1,
@@ -214,9 +204,25 @@ export default function AppleHealthModal({
             🦉 Automazione Duolingo
           </button>
           <button
+            onClick={() => setActiveTab('health')}
+            style={{
+              flex: 1,
+              padding: '8px 4px',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'health' ? '2px solid #8b5cf6' : '2px solid transparent',
+              color: activeTab === 'health' ? '#fff' : 'var(--text-secondary, #94a3b8)',
+              fontWeight: activeTab === 'health' ? 'bold' : 'normal',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            👟 Passi & Calorie
+          </button>
+          <button
             onClick={() => setActiveTab('test')}
             style={{
-              flex: 0.8,
+              flex: 0.7,
               padding: '8px 4px',
               background: 'none',
               border: 'none',
@@ -234,120 +240,39 @@ export default function AppleHealthModal({
         {/* Scrollable Content Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           
-          {/* TAB 1: PASSI E CALORIE */}
-          {activeTab === 'health' && (
-            <>
-              <div style={{ background: 'var(--bg-secondary, #1a1b2e)', padding: '12px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', color: 'var(--text-secondary, #cbd5e1)' }}>
-                <p style={{ margin: '0 0 8px 0', color: 'var(--text-primary, #fff)', fontWeight: 'bold' }}>
-                  🎯 Come creare il Comando Rapido su iPhone:
-                </p>
-                <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>Apri l'app nativa <strong>Comandi Rapidi</strong> su iPhone e tocca il <strong>+</strong> in alto a destra.</li>
-                  <li>
-                    Aggiungi azione: <strong>"Trova campioni di salute"</strong>
-                    <br />• Imposta tipo: <em>Passi</em> | Data di inizio: <em>è oggi</em>
-                  </li>
-                  <li>
-                    Aggiungi azione: <strong>"Calcola statistica"</strong>
-                    <br />• Funzione: <em>Somma</em> di <em>Campioni di salute</em>
-                  </li>
-                  <li>
-                    Aggiungi seconda azione: <strong>"Trova campioni di salute"</strong>
-                    <br />• Imposta tipo: <em>Energia attiva</em> | Data di inizio: <em>è oggi</em>
-                  </li>
-                  <li>
-                    Aggiungi azione: <strong>"Calcola statistica"</strong>
-                    <br />• Funzione: <em>Somma</em> dei nuovi campioni
-                  </li>
-                  <li>
-                    Aggiungi azione: <strong>"Testo"</strong> e componi l'URL:
-                    <div style={{ margin: '6px 0', background: 'rgba(0,0,0,0.4)', padding: '6px 8px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all', color: '#a78bfa' }}>
-                      {sampleHealthUrl}
-                    </div>
-                    <em>(Sostituisci i campi [Somma...] con le variabili delle due statistiche calcolate)</em>
-                  </li>
-                  <li>
-                    Aggiungi azione: <strong>"Apri URL"</strong> e seleziona il Testo sopra.
-                  </li>
-                </ol>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => handleCopy(baseUrl + '?steps=')}
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    background: 'var(--bg-secondary, #1a1b2e)',
-                    border: '1px solid var(--glass-border, rgba(255,255,255,0.1))',
-                    color: 'var(--text-primary, #fff)',
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                    fontWeight: '500'
-                  }}
-                >
-                  {copiedUrl ? '✓ Copiato!' : '📋 Copia URL Base'}
-                </button>
-              </div>
-
-              <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '10px 12px', borderRadius: '8px', fontSize: '10px', color: '#c4b5fd' }}>
-                💡 <strong>Suggerimento Pro:</strong> Nella scheda <em>Automazioni</em> di Comandi Rapidi, puoi creare un'automazione "Ora del giorno" (es. ogni sera alle 23:00) per eseguire questo comando in automatico senza toccare nulla!
-              </div>
-            </>
-          )}
-
-          {/* TAB 2: DUOLINGO AUTOMATION */}
+          {/* TAB 1: DUOLINGO AUTOMATION */}
           {activeTab === 'duolingo' && (
             <>
-              <div style={{ background: 'var(--bg-secondary, #1a1b2e)', padding: '12px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', color: 'var(--text-secondary, #cbd5e1)' }}>
-                <p style={{ margin: '0 0 8px 0', color: '#4ade80', fontWeight: 'bold' }}>
-                  🦉 Automazione per Duolingo (o altra app):
-                </p>
-                <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <li>
-                    Apri l'app <strong>Comandi Rapidi</strong> e vai nella scheda <strong>Automazioni</strong> (in basso al centro).
-                  </li>
-                  <li>
-                    Tocca <strong>+</strong> in alto a destra (o <em>Crea automazione personale</em>).
-                  </li>
-                  <li>
-                    Seleziona l'evento <strong>"App"</strong> dalla lista.
-                  </li>
-                  <li>
-                    Accanto ad App tocca <em>Scegli</em> e seleziona <strong>Duolingo</strong>.
-                  </li>
-                  <li>
-                    Scegli la condizione:
-                    <br />
-                    • <strong>"È chiusa"</strong> (scelta migliore: si attiva non appena finisci la tua lezione e chiudi Duolingo)
-                    <br />
-                    • Oppure <em>"È aperta"</em> (se preferisci che si spunti subito all'avvio).
-                  </li>
-                  <li>
-                    Seleziona <strong>"Esegui immediatamente"</strong> e disattiva <em>"Chiedi prima di eseguire"</em>.
-                  </li>
-                  <li>
-                    Premi <em>Avanti</em>, scegli <strong>Nuova azione rapida vuota</strong> e aggiungi:
-                    <br />
-                    • Azione: <strong>"Apri URL"</strong>
-                    <br />
-                    • Inserisci l'URL:
-                    <div style={{ margin: '6px 0', background: 'rgba(0,0,0,0.4)', padding: '6px 8px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all', color: '#4ade80' }}>
-                      {sampleHabitUrl}
-                    </div>
-                  </li>
-                  <li>Tocca <strong>Fine</strong>. Fatto!</li>
-                </ol>
+              {/* Box Spiegazione iOS Home vs Browser */}
+              <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '10px 12px', borderRadius: '10px', fontSize: '10.5px', color: '#fef08a', lineHeight: '1.45' }}>
+                ⚠️ <strong>Perché iOS ha aperto Safari invece della PWA salvata sulla Home?</strong>
+                <br />
+                I link standard che iniziano con <code>https://</code> vengono associati da Apple al browser Safari. Per aprire la tua <strong>PWA della Home Screen</strong> a schermo intero hai <strong>due metodi fantastici</strong>:
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              {/* METODO A: webapp:// */}
+              <div style={{ background: 'var(--bg-secondary, #1a1b2e)', padding: '12px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', color: 'var(--text-secondary, #cbd5e1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span style={{ color: '#4ade80', fontWeight: 'bold', fontSize: '12px' }}>
+                    Metodo 1: Il trucco "webapp://" (Apertura Diretta)
+                  </span>
+                  <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                    CONSIGLIATO
+                  </span>
+                </div>
+                <p style={{ margin: '0 0 8px 0', fontSize: '10.5px' }}>
+                  Sostituisci l'URL nella tua azione <strong>Apri URL</strong> con lo schema <code>webapp://</code>:
+                </p>
+                <div style={{ margin: '6px 0', background: 'rgba(0,0,0,0.5)', padding: '8px 10px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all', color: '#86efac', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+                  {sampleWebappHabitUrl}
+                </div>
                 <button
-                  onClick={() => handleCopy(sampleHabitUrl)}
+                  onClick={() => handleCopy(sampleWebappHabitUrl, 'webapp_duo')}
                   style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    borderRadius: '8px',
+                    width: '100%',
+                    padding: '7px 10px',
+                    marginTop: '4px',
+                    borderRadius: '6px',
                     background: '#22c55e',
                     border: 'none',
                     color: '#fff',
@@ -356,12 +281,94 @@ export default function AppleHealthModal({
                     fontWeight: 'bold'
                   }}
                 >
-                  {copiedUrl ? '✓ Link Duolingo Copiato!' : '📋 Copia Link Diretto per Duolingo'}
+                  {copiedKey === 'webapp_duo' ? '✓ Link webapp:// Copiato!' : '📋 Copia Link webapp:// per Duolingo'}
                 </button>
+                <p style={{ margin: '6px 0 0 0', fontSize: '9.5px', color: 'var(--text-muted, #94a3b8)' }}>
+                  * Su iOS, <code>webapp://</code> dice al sistema di lanciare direttamente la Web App a schermo intero presente sulla schermata Home!
+                </p>
               </div>
 
-              <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '10px 12px', borderRadius: '8px', fontSize: '10px', color: '#86efac' }}>
-                ✨ <strong>Come funziona la spunta:</strong> Quest Life cerca tra le tue abitudini un'abitudine che si chiama "Duolingo" (o che contiene "duolingo", non fa differenza maiuscole/minuscole). Se non l'hai ancora creata, creala nella scheda <strong>Abitudini</strong>!
+              {/* METODO B: Appunti + Apri App */}
+              <div style={{ background: 'var(--bg-secondary, #1a1b2e)', padding: '12px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', color: 'var(--text-secondary, #cbd5e1)' }}>
+                <span style={{ color: '#c084fc', fontWeight: 'bold', fontSize: '12px' }}>
+                  Metodo 2: Appunti + "Apri app" (Infallibile al 100%)
+                </span>
+                <p style={{ margin: '6px 0 8px 0', fontSize: '10.5px' }}>
+                  Se preferisci non usare URL nel comando rapido:
+                </p>
+                <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '10.5px' }}>
+                  <li>Azione 1: <strong>Testo</strong> &rarr; scrivi <code>?habit=Duolingo</code></li>
+                  <li>Azione 2: <strong>Copia negli appunti</strong> (il testo sopra).</li>
+                  <li>Azione 3: <strong>Apri app</strong> &rarr; seleziona <strong>Quest Life</strong> (la tua app sulla Home).</li>
+                  <li>Quando Quest Life si apre, tocca il pulsante <strong>🍎 Sync</strong> in basso a destra per confermare!</li>
+                </ol>
+              </div>
+            </>
+          )}
+
+          {/* TAB 2: PASSI E CALORIE */}
+          {activeTab === 'health' && (
+            <>
+              <div style={{ background: 'var(--bg-secondary, #1a1b2e)', padding: '12px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', color: 'var(--text-secondary, #cbd5e1)' }}>
+                <p style={{ margin: '0 0 8px 0', color: 'var(--text-primary, #fff)', fontWeight: 'bold' }}>
+                  🎯 Creazione Comando Rapido per Passi & Calorie:
+                </p>
+                <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '10.5px' }}>
+                  <li>Apri l'app <strong>Comandi Rapidi</strong> su iPhone e tocca <strong>+</strong> in alto a destra.</li>
+                  <li>
+                    Aggiungi: <strong>"Trova campioni di salute"</strong> (Passi, oggi) &rarr; poi <strong>"Calcola statistica"</strong> (Somma).
+                  </li>
+                  <li>
+                    Aggiungi: <strong>"Trova campioni di salute"</strong> (Energia attiva, oggi) &rarr; poi <strong>"Calcola statistica"</strong> (Somma).
+                  </li>
+                  <li>
+                    Aggiungi: <strong>"Testo"</strong> e componi il link con <strong>webapp://</strong>:
+                    <div style={{ margin: '6px 0', background: 'rgba(0,0,0,0.5)', padding: '6px 8px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all', color: '#c084fc', border: '1px solid rgba(192, 132, 252, 0.3)' }}>
+                      {sampleWebappHealthUrl}
+                    </div>
+                    <em>(Tocca e sostituisci i campi con le due variabili Somma calcolate)</em>
+                  </li>
+                  <li>
+                    Aggiungi azione: <strong>"Apri URL"</strong> e collega il Testo.
+                  </li>
+                </ol>
+
+                <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => handleCopy(sampleWebappHealthUrl, 'health_webapp')}
+                    style={{
+                      flex: 1,
+                      padding: '7px 10px',
+                      borderRadius: '6px',
+                      background: 'var(--accent-primary, #8b5cf6)',
+                      border: 'none',
+                      color: '#fff',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {copiedKey === 'health_webapp' ? '✓ Copiato!' : '📋 Copia Modello webapp://'}
+                  </button>
+                  <button
+                    onClick={() => handleCopy(sampleHttpHealthUrl, 'health_http')}
+                    style={{
+                      padding: '7px 10px',
+                      borderRadius: '6px',
+                      background: 'var(--bg-primary, #12131e)',
+                      border: '1px solid var(--glass-border, rgba(255,255,255,0.1))',
+                      color: 'var(--text-secondary, #94a3b8)',
+                      fontSize: '11px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {copiedKey === 'health_http' ? '✓ Copiato!' : 'Copia https://'}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', padding: '10px 12px', borderRadius: '8px', fontSize: '10px', color: '#c4b5fd' }}>
+                💡 <strong>Sincronizzazione Giornaliera Automatica:</strong> Nella scheda <em>Automazioni</em> di Comandi Rapidi, puoi creare un'automazione "Ora del giorno" (es. ogni sera alle 23:00) per eseguire questo comando in automatico senza toccare nulla!
               </div>
             </>
           )}
