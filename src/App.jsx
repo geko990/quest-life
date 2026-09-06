@@ -672,24 +672,6 @@ export default function App() {
     }
   }, [handleExecuteSync]);
 
-  const handleQuickSyncClick = async () => {
-    try {
-      if (navigator.clipboard?.readText) {
-        const text = await navigator.clipboard.readText();
-        if (text && text.trim()) {
-          const payload = parseSyncPayload(text);
-          if (payload) {
-            handleExecuteSync(text);
-            return;
-          }
-        }
-      }
-    } catch (err) {
-      console.log('Clipboard access cancelled or denied:', err);
-    }
-    setShowAppleHealthModal(true);
-  };
-
   const handleToggleOneshot = (id, dateStr) => {
     const os = oneshots.find(o => o.id === id);
     if (!os) return;
@@ -1709,38 +1691,6 @@ export default function App() {
         </div>
       )}
 
-      {/* FLOATING QUICK SYNC BUTTON */}
-      {settings.showSyncButton !== false && (
-        <button
-          type="button"
-          onClick={handleQuickSyncClick}
-          style={{
-            position: 'fixed',
-            bottom: '72px',
-            right: '12px',
-            zIndex: 8999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '7px 13px',
-            borderRadius: '22px',
-            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.95), rgba(139, 92, 246, 0.95))',
-            color: '#fff',
-            border: '1px solid rgba(255, 255, 255, 0.28)',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(236, 72, 153, 0.35)',
-            fontSize: '11.5px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            transition: 'transform 0.15s ease'
-          }}
-          title="Tocca per sincronizzare da appunti o configurare Apple Salute"
-        >
-          <span style={{ fontSize: '14px' }}>🍎</span>
-          <span>Sync</span>
-        </button>
-      )}
     </div>
   );
 }
