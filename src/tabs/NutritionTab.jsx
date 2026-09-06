@@ -14,7 +14,8 @@ export default function NutritionTab({
   setInitialModal,
   onlyModal = false,
   onCloseOverlay,
-  settings = {}
+  settings = {},
+  onOpenAppleHealthModal
 }) {
   if (!health) return null;
 
@@ -1026,9 +1027,34 @@ export default function NutritionTab({
         <>
           {/* Main Calorie Dashboard */}
           <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Allenamento = Rimaste</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Allenamento = Rimaste</div>
+              </div>
+              {onOpenAppleHealthModal && (
+                <button
+                  type="button"
+                  onClick={onOpenAppleHealthModal}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(139, 92, 246, 0.15))',
+                    border: '1px solid rgba(236, 72, 153, 0.4)',
+                    color: '#f472b6',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                  title="Sincronizza passi e calorie da Apple Salute o esegui comandi rapidi"
+                >
+                  <span>🍎</span>
+                  <span>Sync Salute</span>
+                </button>
+              )}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
