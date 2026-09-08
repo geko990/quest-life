@@ -130,13 +130,16 @@ export default function FinancesTab({
   const [withdrawSource, setWithdrawSource] = useState('base'); // 'base' or secondary account id
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
-  // Transfer Between Accounts Modal State
+  // Transfer Between Accounts / Investments Modal State
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferSource, setTransferSource] = useState('base');
   const [transferTarget, setTransferTarget] = useState('cash');
   const [transferAmount, setTransferAmount] = useState('');
   const [transferNote, setTransferNote] = useState('');
   const [transferDate, setTransferDate] = useState(getGameDate());
+  const [transferInvestSharePrice, setTransferInvestSharePrice] = useState('');
+  const [transferInvestShares, setTransferInvestShares] = useState('');
+  const [invFundingAccount, setInvFundingAccount] = useState('none');
 
   // Secondary Account Modals
   const [showAddSecModal, setShowAddSecModal] = useState(false);
@@ -266,6 +269,11 @@ export default function FinancesTab({
   const getAccountLabel = (accId) => {
     if (accId === 'base') return `💳 ${finances.baseAccountName || 'Conto Base'}`;
     if (accId === 'cash') return '💵 Contanti';
+    if (typeof accId === 'string' && accId.startsWith('inv_')) {
+      const invId = accId.substring(4);
+      const inv = (finances.investments || []).find(i => i.id === invId || i.id === accId);
+      return inv ? `📈 ${inv.name}` : '📈 Investimento';
+    }
     const sec = (finances.secondaryAccounts || []).find(a => a.id === accId);
     return sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Conto Secondario';
   };
@@ -624,6 +632,7 @@ export default function FinancesTab({
         let newBalance = prev.balance;
         let newCashBalance = prev.cashBalance || 0;
         let newSecAccounts = prev.secondaryAccounts || [];
+        let newInvestments = prev.investments || [];
         const targetAccount = tx.account || 'base';
 
         if (tx.type === 'transfer') {
@@ -641,8 +650,19 @@ export default function FinancesTab({
             );
           }
 
-          // 2. Revert destination (- tx.amount)
-          if (dst === 'base') {
+          // 2. Revert destination (- tx.amount or revert shares)
+          if (typeof dst === 'string' && dst.startsWith('inv_')) {
+            const invId = dst.replace('inv_', '');
+            const addedSh = Number(tx.investSharesAdded) || 0;
+            newInvestments = newInvestments.map(i => {
+              if (i.id === invId) {
+                const curSh = Number(i.shares) || 0;
+                const remainingSh = Math.max(0, Math.round((curSh - addedSh) * 10000) / 10000);
+                return { ...i, shares: remainingSh };
+              }
+              return i;
+            });
+          } else if (dst === 'base') {
             newBalance -= tx.amount;
           } else if (dst === 'cash') {
             newCashBalance -= tx.amount;
@@ -668,6 +688,7 @@ export default function FinancesTab({
           balance: newBalance,
           cashBalance: newCashBalance,
           secondaryAccounts: newSecAccounts,
+          investments: newInvestments,
           transactions: prev.transactions.filter(t => t.id !== txId)
         };
       });
@@ -684,6 +705,8 @@ export default function FinancesTab({
     setTransferAmount('');
     setTransferNote('');
     setTransferDate(getGameDate());
+    setTransferInvestSharePrice('');
+    setTransferInvestShares('');
     setShowTransferModal(true);
   };
 
@@ -692,7 +715,7 @@ export default function FinancesTab({
     const val = parseFloat(transferAmount.replace(',', '.'));
     if (isNaN(val) || val <= 0) return;
     if (transferSource === transferTarget) {
-      alert("Seleziona due conti diversi per effettuare il trasferimento.");
+      alert("Seleziona due conti o strumenti diversi per effettuare il trasferimento.");
       return;
     }
 
@@ -701,18 +724,8 @@ export default function FinancesTab({
     const defaultNote = `↔️ Trasferimento (${srcLabel} ➔ ${dstLabel})`;
     const note = transferNote.trim() || defaultNote;
 
-    const newTx = {
-      id: 'tx_trf_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-      type: 'transfer',
-      amount: val,
-      category: 'trasferimento',
-      sourceAccount: transferSource,
-      targetAccount: transferTarget,
-      account: transferTarget,
-      note: note,
-      date: transferDate || getGameDate(),
-      timestamp: Date.now()
-    };
+    const isTargetInvest = typeof transferTarget === 'string' && transferTarget.startsWith('inv_');
+    const targetInvId = isTargetInvest ? transferTarget.replace('inv_', '') : null;
 
     setFinances(prev => {
       let newBalance = Number(prev.balance) || 0;
@@ -721,6 +734,8 @@ export default function FinancesTab({
         ...a,
         balance: Number(a.balance) || 0
       }));
+      let newInvestments = [...(prev.investments || [])];
+      let addedShares = 0;
 
       // Deduct from source account (allowing 0 and negative numbers)
       if (transferSource === 'base') {
@@ -733,8 +748,38 @@ export default function FinancesTab({
         );
       }
 
-      // Add to target account
-      if (transferTarget === 'base') {
+      // Add to target account or investment
+      if (isTargetInvest && targetInvId) {
+        const targetInv = newInvestments.find(i => i.id === targetInvId);
+        if (targetInv) {
+          const defaultP = Number(targetInv.currentPrice || targetInv.buyPrice) || 1;
+          const priceUsed = parseFloat(String(transferInvestSharePrice).replace(',', '.')) || defaultP;
+          const userSpecifiedShares = parseFloat(String(transferInvestShares).replace(',', '.'));
+          addedShares = (!isNaN(userSpecifiedShares) && userSpecifiedShares > 0)
+            ? userSpecifiedShares
+            : (priceUsed > 0 ? (Math.round((val / priceUsed) * 10000) / 10000) : 0);
+
+          const oldShares = Number(targetInv.shares) || 0;
+          const oldPMC = Number(targetInv.buyPrice) || 0;
+          const oldCost = oldShares * oldPMC;
+          const newShares = Math.round((oldShares + addedShares) * 10000) / 10000;
+          const newCost = oldCost + val;
+          const newPMC = newShares > 0 ? (Math.round((newCost / newShares) * 100) / 100) : oldPMC;
+
+          newInvestments = newInvestments.map(i => {
+            if (i.id === targetInvId) {
+              return {
+                ...i,
+                shares: newShares,
+                buyPrice: newPMC,
+                currentPrice: priceUsed > 0 ? priceUsed : (i.currentPrice || newPMC),
+                lastUpdated: transferDate || getGameDate()
+              };
+            }
+            return i;
+          });
+        }
+      } else if (transferTarget === 'base') {
         newBalance = Math.round((newBalance + val) * 100) / 100;
       } else if (transferTarget === 'cash') {
         newCashBalance = Math.round((newCashBalance + val) * 100) / 100;
@@ -744,17 +789,34 @@ export default function FinancesTab({
         );
       }
 
+      const newTx = {
+        id: 'tx_trf_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        type: 'transfer',
+        amount: val,
+        category: isTargetInvest ? 'investimento' : 'trasferimento',
+        sourceAccount: transferSource,
+        targetAccount: transferTarget,
+        account: transferSource,
+        note: note,
+        date: transferDate || getGameDate(),
+        timestamp: Date.now(),
+        investSharesAdded: addedShares
+      };
+
       return {
         ...prev,
         balance: newBalance,
         cashBalance: newCashBalance,
         secondaryAccounts: newSecAccounts,
+        investments: newInvestments,
         transactions: [newTx, ...(prev.transactions || [])]
       };
     });
 
     setTransferAmount('');
     setTransferNote('');
+    setTransferInvestSharePrice('');
+    setTransferInvestShares('');
     setShowTransferModal(false);
   };
 
@@ -1008,6 +1070,7 @@ export default function FinancesTab({
     setInvBuyPrice('');
     setInvCurrentPrice('');
     setInvNotes('');
+    setInvFundingAccount('none');
     setShowAddInvestmentModal(true);
   };
 
@@ -1029,10 +1092,51 @@ export default function FinancesTab({
       notes: invNotes.trim()
     };
 
-    setFinances(prev => ({
-      ...prev,
-      investments: [newInv, ...(prev.investments || [])]
-    }));
+    const totalCost = Math.round((sharesNum * buyNum) * 100) / 100;
+    const shouldFund = invFundingAccount !== 'none' && totalCost > 0;
+
+    setFinances(prev => {
+      let newBalance = Number(prev.balance) || 0;
+      let newCashBalance = Number(prev.cashBalance) || 0;
+      let newSecAccounts = (prev.secondaryAccounts || []).map(a => ({ ...a, balance: Number(a.balance) || 0 }));
+      let newTxList = [...(prev.transactions || [])];
+
+      if (shouldFund) {
+        if (invFundingAccount === 'base') {
+          newBalance = Math.round((newBalance - totalCost) * 100) / 100;
+        } else if (invFundingAccount === 'cash') {
+          newCashBalance = Math.round((newCashBalance - totalCost) * 100) / 100;
+        } else {
+          newSecAccounts = newSecAccounts.map(a => 
+            a.id === invFundingAccount ? { ...a, balance: Math.round(((Number(a.balance) || 0) - totalCost) * 100) / 100 } : a
+          );
+        }
+
+        const fundingTx = {
+          id: 'tx_inv_init_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          type: 'transfer',
+          amount: totalCost,
+          category: 'investimento',
+          sourceAccount: invFundingAccount,
+          targetAccount: newInv.id,
+          account: invFundingAccount,
+          note: `📈 Investimento iniziale in ${newInv.name} (${sharesNum} quote @ ${buyNum}€)`,
+          date: getGameDate(),
+          timestamp: Date.now(),
+          investSharesAdded: sharesNum
+        };
+        newTxList = [fundingTx, ...newTxList];
+      }
+
+      return {
+        ...prev,
+        balance: newBalance,
+        cashBalance: newCashBalance,
+        secondaryAccounts: newSecAccounts,
+        investments: [newInv, ...(prev.investments || [])],
+        transactions: newTxList
+      };
+    });
 
     setShowAddInvestmentModal(false);
   };
@@ -1213,8 +1317,10 @@ export default function FinancesTab({
     }
     const accId = accFilter;
     if (t.type === 'transfer') {
-      if (t.transferSource === accId) return -(Number(t.amount) || 0);
-      if (t.transferTarget === accId) return Number(t.amount) || 0;
+      const src = t.sourceAccount || t.transferSource;
+      const dst = t.targetAccount || t.transferTarget;
+      if (src === accId) return -(Number(t.amount) || 0);
+      if (dst === accId) return Number(t.amount) || 0;
       return 0;
     }
     const tAcc = t.account || 'base';
@@ -1237,7 +1343,11 @@ export default function FinancesTab({
   const allHistoryMonthTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(selectedHistoryMonth));
   const selMonthTx = allHistoryMonthTx.filter(t => {
     if (historyAccountFilter === 'all') return true;
-    if (t.type === 'transfer') return t.transferSource === historyAccountFilter || t.transferTarget === historyAccountFilter;
+    if (t.type === 'transfer') {
+      const src = t.sourceAccount || t.transferSource;
+      const dst = t.targetAccount || t.transferTarget;
+      return src === historyAccountFilter || dst === historyAccountFilter;
+    }
     return (t.account || 'base') === historyAccountFilter;
   });
 
@@ -1316,7 +1426,11 @@ export default function FinancesTab({
     const mTx = (finances.transactions || []).filter(t => t.date && t.date.startsWith(mKey));
     const txForAcc = mTx.filter(t => {
       if (historyAccountFilter === 'all') return true;
-      if (t.type === 'transfer') return t.transferSource === historyAccountFilter || t.transferTarget === historyAccountFilter;
+      if (t.type === 'transfer') {
+        const src = t.sourceAccount || t.transferSource;
+        const dst = t.targetAccount || t.transferTarget;
+        return src === historyAccountFilter || dst === historyAccountFilter;
+      }
       return (t.account || 'base') === historyAccountFilter;
     });
 
@@ -2494,14 +2608,37 @@ export default function FinancesTab({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteInvestment(inv.id)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '2px' }}
-                    title="Elimina posizione"
-                  >
-                    🗑️
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenTransferModal('base', `inv_${inv.id}`)}
+                      style={{
+                        background: 'rgba(56, 189, 248, 0.15)',
+                        border: '1px solid rgba(56, 189, 248, 0.35)',
+                        color: '#38bdf8',
+                        padding: '3px 7px',
+                        borderRadius: '6px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}
+                      title="Sposta denaro da un conto a questo investimento"
+                    >
+                      <span>↔️</span>
+                      <span>Investi</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInvestment(inv.id)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '2px' }}
+                      title="Elimina posizione"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -4526,19 +4663,75 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto di Destinazione (A)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto / Strumento di Destinazione (A)*</label>
                 <select
                   value={transferTarget}
                   onChange={(e) => setTransferTarget(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  {transferSource !== 'base' && <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>}
-                  {transferSource !== 'cash' && <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>}
-                  {finances.secondaryAccounts && finances.secondaryAccounts.filter(acc => acc.id !== transferSource).map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
-                  ))}
+                  <optgroup label="💳 Conti di Liquidità">
+                    {transferSource !== 'base' && <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>}
+                    {transferSource !== 'cash' && <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>}
+                    {finances.secondaryAccounts && finances.secondaryAccounts.filter(acc => acc.id !== transferSource).map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
+                    ))}
+                  </optgroup>
+                  {finances.investments && finances.investments.length > 0 && (
+                    <optgroup label="📈 Investimenti & ETF">
+                      {finances.investments.map(inv => (
+                        <option key={inv.id} value={`inv_${inv.id}`}>
+                          📈 {inv.name} {inv.ticker ? `(${inv.ticker})` : ''} • {inv.shares} quote
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
+
+              {transferTarget.startsWith('inv_') && (() => {
+                const targetInv = (finances.investments || []).find(i => i.id === transferTarget.replace('inv_', ''));
+                if (!targetInv) return null;
+                const defaultP = Number(targetInv.currentPrice || targetInv.buyPrice) || 1;
+                const priceNum = parseFloat(String(transferInvestSharePrice).replace(',', '.')) || defaultP;
+                const amtNum = parseFloat(String(transferAmount).replace(',', '.')) || 0;
+                const autoCalcShares = priceNum > 0 ? (Math.round((amtNum / priceNum) * 10000) / 10000) : 0;
+
+                return (
+                  <div style={{ background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '10px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#38bdf8' }}>
+                        📈 {targetInv.name}
+                      </span>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                        Quote in portafoglio: {targetInv.shares || 0}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div>
+                        <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Quota (€)</label>
+                        <input
+                          type="text"
+                          value={transferInvestSharePrice}
+                          onChange={(e) => setTransferInvestSharePrice(e.target.value)}
+                          placeholder={String(defaultP)}
+                          style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Quote Aggiunte</label>
+                        <input
+                          type="text"
+                          value={transferInvestShares || (amtNum > 0 ? String(autoCalcShares) : '')}
+                          onChange={(e) => setTransferInvestShares(e.target.value)}
+                          placeholder={amtNum > 0 ? String(autoCalcShares) : 'Quote...'}
+                          style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo da Trasferire (€)*</label>
@@ -4815,6 +5008,27 @@ export default function FinancesTab({
                   placeholder="Es. Scalable Capital, Directa, Degiro..."
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Addebita Importo su un Conto (Opzionale)</label>
+                <select
+                  value={invFundingAccount}
+                  onChange={(e) => setInvFundingAccount(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
+                >
+                  <option value="none">Nessuno (Non scalare dai conti)</option>
+                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
+                  <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
+                  {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
+                  ))}
+                </select>
+                {invFundingAccount !== 'none' && (
+                  <div style={{ fontSize: '10px', color: '#38bdf8', marginTop: '3px' }}>
+                    💡 Verranno scalati <b>{fmtCurrency((parseFloat(String(invShares).replace(',', '.')) || 0) * (parseFloat(String(invBuyPrice).replace(',', '.')) || 0))}</b> dal conto selezionato.
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
