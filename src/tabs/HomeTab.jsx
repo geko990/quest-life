@@ -34,9 +34,7 @@ export default function HomeTab({
   onOpenWorkoutsLog,
   onOpenMealsLog,
   settings = {},
-  isLandscape = false,
-  isTablet = false,
-  isWideLayout = false
+  isLandscape = false
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -483,13 +481,11 @@ export default function HomeTab({
     }
   };
 
-  const shouldUseWide = isLandscape || isTablet || isWideLayout;
-
   return (
     <section
       id="section-home"
-      className={`section active ${shouldUseWide ? 'home-landscape' : 'home-portrait'}`}
-      style={shouldUseWide ? {
+      className={`section active ${isLandscape ? 'home-landscape' : 'home-portrait'}`}
+      style={isLandscape ? {
         display: 'grid',
         gridTemplateColumns: 'minmax(280px, 1.15fr) minmax(260px, 1fr)',
         gap: '12px',
@@ -501,7 +497,7 @@ export default function HomeTab({
       } : {
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
+        gap: '10px',
         height: '100%',
         maxHeight: '100%',
         overflow: 'hidden',
@@ -519,9 +515,8 @@ export default function HomeTab({
         onClick={handleChartClick}
         style={{
           padding: '8px 12px',
-          flex: shouldUseWide ? 'none' : '1.2',
-          maxHeight: shouldUseWide ? undefined : '260px',
-          height: shouldUseWide ? '100%' : undefined,
+          flex: isLandscape ? 'none' : '1.4',
+          height: isLandscape ? '100%' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -538,10 +533,10 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* Right Column in Landscape / Tablet (Azioni del Giorno + Sostentamento) */}
-      <div style={shouldUseWide ? { display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
+      {/* Right Column in Landscape (Azioni del Giorno + Sostentamento) */}
+      <div style={isLandscape ? { display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
         {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
-        <div className="glass-panel" style={{ padding: shouldUseWide ? '14px 16px' : '10px 14px', borderRadius: '16px' }}>
+        <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
