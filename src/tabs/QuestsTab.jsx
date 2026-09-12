@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
+import MarqueeText from '../components/MarqueeText';
 
 export default function QuestsTab({
   quests,
@@ -49,11 +50,13 @@ export default function QuestsTab({
           title="Clicca per aprire la finestra dettagli della campagna"
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {q.emoji && q.emoji !== '🏆' && (
                 <span className="text-xl flex-shrink-0">{q.emoji}</span>
               )}
-              <h4 className="text-xs font-bold text-text-main truncate">{q.name}</h4>
+              <h4 className="text-xs font-bold text-text-main flex-1 min-w-0">
+                <MarqueeText text={q.name} />
+              </h4>
             </div>
             {q.description && (
               <p className="text-[10px] text-text-secondary mt-1 line-clamp-1">{q.description}</p>
@@ -116,9 +119,9 @@ export default function QuestsTab({
               <span className="text-[9px] font-bold text-accent-primary uppercase tracking-wider block">
                 ⚡ PROSSIMO SOTTO-OBIETTIVO
               </span>
-              <span className="text-xs font-bold text-text-main truncate block">
-                {nextSubquest.name}
-              </span>
+              <div className="text-xs font-bold text-text-main block min-w-0">
+                <MarqueeText text={nextSubquest.name} />
+              </div>
             </div>
           </div>
         )}
@@ -157,13 +160,13 @@ export default function QuestsTab({
                     >
                       {sq.completed && '✓'}
                     </div>
-                    <span
-                      className={`text-xs flex-1 truncate ${
+                    <div
+                      className={`text-xs flex-1 min-w-0 ${
                         sq.completed ? 'line-through text-text-secondary' : 'text-text-main'
                       }`}
                     >
-                      {sq.name}
-                    </span>
+                      <MarqueeText text={sq.name} />
+                    </div>
                   </div>
                 ))}
               </div>

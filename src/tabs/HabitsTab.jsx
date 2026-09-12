@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getGameDate, getGameDateObj, formatISO, getWeekIdentifier, getMonthIdentifier, getYearIdentifier } from '../utils/helpers';
 import SwipeableCard from '../components/SwipeableCard';
 import { useTouchReorder } from '../utils/useTouchReorder';
+import MarqueeText from '../components/MarqueeText';
 
 export default function HabitsTab({
   habits = [],
@@ -221,9 +222,12 @@ export default function HabitsTab({
                     ></div>
 
                     {/* Content (v3.3.0 card-content & card-meta) */}
-                    <div className="card-content">
-                      <div className={`card-title ${isCompleted ? 'line-through opacity-60' : ''}`}>
-                        {h.emoji ? `${h.emoji} ` : ''}{h.name}
+                    <div className="card-content" style={{ minWidth: 0 }}>
+                      <div className={`card-title ${isCompleted ? 'line-through opacity-60' : ''}`} style={{ marginBottom: '4px' }}>
+                        <MarqueeText
+                          text={h.name}
+                          prefix={h.emoji ? <span style={{ marginRight: '2px' }}>{h.emoji}</span> : null}
+                        />
                       </div>
                       <div className="card-meta">
                         <span className="card-stars">{'⭐'.repeat(starsCount)}</span>

@@ -1,7 +1,7 @@
 {
   "name": "rpg-life",
   "private": true,
-  "version": "5.9.196",
+  "version": "5.9.197",
   "type": "module",
   "scripts": {
     "dev": "vite",
