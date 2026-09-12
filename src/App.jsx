@@ -16,6 +16,7 @@ import { getInitialState, sanitizeState } from './utils/state';
 import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp, getMonthlyStarCounts, isMonthlyPyramidMet } from './utils/helpers';
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
+import { useLayoutMode } from './utils/useLayoutMode';
 
 class TabErrorBoundary extends React.Component {
   constructor(props) {
@@ -103,6 +104,7 @@ export default function App() {
   const [inventory, setInventory] = useState(initialFullState.inventory);
   const [health, setHealth] = useState(initialFullState.health);
   const [settings, setSettings] = useState(initialFullState.settings);
+  const { layoutMode, isLandscape, isTablet } = useLayoutMode(settings);
   const [finances, setFinances] = useState(initialFullState.finances);
   const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);
 
@@ -1260,6 +1262,7 @@ export default function App() {
             onOpenWorkoutsLog={handleOpenWorkoutsLog}
             onOpenMealsLog={handleOpenMealsLog}
             settings={settings}
+            isLandscape={isLandscape}
           />
         );
       case 'habits':
@@ -1360,12 +1363,14 @@ export default function App() {
 
   return (
     <div
-      className="app-container"
+      className={`app-container layout-${layoutMode} orientation-${isLandscape ? 'landscape' : 'portrait'}`}
+      data-layout={layoutMode}
+      data-orientation={isLandscape ? 'landscape' : 'portrait'}
       style={{
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: isLandscape ? 'row' : 'column',
         height: '100dvh',
-        maxWidth: '480px',
+        maxWidth: isTablet ? '1200px' : (isLandscape ? '100vw' : '480px'),
         margin: '0 auto',
         position: 'relative',
         overflow: 'hidden',
@@ -1412,51 +1417,83 @@ export default function App() {
         </div>
       )}
 
-      {/* Upper header */}
-      <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
-        <Header
-          player={player}
-          setPlayer={setPlayer}
-          stats={stats}
-          habits={habits}
-          oneshots={oneshots}
-          quests={quests}
-          completionLog={completionLog}
-          xpLog={xpLog}
-          settings={settings}
-          onOpenMottoEdit={() => setShowMottoModal(true)}
-        />
-      </div>
-
-      {/* Primary content area (Bounded strictly between Header and BottomNav) */}
-      <main
-        className="content-area"
-        style={{
-          flex: 1,
-          minHeight: 0,
-          width: '100%',
-          overflowY: activeTab === 'home' ? 'hidden' : 'auto',
-          touchAction: activeTab === 'home' ? 'none' : 'pan-y',
-          overscrollBehavior: 'none',
-          padding: activeTab === 'home' ? '8px 16px 12px 16px' : '16px 16px 28px 16px',
-          boxSizing: 'border-box',
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
-        <TabErrorBoundary key={activeTab}>
-          {renderActiveTab()}
-        </TabErrorBoundary>
-      </main>
-
-      {/* Lower bottom navigation */}
-      <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
+      {/* Landscape Navigation Rail (Left side dock) */}
+      {isLandscape && (
         <BottomNav
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           avatarEmoji={player.avatarEmoji}
           avatarImage={player.avatarImage}
           avatarType={player.avatarType}
+          isLandscape={true}
         />
+      )}
+
+      {/* Main Content Pane (Right column in landscape, full screen in portrait) */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minWidth: 0,
+          minHeight: 0,
+          overflow: 'hidden',
+          position: 'relative'
+        }}
+      >
+        {/* Upper header */}
+        <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
+          <Header
+            player={player}
+            setPlayer={setPlayer}
+            stats={stats}
+            habits={habits}
+            oneshots={oneshots}
+            quests={quests}
+            completionLog={completionLog}
+            xpLog={xpLog}
+            settings={settings}
+            onOpenMottoEdit={() => setShowMottoModal(true)}
+            isLandscape={isLandscape}
+          />
+        </div>
+
+        {/* Primary content area */}
+        <main
+          className="content-area"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            width: '100%',
+            overflowY: (activeTab === 'home' && !isLandscape) ? 'hidden' : 'auto',
+            touchAction: (activeTab === 'home' && !isLandscape) ? 'none' : 'pan-y',
+            overscrollBehavior: 'none',
+            padding: activeTab === 'home'
+              ? (isLandscape ? '8px 14px 10px 14px' : '8px 16px 12px 16px')
+              : (isLandscape ? '10px 16px 16px 16px' : '16px 16px 28px 16px'),
+            boxSizing: 'border-box',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          <TabErrorBoundary key={activeTab}>
+            {renderActiveTab()}
+          </TabErrorBoundary>
+        </main>
+
+        {/* Lower bottom navigation (Portrait only) */}
+        {!isLandscape && (
+          <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
+            <BottomNav
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              avatarEmoji={player.avatarEmoji}
+              avatarImage={player.avatarImage}
+              avatarType={player.avatarType}
+              isLandscape={false}
+            />
+          </div>
+        )}
       </div>
 
       {/* Global generic Modal creator */}

@@ -12,7 +12,8 @@ export default function Header({
   completionLog,
   xpLog,
   settings,
-  onOpenMottoEdit
+  onOpenMottoEdit,
+  isLandscape = false
 }) {
   const [showProfile, setShowProfile] = useState(false);
   const [showStreak, setShowStreak] = useState(false);
@@ -237,7 +238,10 @@ export default function Header({
   return (
     <>
       {/* App Header (Original v3.3.0) */}
-      <header className="app-header">
+      <header
+        className={`app-header ${isLandscape ? 'header-landscape' : ''}`}
+        style={isLandscape ? { padding: '4px 14px', height: '42px', minHeight: '42px' } : undefined}
+      >
         {/* Engagement Mood Widget (Focused on Habits, Clean Emoji without visible number) */}
         <div
           className="header-streak"
@@ -252,22 +256,22 @@ export default function Header({
               background: 'var(--bg-secondary)',
               border: `2px solid ${activity7Days.moodColor}`,
               boxShadow: `0 0 10px ${activity7Days.moodColor}40`,
-              width: '38px',
-              height: '38px',
+              width: isLandscape ? '32px' : '38px',
+              height: isLandscape ? '32px' : '38px',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <span className="streak-emoji" style={{ fontSize: '20px' }}>{activity7Days.moodEmoji}</span>
+            <span className="streak-emoji" style={{ fontSize: isLandscape ? '16px' : '20px' }}>{activity7Days.moodEmoji}</span>
           </div>
         </div>
 
         <h1
           className="app-title"
           onClick={() => forceUpdateApp(true)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', fontSize: isLandscape ? '15px' : undefined }}
           title="Tocca per forzare l'aggiornamento dell'app"
         >
           Real Playing Game
@@ -279,16 +283,16 @@ export default function Header({
           onClick={() => setShowProfile(!showProfile)}
           title="Visualizza profilo e medaglie"
         >
-          <div className="header-avatar-frame" id="headerAvatarFrame">
+          <div className="header-avatar-frame" id="headerAvatarFrame" style={isLandscape ? { width: '32px', height: '32px' } : undefined}>
             {player.avatarType === 'image' && player.avatarImage ? (
               <img className="header-img" src={player.avatarImage} alt="Avatar" />
             ) : (
-              <span className="header-emoji" id="headerEmoji">
+              <span className="header-emoji" id="headerEmoji" style={isLandscape ? { fontSize: '16px' } : undefined}>
                 {player.avatarEmoji || '⚔️'}
               </span>
             )}
           </div>
-          <div className="header-level-badge">
+          <div className="header-level-badge" style={isLandscape ? { width: '18px', height: '18px', fontSize: '9px', right: '-4px', bottom: '-4px' } : undefined}>
             <span id="headerLevel">{player.level}</span>
           </div>
         </div>
@@ -306,7 +310,7 @@ export default function Header({
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'fixed',
-              top: '65px',
+              top: isLandscape ? '46px' : '65px',
               right: '16px',
               width: 'calc(100vw - 32px)',
               maxWidth: '340px',
@@ -314,9 +318,11 @@ export default function Header({
               border: '1px solid var(--glass-border)',
               borderRadius: '20px',
               boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
-              padding: '20px',
+              padding: isLandscape ? '14px' : '20px',
               zIndex: 9999,
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              maxHeight: isLandscape ? 'calc(100dvh - 54px)' : 'calc(100vh - 75px)',
+              overflowY: 'auto'
             }}
           >
             <div className="popup-header-info">
@@ -529,17 +535,19 @@ export default function Header({
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'fixed',
-              top: '65px',
-              left: '16px',
+              top: isLandscape ? '46px' : '65px',
+              left: isLandscape ? '74px' : '16px',
               width: 'calc(100vw - 32px)',
               maxWidth: '330px',
               background: 'var(--bg-card)',
               border: '1px solid var(--glass-border)',
               borderRadius: '20px',
               boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
-              padding: '20px',
+              padding: isLandscape ? '14px' : '20px',
               zIndex: 9999,
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              maxHeight: isLandscape ? 'calc(100dvh - 54px)' : 'auto',
+              overflowY: 'auto'
             }}
           >
             {/* Top Info Header */}
@@ -627,7 +635,7 @@ export default function Header({
               style={{
                 width: '100%',
                 maxWidth: '400px',
-                maxHeight: '85vh',
+                maxHeight: isLandscape ? 'calc(100dvh - 20px)' : '85vh',
                 background: 'var(--bg-card)',
                 color: 'var(--text-primary)',
                 border: '1px solid var(--glass-border)',
