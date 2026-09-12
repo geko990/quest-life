@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getXpForLevel, getGameDate } from '../utils/helpers';
+import MarqueeText from '../components/MarqueeText';
 
 const SLOT_CATEGORY_INFO = [
   { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
@@ -805,11 +806,10 @@ export default function HomeTab({
                           fontWeight: 'bold',
                           color: 'var(--text-primary)',
                           textDecoration: isCompleted ? 'line-through' : 'none',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          minWidth: 0,
+                          width: '100%'
                         }}>
-                          {action.name}
+                          <MarqueeText text={action.name} />
                         </div>
                       </div>
                     </div>

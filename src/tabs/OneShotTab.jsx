@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
+import MarqueeText from '../components/MarqueeText';
 
 export default function OneShotTab({
   oneshots,
@@ -81,11 +82,11 @@ export default function OneShotTab({
                       {o.completed && <span className="text-[11px] font-bold">✓</span>}
                     </button>
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
                         <span className="text-lg flex-shrink-0">{o.emoji || '💥'}</span>
-                        <h4 className={`text-xs font-bold text-text-main truncate ${o.completed ? 'line-through text-text-secondary' : ''}`}>
-                          {o.name}
+                        <h4 className={`text-xs font-bold text-text-main flex-1 min-w-0 ${o.completed ? 'line-through text-text-secondary' : ''}`}>
+                          <MarqueeText text={o.name} />
                         </h4>
                       </div>
 

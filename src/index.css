@@ -7301,3 +7301,26 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
         opacity: 0.9;
     }
 }
+/* ============================================
+   MARQUEE TEXT AUTO-SCROLL ANIMATION
+   ============================================ */
+.marquee-text-container {
+    mask-image: linear-gradient(to right, black calc(100% - 12px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 12px), transparent 100%);
+}
+
+.marquee-text-scrolling {
+    animation: taskTitleMarquee var(--marquee-total-time, 6s) ease-in-out infinite;
+}
+
+@keyframes taskTitleMarquee {
+    0%, 28% {
+        transform: translateX(0);
+    }
+    75%, 88% {
+        transform: translateX(var(--marquee-dist, 0px));
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
