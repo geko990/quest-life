@@ -104,7 +104,7 @@ export default function App() {
   const [inventory, setInventory] = useState(initialFullState.inventory);
   const [health, setHealth] = useState(initialFullState.health);
   const [settings, setSettings] = useState(initialFullState.settings);
-  const { layoutMode, isLandscape, isTablet } = useLayoutMode(settings);
+  const { layoutMode, isLandscape, isTablet, isNavRail, isWideLayout } = useLayoutMode(settings);
   const [finances, setFinances] = useState(initialFullState.finances);
   const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);
 
@@ -1263,6 +1263,8 @@ export default function App() {
             onOpenMealsLog={handleOpenMealsLog}
             settings={settings}
             isLandscape={isLandscape}
+            isTablet={isTablet}
+            isWideLayout={isWideLayout}
           />
         );
       case 'habits':
@@ -1322,6 +1324,9 @@ export default function App() {
             stats={stats}
             onRewardXp={handleRewardXp}
             settings={settings}
+            isLandscape={isLandscape}
+            isTablet={isTablet}
+            isWideLayout={isWideLayout}
           />
         );
       case 'settings':
@@ -1368,9 +1373,9 @@ export default function App() {
       data-orientation={isLandscape ? 'landscape' : 'portrait'}
       style={{
         display: 'flex',
-        flexDirection: isLandscape ? 'row' : 'column',
+        flexDirection: isNavRail ? 'row' : 'column',
         height: '100dvh',
-        maxWidth: isTablet ? '1200px' : (isLandscape ? '100vw' : '480px'),
+        maxWidth: isTablet ? '1100px' : (isLandscape ? '100vw' : '480px'),
         margin: '0 auto',
         position: 'relative',
         overflow: 'hidden',
@@ -1417,8 +1422,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Landscape Navigation Rail (Left side dock) */}
-      {isLandscape && (
+      {/* Navigation Rail (Left side dock for landscape or tablet) */}
+      {isNavRail && (
         <BottomNav
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -1429,7 +1434,7 @@ export default function App() {
         />
       )}
 
-      {/* Main Content Pane (Right column in landscape, full screen in portrait) */}
+      {/* Main Content Pane (Right column in landscape/rail, full screen in portrait) */}
       <div
         style={{
           flex: 1,
@@ -1455,7 +1460,7 @@ export default function App() {
             xpLog={xpLog}
             settings={settings}
             onOpenMottoEdit={() => setShowMottoModal(true)}
-            isLandscape={isLandscape}
+            isLandscape={isLandscape || isTablet}
           />
         </div>
 
@@ -1466,12 +1471,14 @@ export default function App() {
             flex: 1,
             minHeight: 0,
             width: '100%',
-            overflowY: (activeTab === 'home' && !isLandscape) ? 'hidden' : 'auto',
-            touchAction: (activeTab === 'home' && !isLandscape) ? 'none' : 'pan-y',
+            overflowY: (['home', 'nutrition'].includes(activeTab) && !isWideLayout) ? 'hidden' : 'auto',
+            touchAction: (['home', 'nutrition'].includes(activeTab) && !isWideLayout) ? 'none' : 'pan-y',
             overscrollBehavior: 'none',
             padding: activeTab === 'home'
-              ? (isLandscape ? '8px 14px 10px 14px' : '8px 16px 12px 16px')
-              : (isLandscape ? '10px 16px 16px 16px' : '16px 16px 28px 16px'),
+              ? (isWideLayout ? '8px 14px 10px 14px' : '6px 14px 8px 14px')
+              : activeTab === 'nutrition'
+                ? (isWideLayout ? '10px 16px 12px 16px' : '6px 12px 8px 12px')
+                : (isWideLayout ? '10px 16px 16px 16px' : '16px 16px 28px 16px'),
             boxSizing: 'border-box',
             WebkitOverflowScrolling: 'touch'
           }}
@@ -1481,8 +1488,8 @@ export default function App() {
           </TabErrorBoundary>
         </main>
 
-        {/* Lower bottom navigation (Portrait only) */}
-        {!isLandscape && (
+        {/* Lower bottom navigation (Phone portrait only) */}
+        {!isNavRail && (
           <div style={{ flexShrink: 0, width: '100%', zIndex: 40 }}>
             <BottomNav
               activeTab={activeTab}

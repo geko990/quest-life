@@ -14,7 +14,10 @@ export default function NutritionTab({
   setInitialModal,
   onlyModal = false,
   onCloseOverlay,
-  settings = {}
+  settings = {},
+  isLandscape = false,
+  isTablet = false,
+  isWideLayout = false
 }) {
   if (!health) return null;
 
@@ -988,11 +991,308 @@ export default function NutritionTab({
     );
   }
 
+  const shouldUseWide = isWideLayout || isTablet || isLandscape;
+
+  // 1. Calorie Card
+  const renderCalorieCard = (isWide) => {
+    const ringSize = isWide ? 116 : 94;
+    const r = isWide ? 48 : 38;
+    const c = 2 * Math.PI * r;
+    const offset = c * (1 - caloriePct);
+
+    return (
+      <div className="glass-panel" style={{ padding: isWide ? '12px 14px' : '8px 12px', borderRadius: '16px', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isWide ? '8px' : '4px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
+          <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Bruciate</div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+          {/* Calorie Ring */}
+          <div
+            onClick={() => setShowQuickMealModal(true)}
+            style={{ position: 'relative', width: `${ringSize}px`, height: `${ringSize}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+            title="Tocca per inserire pasto rapido o cercare online"
+          >
+            <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`}>
+              <circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={r}
+                fill="transparent"
+                stroke="var(--bg-secondary)"
+                strokeWidth={isWide ? 8 : 7}
+              />
+              <circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={r}
+                fill="transparent"
+                stroke="var(--accent-primary)"
+                strokeWidth={isWide ? 8 : 7}
+                strokeDasharray={c}
+                strokeDashoffset={offset}
+                style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+              />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: isWide ? '19px' : '16px', fontWeight: 'bold', fontFamily: 'Orbitron, sans-serif', color: 'var(--text-primary)' }}>
+                {caloriesRemaining}
+              </span>
+              <span style={{ fontSize: '8px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                Rimaste
+              </span>
+              <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 'bold' }}>
+                + Inserisci
+              </span>
+            </div>
+          </div>
+
+          {/* Calorie 3 rows */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: isWide ? '6px' : '4px', flex: 1, minWidth: 0 }}>
+            {/* 1) Obiettivo */}
+            <div
+              onClick={handleOpenGoalsModal}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: isWide ? '6px 10px' : '4px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}
+              title="Configura obiettivi e calcola fabbisogno TDEE"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '13px' }}>🚩</span>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Obiettivo</span>
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{calorieGoal} kcal</span>
+            </div>
+
+            {/* 2) Cibo Consumato */}
+            <div
+              onClick={() => setShowMealsModal(true)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: isWide ? '6px 10px' : '4px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}
+              title="Apri registro pasti"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '13px' }}>🍴</span>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Consumato</span>
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#3b82f6' }}>{caloriesConsumed} kcal</span>
+            </div>
+
+            {/* 3) Bruciate */}
+            <div
+              onClick={() => setShowExercisesModal(true)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: isWide ? '6px 10px' : '4px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}
+              title="Tocca la fiamma per +100 kcal • Tocca riga per Registro Allenamenti"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setHealth(prev => ({
+                      ...prev,
+                      calories: { ...prev.calories, burned: (prev.calories.burned || 0) + 100 }
+                    }));
+                  }}
+                  style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', cursor: 'pointer', display: 'inline-flex' }}
+                  title="+100 kcal"
+                >
+                  🔥
+                </button>
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bruciate</span>
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#f97316' }}>{caloriesBurned} kcal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 2. Steps Card
+  const renderStepsCard = (isWide) => (
+    <div
+      onClick={() => onOpenModal('health_steps', { currentSteps: stepsCurrent, goalSteps: stepsGoal })}
+      className="glass-panel"
+      style={{ padding: isWide ? '10px 12px' : '7px 9px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}
+      title="Tocca per modificare o registrare i passi"
+    >
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Passi</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              quickAddSteps(1000);
+            }}
+            style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', cursor: 'pointer' }}
+            title="+1000 passi"
+          >
+            👟
+          </button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '2px 0' }}>
+          <span style={{ fontSize: isWide ? '15px' : '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stepsCurrent.toLocaleString()}</span>
+        </div>
+        <div style={{ fontSize: '8.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          Obiettivo: {stepsGoal.toLocaleString()}
+        </div>
+      </div>
+      <div style={{ width: '100%', height: '3px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden', marginTop: '5px' }}>
+        <div style={{ height: '100%', width: `${stepsPct}%`, background: 'var(--accent-primary)', transition: 'width 0.3s' }}></div>
+      </div>
+    </div>
+  );
+
+  // 3. Protein Card
+  const renderProteinCard = (isWide) => (
+    <div
+      onClick={() => onOpenModal('health_protein', { proteinsCurrent, proteinsGoal, meals: health.meals })}
+      className="glass-panel"
+      style={{ padding: isWide ? '10px 12px' : '7px 9px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}
+      title="Tocca per obiettivi proteine"
+    >
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Proteine</span>
+          <span style={{ fontSize: '13px' }}>🍗</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', margin: '2px 0' }}>
+          <span style={{ fontSize: isWide ? '15px' : '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{proteinsCurrent}</span>
+          <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>g</span>
+        </div>
+        <div style={{ fontSize: '8.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          Obiettivo: {proteinsGoal}g
+        </div>
+      </div>
+      <div style={{ width: '100%', height: '3px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden', marginTop: '5px' }}>
+        <div style={{ height: '100%', width: `${proteinsPct}%`, background: '#eab308', transition: 'width 0.3s' }}></div>
+      </div>
+    </div>
+  );
+
+  // 4. Water Card
+  const renderWaterCard = (isWide) => (
+    <div
+      onClick={() => onOpenModal('health_water', { waterCurrent, waterGoal })}
+      className="glass-panel"
+      style={{ padding: isWide ? '10px 12px' : '7px 9px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}
+      title="Tocca bicchiere per +0.2L • Tocca riga per impostazioni"
+    >
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Acqua</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              quickAddWater(1);
+            }}
+            style={{ background: 'none', border: 'none', padding: 0, fontSize: '13px', cursor: 'pointer' }}
+            title="+1 bicchiere (0.2L)"
+          >
+            🥛
+          </button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', margin: '2px 0' }}>
+          <span style={{ fontSize: isWide ? '15px' : '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{(waterCurrent * 0.2).toFixed(1)}</span>
+          <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>L</span>
+        </div>
+        <div style={{ fontSize: '8.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {waterCurrent}/{waterGoal} bicchieri
+        </div>
+      </div>
+      <div style={{ width: '100%', height: '3px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden', marginTop: '5px' }}>
+        <div style={{ height: '100%', width: `${waterPct}%`, background: '#06b6d4', transition: 'width 0.3s' }}></div>
+      </div>
+    </div>
+  );
+
+  // 5. Weight Card
+  const renderWeightCard = (isWide) => (
+    <div
+      onClick={() => onOpenModal('weight', {
+        current: weightCurrent,
+        target: targetWeight,
+        currentFat: fatPct,
+        currentLean: leanPct,
+        calorieGoal,
+        proteinGoal: proteinsGoal
+      })}
+      className="glass-panel"
+      style={{ padding: isWide ? '10px 12px' : '7px 9px', borderRadius: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}
+      title="Tocca per aggiornare peso e composizione corporea"
+    >
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Peso Corporeo</span>
+          <span style={{ fontSize: '13px' }}>⚖️</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', margin: '2px 0' }}>
+          <span style={{ fontSize: isWide ? '15px' : '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{weightCurrent}</span>
+          <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>kg</span>
+          <span style={{ fontSize: '8.5px', color: 'var(--accent-primary)', marginLeft: 'auto', fontWeight: 'bold' }}>Target {targetWeight}</span>
+        </div>
+        <div style={{ display: 'flex', gap: '6px', fontSize: '8.5px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span>Magra: <b>{leanPct > 0 ? `${leanPct}%` : '--'}</b></span>
+          <span>Grassa: <b>{fatPct > 0 ? `${fatPct}%` : '--'}</b></span>
+        </div>
+      </div>
+      <div style={{ width: '100%', height: '3px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden', marginTop: '5px' }}>
+        <div
+          style={{
+            height: '100%',
+            width: `${Math.min(100, (Math.min(weightCurrent, targetWeight) / Math.max(weightCurrent, targetWeight)) * 100)}%`,
+            background: '#ec4899',
+            transition: 'width 0.3s'
+          }}
+        ></div>
+      </div>
+    </div>
+  );
+
+  // 6. History Card
+  const renderHistoryCard = (isWide) => (
+    <div
+      onClick={() => setShowHistoryModal(true)}
+      className="glass-panel"
+      style={{
+        padding: isWide ? '10px 14px' : '7px 12px',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        cursor: 'pointer',
+        minWidth: 0
+      }}
+      title="Visualizza lo storico di tutti i giorni registrati"
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: isWide ? '20px' : '15px' }}>📊</span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Storico Dati</span>
+          <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>({historyList.length} gg)</span>
+        </div>
+      </div>
+      <span style={{ color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 'bold' }}>Apri ▶</span>
+    </div>
+  );
+
   return (
-    <section id="section-nutrition" className="section active">
+    <section
+      id="section-nutrition"
+      className="section active"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+        justifyContent: 'space-between',
+        boxSizing: 'border-box'
+      }}
+    >
       {/* Tab Header with Circle Switcher (🛒 in Health / 🍎 in Shopping) */}
-      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: shouldUseWide ? '12px' : '6px', flexShrink: 0 }}>
+        <h2 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           {activeMainTab === 'health' ? '🍎 Diario della salute' : '🛒 Lista della Spesa'}
         </h2>
 
@@ -1000,13 +1300,13 @@ export default function NutritionTab({
         <button
           onClick={() => setActiveMainTab(activeMainTab === 'health' ? 'shopping' : 'health')}
           style={{
-            width: '38px',
-            height: '38px',
+            width: '34px',
+            height: '34px',
             borderRadius: '50%',
             background: 'var(--bg-secondary)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-primary)',
-            fontSize: '18px',
+            fontSize: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1023,296 +1323,43 @@ export default function NutritionTab({
 
       {/* TAB 1: DIARIO DELLA SALUTE */}
       {activeMainTab === 'health' && (
-        <>
-          {/* Main Calorie Dashboard */}
-          <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Allenamento = Rimaste</div>
-              </div>
+        shouldUseWide ? (
+          /* TABLET & WIDE LANDSCAPE 2-COLUMN DASHBOARD */
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 1.15fr) minmax(280px, 1fr)', gap: '10px', height: '100%', minHeight: 0, overflowY: 'auto' }}>
+            {/* Left Column: Calorie Dashboard + Body Weight */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0, justifyContent: 'space-between' }}>
+              {renderCalorieCard(true)}
+              {renderWeightCard(true)}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
-              {/* Calorie Progress Ring (Tap to open Quick Meal & Online Search Modal) */}
-              <div
-                onClick={() => setShowQuickMealModal(true)}
-                style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                title="Tocca per inserire pasto rapido o cercare online"
-              >
-                <svg width="130" height="130" viewBox="0 0 140 140">
-                  <circle
-                    cx="70"
-                    cy="70"
-                    r={radius}
-                    fill="transparent"
-                    stroke="var(--bg-secondary)"
-                    strokeWidth="9"
-                  />
-                  <circle
-                    cx="70"
-                    cy="70"
-                    r={radius}
-                    fill="transparent"
-                    stroke="var(--accent-primary)"
-                    strokeWidth="9"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={dashoffset}
-                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                  />
-                </svg>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '22px', fontWeight: 'bold', fontFamily: 'Orbitron, sans-serif', color: 'var(--text-primary)' }}>{caloriesRemaining}</span>
-                  <span style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    Rimaste
-                  </span>
-                  <span style={{ fontSize: '8.5px', color: '#38bdf8', marginTop: '2px', fontWeight: 'bold', letterSpacing: '0.2px' }}>
-                    + Inserisci
-                  </span>
-                </div>
+            {/* Right Column: 3 Micro-Trackers + History */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0, justifyContent: 'space-between' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                {renderStepsCard(true)}
+                {renderProteinCard(true)}
+                {renderWaterCard(true)}
               </div>
-
-              {/* Calorie Stats Info & Goal Launcher */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: '150px' }}>
-                {/* 1) Obiettivo Card (Clean layout, no extra configure text) */}
-                <div
-                  onClick={handleOpenGoalsModal}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Configura obiettivi e calcola fabbisogno TDEE"
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '15px' }}>🚩</span>
-                    <div>
-                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Obiettivo</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{calorieGoal} kcal</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2) Cibo Consumato Card (Opens meals registry to log or pick from memory) */}
-                <div
-                  onClick={() => setShowMealsModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Apri registro pasti per inserire o scegliere cibi dalla memoria"
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '15px' }}>🍴</span>
-                    <div>
-                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Cibo Consumato</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{caloriesConsumed} kcal</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3) Bruciate Card (Clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
-                {/* 3) Bruciate Card (Clean layout, no +100🔥 legend, clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
-                <div
-                  onClick={() => setShowExercisesModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Apri registro allenamenti"
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setHealth(prev => ({
-                          ...prev,
-                          calories: { ...prev.calories, burned: (prev.calories.burned || 0) + 100 }
-                        }));
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      title="Tocca la fiamma per aggiungere +100 kcal bruciate"
-                    >
-                      🔥
-                    </button>
-                    <div>
-                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bruciate</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f97316' }}>{caloriesBurned} kcal</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {renderHistoryCard(true)}
             </div>
           </div>
+        ) : (
+          /* SMARTPHONE PORTRAIT: SINGLE SCREEN DASHBOARD (ZERO SCROLLING) */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', height: '100%', minHeight: 0, justifyContent: 'space-between' }}>
+            {/* 1. Bilancio Calorico */}
+            {renderCalorieCard(false)}
 
-          {/* Row: Steps + Protein + Water */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-            {/* Steps card */}
-            <div
-              onClick={() => onOpenModal('health_steps', { currentSteps: stepsCurrent, goalSteps: stepsGoal })}
-              className="glass-panel"
-              style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-            >
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Passi</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0 2px 0' }}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      quickAddSteps(1000);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    title="Tocca la scarpa per aggiungere +1.000 passi"
-                  >
-                    👟
-                  </button>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stepsCurrent.toLocaleString()}</span>
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>Obiettivo: {stepsGoal.toLocaleString()}</div>
-              </div>
-
-              <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${stepsPct}%`, background: 'var(--accent-primary)', transition: 'width 0.3s' }}></div>
-                </div>
-              </div>
+            {/* 2. 2x2 Grid of 4 Key Trackers: Passi, Proteine, Acqua, Peso */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              {renderStepsCard(false)}
+              {renderProteinCard(false)}
+              {renderWaterCard(false)}
+              {renderWeightCard(false)}
             </div>
 
-            {/* Protein card */}
-            <div
-              onClick={() => onOpenModal('health_protein', { proteinsCurrent, proteinsGoal, meals: health.meals })}
-              className="glass-panel"
-              style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-            >
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Proteine</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', margin: '6px 0 2px 0' }}>
-                  <span style={{ fontSize: '16px' }}>🍗</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{proteinsCurrent}</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>g</span>
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>Obiettivo: {proteinsGoal}g</div>
-              </div>
-
-              <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${proteinsPct}%`, background: '#eab308', transition: 'width 0.3s' }}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Water card */}
-            <div
-              onClick={() => onOpenModal('health_water', { waterCurrent, waterGoal })}
-              className="glass-panel"
-              style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-            >
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Acqua</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0 2px 0' }}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      quickAddWater(1);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    title="Tocca il bicchiere per aggiungere 0.2L (+1 bicchiere)"
-                  >
-                    🥛
-                  </button>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{(waterCurrent * 0.2).toFixed(1)}</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>L</span>
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {waterCurrent}/{waterGoal} bicchieri (0.2L)
-                </div>
-              </div>
-
-              <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${waterPct}%`, background: '#06b6d4', transition: 'width 0.3s' }}></div>
-                </div>
-              </div>
-            </div>
+            {/* 3. Storico Dati Bar */}
+            {renderHistoryCard(false)}
           </div>
-
-          {/* Row: Weight + History */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-            {/* Weight card */}
-            <div
-              onClick={() => onOpenModal('weight', {
-                current: weightCurrent,
-                target: targetWeight,
-                currentFat: fatPct,
-                currentLean: leanPct,
-                calorieGoal,
-                proteinGoal: proteinsGoal
-              })}
-              className="glass-panel"
-              style={{ padding: '12px', cursor: 'pointer' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Peso Corporeo</div>
-                <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>Target: {targetWeight} kg</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '6px 0 4px 0' }}>
-                <span style={{ fontSize: '16px' }}>⚖️</span>
-                <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{weightCurrent}</span>
-                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>kg</span>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                <span>Magra: <b>{leanPct > 0 ? `${leanPct}%` : '--'}</b></span>
-                <span>Grassa: <b>{fatPct > 0 ? `${fatPct}%` : '--'}</b></span>
-              </div>
-              <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${Math.min(100, (Math.min(weightCurrent, targetWeight) / Math.max(weightCurrent, targetWeight)) * 100)}%`,
-                    background: '#ec4899',
-                    transition: 'width 0.3s'
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            {/* History button card */}
-            <div
-              onClick={() => setShowHistoryModal(true)}
-              className="glass-panel"
-              style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '24px' }}>📊</span>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Storico Dati</h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '9px', color: 'var(--text-muted)' }}>{historyList.length} giorni registrati</p>
-                </div>
-              </div>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>▶</span>
-            </div>
-          </div>
-        </>
+        )
       )}
 
       {/* TAB 2: LISTA DELLA SPESA (DEDICATED FULL VIEW) */}
