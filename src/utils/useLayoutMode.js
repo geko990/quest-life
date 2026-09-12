@@ -58,8 +58,8 @@ export function useLayoutMode(settings = {}) {
   const screenModeSetting = settings?.screenMode || 'auto';
   const { width, height, isLandscape: rawLandscape } = screenInfo;
 
-  // Real device detection (tablets like iPad, Surface, foldables or wider screens)
-  const detectedIsTablet = (width >= 600 && height >= 500) || (height >= 600 && width >= 500);
+  // Real device detection
+  const detectedIsTablet = (width >= 768 && height >= 600) || (height >= 768 && width >= 600);
   const detectedIsLandscape = rawLandscape;
 
   // Apply user manual setting override if specified
@@ -92,8 +92,6 @@ export function useLayoutMode(settings = {}) {
   const isPhoneLandscape = effectiveLandscape && !effectiveTablet;
   const isTabletPortrait = effectiveTablet && !effectiveLandscape;
   const isTabletLandscape = effectiveTablet && effectiveLandscape;
-  const isNavRail = effectiveLandscape || (effectiveTablet && width >= 600);
-  const isWideLayout = effectiveLandscape || effectiveTablet || width >= 600;
 
   // Update HTML data attributes for pure CSS styling hooks
   useEffect(() => {
@@ -114,8 +112,6 @@ export function useLayoutMode(settings = {}) {
     isPhoneLandscape,
     isTabletPortrait,
     isTabletLandscape,
-    isNavRail,
-    isWideLayout,
     layoutMode: effectiveLayout,
     screenModeSetting
   };
