@@ -1069,13 +1069,38 @@ export default function App() {
   const handleExport = async () => {
     try {
       const fullStateObj = {
-        player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings
+        player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings, finances
       };
       const jsonStr = JSON.stringify(fullStateObj, null, 2);
       const filename = 'quest-life-backup.json';
+
+      // 1. If File System Access API is supported (Desktop Chrome, Edge, modern Opera), prompt Save Picker
+      // This allows the user to select the exact file and cleanly overwrite the previous backup without duplicates
+      if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+        try {
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{
+              description: 'Quest Life Backup (JSON)',
+              accept: { 'application/json': ['.json'] }
+            }]
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(jsonStr);
+          await writable.close();
+          return;
+        } catch (pickerErr) {
+          // If the user deliberately canceled the save dialog, do not trigger fallback
+          if (pickerErr.name === 'AbortError') {
+            return;
+          }
+          console.warn('showSaveFilePicker failed, trying share/download fallback:', pickerErr);
+        }
+      }
+
       const blob = new Blob([jsonStr], { type: 'application/json' });
 
-      // iOS / Android Web Share API support (opens native Share sheet to save directly to Files / Drive)
+      // 2. iOS / Android Web Share API support (opens native Share sheet to save directly to Files / Drive)
       if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/json' })] })) {
         try {
           const file = new File([blob], filename, { type: 'application/json' });
@@ -1091,7 +1116,7 @@ export default function App() {
         return;
       }
 
-      // Standard Blob URL download fallback
+      // 3. Standard Blob URL download fallback (single file trigger)
       const url = URL.createObjectURL(blob);
       const dlAnchorElem = document.createElement('a');
       dlAnchorElem.href = url;
@@ -1131,6 +1156,9 @@ export default function App() {
           setInventory(sanitized.inventory);
           setHealth(sanitized.health);
           setSettings(sanitized.settings);
+          if (sanitized.finances) {
+            setFinances(sanitized.finances);
+          }
 
           alert("📥 Dati importati correttamente!");
         } catch (err) {
