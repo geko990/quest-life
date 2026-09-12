@@ -4076,11 +4076,55 @@ textarea {
 }
 
 /* ============================================
-   RESPONSIVE
+   RESPONSIVE (LANDSCAPE & TABLET ARCHITECTURE)
    ============================================ */
 
+/* Landscape & Tablet Multi-Column Responsive Grid */
+@media (orientation: landscape), (min-width: 768px) {
+    .habits-list,
+    .oneshot-list,
+    .quests-list {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 12px !important;
+    }
+}
+
+[data-orientation="landscape"] .habits-list,
+[data-orientation="landscape"] .oneshot-list,
+[data-orientation="landscape"] .quests-list,
+[data-layout="tablet"] .habits-list,
+[data-layout="tablet"] .oneshot-list,
+[data-layout="tablet"] .quests-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 12px !important;
+}
+
+/* Safe Area Insets for Mobile Landscape (iPhone notch / Android camera) */
+@supports (padding-left: env(safe-area-inset-left)) {
+    .app-nav-rail {
+        padding-left: max(4px, env(safe-area-inset-left)) !important;
+    }
+    .orientation-landscape .content-area {
+        padding-right: max(16px, env(safe-area-inset-right)) !important;
+    }
+    .orientation-landscape .app-header {
+        padding-right: max(14px, env(safe-area-inset-right)) !important;
+    }
+}
+
+/* Landscape Navigation Rail Animations */
+.app-nav-rail button {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.app-nav-rail button:active {
+    transform: scale(0.95);
+}
+
 @media (min-width: 481px) {
-    .app-container {
+    .app-container:not(.orientation-landscape) {
         border-left: 1px solid var(--glass-border);
         border-right: 1px solid var(--glass-border);
     }

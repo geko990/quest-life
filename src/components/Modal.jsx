@@ -2334,6 +2334,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const isExpandedModal = ['quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
   const headerObj = getHeaderInfo();
 
+  const isLandscape = typeof window !== 'undefined' && (window.innerWidth > window.innerHeight || window.matchMedia?.('(orientation: landscape)')?.matches);
+
   return (
     <div
       onClick={onClose}
@@ -2348,10 +2350,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: isExpandedModal ? 'auto' : '3 / 4',
-          maxWidth: isExpandedModal ? '440px' : '360px',
+          aspectRatio: (isExpandedModal || isLandscape) ? 'auto' : '3 / 4',
+          maxWidth: isExpandedModal ? '480px' : (isLandscape ? '440px' : '360px'),
           width: '92%',
-          maxHeight: isExpandedModal ? '94vh' : '88vh'
+          maxHeight: isExpandedModal ? '94dvh' : (isLandscape ? '94dvh' : '88vh')
         }}
       >
         {/* Header (Hidden for stat_detail, quest_detail, oneshot_detail, habit_detail, challenge_preview) */}

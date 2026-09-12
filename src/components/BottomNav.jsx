@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType }) {
+export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false }) {
   const lastClicksRef = useRef({});
 
   const doubleTapTargets = {
@@ -55,15 +55,120 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
     }
   };
 
+  // Landscape Navigation Rail View
+  if (isLandscape) {
+    return (
+      <nav
+        className="app-nav-rail"
+        style={{
+          width: '68px',
+          height: '100%',
+          background: 'var(--bg-secondary)',
+          borderRight: '1px solid var(--glass-border)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 4px',
+          boxShadow: '4px 0 16px rgba(0, 0, 0, 0.15)',
+          position: 'relative',
+          zIndex: 50,
+          flexShrink: 0,
+          boxSizing: 'border-box'
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '8px' }}>
+          {/* Hero Avatar at top of rail */}
+          {(() => {
+            const isCenterActive = activeTab === 'home';
+            return (
+              <button
+                onClick={() => handleItemClick('home')}
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  background: 'var(--accent-gradient, linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: isCenterActive ? '3px solid var(--accent-primary)' : '2px solid var(--glass-border)',
+                  boxShadow: isCenterActive ? '0 0 14px var(--accent-primary)' : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  cursor: 'pointer',
+                  transform: isCenterActive ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'all 0.2s ease',
+                  padding: 0,
+                  marginBottom: '4px'
+                }}
+                title="Scheda Eroe (Home)"
+              >
+                {avatarType === 'image' && avatarImage ? (
+                  <img
+                    src={avatarImage}
+                    alt="Avatar"
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '20px' }}>{avatarEmoji || '⚔️'}</span>
+                )}
+              </button>
+            );
+          })()}
+        </div>
+
+        {/* Other 4 Nav Items */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '6px', flex: 1, justifyContent: 'space-around', margin: '6px 0' }}>
+          {navItems.filter(i => !i.isCenter).map((item) => {
+            const isActive =
+              activeTab === item.id ||
+              (item.id === 'settings' && activeTab === 'finances') ||
+              (item.id === 'missions' && (activeTab === 'quests' || activeTab === 'oneshots')) ||
+              (item.id === 'nutrition' && activeTab === 'shopping');
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleItemClick(item.id)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  padding: '6px 2px',
+                  background: isActive ? 'rgba(124, 58, 237, 0.12)' : 'none',
+                  borderRadius: '12px',
+                  border: isActive ? '1px solid rgba(124, 58, 237, 0.25)' : '1px solid transparent',
+                  cursor: 'pointer',
+                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 'bold' : 'normal',
+                  transition: 'all 0.2s ease'
+                }}
+                title={item.label}
+              >
+                <span style={{ fontSize: '18px', marginBottom: '2px' }}>{item.icon}</span>
+                <span style={{ fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '58px' }}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    );
+  }
+
+  // Portrait Bottom Navigation Bar
   return (
     <nav
+      className="app-bottom-nav"
       style={{
         width: '100%',
         height: '60px',
         background: 'var(--bg-secondary)',
         borderTop: '1px solid var(--glass-border)',
         display: 'flex',
-        justify: 'space-around',
+        justifyContent: 'space-around',
         alignItems: 'center',
         boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
         position: 'relative',

@@ -628,6 +628,31 @@ export default function SettingsTab({
                   })}
                 </div>
               </div>
+
+              {/* Screen Layout Mode Selection (Orientamento & Tablet) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                    📱 Disposizione Schermo & Layout
+                  </label>
+                  <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+                    {safeSettings.screenMode === 'landscape' ? 'Orizzontale' : safeSettings.screenMode === 'tablet' ? 'Tablet' : safeSettings.screenMode === 'portrait' ? 'Verticale' : 'Auto'}
+                  </span>
+                </div>
+                <select
+                  value={safeSettings.screenMode || 'auto'}
+                  onChange={(e) => updateSetting('screenMode', e.target.value)}
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
+                >
+                  <option value="auto">🔄 Automatica (in base all'orientamento)</option>
+                  <option value="landscape">🖥️ Landscape (Navigation Rail a sinistra)</option>
+                  <option value="tablet">📱 Tablet Mode (iPad, Surface/Duo, Android)</option>
+                  <option value="portrait">📱 Smartphone Portrait (Verticale fisso)</option>
+                </select>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  In Landscape la barra di navigazione si sposta a sinistra massimizzando lo spazio verticale per le missioni e la schermata eroe.
+                </div>
+              </div>
             </div>
           )}
         </div>

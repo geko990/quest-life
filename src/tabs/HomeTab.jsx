@@ -33,7 +33,8 @@ export default function HomeTab({
   onOpenStatDetail,
   onOpenWorkoutsLog,
   onOpenMealsLog,
-  settings = {}
+  settings = {},
+  isLandscape = false
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -410,7 +411,16 @@ export default function HomeTab({
     });
 
     return (
-      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', maxWidth: '340px', maxHeight: '310px', margin: '0 auto' }}>
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        style={{
+          width: '100%',
+          height: '100%',
+          maxWidth: isLandscape ? '300px' : '340px',
+          maxHeight: isLandscape ? '270px' : '310px',
+          margin: '0 auto'
+        }}
+      >
         {gridCircles}
         {axisLines}
         {playerPoints && (
@@ -474,8 +484,17 @@ export default function HomeTab({
   return (
     <section
       id="section-home"
-      className="section active"
-      style={{
+      className={`section active ${isLandscape ? 'home-landscape' : 'home-portrait'}`}
+      style={isLandscape ? {
+        display: 'grid',
+        gridTemplateColumns: 'minmax(280px, 1.15fr) minmax(260px, 1fr)',
+        gap: '12px',
+        height: '100%',
+        minHeight: '100%',
+        maxHeight: '100%',
+        overflowY: 'auto',
+        boxSizing: 'border-box'
+      } : {
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
@@ -496,24 +515,28 @@ export default function HomeTab({
         onClick={handleChartClick}
         style={{
           padding: '8px 12px',
-          flex: '1.4',
+          flex: isLandscape ? 'none' : '1.4',
+          height: isLandscape ? '100%' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           userSelect: 'none',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          boxSizing: 'border-box'
         }}
         title="Tieni premuto o tocca per gestire visibilità e aggiungere attributi"
       >
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {renderRadarChart()}
         </div>
       </div>
 
-      {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
-      <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
+      {/* Right Column in Landscape (Azioni del Giorno + Sostentamento) */}
+      <div style={isLandscape ? { display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
+        {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
+        <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
@@ -944,6 +967,7 @@ export default function HomeTab({
           )}
         </div>
       )}
+      </div>
 
       {/* Stat Visibility & Management Modal */}
       {showVisibilityModal && (

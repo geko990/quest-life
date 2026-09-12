@@ -325,6 +325,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
     );
   };
 
+  const isLandscape = typeof window !== 'undefined' && (window.innerWidth > window.innerHeight || window.matchMedia?.('(orientation: landscape)')?.matches);
+
   return (
     <div
       onClick={onClose}
@@ -348,15 +350,15 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="modal w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
+        className="modal w-full rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
         style={{
           background: 'var(--bg-card)',
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
           width: '100%',
-          maxWidth: '420px',
-          padding: '14px 16px',
+          maxWidth: isLandscape ? '560px' : '420px',
+          padding: isLandscape ? '10px 14px' : '14px 16px',
           maxHeight: '96dvh',
           overflowY: 'auto',
           borderRadius: '24px',
@@ -373,7 +375,13 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '10px' }}>
+        <div style={{
+          display: isLandscape ? 'grid' : 'flex',
+          gridTemplateColumns: isLandscape ? '1fr 1fr' : undefined,
+          flexDirection: isLandscape ? undefined : 'column',
+          gap: '6px',
+          marginBottom: '10px'
+        }}>
           {renderSlot('action', 'Es: Completare il report')}
           {renderSlot('bonus', 'Es: Chiamare il medico')}
           {renderSlot('movement', 'Es: Passeggiata 30min')}
