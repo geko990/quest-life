@@ -113,8 +113,8 @@ export function getInitialState() {
         { id: 'fd_cornetto', emoji: '🥐', name: 'Cornetto / Brioche', baseGrams: 100, baseCalories: 410, baseProteins: 8, pieceCalories: 260, pieceProteins: 5.1, category: 'breakfast' }
       ],
       exerciseDatabase: [
-        { id: 'ed1', emoji: '🏃', name: 'Camminata', baseCount: 20, baseCalories: 100, xpReward: 10, statId: 'vit' },
-        { id: 'ed2', emoji: '💪', name: 'Flessioni', baseCount: 10, baseCalories: 50, xpReward: 15, statId: 'str' }
+        { id: 'ed1', emoji: '🏃', name: 'Camminata', baseCount: 20, baseCalories: 100, baseSteps: 2000, xpReward: 10, statId: 'vit' },
+        { id: 'ed2', emoji: '💪', name: 'Flessioni', baseCount: 10, baseCalories: 50, baseSteps: 0, xpReward: 15, statId: 'str' }
       ],
       lastUpdate: null
     },
@@ -266,6 +266,16 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     defaults.health.foodDatabase.forEach(defItem => {
       if (!state.health.foodDatabase.some(f => f.id === defItem.id)) {
         state.health.foodDatabase.push(defItem);
+      }
+    });
+  }
+
+  if (!state.health.exerciseDatabase || state.health.exerciseDatabase.length === 0) {
+    state.health.exerciseDatabase = [...defaults.health.exerciseDatabase];
+  } else {
+    defaults.health.exerciseDatabase.forEach(defItem => {
+      if (!state.health.exerciseDatabase.some(e => e.id === defItem.id)) {
+        state.health.exerciseDatabase.push(defItem);
       }
     });
   }
