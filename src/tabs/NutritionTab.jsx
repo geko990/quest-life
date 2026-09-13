@@ -133,6 +133,10 @@ export default function NutritionTab({
   }, [initialModal]);
 
   const [activeInventoryTab, setActiveInventoryTab] = useState('food'); // 'food' | 'home'
+  const [editingShopItemId, setEditingShopItemId] = useState(null);
+  const [editingShopItemName, setEditingShopItemName] = useState('');
+  const [editingShopItemEmoji, setEditingShopItemEmoji] = useState('');
+  const [editingShopItemTab, setEditingShopItemTab] = useState('food');
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Edit History Entry States
@@ -681,6 +685,52 @@ export default function NutritionTab({
       [activeInventoryTab]: [...(prev[activeInventoryTab] || []), newItem]
     }));
     setNewShopItemName('');
+  };
+
+  const handleStartEditShopItem = (item) => {
+    setEditingShopItemId(item.id);
+    setEditingShopItemName(item.name || '');
+    setEditingShopItemEmoji(item.emoji || (activeInventoryTab === 'food' ? '🍏' : '🏠'));
+    setEditingShopItemTab(activeInventoryTab);
+  };
+
+  const handleSaveEditShopItem = (itemId) => {
+    if (!editingShopItemName.trim()) return;
+    const targetTab = editingShopItemTab || activeInventoryTab;
+    setInventory(prev => {
+      const currentItem = (prev[activeInventoryTab] || []).find(item => item.id === itemId);
+      if (!currentItem) return prev;
+
+      const updatedItem = {
+        ...currentItem,
+        name: editingShopItemName.trim(),
+        emoji: editingShopItemEmoji.trim() || currentItem.emoji || (targetTab === 'food' ? '🍏' : '🏠')
+      };
+
+      if (targetTab === activeInventoryTab) {
+        return {
+          ...prev,
+          [activeInventoryTab]: (prev[activeInventoryTab] || []).map(item =>
+            item.id === itemId ? updatedItem : item
+          )
+        };
+      } else {
+        return {
+          ...prev,
+          [activeInventoryTab]: (prev[activeInventoryTab] || []).filter(item => item.id !== itemId),
+          [targetTab]: [...(prev[targetTab] || []), updatedItem]
+        };
+      }
+    });
+    setEditingShopItemId(null);
+    setEditingShopItemName('');
+    setEditingShopItemEmoji('');
+  };
+
+  const handleCancelEditShopItem = () => {
+    setEditingShopItemId(null);
+    setEditingShopItemName('');
+    setEditingShopItemEmoji('');
   };
 
   const handleOpenGoalsModal = () => {
@@ -1449,25 +1499,49 @@ export default function NutritionTab({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>🛒 Lista della Spesa</h3>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{completedShopCount} su {activeInventory.length} acquistati</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                <span>{completedShopCount} su {activeInventory.length} acquistati</span>
+                {completedShopCount > 0 && (
+                  <button
+                    onClick={() => clearCompletedInventory(activeInventoryTab)}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
+                  >
+                    • Rimuovi completati
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Category subtabs */}
             <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px' }}>
               <button
-                onClick={() => setActiveInventoryTab('food')}
+                onClick={() => {
+                  setActiveInventoryTab('food');
+                  setEditingShopItemId(null);
+                }}
                 style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: activeInventoryTab === 'food' ? 'var(--accent-primary)' : 'transparent', color: activeInventoryTab === 'food' ? '#fff' : 'var(--text-secondary)' }}
               >
                 🍏 Cibo
               </button>
               <button
-                onClick={() => setActiveInventoryTab('home')}
+                onClick={() => {
+                  setActiveInventoryTab('home');
+                  setEditingShopItemId(null);
+                }}
                 style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: activeInventoryTab === 'home' ? 'var(--accent-primary)' : 'transparent', color: activeInventoryTab === 'home' ? '#fff' : 'var(--text-secondary)' }}
               >
                 🏠 Casa
               </button>
             </div>
           </div>
+
+          {/* Super User Banner */}
+          {settings?.allowPastEdits && (
+            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#eab308', background: 'rgba(234, 179, 8, 0.12)', padding: '6px 10px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed rgba(234, 179, 8, 0.4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🔓</span>
+              <span><strong>Super User Attivo:</strong> tocca ✏️ su qualsiasi elemento per modificarne nome, emoji o categoria.</span>
+            </div>
+          )}
 
           {/* Inline Add Input Form */}
           <form onSubmit={handleQuickAddShopItem} style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
@@ -1519,40 +1593,174 @@ export default function NutritionTab({
               activeInventory.map((item) => (
                 <div
                   key={item.id}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 12px',
+                    background: editingShopItemId === item.id ? 'var(--bg-card)' : 'var(--bg-secondary)',
+                    borderRadius: '10px',
+                    border: editingShopItemId === item.id ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <div
-                    onClick={() => toggleInventoryItem(activeInventoryTab, item.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1 }}
-                  >
-                    <div
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--glass-border)',
-                        background: item.completed ? 'var(--accent-primary)' : 'transparent',
-                        color: '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '11px',
-                        fontWeight: 'bold'
+                  {editingShopItemId === item.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSaveEditShopItem(item.id);
                       }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}
                     >
-                      {item.completed && '✓'}
-                    </div>
-                    <span style={{ fontSize: '13px', color: 'var(--text-primary)', textDecoration: item.completed ? 'line-through' : 'none', opacity: item.completed ? 0.5 : 1 }}>
-                      {item.emoji} {item.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => deleteInventoryItem(activeInventoryTab, item.id)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}
-                    title="Elimina"
-                  >
-                    🗑️
-                  </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}>
+                        <input
+                          type="text"
+                          value={editingShopItemEmoji}
+                          onChange={(e) => setEditingShopItemEmoji(e.target.value)}
+                          style={{
+                            width: '38px',
+                            height: '36px',
+                            textAlign: 'center',
+                            fontSize: '16px',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--accent-primary)',
+                            borderRadius: '8px',
+                            outline: 'none',
+                            flexShrink: 0
+                          }}
+                          title="Emoji elemento"
+                        />
+                        <input
+                          type="text"
+                          value={editingShopItemName}
+                          onChange={(e) => setEditingShopItemName(e.target.value)}
+                          autoFocus
+                          style={{
+                            flex: 1,
+                            height: '36px',
+                            padding: '0 10px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--accent-primary)',
+                            borderRadius: '8px',
+                            outline: 'none'
+                          }}
+                          placeholder="Nome elemento..."
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setEditingShopItemTab(prev => prev === 'food' ? 'home' : 'food')}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            border: '1px solid var(--glass-border)',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-secondary)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Cambia categoria (Cibo o Casa)"
+                        >
+                          <span>Categoria:</span>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>
+                            {editingShopItemTab === 'food' ? '🍏 Cibo' : '🏠 Casa'}
+                          </span>
+                        </button>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={handleCancelEditShopItem}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              background: 'rgba(239, 68, 68, 0.12)',
+                              color: '#ef4444',
+                              border: '1px solid rgba(239, 68, 68, 0.25)',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            Annulla
+                          </button>
+                          <button
+                            type="submit"
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              background: 'var(--accent-primary)',
+                              color: '#fff',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            ✓ Salva
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div
+                        onClick={() => toggleInventoryItem(activeInventoryTab, item.id)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1, minWidth: 0, paddingRight: '8px' }}
+                      >
+                        <div
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--glass-border)',
+                            background: item.completed ? 'var(--accent-primary)' : 'transparent',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            flexShrink: 0
+                          }}
+                        >
+                          {item.completed && '✓'}
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--text-primary)', textDecoration: item.completed ? 'line-through' : 'none', opacity: item.completed ? 0.5 : 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.emoji} {item.name}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        {settings?.allowPastEdits && (
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditShopItem(item)}
+                            style={{ background: 'none', border: 'none', color: '#eab308', cursor: 'pointer', fontSize: '13px', padding: '2px 4px' }}
+                            title="Modifica elemento (Super User)"
+                          >
+                            ✏️
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteInventoryItem(activeInventoryTab, item.id)}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', padding: '2px 4px' }}
+                          title="Elimina"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))
             )}
