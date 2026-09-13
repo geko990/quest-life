@@ -198,7 +198,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       } else if (activeT === 'food') {
         setForm({ emoji: '🍎', name: '', baseGrams: 100, baseCalories: 100, baseProteins: 10, category: 'snack' });
       } else if (activeT === 'exercise') {
-        setForm({ emoji: '🏃', name: '', baseCount: 10, baseCalories: 50, xpReward: 10, statId: 'str' });
+        setForm({ emoji: '🏃', name: '', baseCount: 10, baseCalories: 50, baseSteps: '', xpReward: 10, statId: 'str', logToday: true });
       } else if (activeT === 'weight') {
         setForm({ current: 75, target: 70, currentLean: 0, targetLean: 0, currentFat: 0, targetFat: 0 });
       } else if (activeT?.startsWith('health_')) {
@@ -1503,48 +1503,64 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder="Es: Push-ups, Corsa..."
+                  placeholder="Es: Corsa, Beach Volley, Flessioni..."
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Reps/Min</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">Reps / Durata (min)</label>
                 <input
                   type="number"
                   name="baseCount"
-                  value={form.baseCount || 10}
+                  value={form.baseCount ?? 10}
                   onChange={handleNumberChange}
                   required
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Kcal Bruciate</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">🔥 Kcal Bruciate</label>
                 <input
                   type="number"
                   name="baseCalories"
-                  value={form.baseCalories || 0}
-                  onChange={handleNumberChange}
-                  required
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">XP Premio</label>
-                <input
-                  type="number"
-                  name="xpReward"
-                  value={form.xpReward || 5}
+                  value={form.baseCalories ?? 0}
                   onChange={handleNumberChange}
                   required
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-text-secondary font-bold mb-1">👟 Passi (Opzionale)</label>
+                <input
+                  type="number"
+                  name="baseSteps"
+                  value={form.baseSteps ?? ''}
+                  onChange={handleNumberChange}
+                  placeholder="Es: 3500"
+                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-text-secondary font-bold mb-1">⭐ XP Premio</label>
+                <input
+                  type="number"
+                  name="xpReward"
+                  value={form.xpReward ?? 10}
+                  onChange={handleNumberChange}
+                  required
+                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Stat. Correlata</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1">Statistica Correlata</label>
               <select
                 name="statId"
                 value={form.statId || ''}
@@ -1555,6 +1571,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="mt-1 p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--glass-border)] flex items-center justify-between">
+              <div className="flex flex-col pr-2">
+                <span className="text-xs font-bold text-[var(--text-primary)]">Registra come svolto oggi</span>
+                <span className="text-[10px] text-text-secondary">Aggiunge subito calorie{form.baseSteps ? ', passi' : ''} e XP ad oggi</span>
+              </div>
+              <input
+                type="checkbox"
+                name="logToday"
+                checked={form.logToday ?? (!editData)}
+                onChange={handleChange}
+                className="w-5 h-5 accent-accent-primary cursor-pointer rounded shrink-0"
+              />
             </div>
           </div>
         );

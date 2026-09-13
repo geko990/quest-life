@@ -307,7 +307,8 @@ export default function App() {
         proteins: { ...prev.proteins, consumed: 0 },
         steps: { ...prev.steps, current: 0 },
         water: { ...prev.water, consumed: 0 },
-        meals: { breakfast: [], lunch: [], dinner: [], snack: [], cheat: [] }
+        meals: { breakfast: [], lunch: [], dinner: [], snack: [], cheat: [] },
+        workouts: []
       };
     });
 
@@ -921,6 +922,66 @@ export default function App() {
           foodDatabase: updatedDb
         };
       });
+    } else if (modalType === 'exercise' || targetType === 'exercise') {
+      const exId = editData?.id || ('ed_' + Date.now());
+      const baseSteps = (formData.baseSteps !== '' && formData.baseSteps !== null && formData.baseSteps !== undefined)
+        ? Number(formData.baseSteps)
+        : 0;
+      const newExercise = {
+        id: exId,
+        emoji: formData.emoji || '🏃',
+        name: formData.name || 'Esercizio',
+        baseCount: Number(formData.baseCount) || 10,
+        baseCalories: Number(formData.baseCalories) || 0,
+        baseSteps: baseSteps,
+        xpReward: Number(formData.xpReward) || 10,
+        statId: formData.statId || 'str'
+      };
+
+      const isEdit = Boolean(editData?.id);
+      const shouldLogToday = formData.logToday === true || (formData.logToday !== false && !isEdit);
+
+      setHealth(prev => {
+        const existingDb = prev.exerciseDatabase || [];
+        const updatedDb = isEdit
+          ? existingDb.map(e => (e.id === newExercise.id ? newExercise : e))
+          : [...existingDb, newExercise];
+
+        if (shouldLogToday) {
+          const newWorkout = {
+            id: Date.now().toString(),
+            name: newExercise.name,
+            emoji: newExercise.emoji,
+            baseCalories: newExercise.baseCalories,
+            baseSteps: newExercise.baseSteps || 0,
+            statId: newExercise.statId,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+
+          return {
+            ...prev,
+            exerciseDatabase: updatedDb,
+            calories: {
+              ...prev.calories,
+              burned: (prev.calories?.burned || 0) + newExercise.baseCalories
+            },
+            steps: {
+              ...prev.steps,
+              current: (prev.steps?.current || 0) + (newExercise.baseSteps || 0)
+            },
+            workouts: [...(prev.workouts || []), newWorkout]
+          };
+        }
+
+        return {
+          ...prev,
+          exerciseDatabase: updatedDb
+        };
+      });
+
+      if (shouldLogToday) {
+        handleRewardXp(newExercise.statId, newExercise.xpReward, false, newExercise.name);
+      }
     } else if (modalType === 'home') {
       // Add shopping list house item
       const newItem = {
@@ -1014,6 +1075,13 @@ export default function App() {
         setHealth(prev => ({
           ...prev,
           foodDatabase: (prev.foodDatabase || []).filter(f => f.id !== targetId)
+        }));
+      }
+    } else if (targetType === 'exercise' || modalType === 'exercise') {
+      if (targetId) {
+        setHealth(prev => ({
+          ...prev,
+          exerciseDatabase: (prev.exerciseDatabase || []).filter(e => e.id !== targetId)
         }));
       }
     }

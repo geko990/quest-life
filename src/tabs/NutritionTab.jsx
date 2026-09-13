@@ -586,33 +586,55 @@ export default function NutritionTab({
 
   // Add exercise directly
   const handleLogExercise = (exItem) => {
+    const stepsToAdd = Number(exItem.baseSteps) || 0;
+    const caloriesToAdd = Number(exItem.baseCalories) || 0;
     const newWorkout = {
       id: Date.now().toString(),
       name: exItem.name,
       emoji: exItem.emoji,
-      baseCalories: exItem.baseCalories,
+      baseCalories: caloriesToAdd,
+      baseSteps: stepsToAdd,
+      statId: exItem.statId,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        burned: (prev.calories.burned || 0) + exItem.baseCalories
+        burned: (prev.calories?.burned || 0) + caloriesToAdd
+      },
+      steps: {
+        ...prev.steps,
+        current: (prev.steps?.current || 0) + stepsToAdd
       },
       workouts: [...(prev.workouts || []), newWorkout]
     }));
     onRewardXp(exItem.statId, exItem.xpReward, false, exItem.name);
   };
 
-  const removeLoggedExercise = (workoutId, baseCalories) => {
+  const removeLoggedExercise = (workoutId, baseCalories, baseSteps = 0) => {
     setHealth(prev => ({
       ...prev,
       calories: {
         ...prev.calories,
-        burned: Math.max(0, (prev.calories.burned || 0) - baseCalories)
+        burned: Math.max(0, (prev.calories?.burned || 0) - (Number(baseCalories) || 0))
+      },
+      steps: {
+        ...prev.steps,
+        current: Math.max(0, (prev.steps?.current || 0) - (Number(baseSteps) || 0))
       },
       workouts: (prev.workouts || []).filter(w => w.id !== workoutId)
     }));
+  };
+
+  const handleDeleteExerciseFromDatabase = (ex) => {
+    if (!ex) return;
+    if (confirm(`Sei sicuro di voler eliminare "${ex.name}" dal database allenamenti?`)) {
+      setHealth(prev => ({
+        ...prev,
+        exerciseDatabase: (prev.exerciseDatabase || []).filter(e => e.id !== ex.id)
+      }));
+    }
   };
 
   // Shopping list items toggling
@@ -922,9 +944,14 @@ export default function NutritionTab({
                               {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
                             </span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{w.baseCalories} kcal</span>
+                              <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>
+                                +{w.baseCalories} kcal
+                                {w.baseSteps > 0 && (
+                                  <span style={{ marginLeft: '6px', color: '#38bdf8' }}>👟 +{w.baseSteps.toLocaleString()}</span>
+                                )}
+                              </span>
                               <button
-                                onClick={() => removeLoggedExercise(w.id, w.baseCalories)}
+                                onClick={() => removeLoggedExercise(w.id, w.baseCalories, w.baseSteps || 0)}
                                 style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
                                 title="Rimuovi allenamento"
                               >
@@ -964,6 +991,107 @@ export default function NutritionTab({
                           </div>
                         )}
                       </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Workout Database Section */}
+                <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
+                      Seleziona dal Database Allenamenti
+                    </h4>
+                    <button
+                      onClick={() => {
+                        if (onCloseOverlay) onCloseOverlay();
+                        setShowExercisesModal(false);
+                        onOpenModal('exercise');
+                      }}
+                      style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      ➕ Nuovo Esercizio
+                    </button>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="🔎 Cerca allenamento per nome..."
+                    style={{
+                      width: '100%',
+                      height: '34px',
+                      background: 'var(--bg-secondary)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '8px',
+                      padding: '0 10px',
+                      fontSize: '11px',
+                      marginBottom: '10px',
+                      outline: 'none'
+                    }}
+                  />
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {filteredExerciseDatabase.length === 0 ? (
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
+                    ) : (
+                      filteredExerciseDatabase.map((ex) => (
+                        <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
+                          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{ex.emoji}</span>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</span>
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                              Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal
+                              {ex.baseSteps > 0 && <span style={{ color: '#38bdf8', marginLeft: '4px' }}>• 👟 {ex.baseSteps.toLocaleString()} passi</span>}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <button
+                              onClick={() => {
+                                if (onCloseOverlay) onCloseOverlay();
+                                setShowExercisesModal(false);
+                                onOpenModal('exercise', ex);
+                              }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
+                              title="Modifica allenamento nel database"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteExerciseFromDatabase(ex)}
+                              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
+                              title="Elimina dal database"
+                            >
+                              🗑️
+                            </button>
+                            <button
+                              onClick={() => handleLogExercise(ex)}
+                              style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                background: 'var(--accent-primary)',
+                                color: '#ffffff',
+                                border: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
+                              }}
+                              title="Registra esercizio oggi"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>
@@ -1812,9 +1940,14 @@ export default function NutritionTab({
                             {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
                           </span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{w.baseCalories} kcal</span>
+                            <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>
+                              +{w.baseCalories} kcal
+                              {w.baseSteps > 0 && (
+                                <span style={{ marginLeft: '6px', color: '#38bdf8' }}>👟 +{w.baseSteps.toLocaleString()}</span>
+                              )}
+                            </span>
                             <button
-                              onClick={() => removeLoggedExercise(w.id, w.baseCalories)}
+                              onClick={() => removeLoggedExercise(w.id, w.baseCalories, w.baseSteps || 0)}
                               style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
                               title="Rimuovi allenamento"
                             >
@@ -1900,32 +2033,57 @@ export default function NutritionTab({
                   ) : (
                     filteredExerciseDatabase.map((ex) => (
                       <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
-                        <div>
-                          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{ex.emoji} {ex.name}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal</div>
+                        <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                          <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{ex.emoji}</span>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</span>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal
+                            {ex.baseSteps > 0 && <span style={{ color: '#38bdf8', marginLeft: '4px' }}>• 👟 {ex.baseSteps.toLocaleString()} passi</span>}
+                          </div>
                         </div>
-                        <button
-                          onClick={() => handleLogExercise(ex)}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '50%',
-                            background: 'var(--accent-primary)',
-                            color: '#ffffff',
-                            border: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
-                          }}
-                          title="Registra esercizio oggi"
-                        >
-                          +
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            onClick={() => {
+                              setShowExercisesModal(false);
+                              onOpenModal('exercise', ex);
+                            }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
+                            title="Modifica allenamento nel database"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExerciseFromDatabase(ex)}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
+                            title="Elimina dal database"
+                          >
+                            🗑️
+                          </button>
+                          <button
+                            onClick={() => handleLogExercise(ex)}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '50%',
+                              background: 'var(--accent-primary)',
+                              color: '#ffffff',
+                              border: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              flexShrink: 0,
+                              boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
+                            }}
+                            title="Registra esercizio oggi"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
