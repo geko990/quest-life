@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { getGameDate } from '../utils/helpers';
 
-export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [] }) {
+export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false }) {
   const [slots, setSlots] = useState({
     action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
     bonus: { emoji: '⚡', name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
@@ -14,17 +15,48 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
 
   useEffect(() => {
     if (isOpen) {
-      setSlots({
+      const defaultSlots = {
         action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
         bonus: { emoji: '⚡', name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
         movement: { emoji: '🚶', name: '', stars: 2, statId: 'str', secondaryStatId: '', oneshotId: null },
         reaction: { emoji: '🛡️', name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
-      });
+      };
+
+      const effectiveDate = targetDate || getGameDate();
+      (oneshots || []).forEach(o => {
+        if (o.fromDailyPlan && o.dailyPlanDate === effectiveDate && o.slotType && defaultSlots[o.slotType]) {
+            defaultSlots[o.slotType] = {
+              emoji: o.emoji || defaultSlots[o.slotType].emoji,
+              name: o.name || '',
+              stars: o.difficulty || o.stars || defaultSlots[o.slotType].stars,
+              statId: o.primaryTarget || defaultSlots[o.slotType].statId,
+              secondaryStatId: o.secondaryTarget || '',
+              oneshotId: o.id
+            };
+          }
+        });
+        (quests || []).forEach(q => {
+          (q.subquests || []).forEach(sq => {
+            if (sq.fromDailyPlan && sq.dailyPlanDate === effectiveDate && sq.slotType && defaultSlots[sq.slotType]) {
+              defaultSlots[sq.slotType] = {
+                emoji: q.emoji || '🏆',
+                name: sq.name || '',
+                stars: sq.difficulty || defaultSlots[sq.slotType].stars,
+                statId: q.primaryTarget || defaultSlots[sq.slotType].statId,
+                secondaryStatId: '',
+                questId: q.id,
+                subquestId: sq.id
+              };
+            }
+          });
+        });
+
+      setSlots(defaultSlots);
       setIsRolling(false);
       setDiceResult(null);
       setShowResult(false);
     }
-  }, [isOpen]);
+  }, [isOpen, targetDate]);
 
   if (!isOpen) return null;
 
@@ -91,7 +123,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
         setTimeout(() => {
-          onSave(slots, finalRoll);
+          onSave(slots, finalRoll, targetDate);
           onClose();
         }, 1500);
       }
@@ -368,10 +400,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '6px' }}>
           <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <span>🎲</span> È IL TUO TURNO!
+            <span>🎲</span> {isTomorrow ? 'PIANIFICA DOMANI' : 'È IL TUO TURNO!'}
           </h2>
           <p style={{ margin: '1px 0 0 0', fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-            Pianifica le tue azioni per oggi
+            {isTomorrow ? 'Prepara le tue azioni in anticipo per domani' : 'Pianifica le tue azioni per oggi'}
           </p>
         </div>
 

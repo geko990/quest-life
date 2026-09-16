@@ -133,6 +133,7 @@ export default function App() {
   const [showMottoModal, setShowMottoModal] = useState(false);
   const [mottoText, setMottoText] = useState(player.motto || '');
   const [showPlannerModal, setShowPlannerModal] = useState(false);
+  const [plannerTargetDate, setPlannerTargetDate] = useState(null);
   const [showGlobalWorkoutsLog, setShowGlobalWorkoutsLog] = useState(false);
   const [showGlobalMealsLog, setShowGlobalMealsLog] = useState(false);
   const [unlockedMedalCelebration, setUnlockedMedalCelebration] = useState(null);
@@ -384,7 +385,12 @@ export default function App() {
 
     // Trigger daily planner on new day if enabled
     if (settings.enableDailyPlanner) {
-      setShowPlannerModal(true);
+      const hasPrePlannedSlots = (oneshots || []).some(o => o.fromDailyPlan && o.dailyPlanDate === todayStr) ||
+        (quests || []).some(q => (q.subquests || []).some(sq => sq.fromDailyPlan && sq.dailyPlanDate === todayStr));
+      if (!hasPrePlannedSlots) {
+        setPlannerTargetDate(null);
+        setShowPlannerModal(true);
+      }
     }
   };
 
@@ -807,8 +813,9 @@ export default function App() {
     );
   };
 
-  const handleSaveDailyPlan = (slots, d10Roll) => {
+  const handleSaveDailyPlan = (slots, d10Roll, customDate) => {
     const todayStr = getGameDate(settings.dayStartTime);
+    const planDate = customDate || todayStr;
     const newOneshots = [];
     
     const slotIcons = {
@@ -818,74 +825,98 @@ export default function App() {
       reaction: '🛡️'
     };
 
-    const updatedOneshotIds = new Set();
+    const activeSlotOneshotIds = new Set();
+    const activeSlotSubquestIds = new Set();
 
+    Object.values(slots).forEach(slot => {
+      if (slot.name && slot.name.trim()) {
+        if (slot.oneshotId) activeSlotOneshotIds.add(slot.oneshotId);
+        if (slot.subquestId) activeSlotSubquestIds.add(slot.subquestId);
+      }
+    });
+
+    // 1. Update existing oneshots (or clear old slots for this planDate if removed)
+    setOneshots(prev => {
+      const list = prev.filter(o => !(o.id.startsWith('dp-') && o.dailyPlanDate === planDate && !activeSlotOneshotIds.has(o.id)));
+      return list.map(o => {
+        const matchingEntry = Object.entries(slots).find(([key, s]) => s.oneshotId === o.id && s.name.trim());
+        if (matchingEntry) {
+          const [key, slot] = matchingEntry;
+          return {
+            ...o,
+            name: slot.name.trim(),
+            emoji: slot.emoji || slotIcons[key],
+            slotType: key,
+            difficulty: slot.stars || o.difficulty,
+            stars: slot.stars || o.stars || o.difficulty,
+            primaryTarget: slot.statId || o.primaryTarget,
+            secondaryTarget: slot.secondaryStatId || o.secondaryTarget || null,
+            scheduledCount: (o.scheduledCount || 0) + 1,
+            fromDailyPlan: true,
+            dailyPlanDate: planDate,
+            d10Roll: d10Roll,
+            locked: false,
+            completed: false
+          };
+        }
+        if (o.fromDailyPlan && o.dailyPlanDate === planDate && !activeSlotOneshotIds.has(o.id)) {
+          return {
+            ...o,
+            fromDailyPlan: false,
+            dailyPlanDate: null,
+            slotType: null
+          };
+        }
+        return o;
+      });
+    });
+
+    // 2. Update quests / subquests
+    setQuests(prev => prev.map(q => ({
+      ...q,
+      subquests: (q.subquests || []).map(sq => {
+        const matchingEntry = Object.entries(slots).find(([key, s]) => s.questId === q.id && s.subquestId === sq.id && s.name.trim());
+        if (matchingEntry) {
+          const [key, slot] = matchingEntry;
+          return {
+            ...sq,
+            slotType: key,
+            fromDailyPlan: true,
+            dailyPlanDate: planDate,
+            d10Roll: d10Roll,
+            scheduledCount: (sq.scheduledCount || 0) + 1
+          };
+        }
+        if (sq.fromDailyPlan && sq.dailyPlanDate === planDate && !activeSlotSubquestIds.has(sq.id)) {
+          return {
+            ...sq,
+            fromDailyPlan: false,
+            dailyPlanDate: null,
+            slotType: null
+          };
+        }
+        return sq;
+      })
+    })));
+
+    // 3. Create new oneshots for slots without existing oneshotId or questId
     Object.entries(slots).forEach(([key, slot]) => {
-      const name = slot.name.trim();
+      const name = slot.name ? slot.name.trim() : '';
       if (!name) return;
-
-      const chosenEmoji = slot.emoji || slotIcons[key];
-
-      if (slot.oneshotId) {
-        updatedOneshotIds.add(slot.oneshotId);
-        setOneshots(prev => prev.map(o => {
-          if (o.id === slot.oneshotId) {
-            return {
-              ...o,
-              name: name,
-              emoji: chosenEmoji,
-              slotType: key,
-              difficulty: slot.stars || o.difficulty,
-              stars: slot.stars || o.stars || o.difficulty,
-              primaryTarget: slot.statId || o.primaryTarget,
-              secondaryTarget: slot.secondaryStatId || o.secondaryTarget || null,
-              scheduledCount: (o.scheduledCount || 0) + 1,
-              fromDailyPlan: true,
-              dailyPlanDate: todayStr,
-              d10Roll: d10Roll,
-              locked: false,
-              completed: false
-            };
-          }
-          return o;
-        }));
-      } else if (slot.questId && slot.subquestId) {
-        // Link directly to campaign milestone - DO NOT create a oneshot!
-        setQuests(prev => prev.map(q => {
-          if (q.id === slot.questId) {
-            return {
-              ...q,
-              subquests: (q.subquests || []).map(sq => {
-                if (sq.id === slot.subquestId) {
-                  return {
-                    ...sq,
-                    slotType: key,
-                    fromDailyPlan: true,
-                    dailyPlanDate: todayStr,
-                    d10Roll: d10Roll,
-                    scheduledCount: (sq.scheduledCount || 0) + 1
-                  };
-                }
-                return sq;
-              })
-            };
-          }
-          return q;
-        }));
-      } else {
+      if (!slot.oneshotId && !(slot.questId && slot.subquestId)) {
         newOneshots.push({
           id: 'dp-' + Date.now() + '-' + key,
           name: name,
-          emoji: chosenEmoji,
+          emoji: slot.emoji || slotIcons[key],
           slotType: key,
-          difficulty: slot.stars,
-          stars: slot.stars,
-          primaryTarget: slot.statId,
+          difficulty: slot.stars || 1,
+          stars: slot.stars || 1,
+          primaryTarget: slot.statId || null,
           secondaryTarget: slot.secondaryStatId || null,
           completed: false,
           locked: false,
           fromDailyPlan: true,
-          dailyPlanDate: todayStr,
+          dailyPlanDate: planDate,
           d10Roll: d10Roll,
           scheduledCount: 1,
           createdAt: new Date().toISOString()
@@ -1419,7 +1450,10 @@ export default function App() {
             onOpenModal={handleOpenModal}
             onDeleteStat={handleDeleteStat}
             onEditStat={(data) => handleOpenModal(data.type, data)}
-            onOpenPlanner={() => setShowPlannerModal(true)}
+            onOpenPlanner={(targetDate) => {
+              setPlannerTargetDate(targetDate || null);
+              setShowPlannerModal(true);
+            }}
             onOpenPomodoro={() => handleOpenModal('pomodoro')}
             onOpenStatDetail={(stat) => handleOpenModal('stat_detail', stat)}
             onOpenWorkoutsLog={handleOpenWorkoutsLog}
@@ -1468,7 +1502,10 @@ export default function App() {
             completionLog={completionLog}
             stats={stats}
             settings={settings}
-            onOpenDailyPlanner={() => setShowPlannerModal(true)}
+            onOpenDailyPlanner={(targetDate) => {
+              setPlannerTargetDate(targetDate || null);
+              setShowPlannerModal(true);
+            }}
             onActivateChallenge={handleActivateChallenge}
           />
         );
@@ -1763,11 +1800,16 @@ export default function App() {
       {/* DAILY PLANNER (🎲 È il tuo turno!) MODAL */}
       <DailyPlannerModal
         isOpen={showPlannerModal}
-        onClose={() => setShowPlannerModal(false)}
+        onClose={() => {
+          setShowPlannerModal(false);
+          setPlannerTargetDate(null);
+        }}
         onSave={handleSaveDailyPlan}
         stats={stats}
         oneshots={oneshots}
         quests={quests}
+        targetDate={plannerTargetDate}
+        isTomorrow={!!plannerTargetDate && plannerTargetDate !== getGameDate(settings?.dayStartTime || 0)}
       />
 
       {/* MONTHLY MEDAL CELEBRATION POPUP */}

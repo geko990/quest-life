@@ -30,6 +30,7 @@ export default function SettingsTab({
 
   // Error Log State
   const [errorsList, setErrorsList] = useState([]);
+  const [isErrorsDismissed, setIsErrorsDismissed] = useState(false);
   const [copyStatus, setCopyStatus] = useState(false);
 
   useEffect(() => {
@@ -58,8 +59,14 @@ export default function SettingsTab({
     if (window.confirm("Vuoi cancellare il registro errori dell'app?")) {
       clearAppErrors();
       setErrorsList([]);
+      setIsErrorsDismissed(true);
     }
   };
+
+  const handleCloseErrorLog = () => {
+    setIsErrorsDismissed(true);
+  };
+
 
   // PWA Update State: active only when a new version is available
   const [hasUpdate, setHasUpdate] = useState(isUpdateAvailable());
@@ -925,38 +932,61 @@ export default function SettingsTab({
             RPG Life v{APP_VERSION} {BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })})` : ''}
           </div>
 
-          {/* Registro Errori & Diagnostica */}
-          <div style={{
-            marginTop: '16px',
-            background: 'var(--bg-secondary)',
-            border: errorsList.length > 0 ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid var(--glass-border)',
-            borderRadius: '16px',
-            padding: '14px',
-            textAlign: 'left'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-primary)' }}>
-                <span>{errorsList.length > 0 ? '⚠️' : '🛡️'}</span>
-                <span>Registro Errori & Diagnostica</span>
+          {/* Registro Errori & Diagnostica (Invisibile di default, visibile solo con errori finché non si tocca 'X') */}
+          {errorsList.length > 0 && !isErrorsDismissed && (
+            <div style={{
+              marginTop: '16px',
+              background: 'var(--bg-secondary)',
+              border: '1px solid rgba(239, 68, 68, 0.45)',
+              borderRadius: '16px',
+              padding: '14px',
+              textAlign: 'left',
+              boxShadow: '0 4px 20px rgba(239, 68, 68, 0.15)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: '#ef4444' }}>
+                  <span>⚠️</span>
+                  <span>Registro Errori & Diagnostica</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    padding: '2px 8px',
+                    borderRadius: '10px',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    color: '#ef4444',
+                    border: '1px solid rgba(239, 68, 68, 0.3)'
+                  }}>
+                    {errorsList.length} {errorsList.length === 1 ? 'errore' : 'errori'}
+                  </span>
+                  {/* Close button X */}
+                  <button
+                    type="button"
+                    onClick={handleCloseErrorLog}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '50%',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text-secondary)',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      padding: 0
+                    }}
+                    title="Chiudi avviso diagnostica"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-              <span style={{
-                fontSize: '10px',
-                fontWeight: 'bold',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                background: errorsList.length > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                color: errorsList.length > 0 ? '#ef4444' : '#10b981',
-                border: `1px solid ${errorsList.length > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
-              }}>
-                {errorsList.length === 0 ? 'Nessun errore' : `${errorsList.length} ${errorsList.length === 1 ? 'errore' : 'errori'}`}
-              </span>
-            </div>
 
-            {errorsList.length === 0 ? (
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
-                <span>✅</span> Nessun errore registrato. L'applicazione funziona regolarmente.
-              </div>
-            ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
                 <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '2px' }}>
                   {errorsList.map((err, idx) => (
@@ -1018,8 +1048,8 @@ export default function SettingsTab({
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 

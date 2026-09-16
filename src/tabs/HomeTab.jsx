@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getXpForLevel, getGameDate } from '../utils/helpers';
+import { getXpForLevel, getGameDate, getTomorrowGameDate } from '../utils/helpers';
 import MarqueeText from '../components/MarqueeText';
 
 const SLOT_CATEGORY_INFO = [
@@ -472,6 +472,12 @@ export default function HomeTab({
   const todayActionsList = [...todayOneshots, ...todaySubquests];
   todayActionsList.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
+  const tomorrowStr = getTomorrowGameDate(settings?.dayStartTime || 0);
+  const isAllTodayActionsCompleted = todayActionsList.length > 0 && todayActionsList.every(a => !!a.completed);
+  const tomorrowOneshots = (oneshots || []).filter(o => !o.locked && o.fromDailyPlan && o.dailyPlanDate === tomorrowStr);
+  const tomorrowSubquests = (quests || []).flatMap(q => (q.subquests || []).filter(sq => sq.fromDailyPlan && sq.dailyPlanDate === tomorrowStr));
+  const isTomorrowPlanned = (tomorrowOneshots.length + tomorrowSubquests.length) > 0;
+
   const handleChartClick = (e) => {
     const target = e.target;
     if (!target) return;
@@ -544,6 +550,11 @@ export default function HomeTab({
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
               {cardMode === 'pomodoro' ? 'Timer Pomodoro' : 'Azioni del Giorno'}
             </h3>
+            {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
+              <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '10px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontWeight: 'bold', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                ✓ {todayActionsList.length}/{todayActionsList.length}
+              </span>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -676,7 +687,7 @@ export default function HomeTab({
                       maxWidth: '150px'
                     }}
                   >
-                    {(stats || []).filter(s => s.visible !== false).map(s => (
+                    {(stats || []).map(s => (
                       <option key={s.id} value={s.id} style={{ background: 'var(--bg-card)' }}>
                         {s.icon || '⭐'} {s.name}
                       </option>
@@ -819,6 +830,68 @@ export default function HomeTab({
             )
           )}
         </div>
+
+        {/* Pianifica la giornata di domani (disponibile quando le azioni di oggi sono completate) */}
+        {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
+          <div
+            onClick={() => onOpenPlanner && onOpenPlanner(tomorrowStr)}
+            style={{
+              marginTop: '10px',
+              padding: '8px 12px',
+              borderRadius: '12px',
+              background: isTomorrowPlanned
+                ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(16, 185, 129, 0.06) 100%)'
+                : 'linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(168, 85, 247, 0.08) 100%)',
+              border: isTomorrowPlanned ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid rgba(124, 58, 237, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+            }}
+            title="Tocca per aprire il Daily Planner per domani"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+              <span style={{ fontSize: '18px', flexShrink: 0 }}>{isTomorrowPlanned ? '🌟' : '🎲'}</span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{isTomorrowPlanned ? 'Domani già programmato' : 'Tutte e 4 completate!'}</span>
+                  <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '6px', background: isTomorrowPlanned ? 'rgba(34,197,94,0.2)' : 'rgba(124,58,237,0.2)', color: isTomorrowPlanned ? '#22c55e' : 'var(--accent-primary)' }}>
+                    {isTomorrowPlanned ? 'Pronto' : '4/4'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {isTomorrowPlanned ? 'Tocca per visualizzare o modificare le azioni di domani' : 'Inizia a pianificare in anticipo la giornata dell\'indomani'}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onOpenPlanner) onOpenPlanner(tomorrowStr);
+              }}
+              style={{
+                flexShrink: 0,
+                fontSize: '10px',
+                fontWeight: 'bold',
+                color: isTomorrowPlanned ? '#22c55e' : '#ffffff',
+                background: isTomorrowPlanned ? 'rgba(34, 197, 94, 0.15)' : 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
+                border: isTomorrowPlanned ? '1px solid rgba(34, 197, 94, 0.3)' : 'none',
+                padding: '5px 10px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: isTomorrowPlanned ? 'none' : '0 2px 6px rgba(124, 58, 237, 0.3)'
+              }}
+            >
+              <span>{isTomorrowPlanned ? 'Modifica ✏️' : 'Pianifica Domani ➔'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 3. Sostentamento Summary */}
