@@ -14,9 +14,10 @@ import FinancesTab from './tabs/FinancesTab';
 import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
 import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp, getMonthlyStarCounts, isMonthlyPyramidMet } from './utils/helpers';
-import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile } from './utils/storage';
+import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile, saveAppStateToIndexedDB, loadAppStateFromIndexedDB } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
 import { useLayoutMode } from './utils/useLayoutMode';
+import { logAppError } from './utils/errorLogger';
 
 class TabErrorBoundary extends React.Component {
   constructor(props) {
@@ -30,7 +31,12 @@ class TabErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("Tab Render Error:", error, errorInfo);
+    logAppError(error, {
+      type: 'tab_error_boundary',
+      componentStack: errorInfo?.componentStack || ''
+    });
   }
+
 
   render() {
     if (this.state.hasError) {
@@ -79,13 +85,14 @@ class TabErrorBoundary extends React.Component {
 export default function App() {
   // 1. Initial State Loading
   const getLoadedState = () => {
-    const saved = localStorage.getItem('questlife_state_v2');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('questlife_state_v2');
+      if (saved) {
         return sanitizeState(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse local storage state", e);
       }
+    } catch (e) {
+      console.error("Failed to parse local storage state", e);
+      logAppError(e, { context: 'getLoadedState_localStorage' });
     }
     return getInitialState();
   };
@@ -189,9 +196,38 @@ export default function App() {
       }
     }
     loadHandle();
+
+    // Recovery from IndexedDB if localStorage was empty or failed
+    async function checkIndexedDbBackup() {
+      try {
+        const saved = localStorage.getItem('questlife_state_v2');
+        if (!saved) {
+          const backup = await loadAppStateFromIndexedDB();
+          if (backup) {
+            console.log("[QuestLife] Restoring state from IndexedDB backup.");
+            const sanitized = sanitizeState(backup);
+            setPlayer(sanitized.player);
+            setStats(sanitized.stats);
+            setHabits(sanitized.habits);
+            setOneshots(sanitized.oneshots);
+            setQuests(sanitized.quests);
+            setCompletionLog(sanitized.completionLog);
+            setXpLog(sanitized.xpLog);
+            setPomodoro(sanitized.pomodoro);
+            setInventory(sanitized.inventory);
+            setHealth(sanitized.health);
+            setSettings(sanitized.settings);
+            setFinances(sanitized.finances);
+          }
+        }
+      } catch (e) {
+        console.warn("IndexedDB recovery check error:", e);
+      }
+    }
+    checkIndexedDbBackup();
   }, []);
 
-  // 4. State Persistence (LocalStorage + FileSystem File)
+  // 4. State Persistence (LocalStorage + IndexedDB + FileSystem File)
   useEffect(() => {
     const stateObj = {
       player,
@@ -208,8 +244,34 @@ export default function App() {
       finances
     };
 
-    // Save to LocalStorage
-    localStorage.setItem('questlife_state_v2', JSON.stringify(stateObj));
+    // Save to LocalStorage with safe try-catch & quota overflow auto-recovery
+    try {
+      localStorage.setItem('questlife_state_v2', JSON.stringify(stateObj));
+    } catch (err) {
+      console.error("Critical Storage Error saving to localStorage:", err);
+      logAppError(err, {
+        context: 'localStorage.setItem_persistence',
+        sizeEstimate: JSON.stringify(stateObj).length
+      });
+
+      // Auto-remediation for QuotaExceededError:
+      // If xpLog is large, trim older logs to prevent app lockup
+      if (stateObj.xpLog && stateObj.xpLog.length > 250) {
+        try {
+          const trimmedObj = {
+            ...stateObj,
+            xpLog: stateObj.xpLog.slice(-200)
+          };
+          localStorage.setItem('questlife_state_v2', JSON.stringify(trimmedObj));
+          console.warn("Storage auto-recovered by trimming ancient xpLog entries.");
+        } catch (e2) {
+          console.error("Storage trim fallback also failed:", e2);
+        }
+      }
+    }
+
+    // Mirror to IndexedDB as high-capacity persistent backup
+    saveAppStateToIndexedDB(stateObj).catch(e => console.warn("IndexedDB mirror failed:", e));
 
     // Save to File if connected
     if (fileHandle) {
@@ -333,23 +395,28 @@ export default function App() {
     const effectiveDate = logDate || todayStr;
 
     // 1. Reward Stat XP
+    let didStatLevelUp = false;
     setStats(prevStats =>
       prevStats.map(s => {
         if (s.id !== statId) return s;
-        let newXp = s.xp + amount;
-        let currentLvl = s.level;
+        let newXp = (Number(s.xp) || 0) + amount;
+        let currentLvl = Number(s.level) || 1;
         let needed = getXpForLevel(currentLvl + 1);
 
-        // Handle level up for stat
-        while (newXp >= needed) {
+        // Handle level up for stat safely
+        while (needed > 0 && newXp >= needed && currentLvl < 20) {
           newXp -= needed;
           currentLvl += 1;
           needed = getXpForLevel(currentLvl + 1);
-          if (settings.soundEnabled) playLevelUpSound();
+          didStatLevelUp = true;
         }
         return { ...s, xp: newXp, level: currentLvl };
       })
     );
+
+    if (didStatLevelUp && settings.soundEnabled) {
+      playLevelUpSound();
+    }
 
     // 2. Reward Player XP
     let leveledUp = false;
@@ -581,18 +648,18 @@ export default function App() {
         handleRewardXp(habit.secondaryTarget, secondaryXp, false, habit.name, targetDate, 1, 'habit');
       }
 
-      // Increment Streak
+      // Increment Streak safely
       setHabits(prev =>
-        prev.map(h => (h.id === habitId ? { ...h, streak: h.streak + 1 } : h))
+        prev.map(h => (h.id === habitId ? { ...h, streak: (Number(h.streak) || 0) + 1 } : h))
       );
 
-      // Update player active streak
+      // Update player active streak safely
       setPlayer(prev => {
         const lastAction = prev.lastActionDate;
         const yesterdayStr = formatISO(new Date(Date.now() - 86400000));
-        let nextStreak = prev.globalStreak;
+        let nextStreak = Number(prev.globalStreak) || 0;
         if (lastAction !== todayStr) {
-          if (lastAction === yesterdayStr || prev.globalStreak === 0) {
+          if (lastAction === yesterdayStr || nextStreak === 0) {
             nextStreak += 1;
           }
         }
@@ -618,7 +685,7 @@ export default function App() {
       }
 
       setHabits(prev =>
-        prev.map(h => (h.id === habitId ? { ...h, streak: Math.max(0, h.streak - 1) } : h))
+        prev.map(h => (h.id === habitId ? { ...h, streak: Math.max(0, (Number(h.streak) || 0) - 1) } : h))
       );
     }
   };

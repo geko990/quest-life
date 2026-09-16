@@ -1,7 +1,10 @@
 import React from 'react';
 
-export default function MedalCelebrationModal({ medal, starCounts, onClose, onViewDetails }) {
+export default function MedalCelebrationModal({ medal: propMedal, starCounts: propStarCounts, celebrationData, onClose, onViewDetails }) {
+  const medal = propMedal || celebrationData?.medal;
+  const starCounts = propStarCounts || celebrationData?.starCounts;
   if (!medal) return null;
+
 
   return (
     <div

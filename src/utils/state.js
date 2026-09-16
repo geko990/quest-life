@@ -238,27 +238,32 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     });
   }
 
-  // Ensure calories.consumed & proteins.consumed match logged meals to prevent phantom calories
-  const hasLoggedMeals = Object.values(state.health.meals).some(arr => Array.isArray(arr) && arr.length > 0);
-  if (!hasLoggedMeals) {
-    state.health.calories.consumed = 0;
-    state.health.proteins.consumed = 0;
-  } else {
-    const totalMealCal = Object.values(state.health.meals).reduce((acc, cat) => {
-      return acc + (Array.isArray(cat) ? cat.reduce((sum, item) => sum + (Number(item.calories) || 0), 0) : 0);
-    }, 0);
-    const totalMealProt = Object.values(state.health.meals).reduce((acc, cat) => {
-      return acc + (Array.isArray(cat) ? cat.reduce((sum, item) => sum + (Number(item.proteins) || 0), 0) : 0);
-    }, 0);
-    state.health.calories.consumed = totalMealCal;
-    state.health.proteins.consumed = Math.round(totalMealProt * 10) / 10;
-  }
+  // Calculate sums from logged meals and workouts
+  const totalMealCal = Object.values(state.health.meals).reduce((acc, cat) => {
+    return acc + (Array.isArray(cat) ? cat.reduce((sum, item) => sum + (Number(item.calories) || 0), 0) : 0);
+  }, 0);
+  const totalMealProt = Object.values(state.health.meals).reduce((acc, cat) => {
+    return acc + (Array.isArray(cat) ? cat.reduce((sum, item) => sum + (Number(item.proteins) || 0), 0) : 0);
+  }, 0);
+
+  // Preserve directly logged consumed calories & proteins without wiping them to 0 on reopen
+  const parsedConsumed = Number(parsed?.health?.calories?.consumed);
+  state.health.calories.consumed = !isNaN(parsedConsumed)
+    ? Math.max(parsedConsumed, totalMealCal)
+    : totalMealCal;
+
+  const parsedProt = Number(parsed?.health?.proteins?.consumed);
+  state.health.proteins.consumed = !isNaN(parsedProt)
+    ? Math.max(parsedProt, Math.round(totalMealProt * 10) / 10)
+    : Math.round(totalMealProt * 10) / 10;
 
   if (!state.health.workouts) state.health.workouts = [];
-  if (Array.isArray(state.health.workouts) && state.health.workouts.length > 0) {
-    const totalWorkoutCal = state.health.workouts.reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
-    state.health.calories.burned = totalWorkoutCal;
-  }
+  const totalWorkoutCal = (state.health.workouts || []).reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
+  const parsedBurned = Number(parsed?.health?.calories?.burned);
+  state.health.calories.burned = !isNaN(parsedBurned)
+    ? Math.max(parsedBurned, totalWorkoutCal)
+    : totalWorkoutCal;
+
 
   if (!state.health.foodDatabase || state.health.foodDatabase.length === 0) {
     state.health.foodDatabase = [...defaults.health.foodDatabase];

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
 import { forceUpdateApp, checkForAppUpdate, onUpdateAvailable, isUpdateAvailable } from '../utils/helpers';
+import { getAppErrors, clearAppErrors, formatErrorsForClipboard } from '../utils/errorLogger';
 import UserManualModal from '../components/UserManualModal';
 
 export default function SettingsTab({
@@ -26,6 +27,39 @@ export default function SettingsTab({
   const [editingPreset, setEditingPreset] = useState(null);
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualChapter, setManualChapter] = useState('finances');
+
+  // Error Log State
+  const [errorsList, setErrorsList] = useState([]);
+  const [copyStatus, setCopyStatus] = useState(false);
+
+  useEffect(() => {
+    setErrorsList(getAppErrors());
+  }, []);
+
+  const handleCopyErrorLog = () => {
+    const text = formatErrorsForClipboard(APP_VERSION);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopyStatus(true);
+      setTimeout(() => setCopyStatus(false), 2500);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopyStatus(true);
+      setTimeout(() => setCopyStatus(false), 2500);
+    }
+  };
+
+  const handleClearErrorLog = () => {
+    if (window.confirm("Vuoi cancellare il registro errori dell'app?")) {
+      clearAppErrors();
+      setErrorsList([]);
+    }
+  };
 
   // PWA Update State: active only when a new version is available
   const [hasUpdate, setHasUpdate] = useState(isUpdateAvailable());
@@ -889,6 +923,102 @@ export default function SettingsTab({
 
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
             RPG Life v{APP_VERSION} {BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })})` : ''}
+          </div>
+
+          {/* Registro Errori & Diagnostica */}
+          <div style={{
+            marginTop: '16px',
+            background: 'var(--bg-secondary)',
+            border: errorsList.length > 0 ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid var(--glass-border)',
+            borderRadius: '16px',
+            padding: '14px',
+            textAlign: 'left'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-primary)' }}>
+                <span>{errorsList.length > 0 ? '⚠️' : '🛡️'}</span>
+                <span>Registro Errori & Diagnostica</span>
+              </div>
+              <span style={{
+                fontSize: '10px',
+                fontWeight: 'bold',
+                padding: '2px 8px',
+                borderRadius: '10px',
+                background: errorsList.length > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                color: errorsList.length > 0 ? '#ef4444' : '#10b981',
+                border: `1px solid ${errorsList.length > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+              }}>
+                {errorsList.length === 0 ? 'Nessun errore' : `${errorsList.length} ${errorsList.length === 1 ? 'errore' : 'errori'}`}
+              </span>
+            </div>
+
+            {errorsList.length === 0 ? (
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
+                <span>✅</span> Nessun errore registrato. L'applicazione funziona regolarmente.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '2px' }}>
+                  {errorsList.map((err, idx) => (
+                    <div key={err.id || idx} style={{
+                      background: 'rgba(0, 0, 0, 0.25)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '10px',
+                      padding: '8px 10px',
+                      fontSize: '11px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '9px', marginBottom: '2px' }}>
+                        <span>{err.readableTime || err.timestamp}</span>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{err.name || 'Error'}</span>
+                      </div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: '500', wordBreak: 'break-word' }}>
+                        {err.message}
+                      </div>
+                      {err.stack && (
+                        <pre style={{ margin: '4px 0 0 0', fontSize: '9px', color: 'var(--text-muted)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                          {err.stack.split('\n').slice(0, 3).join('\n')}
+                        </pre>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                  <button
+                    onClick={handleCopyErrorLog}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: '10px',
+                      background: copyStatus ? '#10b981' : 'var(--accent-primary)',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s'
+                    }}
+                  >
+                    {copyStatus ? '✅ Copiato negli appunti!' : '📋 Copia Log Errori'}
+                  </button>
+                  <button
+                    onClick={handleClearErrorLog}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '10px',
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      border: '1px solid rgba(239, 68, 68, 0.25)',
+                      color: '#ef4444',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🗑️ Svuota
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
