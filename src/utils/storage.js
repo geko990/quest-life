@@ -96,3 +96,36 @@ export async function loadFileHandleOnStart() {
         return null;
     }
 }
+
+export async function saveAppStateToIndexedDB(state) {
+    try {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORE, 'readwrite');
+            const store = tx.objectStore(DB_STORE);
+            store.put(state, 'appState_v2');
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch (err) {
+        console.warn("Could not mirror state to IndexedDB:", err);
+        return false;
+    }
+}
+
+export async function loadAppStateFromIndexedDB() {
+    try {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORE, 'readonly');
+            const store = tx.objectStore(DB_STORE);
+            const request = store.get('appState_v2');
+            request.onsuccess = () => resolve(request.result || null);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (err) {
+        console.warn("Could not read backup state from IndexedDB:", err);
+        return null;
+    }
+}
+
