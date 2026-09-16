@@ -331,7 +331,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   // Render specific form contents based on type
   const renderFormFields = () => {
-    const visibleStats = stats?.filter(s => s.visible) || [];
+    const visibleStats = stats || [];
+
 
     switch (currentType || type) {
       case 'attribute':
