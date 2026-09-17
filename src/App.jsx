@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Modal from './components/Modal';
@@ -259,20 +259,21 @@ export default function App() {
         sizeEstimate
       });
 
-      // Auto-remediation for QuotaExceededError or overflow:
-      // Trim older xpLog and health history to prevent app lockup
-      if (err.name === 'QuotaExceededError' || (err.message && err.message.toLowerCase().includes('quota')) || (stateObj.xpLog && stateObj.xpLog.length > 250)) {
+      // Auto-remediation strictly for genuine QuotaExceededError:
+      // If the browser storage is genuinely full, save an emergency trimmed copy to localStorage
+      // while IndexedDB keeps the full archive intact.
+      if (err.name === 'QuotaExceededError' || (err.message && err.message.toLowerCase().includes('quota'))) {
         try {
           const trimmedObj = {
             ...stateObj,
-            xpLog: (stateObj.xpLog || []).slice(-150),
+            xpLog: (stateObj.xpLog || []).slice(-1000),
             health: {
               ...stateObj.health,
-              history: (stateObj.health?.history || []).slice(-30)
+              history: (stateObj.health?.history || []).slice(-90)
             }
           };
           localStorage.setItem('questlife_state_v2', JSON.stringify(trimmedObj));
-          console.warn("Storage auto-recovered by trimming ancient xpLog and health history entries.");
+          console.warn("Storage emergency recovered in localStorage (full archive preserved in IndexedDB).");
         } catch (e2) {
           console.error("Storage trim fallback also failed:", e2);
         }
@@ -1256,8 +1257,13 @@ export default function App() {
     }
   };
 
+  const isExportingRef = useRef(false);
+
   // Import / Export
   const handleExport = async () => {
+    if (isExportingRef.current) return;
+    isExportingRef.current = true;
+
     try {
       const fullStateObj = {
         player, stats, habits, oneshots, quests, completionLog, xpLog, pomodoro, inventory, health, settings, finances
@@ -1292,16 +1298,19 @@ export default function App() {
       const blob = new Blob([jsonStr], { type: 'application/json' });
 
       // 2. iOS / Android Web Share API support (opens native Share sheet to save directly to Files / Drive)
+      // NOTE: Do NOT include `text` or `title` here!
+      // In iOS / WebKit, passing `text` alongside `files` causes iOS "Salva su File"
+      // to generate TWO files in the user's folder: the JSON file AND an extra .txt file with the text.
       if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/json' })] })) {
         try {
           const file = new File([blob], filename, { type: 'application/json' });
           await navigator.share({
-            files: [file],
-            title: 'Quest Life Backup',
-            text: 'Backup file di Quest Life'
+            files: [file]
           });
         } catch (shareErr) {
-          console.log('Share dismissed or cancelled:', shareErr);
+          if (shareErr.name !== 'AbortError') {
+            console.log('Share dismissed or cancelled:', shareErr);
+          }
         }
         // Always exit to avoid triggering a second download simultaneously
         return;
@@ -1315,11 +1324,17 @@ export default function App() {
       document.body.appendChild(dlAnchorElem);
       dlAnchorElem.click();
       setTimeout(() => {
-        document.body.removeChild(dlAnchorElem);
+        if (document.body.contains(dlAnchorElem)) {
+          document.body.removeChild(dlAnchorElem);
+        }
         URL.revokeObjectURL(url);
       }, 1000);
     } catch (err) {
       alert(`⚠️ Errore durante l'esportazione: ${err.message}`);
+    } finally {
+      setTimeout(() => {
+        isExportingRef.current = false;
+      }, 1200);
     }
   };
 
