@@ -22,7 +22,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         reaction: { emoji: '🛡️', name: '', stars: 2, statId: 'wis', secondaryStatId: '', oneshotId: null }
       };
 
-      const effectiveDate = targetDate || getGameDate();
+      const effectiveDate = (typeof targetDate === 'string' && targetDate.length === 10) ? targetDate : getGameDate();
       (oneshots || []).forEach(o => {
         if (o.fromDailyPlan && o.dailyPlanDate === effectiveDate && o.slotType && defaultSlots[o.slotType]) {
             defaultSlots[o.slotType] = {
@@ -123,7 +123,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
         setTimeout(() => {
-          onSave(slots, finalRoll, targetDate);
+          const safeTargetDate = (typeof targetDate === 'string' && targetDate.length === 10) ? targetDate : null;
+          onSave(slots, finalRoll, safeTargetDate);
           onClose();
         }, 1500);
       }

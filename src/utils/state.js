@@ -199,21 +199,27 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     if (!o || !o.id) return;
     if (seenOneshotIds.has(o.id)) return;
 
-    if (o.fromDailyPlan && o.dailyPlanDate && o.slotType) {
-      const slotKey = `${o.dailyPlanDate}_${o.slotType}`;
+    const dailyPlanDate = (o.dailyPlanDate && typeof o.dailyPlanDate === 'string') ? o.dailyPlanDate : null;
+
+    if (o.fromDailyPlan && dailyPlanDate && o.slotType) {
+      const slotKey = `${dailyPlanDate}_${o.slotType}`;
       if (seenDailyPlanSlots.has(slotKey)) return;
       seenDailyPlanSlots.add(slotKey);
     }
 
     seenOneshotIds.add(o.id);
     const diff = o.difficulty !== undefined ? o.difficulty : (o.stars !== undefined ? o.stars : 3);
-    cleanOneshots.push({ ...o, difficulty: diff, stars: diff });
+    cleanOneshots.push({ ...o, dailyPlanDate, difficulty: diff, stars: diff });
   });
   state.oneshots = cleanOneshots;
 
   state.quests = (parsed.quests || []).map(q => {
     const diff = q.difficulty !== undefined ? q.difficulty : (q.stars !== undefined ? q.stars : 3);
-    return { ...q, difficulty: diff, stars: diff };
+    const cleanSubquests = (q.subquests || []).map(sq => {
+      const dailyPlanDate = (sq.dailyPlanDate && typeof sq.dailyPlanDate === 'string') ? sq.dailyPlanDate : null;
+      return { ...sq, dailyPlanDate };
+    });
+    return { ...q, difficulty: diff, stars: diff, subquests: cleanSubquests };
   });
 
   // 2. Clean and deduplicate completionLog
@@ -392,6 +398,9 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   }
   if (parsed.dailyPlan) {
     state.dailyPlan = { ...state.dailyPlan, ...parsed.dailyPlan };
+    if (state.dailyPlan.lastPlanDate && typeof state.dailyPlan.lastPlanDate !== 'string') {
+      state.dailyPlan.lastPlanDate = null;
+    }
   }
 
   if (parsed.stats && Array.isArray(parsed.stats) && parsed.stats.length > 0) {

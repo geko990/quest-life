@@ -751,7 +751,8 @@ export default function HomeTab({
               <div style={{ textAlign: 'center', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', boxSizing: 'border-box' }}>
                 <div style={{ fontSize: '24px', marginBottom: '4px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
                 <button
-                  onClick={onOpenPlanner}
+                  type="button"
+                  onClick={() => onOpenPlanner && onOpenPlanner()}
                   className="btn-primary"
                   style={{ padding: '7px 16px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
                 >
