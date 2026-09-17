@@ -250,21 +250,29 @@ export default function App() {
       localStorage.setItem('questlife_state_v2', JSON.stringify(stateObj));
     } catch (err) {
       console.error("Critical Storage Error saving to localStorage:", err);
+      let sizeEstimate = 0;
+      try {
+        sizeEstimate = JSON.stringify(stateObj).length;
+      } catch (_) {}
       logAppError(err, {
         context: 'localStorage.setItem_persistence',
-        sizeEstimate: JSON.stringify(stateObj).length
+        sizeEstimate
       });
 
-      // Auto-remediation for QuotaExceededError:
-      // If xpLog is large, trim older logs to prevent app lockup
-      if (stateObj.xpLog && stateObj.xpLog.length > 250) {
+      // Auto-remediation for QuotaExceededError or overflow:
+      // Trim older xpLog and health history to prevent app lockup
+      if (err.name === 'QuotaExceededError' || (err.message && err.message.toLowerCase().includes('quota')) || (stateObj.xpLog && stateObj.xpLog.length > 250)) {
         try {
           const trimmedObj = {
             ...stateObj,
-            xpLog: stateObj.xpLog.slice(-200)
+            xpLog: (stateObj.xpLog || []).slice(-150),
+            health: {
+              ...stateObj.health,
+              history: (stateObj.health?.history || []).slice(-30)
+            }
           };
           localStorage.setItem('questlife_state_v2', JSON.stringify(trimmedObj));
-          console.warn("Storage auto-recovered by trimming ancient xpLog entries.");
+          console.warn("Storage auto-recovered by trimming ancient xpLog and health history entries.");
         } catch (e2) {
           console.error("Storage trim fallback also failed:", e2);
         }
@@ -815,7 +823,7 @@ export default function App() {
 
   const handleSaveDailyPlan = (slots, d10Roll, customDate) => {
     const todayStr = getGameDate(settings.dayStartTime);
-    const planDate = customDate || todayStr;
+    const planDate = (typeof customDate === 'string' && customDate.length === 10) ? customDate : todayStr;
     
     const slotIcons = {
       action: '🎯',
@@ -1482,7 +1490,8 @@ export default function App() {
             onDeleteStat={handleDeleteStat}
             onEditStat={(data) => handleOpenModal(data.type, data)}
             onOpenPlanner={(targetDate) => {
-              setPlannerTargetDate(targetDate || null);
+              const safeDate = typeof targetDate === 'string' && targetDate.length === 10 ? targetDate : null;
+              setPlannerTargetDate(safeDate);
               setShowPlannerModal(true);
             }}
             onOpenPomodoro={() => handleOpenModal('pomodoro')}
@@ -1534,7 +1543,8 @@ export default function App() {
             stats={stats}
             settings={settings}
             onOpenDailyPlanner={(targetDate) => {
-              setPlannerTargetDate(targetDate || null);
+              const safeDate = typeof targetDate === 'string' && targetDate.length === 10 ? targetDate : null;
+              setPlannerTargetDate(safeDate);
               setShowPlannerModal(true);
             }}
             onActivateChallenge={handleActivateChallenge}

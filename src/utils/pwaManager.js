@@ -63,6 +63,17 @@ export async function checkForAppUpdate() {
   return { updateAvailable: false, currentVersion: APP_VERSION };
 }
 
+function trackUserInteraction() {
+  if (typeof window === 'undefined') return;
+  const onTouch = () => {
+    userHasTouched = true;
+    window.removeEventListener('pointerdown', onTouch, true);
+    window.removeEventListener('keydown', onTouch, true);
+  };
+  window.addEventListener('pointerdown', onTouch, true);
+  window.addEventListener('keydown', onTouch, true);
+}
+
 /**
  * Initialize PWA Service Worker & update monitoring
  */
