@@ -1,5 +1,5 @@
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
-import { calculateLevelFromXp } from './helpers.js';
+import { calculateLevelFromXp, getXpForLevel } from './helpers.js';
 
 export function getInitialState() {
   return {
@@ -189,33 +189,106 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     const diff = h.difficulty !== undefined ? h.difficulty : (h.stars !== undefined ? h.stars : 3);
     return { ...h, difficulty: diff, stars: diff };
   });
-  state.oneshots = (parsed.oneshots || []).map(o => {
+
+  // 1. Clean and deduplicate oneshots
+  const seenOneshotIds = new Set();
+  const seenDailyPlanSlots = new Set();
+  const cleanOneshots = [];
+
+  (parsed.oneshots || []).forEach(o => {
+    if (!o || !o.id) return;
+    if (seenOneshotIds.has(o.id)) return;
+
+    if (o.fromDailyPlan && o.dailyPlanDate && o.slotType) {
+      const slotKey = `${o.dailyPlanDate}_${o.slotType}`;
+      if (seenDailyPlanSlots.has(slotKey)) return;
+      seenDailyPlanSlots.add(slotKey);
+    }
+
+    seenOneshotIds.add(o.id);
     const diff = o.difficulty !== undefined ? o.difficulty : (o.stars !== undefined ? o.stars : 3);
-    return { ...o, difficulty: diff, stars: diff };
+    cleanOneshots.push({ ...o, difficulty: diff, stars: diff });
   });
+  state.oneshots = cleanOneshots;
+
   state.quests = (parsed.quests || []).map(q => {
     const diff = q.difficulty !== undefined ? q.difficulty : (q.stars !== undefined ? q.stars : 3);
     return { ...q, difficulty: diff, stars: diff };
   });
-  state.completionLog = parsed.completionLog || {};
-  state.xpLog = (parsed.xpLog || []).map(entry => {
-    if (!entry.title && entry.source) {
-      return { ...entry, title: entry.source };
-    }
-    return entry;
-  });
 
+  // 2. Clean and deduplicate completionLog
+  state.completionLog = parsed.completionLog || {};
   if (state.completionLog) {
     Object.keys(state.completionLog).forEach(key => {
       const entry = state.completionLog[key];
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-        state.completionLog[key] = { habits: [], oneshots: [], quests: [] };
+        state.completionLog[key] = { habits: [], oneshots: [], quests: [], subquests: [] };
       } else {
-        if (!Array.isArray(entry.habits)) entry.habits = [];
-        if (!Array.isArray(entry.oneshots)) entry.oneshots = [];
-        if (!Array.isArray(entry.quests)) entry.quests = [];
+        entry.habits = Array.isArray(entry.habits) ? [...new Set(entry.habits)] : [];
+        entry.oneshots = Array.isArray(entry.oneshots)
+          ? [...new Set(entry.oneshots)].filter(id => seenOneshotIds.has(id))
+          : [];
+        entry.quests = Array.isArray(entry.quests) ? [...new Set(entry.quests)] : [];
+        entry.subquests = Array.isArray(entry.subquests) ? [...new Set(entry.subquests)] : [];
       }
     });
+  }
+
+  // 3. Clean and deduplicate xpLog, calculating excess XP to revert
+  const excessXpByStat = {};
+  let totalExcessXp = 0;
+  const seenXpSignatures = new Set();
+  const cleanXpLog = [];
+
+  (parsed.xpLog || []).forEach(entry => {
+    if (!entry) return;
+    const cleanTitle = (entry.title || entry.source || '').trim();
+    const cleanEntry = { ...entry, title: cleanTitle, source: cleanTitle };
+
+    // Discard identical duplicate entries on the same date for the same stat & amount
+    if (cleanTitle && cleanEntry.date && cleanEntry.statId && cleanEntry.amount > 0) {
+      const sig = `${cleanEntry.date}|${cleanEntry.statId}|${cleanTitle.toLowerCase()}|${cleanEntry.amount}|${cleanEntry.isMonthlyTask ? 'm' : 'nm'}`;
+      if (seenXpSignatures.has(sig)) {
+        const amt = Number(cleanEntry.amount) || 0;
+        excessXpByStat[cleanEntry.statId] = (excessXpByStat[cleanEntry.statId] || 0) + amt;
+        totalExcessXp += amt;
+        return; // Drop duplicate entry
+      }
+      seenXpSignatures.add(sig);
+    }
+
+    cleanXpLog.push(cleanEntry);
+  });
+  state.xpLog = cleanXpLog;
+
+  // 4. Adjust player totalXp and stat XP if duplicates were removed
+  if (totalExcessXp > 0) {
+    state.player.totalXp = Math.max(0, (Number(state.player.totalXp) || 0) - totalExcessXp);
+    state.player.level = calculateLevelFromXp(state.player.totalXp);
+
+    if (state.stats && Array.isArray(state.stats)) {
+      state.stats = state.stats.map(s => {
+        const excess = excessXpByStat[s.id];
+        if (!excess) return s;
+        let newXp = (Number(s.xp) || 0) - excess;
+        let currentLvl = Number(s.level) || 1;
+        while (newXp < 0 && currentLvl > 1) {
+          currentLvl -= 1;
+          const prevNeeded = getXpForLevel(currentLvl + 1);
+          newXp += prevNeeded;
+        }
+        if (currentLvl === 1 && newXp < 0) newXp = 0;
+        return { ...s, xp: newXp, level: currentLvl };
+      });
+    }
+  }
+
+  // 5. Re-sync monthly challenge points
+  if (state.player.monthlyChallenge && state.player.monthlyChallenge.currentMonth) {
+    const currentMonth = state.player.monthlyChallenge.currentMonth;
+    state.player.monthlyChallenge.points = state.xpLog.filter(
+      l => l.date && l.date.startsWith(currentMonth) && l.isMonthlyTask
+    ).length;
   }
 
   state.penaltyLog = parsed.penaltyLog || {};
