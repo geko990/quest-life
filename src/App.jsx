@@ -816,7 +816,6 @@ export default function App() {
   const handleSaveDailyPlan = (slots, d10Roll, customDate) => {
     const todayStr = getGameDate(settings.dayStartTime);
     const planDate = customDate || todayStr;
-    const newOneshots = [];
     
     const slotIcons = {
       action: '🎯',
@@ -837,11 +836,14 @@ export default function App() {
 
     // 1. Update existing oneshots (or clear old slots for this planDate if removed)
     setOneshots(prev => {
+      // Remove any dp- oneshots for this planDate that are no longer in slots
       const list = prev.filter(o => !(o.id.startsWith('dp-') && o.dailyPlanDate === planDate && !activeSlotOneshotIds.has(o.id)));
-      return list.map(o => {
+      
+      const updatedList = list.map(o => {
         const matchingEntry = Object.entries(slots).find(([key, s]) => s.oneshotId === o.id && s.name.trim());
         if (matchingEntry) {
           const [key, slot] = matchingEntry;
+          const isAlreadyCompletedForThisDate = o.completed && o.dailyPlanDate === planDate;
           return {
             ...o,
             name: slot.name.trim(),
@@ -851,12 +853,12 @@ export default function App() {
             stars: slot.stars || o.stars || o.difficulty,
             primaryTarget: slot.statId || o.primaryTarget,
             secondaryTarget: slot.secondaryStatId || o.secondaryTarget || null,
-            scheduledCount: (o.scheduledCount || 0) + 1,
+            scheduledCount: o.dailyPlanDate === planDate ? (o.scheduledCount || 1) : ((o.scheduledCount || 0) + 1),
             fromDailyPlan: true,
             dailyPlanDate: planDate,
             d10Roll: d10Roll,
             locked: false,
-            completed: false
+            completed: isAlreadyCompletedForThisDate
           };
         }
         if (o.fromDailyPlan && o.dailyPlanDate === planDate && !activeSlotOneshotIds.has(o.id)) {
@@ -869,6 +871,50 @@ export default function App() {
         }
         return o;
       });
+
+      // 2. Add or update items for slots without oneshotId or questId
+      const finalItems = [...updatedList];
+      Object.entries(slots).forEach(([key, slot]) => {
+        const name = slot.name ? slot.name.trim() : '';
+        if (!name) return;
+        if (!slot.oneshotId && !(slot.questId && slot.subquestId)) {
+          // Check if an item for (planDate, key) already exists
+          const existingSlotIdx = finalItems.findIndex(o => o.fromDailyPlan && o.dailyPlanDate === planDate && o.slotType === key);
+          if (existingSlotIdx !== -1) {
+            finalItems[existingSlotIdx] = {
+              ...finalItems[existingSlotIdx],
+              name: name,
+              emoji: slot.emoji || slotIcons[key],
+              difficulty: slot.stars || 1,
+              stars: slot.stars || 1,
+              primaryTarget: slot.statId || null,
+              secondaryTarget: slot.secondaryStatId || null,
+              d10Roll: d10Roll,
+              completed: finalItems[existingSlotIdx].completed && finalItems[existingSlotIdx].dailyPlanDate === planDate
+            };
+          } else {
+            finalItems.unshift({
+              id: 'dp-' + Date.now() + '-' + key,
+              name: name,
+              emoji: slot.emoji || slotIcons[key],
+              slotType: key,
+              difficulty: slot.stars || 1,
+              stars: slot.stars || 1,
+              primaryTarget: slot.statId || null,
+              secondaryTarget: slot.secondaryStatId || null,
+              completed: false,
+              locked: false,
+              fromDailyPlan: true,
+              dailyPlanDate: planDate,
+              d10Roll: d10Roll,
+              scheduledCount: 1,
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
+      });
+
+      return finalItems;
     });
 
     // 2. Update quests / subquests
@@ -884,7 +930,7 @@ export default function App() {
             fromDailyPlan: true,
             dailyPlanDate: planDate,
             d10Roll: d10Roll,
-            scheduledCount: (sq.scheduledCount || 0) + 1
+            scheduledCount: sq.dailyPlanDate === planDate ? (sq.scheduledCount || 1) : ((sq.scheduledCount || 0) + 1)
           };
         }
         if (sq.fromDailyPlan && sq.dailyPlanDate === planDate && !activeSlotSubquestIds.has(sq.id)) {
@@ -898,35 +944,6 @@ export default function App() {
         return sq;
       })
     })));
-
-    // 3. Create new oneshots for slots without existing oneshotId or questId
-    Object.entries(slots).forEach(([key, slot]) => {
-      const name = slot.name ? slot.name.trim() : '';
-      if (!name) return;
-      if (!slot.oneshotId && !(slot.questId && slot.subquestId)) {
-        newOneshots.push({
-          id: 'dp-' + Date.now() + '-' + key,
-          name: name,
-          emoji: slot.emoji || slotIcons[key],
-          slotType: key,
-          difficulty: slot.stars || 1,
-          stars: slot.stars || 1,
-          primaryTarget: slot.statId || null,
-          secondaryTarget: slot.secondaryStatId || null,
-          completed: false,
-          locked: false,
-          fromDailyPlan: true,
-          dailyPlanDate: planDate,
-          d10Roll: d10Roll,
-          scheduledCount: 1,
-          createdAt: new Date().toISOString()
-        });
-      }
-    });
-
-    if (newOneshots.length > 0) {
-      setOneshots(prev => [...newOneshots, ...prev]);
-    }
   };
 
   // 9. Modal Add/Edit Handlers
@@ -1338,17 +1355,31 @@ export default function App() {
 
   // Maintenance Handlers
   const handleFixData = () => {
-    // Repair completionLog entries
-    setCompletionLog(prev => {
-      const next = { ...prev };
-      Object.keys(next).forEach(key => {
-        if (!next[key] || typeof next[key] !== 'object' || Array.isArray(next[key])) {
-          next[key] = { habits: [], oneshots: [], quests: [] };
-        }
-      });
-      return next;
-    });
-    alert("🔧 Database sanificato e riparato con successo.");
+    // Run comprehensive state sanitizer, deduplicate tasks/xp, and re-balance stats
+    const currentState = {
+      player,
+      stats,
+      habits,
+      oneshots,
+      quests,
+      completionLog,
+      xpLog,
+      pomodoro,
+      inventory,
+      health,
+      settings,
+      finances
+    };
+    const sanitized = sanitizeState(currentState);
+    setPlayer(sanitized.player);
+    setStats(sanitized.stats);
+    setHabits(sanitized.habits);
+    setOneshots(sanitized.oneshots);
+    setQuests(sanitized.quests);
+    setCompletionLog(sanitized.completionLog);
+    setXpLog(sanitized.xpLog);
+    if (sanitized.finances) setFinances(sanitized.finances);
+    alert("🔧 Database sanificato, task duplicati rimossi e punti XP ricalcolati con successo!");
   };
 
   const handleRepairStreaks = () => {

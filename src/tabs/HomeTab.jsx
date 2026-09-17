@@ -625,7 +625,7 @@ export default function HomeTab({
         </div>
 
         {/* Content Container (Fixed Height 102px for Exact Dimension Matching) */}
-        <div style={{ height: '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ height: '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
           {cardMode === 'pomodoro' ? (
             /* IN-CARD POMODORO WORKSTATION VIEW */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', padding: '2px 0', boxSizing: 'border-box' }}>
@@ -829,69 +829,75 @@ export default function HomeTab({
               </div>
             )
           )}
-        </div>
 
-        {/* Pianifica la giornata di domani (disponibile quando le azioni di oggi sono completate) */}
-        {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
-          <div
-            onClick={() => onOpenPlanner && onOpenPlanner(tomorrowStr)}
-            style={{
-              marginTop: '10px',
-              padding: '8px 12px',
-              borderRadius: '12px',
-              background: isTomorrowPlanned
-                ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(16, 185, 129, 0.06) 100%)'
-                : 'linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(168, 85, 247, 0.08) 100%)',
-              border: isTomorrowPlanned ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid rgba(124, 58, 237, 0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-            }}
-            title="Tocca per aprire il Daily Planner per domani"
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-              <span style={{ fontSize: '18px', flexShrink: 0 }}>{isTomorrowPlanned ? '🌟' : '🎲'}</span>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>{isTomorrowPlanned ? 'Domani già programmato' : 'Tutte e 4 completate!'}</span>
-                  <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '6px', background: isTomorrowPlanned ? 'rgba(34,197,94,0.2)' : 'rgba(124,58,237,0.2)', color: isTomorrowPlanned ? '#22c55e' : 'var(--accent-primary)' }}>
-                    {isTomorrowPlanned ? 'Pronto' : '4/4'}
-                  </span>
-                </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {isTomorrowPlanned ? 'Tocca per visualizzare o modificare le azioni di domani' : 'Inizia a pianificare in anticipo la giornata dell\'indomani'}
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onOpenPlanner) onOpenPlanner(tomorrowStr);
-              }}
+          {/* Banner di pianificazione per domani in sovrapposizione alle 4 azioni completate (Zero scrolling, altezza fissa) */}
+          {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
+            <div
               style={{
-                flexShrink: 0,
-                fontSize: '10px',
-                fontWeight: 'bold',
-                color: isTomorrowPlanned ? '#22c55e' : '#ffffff',
-                background: isTomorrowPlanned ? 'rgba(34, 197, 94, 0.15)' : 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
-                border: isTomorrowPlanned ? '1px solid rgba(34, 197, 94, 0.3)' : 'none',
-                padding: '5px 10px',
-                borderRadius: '10px',
-                cursor: 'pointer',
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '14px',
+                background: isTomorrowPlanned
+                  ? 'linear-gradient(135deg, rgba(6, 78, 59, 0.92) 0%, rgba(15, 23, 42, 0.95) 100%)'
+                  : 'linear-gradient(135deg, rgba(76, 29, 149, 0.92) 0%, rgba(15, 23, 42, 0.95) 100%)',
+                backdropFilter: 'blur(3px)',
+                WebkitBackdropFilter: 'blur(3px)',
+                border: isTomorrowPlanned
+                  ? '1px solid rgba(34, 197, 94, 0.5)'
+                  : '1px solid rgba(139, 92, 246, 0.5)',
                 display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 alignItems: 'center',
-                gap: '4px',
-                boxShadow: isTomorrowPlanned ? 'none' : '0 2px 6px rgba(124, 58, 237, 0.3)'
+                padding: '8px 12px',
+                gap: '8px',
+                boxSizing: 'border-box',
+                zIndex: 10,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                animation: 'fadeIn 0.2s ease'
               }}
             >
-              <span>{isTomorrowPlanned ? 'Modifica ✏️' : 'Pianifica Domani ➔'}</span>
-            </button>
-          </div>
-        )}
+              {/* Header inside overlay: congratulations + status */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '14px' }}>{isTomorrowPlanned ? '🌟' : '🎉'}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ffffff' }}>
+                    {isTomorrowPlanned ? 'Domani già programmato!' : 'Azioni di oggi completate!'}
+                  </span>
+                </div>
+                <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '6px', background: isTomorrowPlanned ? 'rgba(34,197,94,0.35)' : 'rgba(168,85,247,0.35)', color: '#ffffff', fontWeight: 'bold' }}>
+                  4/4 ✓
+                </span>
+              </div>
+
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={() => onOpenPlanner && onOpenPlanner(tomorrowStr)}
+                style={{
+                  width: '100%',
+                  padding: '7px 12px',
+                  borderRadius: '10px',
+                  border: isTomorrowPlanned ? '1px solid rgba(34, 197, 94, 0.5)' : 'none',
+                  background: isTomorrowPlanned
+                    ? 'rgba(34, 197, 94, 0.25)'
+                    : 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
+                  color: '#ffffff',
+                  fontWeight: 'bold',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: isTomorrowPlanned ? 'none' : '0 2px 10px rgba(124, 58, 237, 0.4)'
+                }}
+              >
+                <span>{isTomorrowPlanned ? '✏️ Modifica pianificazione di domani' : '🎲 Pianifica la giornata di domani ➔'}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 3. Sostentamento Summary */}
