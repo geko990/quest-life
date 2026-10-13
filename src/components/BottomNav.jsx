@@ -169,7 +169,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        paddingTop: '3px',
+        paddingTop: '4px',
         paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
         boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
         position: 'relative',
@@ -182,21 +182,21 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
         if (item.isCenter) {
           const isCenterActive = activeTab === item.id;
           return (
-            <div key={item.id} style={{ position: 'relative', top: '-8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div key={item.id} style={{ position: 'relative', top: '-14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <button
                 onClick={() => handleItemClick(item.id)}
                 style={{
-                  width: '44px',
-                  height: '44px',
+                  width: '52px',
+                  height: '52px',
                   borderRadius: '50%',
                   background: 'var(--accent-gradient, linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   border: '3px solid var(--bg-secondary)',
-                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+                  boxShadow: '0 4px 14px rgba(124, 58, 237, 0.45)',
                   cursor: 'pointer',
-                  transform: isCenterActive ? 'scale(1.08)' : 'scale(1)',
+                  transform: isCenterActive ? 'scale(1.1)' : 'scale(1)',
                   transition: 'transform 0.2s',
                   WebkitTapHighlightColor: 'transparent'
                 }}
@@ -209,7 +209,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                   />
                 ) : (
-                  <span style={{ fontSize: '19px' }}>{avatarEmoji || '⚔️'}</span>
+                  <span style={{ fontSize: '22px' }}>{avatarEmoji || '⚔️'}</span>
                 )}
               </button>
             </div>
@@ -231,8 +231,8 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               alignItems: 'center',
               justifyContent: 'center',
               flex: 1,
-              height: '38px',
-              padding: '1px 0',
+              height: '42px',
+              padding: '2px 0 0 0',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -242,8 +242,8 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               WebkitTapHighlightColor: 'transparent'
             }}
           >
-            <span style={{ fontSize: '17px', marginBottom: '1px', lineHeight: 1 }}>{item.icon}</span>
-            <span style={{ fontSize: '9.5px', lineHeight: 1.1 }}>{item.label}</span>
+            <span style={{ fontSize: '18px', marginBottom: '4px', lineHeight: 1 }}>{item.icon}</span>
+            <span style={{ fontSize: '9.5px', lineHeight: 1.1, letterSpacing: '0.1px' }}>{item.label}</span>
           </button>
         );
       })}
