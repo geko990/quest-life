@@ -842,7 +842,6 @@ body {
 
 .section {
     display: none;
-    animation: fadeIn 0.3s ease;
 }
 
 .section.active {
@@ -852,15 +851,42 @@ body {
     box-sizing: border-box;
 }
 
-@keyframes fadeIn {
-    from {
+/* ============================================
+   TAB & SUB-TAB VIEW TRANSITIONS
+   Subtle modern fade-in from the bottom
+   ============================================ */
+@keyframes tabFadeInUp {
+    0% {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(12px);
     }
-
-    to {
+    100% {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+.tab-view-transition {
+    animation: tabFadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab-view-transition {
+        animation: none !important;
+        transform: none !important;
+    }
+}
+
+/* Bottom Navigation Bar Elevation & iPhone Safe Area */
+.app-bottom-nav {
+    padding-bottom: max(16px, calc(10px + env(safe-area-inset-bottom, 0px)));
+    box-sizing: border-box;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .app-bottom-nav {
+        padding-bottom: max(16px, calc(10px + env(safe-area-inset-bottom)));
     }
 }
 

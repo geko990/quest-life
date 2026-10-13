@@ -1733,7 +1733,19 @@ export default function App() {
           }}
         >
           <TabErrorBoundary key={activeTab}>
-            {renderActiveTab()}
+            <div
+              key={activeTab}
+              className="tab-view-transition"
+              style={{
+                width: '100%',
+                height: (activeTab === 'home' && !isLandscape) ? '100%' : 'auto',
+                minHeight: (activeTab === 'home' && !isLandscape) ? '100%' : undefined,
+                display: (activeTab === 'home' && !isLandscape) ? 'flex' : 'block',
+                flexDirection: (activeTab === 'home' && !isLandscape) ? 'column' : undefined,
+              }}
+            >
+              {renderActiveTab()}
+            </div>
           </TabErrorBoundary>
         </main>
 
