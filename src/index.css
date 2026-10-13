@@ -855,26 +855,28 @@ body {
 
 /* ============================================
    TAB & SUB-TAB VIEW TRANSITIONS
-   Visible, elegant fade-in from the bottom
+   GPU-accelerated, ultra-fluid 60/120fps fade-in glide
    ============================================ */
 @keyframes tabFadeInUp {
-    0% {
+    from {
         opacity: 0;
-        transform: translateY(28px);
+        transform: translate3d(0, 10px, 0);
+        -webkit-transform: translate3d(0, 10px, 0);
     }
-    85% {
+    to {
         opacity: 1;
-        transform: translateY(2px);
-    }
-    100% {
-        opacity: 1;
-        transform: none;
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
     }
 }
 
 .tab-view-transition {
-    animation: tabFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: tabFadeInUp 0.28s cubic-bezier(0.25, 1, 0.5, 1) backwards;
     will-change: opacity, transform;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     width: 100%;
 }
 

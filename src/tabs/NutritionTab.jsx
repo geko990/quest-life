@@ -1201,7 +1201,7 @@ export default function NutritionTab({
 
       {/* TAB 1: DIARIO DELLA SALUTE */}
       {activeMainTab === 'health' && (
-        <div key="health" className="tab-view-transition">
+        <div key="health">
           {/* Main Calorie Dashboard */}
           <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -1495,7 +1495,7 @@ export default function NutritionTab({
 
       {/* TAB 2: LISTA DELLA SPESA (DEDICATED FULL VIEW) */}
       {activeMainTab === 'shopping' && (
-        <div key="shopping" className="glass-panel tab-view-transition" style={{ padding: '16px' }}>
+        <div key="shopping" className="glass-panel" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>🛒 Lista della Spesa</h3>
