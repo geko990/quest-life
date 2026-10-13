@@ -240,7 +240,20 @@ export default function Header({
       {/* App Header (Original v3.3.0) */}
       <header
         className={`app-header ${isLandscape ? 'header-landscape' : ''}`}
-        style={isLandscape ? { padding: '4px 14px', height: '42px', minHeight: '42px' } : undefined}
+        style={{
+          flexShrink: 0,
+          boxSizing: 'border-box',
+          ...(isLandscape
+            ? { padding: '4px 14px', height: '40px', minHeight: '40px' }
+            : {
+                height: 'auto',
+                minHeight: '48px',
+                paddingTop: 'max(8px, env(safe-area-inset-top, 0px))',
+                paddingBottom: '8px',
+                paddingLeft: '14px',
+                paddingRight: '14px'
+              })
+        }}
       >
         {/* Engagement Mood Widget (Focused on Habits, Clean Emoji without visible number) */}
         <div

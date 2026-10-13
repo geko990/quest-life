@@ -1717,17 +1717,17 @@ export default function App() {
 
         {/* Primary content area */}
         <main
-          className="content-area"
+          className="content-area no-scrollbar"
           style={{
             flex: 1,
             minHeight: 0,
             width: '100%',
-            overflowY: (activeTab === 'home' && !isLandscape) ? 'hidden' : 'auto',
-            touchAction: (activeTab === 'home' && !isLandscape) ? 'none' : 'pan-y',
+            overflowY: 'auto',
+            touchAction: (activeTab === 'home' && !isLandscape) ? 'pan-y' : 'pan-y',
             overscrollBehavior: 'none',
             padding: activeTab === 'home'
-              ? (isLandscape ? '8px 14px 10px 14px' : '8px 16px 12px 16px')
-              : (isLandscape ? '10px 16px 16px 16px' : '16px 16px 28px 16px'),
+              ? (isLandscape ? '4px 10px 6px 10px' : '4px 10px 4px 10px')
+              : (isLandscape ? '8px 12px 12px 12px' : '10px 12px 16px 12px'),
             boxSizing: 'border-box',
             WebkitOverflowScrolling: 'touch'
           }}
@@ -1739,9 +1739,11 @@ export default function App() {
               style={{
                 width: '100%',
                 height: (activeTab === 'home' && !isLandscape) ? '100%' : 'auto',
-                minHeight: (activeTab === 'home' && !isLandscape) ? '100%' : undefined,
+                minHeight: 0,
                 display: (activeTab === 'home' && !isLandscape) ? 'flex' : 'block',
                 flexDirection: (activeTab === 'home' && !isLandscape) ? 'column' : undefined,
+                animation: 'tabFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both',
+                willChange: 'opacity, transform'
               }}
             >
               {renderActiveTab()}

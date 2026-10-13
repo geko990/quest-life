@@ -322,7 +322,7 @@ export default function HomeTab({
 
     const size = 360;
     const center = size / 2;
-    const radius = 115;
+    const radius = 98;
     const N = visibleStats.length;
 
     const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
@@ -504,11 +504,10 @@ export default function HomeTab({
       } : {
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
+        gap: '6px',
         height: '100%',
         maxHeight: '100%',
-        overflow: 'hidden',
-        touchAction: 'none',
+        touchAction: 'pan-y',
         overscrollBehavior: 'none',
         justifyContent: 'space-between'
       }}
@@ -521,8 +520,9 @@ export default function HomeTab({
         onPointerCancel={handleTouchEnd}
         onClick={handleChartClick}
         style={{
-          padding: '8px 12px',
-          flex: isLandscape ? 'none' : '1.4',
+          padding: '4px 8px',
+          flex: isLandscape ? 'none' : '1.1',
+          minHeight: 0,
           height: isLandscape ? '100%' : undefined,
           display: 'flex',
           flexDirection: 'column',
@@ -541,10 +541,10 @@ export default function HomeTab({
       </div>
 
       {/* Right Column in Landscape (Azioni del Giorno + Sostentamento) */}
-      <div style={isLandscape ? { display: 'flex', flexDirection: 'column', gap: '10px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
+      <div style={isLandscape ? { display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
         {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
-        <div className="glass-panel" style={{ padding: '14px 16px', borderRadius: '18px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <div className="glass-panel" style={{ padding: '8px 12px', borderRadius: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
@@ -760,7 +760,7 @@ export default function HomeTab({
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', height: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '100%' }}>
                 {todayActionsList.map((action, index) => {
                   const isCompleted = !!action.completed;
                   const info = SLOT_CATEGORY_INFO.find(s => s.type === action.slotType) || SLOT_CATEGORY_INFO[index] || SLOT_CATEGORY_INFO[0];
@@ -778,11 +778,11 @@ export default function HomeTab({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
+                        gap: '6px',
                         background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
                         border: isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)',
-                        padding: '8px 10px',
-                        borderRadius: '12px',
+                        padding: '6px 8px',
+                        borderRadius: '10px',
                         cursor: 'pointer',
                         opacity: isCompleted ? 0.65 : 1,
                         transition: 'all 0.2s ease',
@@ -903,9 +903,9 @@ export default function HomeTab({
 
       {/* 3. Sostentamento Summary */}
       {health && (
-        <div className="glass-panel" style={{ padding: '10px 12px', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+        <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               🍎 Sostentamento di oggi
             </h3>
             <span
@@ -914,7 +914,7 @@ export default function HomeTab({
               onPointerCancel={handleHealthPressCancel}
               onContextMenu={(e) => e.preventDefault()}
               style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 color: 'var(--accent-primary)',
                 fontWeight: 'bold',
                 cursor: 'pointer',
@@ -928,7 +928,7 @@ export default function HomeTab({
               {health.calories?.consumed || 0} / {health.calories?.goal || 2000} kcal
             </span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', textAlign: 'center' }}>
             {/* 🔥 Calorie Bruciate */}
             <div
               onPointerDown={() => handleHealthPressStart('calories')}
@@ -937,7 +937,7 @@ export default function HomeTab({
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
-                padding: '6px 4px',
+                padding: '4px 2px',
                 borderRadius: '8px',
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
@@ -948,9 +948,9 @@ export default function HomeTab({
               }}
               title="Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti"
             >
-              <div style={{ fontSize: '14px' }}>🔥</div>
-              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{health.calories?.burned || 0}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bruciate</div>
+              <div style={{ fontSize: '13px' }}>🔥</div>
+              <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--text-primary)' }}>{health.calories?.burned || 0}</div>
+              <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>Bruciate</div>
             </div>
 
             {/* 💧 Acqua */}
@@ -961,7 +961,7 @@ export default function HomeTab({
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
-                padding: '6px 4px',
+                padding: '4px 2px',
                 borderRadius: '8px',
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
@@ -971,9 +971,9 @@ export default function HomeTab({
                 touchAction: 'manipulation'
               }}
             >
-              <div style={{ fontSize: '14px' }}>💧</div>
-              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.goal || health.waterGoal || 8}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Bicchieri</div>
+              <div style={{ fontSize: '13px' }}>💧</div>
+              <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.goal || health.waterGoal || 8}</div>
+              <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>Bicchieri</div>
             </div>
 
             {/* 👟 Passi */}
@@ -984,7 +984,7 @@ export default function HomeTab({
               onContextMenu={(e) => e.preventDefault()}
               style={{
                 background: 'var(--bg-secondary)',
-                padding: '6px 4px',
+                padding: '4px 2px',
                 borderRadius: '8px',
                 border: '1px solid var(--glass-border)',
                 cursor: 'pointer',
