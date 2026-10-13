@@ -164,16 +164,18 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
       className="app-bottom-nav"
       style={{
         width: '100%',
-        height: '60px',
         background: 'var(--bg-secondary)',
         borderTop: '1px solid var(--glass-border)',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
+        paddingTop: '6px',
+        paddingBottom: 'max(16px, calc(10px + env(safe-area-inset-bottom, 0px)))',
         boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
         position: 'relative',
         zIndex: 50,
-        flexShrink: 0
+        flexShrink: 0,
+        boxSizing: 'border-box'
       }}
     >
       {navItems.map((item) => {
@@ -195,7 +197,8 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                   boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
                   cursor: 'pointer',
                   transform: isCenterActive ? 'scale(1.1)' : 'scale(1)',
-                  transition: 'transform 0.2s'
+                  transition: 'transform 0.2s',
+                  WebkitTapHighlightColor: 'transparent'
                 }}
                 title="Scheda Eroe (Home)"
               >
@@ -228,13 +231,15 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               alignItems: 'center',
               justifyContent: 'center',
               flex: 1,
-              height: '100%',
+              height: '46px',
+              padding: '2px 0',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
               fontWeight: isActive ? 'bold' : 'normal',
-              transition: 'color 0.2s'
+              transition: 'color 0.2s',
+              WebkitTapHighlightColor: 'transparent'
             }}
           >
             <span style={{ fontSize: '18px', marginBottom: '2px' }}>{item.icon}</span>
