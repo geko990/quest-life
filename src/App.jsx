@@ -1742,8 +1742,12 @@ export default function App() {
                 minHeight: 0,
                 display: (activeTab === 'home' && !isLandscape) ? 'flex' : 'block',
                 flexDirection: (activeTab === 'home' && !isLandscape) ? 'column' : undefined,
-                animation: 'tabFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both',
-                willChange: 'opacity, transform'
+                animation: 'tabFadeInUp 0.28s cubic-bezier(0.25, 1, 0.5, 1) backwards',
+                willChange: 'opacity, transform',
+                transform: 'translate3d(0, 0, 0)',
+                WebkitTransform: 'translate3d(0, 0, 0)',
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
               }}
             >
               {renderActiveTab()}

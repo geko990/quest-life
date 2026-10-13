@@ -104,7 +104,7 @@ export default function MissionsTab({
 
       {/* SUB-TAB 1: MISSIONI SINGOLE (ONE-SHOTS) */}
       {subTab === 'oneshot' && (
-        <div key="oneshot" className="tab-view-transition" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div key="oneshot" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
           {/* Oneshot Cards List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -171,7 +171,7 @@ export default function MissionsTab({
 
       {/* SUB-TAB 2: CAMPAGNE (QUESTS) */}
       {subTab === 'quest' && (
-        <div key="quest" className="tab-view-transition" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div key="quest" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {!showCompletedOneshots ? (
             /* Active Quests */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -450,7 +450,7 @@ export default function MissionsTab({
 
       {/* SUB-TAB 3: CATALOGO SFIDE PRESET */}
       {subTab === 'catalog' && (
-        <div key="catalog" className="tab-view-transition" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div key="catalog" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               ⚔️ Catalogo Sfide Preimpostate
