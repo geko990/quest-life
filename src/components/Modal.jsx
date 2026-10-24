@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge }) {
+export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge, onToggleSubquest }) {
   if (!isOpen) return null;
 
   const [currentType, setCurrentType] = useState(type);
@@ -2545,7 +2545,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </button>
               )}
 
-              {!['oneshot_detail', 'habit_detail'].includes(activeT) && (
+              {!['stat_detail', 'quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview'].includes(activeT) && (
                 <button
                   type="submit"
                   title="Salva"

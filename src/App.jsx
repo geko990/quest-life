@@ -755,68 +755,74 @@ export default function App() {
 
   const handleToggleSubquest = (questId, subId) => {
     const todayStr = getGameDate(settings.dayStartTime);
+    const targetQuest = quests.find(q => q.id === questId);
+    if (!targetQuest) return;
+
+    const subItem = (targetQuest.subquests || []).find(sq => sq.id === subId);
+    if (!subItem) return;
+
+    const subWasDone = subItem.completed;
+    const subWillBeDone = !subWasDone;
+    const questDifficulty = targetQuest.difficulty || targetQuest.stars || 1;
+
+    // Milestone reward/deduct: awards 10 XP + 1 monthly medal point
+    if (subWillBeDone) {
+      handleRewardXp(targetQuest.primaryTarget, 10, true, subItem.name || 'Milestone', todayStr, questDifficulty);
+    } else {
+      handleDeductXp(targetQuest.primaryTarget, 10, true, subItem.name || 'Milestone', todayStr);
+    }
+
+    // Record subquest in completionLog
+    setCompletionLog(prev => {
+      const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
+      const list = [...(dayLog.subquests || [])];
+      const key = `${questId}:${subId}`;
+      const idx = list.indexOf(key);
+      if (subWillBeDone && idx === -1) {
+        list.push(key);
+      } else if (!subWillBeDone && idx !== -1) {
+        list.splice(idx, 1);
+      }
+      return { ...prev, [todayStr]: { ...dayLog, subquests: list } };
+    });
+
+    const updatedSubs = (targetQuest.subquests || []).map(sq =>
+      sq.id === subId ? { ...sq, completed: subWillBeDone } : sq
+    );
+
+    // Check if all subquests are completed now
+    const allDone = updatedSubs.length > 0 && updatedSubs.every(sq => sq.completed);
+    const wasDone = targetQuest.completed;
+
+    if (allDone && !wasDone) {
+      // Reward massive Campaign Completion XP! (difficulty * 35 XP) + 1 monthly medal point
+      const xpReward = questDifficulty * 35;
+      handleRewardXp(targetQuest.primaryTarget, xpReward, true, targetQuest.name, todayStr, questDifficulty);
+      if (targetQuest.secondaryTarget) {
+        handleRewardXp(targetQuest.secondaryTarget, Math.round(xpReward * 0.33), false, targetQuest.name, todayStr, questDifficulty);
+      }
+      // Record quest completion in completionLog
+      setCompletionLog(prev => {
+        const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
+        const list = [...(dayLog.quests || [])];
+        if (!list.includes(questId)) list.push(questId);
+        return { ...prev, [todayStr]: { ...dayLog, quests: list } };
+      });
+      setTimeout(() => {
+        alert(`🏆 CAMPAGNA COMPLETATA! "${targetQuest.name}" è finita! Hai guadagnato +${xpReward} XP!`);
+      }, 50);
+    } else if (!allDone && wasDone) {
+      // Deduct Campaign Completion XP if uncompleted
+      const xpReward = questDifficulty * 35;
+      handleDeductXp(targetQuest.primaryTarget, xpReward, true, targetQuest.name);
+      if (targetQuest.secondaryTarget) {
+        handleDeductXp(targetQuest.secondaryTarget, Math.round(xpReward * 0.33), false, targetQuest.name);
+      }
+    }
+
     setQuests(prevQuests =>
       prevQuests.map(q => {
         if (q.id !== questId) return q;
-
-        const subItem = q.subquests.find(sq => sq.id === subId);
-        const subWasDone = subItem?.completed;
-        const subWillBeDone = !subWasDone;
-        const questDifficulty = q.difficulty || q.stars || 1;
-
-        const updatedSubs = q.subquests.map(sq =>
-          sq.id === subId ? { ...sq, completed: subWillBeDone } : sq
-        );
-
-        // Milestone reward/deduct: awards 10 XP + 1 monthly medal point
-        if (subWillBeDone) {
-          handleRewardXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone', todayStr, questDifficulty);
-        } else {
-          handleDeductXp(q.primaryTarget, 10, true, subItem?.name || 'Milestone', todayStr);
-        }
-
-        // Record subquest in completionLog
-        setCompletionLog(prev => {
-          const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
-          const list = [...(dayLog.subquests || [])];
-          const key = `${questId}:${subId}`;
-          const idx = list.indexOf(key);
-          if (subWillBeDone && idx === -1) {
-            list.push(key);
-          } else if (!subWillBeDone && idx !== -1) {
-            list.splice(idx, 1);
-          }
-          return { ...prev, [todayStr]: { ...dayLog, subquests: list } };
-        });
-
-        // Check if all subquests are completed now
-        const allDone = updatedSubs.length > 0 && updatedSubs.every(sq => sq.completed);
-        const wasDone = q.completed;
-
-        if (allDone && !wasDone) {
-          // Reward massive Campaign Completion XP! (difficulty * 35 XP) + 1 monthly medal point
-          const xpReward = questDifficulty * 35;
-          handleRewardXp(q.primaryTarget, xpReward, true, q.name, todayStr, questDifficulty);
-          if (q.secondaryTarget) {
-            handleRewardXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name, todayStr, questDifficulty);
-          }
-          // Record quest completion in completionLog
-          setCompletionLog(prev => {
-            const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
-            const list = [...(dayLog.quests || [])];
-            if (!list.includes(questId)) list.push(questId);
-            return { ...prev, [todayStr]: { ...dayLog, quests: list } };
-          });
-          alert(`🏆 CAMPAGNA COMPLETATA! "${q.name}" è finita! Hai guadagnato +${xpReward} XP!`);
-        } else if (!allDone && wasDone) {
-          // Deduct Campaign Completion XP if uncompleted
-          const xpReward = questDifficulty * 35;
-          handleDeductXp(q.primaryTarget, xpReward, true, q.name);
-          if (q.secondaryTarget) {
-            handleDeductXp(q.secondaryTarget, Math.round(xpReward * 0.33), false, q.name);
-          }
-        }
-
         return { ...q, subquests: updatedSubs, completed: allDone };
       })
     );
@@ -1785,6 +1791,7 @@ export default function App() {
         quests={quests}
         settings={settings}
         onActivateChallenge={handleActivateChallenge}
+        onToggleSubquest={handleToggleSubquest}
         onEditStat={(statData) => {
           setModalOpen(false);
           setTimeout(() => {
