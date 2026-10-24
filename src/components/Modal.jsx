@@ -943,10 +943,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto', paddingRight: '4px' }} className="no-scrollbar">
-                  {currentQuest.subquests?.map((sq) => (
+                  {currentQuest.subquests?.map((sq, idx) => (
                     <div
-                      key={sq.id}
-                      onClick={() => onToggleSubquest && onToggleSubquest(currentQuest.id, sq.id)}
+                      key={sq.id || `sub_${idx}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onToggleSubquest) onToggleSubquest(currentQuest.id, sq.id !== undefined && sq.id !== null ? sq.id : idx);
+                      }}
                       style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
                     >
                       <div

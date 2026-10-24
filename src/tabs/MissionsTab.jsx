@@ -368,10 +368,13 @@ export default function MissionsTab({
                               Nessun sotto-obiettivo definito.
                             </p>
                           ) : (
-                            q.subquests.map((sq) => (
+                            q.subquests.map((sq, idx) => (
                               <div
-                                key={sq.id}
-                                onClick={() => onToggleSubquest(q.id, sq.id)}
+                                key={sq.id || `sub_${idx}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onToggleSubquest(q.id, sq.id !== undefined && sq.id !== null ? sq.id : idx);
+                                }}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', cursor: 'pointer' }}
                               >
                                 <div

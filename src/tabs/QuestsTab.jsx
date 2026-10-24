@@ -145,10 +145,13 @@ export default function QuestsTab({
               </p>
             ) : (
               <div className="space-y-2">
-                {q.subquests.map((sq) => (
+                {q.subquests.map((sq, idx) => (
                   <div
-                    key={sq.id}
-                    onClick={() => onToggleSubquest(q.id, sq.id)}
+                    key={sq.id || `sub_${idx}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleSubquest(q.id, sq.id !== undefined && sq.id !== null ? sq.id : idx);
+                    }}
                     className="flex items-center gap-3 p-2 bg-bg-main/50 hover:bg-bg-main border border-border-color/30 rounded-lg cursor-pointer transition-colors select-none"
                   >
                     <div

@@ -213,13 +213,22 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   });
   state.oneshots = cleanOneshots;
 
-  state.quests = (parsed.quests || []).map(q => {
+  state.quests = (parsed.quests || []).map((q, qIdx) => {
     const diff = q.difficulty !== undefined ? q.difficulty : (q.stars !== undefined ? q.stars : 3);
-    const cleanSubquests = (q.subquests || []).map(sq => {
+    const questId = q.id || `quest_${Date.now()}_${qIdx}`;
+    const seenSubIds = new Set();
+    const cleanSubquests = (q.subquests || []).map((sq, sqIdx) => {
       const dailyPlanDate = (sq.dailyPlanDate && typeof sq.dailyPlanDate === 'string') ? sq.dailyPlanDate : null;
-      return { ...sq, dailyPlanDate };
+      let subId = (sq && sq.id !== undefined && sq.id !== null && String(sq.id).trim() !== '')
+        ? String(sq.id).trim()
+        : `sub_${questId}_${sqIdx}`;
+      if (seenSubIds.has(subId)) {
+        subId = `${subId}_${sqIdx}_${Date.now()}`;
+      }
+      seenSubIds.add(subId);
+      return { ...sq, id: subId, dailyPlanDate };
     });
-    return { ...q, difficulty: diff, stars: diff, subquests: cleanSubquests };
+    return { ...q, id: questId, difficulty: diff, stars: diff, subquests: cleanSubquests };
   });
 
   // 2. Clean and deduplicate completionLog

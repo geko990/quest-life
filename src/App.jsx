@@ -758,12 +758,18 @@ export default function App() {
     const targetQuest = quests.find(q => q.id === questId);
     if (!targetQuest) return;
 
-    const subItem = (targetQuest.subquests || []).find(sq => sq.id === subId);
-    if (!subItem) return;
+    const subquests = targetQuest.subquests || [];
+    // Locate the single targeted subquest by matching subId or fallback to index
+    const targetIndex = subquests.findIndex((sq, idx) => 
+      (subId !== undefined && subId !== null && (sq.id === subId || idx === subId || String(idx) === String(subId)))
+    );
+    if (targetIndex === -1) return;
 
-    const subWasDone = subItem.completed;
+    const subItem = subquests[targetIndex];
+    const subWasDone = !!subItem.completed;
     const subWillBeDone = !subWasDone;
     const questDifficulty = targetQuest.difficulty || targetQuest.stars || 1;
+    const effectiveSubId = subItem.id || `sub_${questId}_${targetIndex}`;
 
     // Milestone reward/deduct: awards 10 XP + 1 monthly medal point
     if (subWillBeDone) {
@@ -776,7 +782,7 @@ export default function App() {
     setCompletionLog(prev => {
       const dayLog = { habits: [], oneshots: [], quests: [], subquests: [], ...(prev[todayStr] || {}) };
       const list = [...(dayLog.subquests || [])];
-      const key = `${questId}:${subId}`;
+      const key = `${questId}:${effectiveSubId}`;
       const idx = list.indexOf(key);
       if (subWillBeDone && idx === -1) {
         list.push(key);
@@ -786,13 +792,14 @@ export default function App() {
       return { ...prev, [todayStr]: { ...dayLog, subquests: list } };
     });
 
-    const updatedSubs = (targetQuest.subquests || []).map(sq =>
-      sq.id === subId ? { ...sq, completed: subWillBeDone } : sq
+    // Update STRICTLY ONLY the targeted subquest by index
+    const updatedSubs = subquests.map((sq, idx) =>
+      idx === targetIndex ? { ...sq, id: effectiveSubId, completed: subWillBeDone } : sq
     );
 
     // Check if all subquests are completed now
     const allDone = updatedSubs.length > 0 && updatedSubs.every(sq => sq.completed);
-    const wasDone = targetQuest.completed;
+    const wasDone = !!targetQuest.completed;
 
     if (allDone && !wasDone) {
       // Reward massive Campaign Completion XP! (difficulty * 35 XP) + 1 monthly medal point
@@ -1649,7 +1656,7 @@ export default function App() {
           }}
           style={{
             position: 'fixed',
-            top: '12px',
+            top: 'max(10px, calc(env(safe-area-inset-top, 0px) + 8px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 99999,
