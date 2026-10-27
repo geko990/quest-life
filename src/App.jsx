@@ -4,6 +4,7 @@ import BottomNav from './components/BottomNav';
 import Modal from './components/Modal';
 import DailyPlannerModal from './components/DailyPlannerModal';
 import MedalCelebrationModal from './components/MedalCelebrationModal';
+import CelebrationLayer from './components/CelebrationLayer';
 import HomeTab from './tabs/HomeTab';
 import HabitsTab from './tabs/HabitsTab';
 import MissionsTab from './tabs/MissionsTab';
@@ -21,6 +22,7 @@ import { logAppError } from './utils/errorLogger';
 import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPrefs } from './utils/deadlines';
 
 import { setLanguage, _t } from './i18n';
+import { applyStatXp, titleForLevel, habitsProgress, dailyActionsProgress, celebrate } from './utils/celebrations';
 class TabErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -431,11 +433,58 @@ export default function App() {
     }
   };
 
+  // --- Celebrazioni (#35) ---
+  // Valori "vivi" di abilità e XP totali: si riallineano a ogni render e si aggiornano subito a ogni ricompensa
+  const liveXpRef = useRef({ stats, totalXp: player.totalXp || 0 });
+  liveXpRef.current = { stats, totalXp: player.totalXp || 0 };
+  // Ultima spunta fatta dall'utente: i coriandoli partono solo subito dopo un tocco (non all'avvio o dopo un ripristino)
+  const lastToggleRef = useRef(0);
+  const celebrationDay = getGameDate(settings.dayStartTime);
+  const habitsToday = habitsProgress(habits, completionLog, celebrationDay);
+  const actionsToday = dailyActionsProgress(oneshots, quests, celebrationDay);
+  const prevCompletionRef = useRef(null);
+  useEffect(() => {
+    const now = {
+      day: celebrationDay,
+      habits: habitsToday.total > 0 && habitsToday.done === habitsToday.total,
+      actions: actionsToday.total > 0 && actionsToday.done === actionsToday.total
+    };
+    const prev = prevCompletionRef.current;
+    prevCompletionRef.current = now;
+    if (!prev || prev.day !== now.day) return;
+    if (Date.now() - lastToggleRef.current > 3000) return;
+    const habitsJustDone = now.habits && !prev.habits;
+    const actionsJustDone = now.actions && !prev.actions;
+    if (habitsJustDone && actionsJustDone) celebrate('confetti', { reason: 'both', message: _t("🏆 Giornata perfetta!") });
+    else if (habitsJustDone) celebrate('confetti', { reason: 'habits', message: _t("🎉 Abitudini di oggi completate!") });
+    else if (actionsJustDone) celebrate('confetti', { reason: 'actions', message: _t("⚔️ Azioni del Giorno completate!") });
+  }, [celebrationDay, habitsToday.done, habitsToday.total, actionsToday.done, actionsToday.total]);
+
   // 7. XP Reward Handler
   const handleRewardXp = (statId, amount, countsForMonthlyMedal = false, itemTitle = '', logDate = null, itemStars = 1, itemType = 'task') => {
     if (!amount || amount <= 0) return;
     const todayStr = getGameDate(settings.dayStartTime);
     const effectiveDate = logDate || todayStr;
+
+    // 0. Celebrazioni (#35): barra XP dell'abilità e, se si sale di livello, medaglia.
+    // Si calcola dai valori "vivi" (liveXpRef), così due ricompense nello stesso tocco si sommano correttamente.
+    try {
+      const live = liveXpRef.current;
+      const st = (live.stats || []).find(x => x.id === statId);
+      if (st) {
+        const fromLevel = Number(st.level) || 1, fromXp = Number(st.xp) || 0;
+        const res = applyStatXp(fromLevel, fromXp, amount);
+        live.stats = live.stats.map(x => (x.id === statId ? { ...x, level: res.level, xp: res.xp } : x));
+        celebrate('xp', { statId, icon: st.icon || '✨', name: st.name || '', fromLevel, fromXp, toLevel: res.level, toXp: res.xp, amount });
+        if (res.level > fromLevel) celebrate('levelup', { kind: 'stat', statId, icon: st.icon || '✨', name: st.name || '', level: res.level });
+      }
+      const beforeLvl = calculateLevelFromXp(live.totalXp || 0);
+      live.totalXp = (live.totalXp || 0) + amount;
+      const afterLvl = calculateLevelFromXp(live.totalXp);
+      if (afterLvl > beforeLvl) {
+        celebrate('levelup', { kind: 'player', icon: '🏆', name: player.name || _t("Avventuriero"), level: afterLvl, title: titleForLevel(afterLvl) });
+      }
+    } catch (e) { console.error(e); }
 
     // 1. Reward Stat XP
     let didStatLevelUp = false;
@@ -547,10 +596,8 @@ export default function App() {
       };
     });
 
-    if (leveledUp) {
-      if (settings.soundEnabled) playLevelUpSound();
-      alert(_t("🎉 LEVEL UP! Sei salito al Livello {0}! Continua così, eroe!", achievedLevel));
-    }
+    // Il passaggio di livello del personaggio si festeggia con la medaglia (CelebrationLayer), non più con un avviso
+    if (leveledUp && settings.soundEnabled) playLevelUpSound();
   };
 
   // 7b. XP Deduction Handler (when an item is unchecked / canceled)
@@ -660,6 +707,7 @@ export default function App() {
 
   // 8. Toggling Item Completions
   const handleToggleHabit = (habitId, dateStr) => {
+    lastToggleRef.current = Date.now();
     const todayStr = getGameDate(settings.dayStartTime);
     const targetDate = dateStr || todayStr;
     const isCompleted = completionLog[targetDate]?.habits?.includes(habitId);
@@ -734,6 +782,7 @@ export default function App() {
   };
 
   const handleToggleOneshot = (id, dateStr) => {
+    lastToggleRef.current = Date.now();
     const os = oneshots.find(o => o.id === id);
     if (!os) return;
 
@@ -782,6 +831,7 @@ export default function App() {
   };
 
   const handleToggleSubquest = (questId, subId) => {
+    lastToggleRef.current = Date.now();
     const todayStr = getGameDate(settings.dayStartTime);
     const targetQuest = quests.find(q => q.id === questId);
     if (!targetQuest) return;
@@ -2135,6 +2185,9 @@ export default function App() {
         targetDate={plannerTargetDate}
         isTomorrow={!!plannerTargetDate && plannerTargetDate !== getGameDate(settings?.dayStartTime || 0)}
       />
+
+      {/* Celebrazioni: barra XP, coriandoli, medaglia di livello (#35) */}
+      <CelebrationLayer />
 
       {/* MONTHLY MEDAL CELEBRATION POPUP */}
       {unlockedMedalCelebration && (

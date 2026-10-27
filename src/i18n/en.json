@@ -1270,6 +1270,7 @@
  "da {0}": "from {0}",
  "Mostra altri ({0})": "Show more ({0})",
  "🗑️ Elimina conto": "🗑️ Delete account",
+<<<<<<< HEAD
  "Promemoria scadenze": "Deadline reminders",
  "Dal primo la missione diventa arancione": "From the first one, the quest turns orange",
  "Quanto prima": "How early",
@@ -1326,4 +1327,15 @@
  "Manuale e guide": "Manual and guides",
  "RPG, Finanze, Abitudini e Nutrizione": "RPG, Finances, Habits and Nutrition",
  "Versione": "Version"
+=======
+ "🏆 Giornata perfetta!": "🏆 Perfect day!",
+ "🎉 Abitudini di oggi completate!": "🎉 All of today's habits done!",
+ "⚔️ Azioni del Giorno completate!": "⚔️ Today's Actions complete!",
+ "Liv. {0}": "Lv. {0}",
+ "Livello superiore!": "Level up!",
+ "{0} è ora di livello {1}": "{0} is now level {1}",
+ "{0} sale al livello {1}": "{0} reaches level {1}",
+ "Nuovo titolo: {0}": "New title: {0}",
+ "Tocca per continuare": "Tap to continue"
+>>>>>>> 4e818b8 (Celebrazioni: barra XP delle abilità, coriandoli per abitudini e Azioni del Giorno completate, medaglia di livello)
 }
