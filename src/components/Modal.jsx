@@ -2434,7 +2434,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           // altezza che segue il contenuto entro un minimo e un massimo comuni (oltre si scorre).
           // Le altre (salute, peso) restano adattive.
           ...(isStandardModal
-            ? { width: '92%', maxWidth: isLandscape ? '420px' : '360px', minHeight: isLandscape ? 'min(300px, 88dvh)' : 'min(400px, 78dvh)', maxHeight: isLandscape ? '92dvh' : '78dvh' }
+            ? { aspectRatio: 'auto', width: '92%', maxWidth: isLandscape ? '420px' : '360px', minHeight: isLandscape ? 'min(300px, 88dvh)' : 'min(400px, 78dvh)', maxHeight: isLandscape ? '92dvh' : '78dvh' }
             : {
                 aspectRatio: (isExpandedModal || isLandscape) ? 'auto' : '3 / 4',
                 maxWidth: isExpandedModal ? '480px' : (isLandscape ? '440px' : '360px'),
