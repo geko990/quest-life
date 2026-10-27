@@ -851,7 +851,20 @@ export default function App() {
     );
   };
 
-  const handleSaveDailyPlan = (slots, d10Roll, customDate) => {
+  const handleSaveDailyPlan = (rawSlots, d10Roll, customDate) => {
+    // Protezione: se due righe puntano alla stessa missione, solo la prima resta collegata,
+    // le altre diventano azioni nuove (così nessuna delle 4 azioni va persa)
+    const slots = {};
+    const usedLinks = new Set();
+    Object.entries(rawSlots || {}).forEach(([key, slot]) => {
+      const link = slot.oneshotId ? `o:${slot.oneshotId}` : (slot.questId && slot.subquestId ? `q:${slot.questId}:${slot.subquestId}` : null);
+      if (link && slot.name && slot.name.trim() && usedLinks.has(link)) {
+        slots[key] = { ...slot, oneshotId: null, questId: null, subquestId: null };
+      } else {
+        if (link && slot.name && slot.name.trim()) usedLinks.add(link);
+        slots[key] = slot;
+      }
+    });
     const todayStr = getGameDate(settings.dayStartTime);
     const planDate = (typeof customDate === 'string' && customDate.length === 10) ? customDate : todayStr;
     

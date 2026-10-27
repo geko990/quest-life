@@ -88,6 +88,36 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
     }));
   };
 
+  // Scrivendo a mano un nome, la riga non è più collegata alla missione scelta prima:
+  // diventa un'azione nuova (altrimenti due righe finivano sulla stessa missione e se ne perdeva una)
+  const handleSlotNameTyped = (slotKey, value) => {
+    setSlots(prev => {
+      const cur = prev[slotKey];
+      const linked = cur.oneshotId || cur.questId;
+      return {
+        ...prev,
+        [slotKey]: linked
+          ? { ...cur, name: value, oneshotId: null, questId: null, subquestId: null }
+          : { ...cur, name: value }
+      };
+    });
+  };
+
+  // Scegliendo una missione esistente in una riga, la si toglie dalle altre righe (spostamento)
+  const releaseFromOtherSlots = (slotKey, match) => {
+    setSlots(prev => {
+      const next = { ...prev };
+      Object.keys(next).forEach(k => {
+        if (k === slotKey) return;
+        const s = next[k];
+        const same = (match.oneshotId && s.oneshotId === match.oneshotId) ||
+          (match.subquestId && s.questId === match.questId && s.subquestId === match.subquestId);
+        if (same) next[k] = { ...s, name: '', oneshotId: null, questId: null, subquestId: null };
+      });
+      return next;
+    });
+  };
+
   const hasAnyContent = Object.values(slots).some(s => s.name.trim() !== '');
 
   const handleRollDice = () => {
@@ -193,7 +223,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           <input
             type="text"
             value={slot.name}
-            onChange={(e) => handleSlotChange(key, 'name', e.target.value)}
+            onChange={(e) => handleSlotNameTyped(key, e.target.value)}
             placeholder={placeholder}
             style={{
               flex: 1,
@@ -219,6 +249,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                     const targetId = val.replace('oneshot-', '');
                     const found = uncompletedOneshots.find(o => o.id === targetId);
                     if (found) {
+                      releaseFromOtherSlots(key, { oneshotId: found.id });
                       handleSlotChange(key, 'name', found.name);
                       handleSlotChange(key, 'oneshotId', found.id);
                       handleSlotChange(key, 'questId', null);
@@ -230,6 +261,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   } else if (val.startsWith('quest-')) {
                     const found = activeCampaignMilestones.find(m => m.id === val);
                     if (found) {
+                      releaseFromOtherSlots(key, { questId: found.questId, subquestId: found.subquestId });
                       handleSlotChange(key, 'name', found.name);
                       if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
                       handleSlotChange(key, 'oneshotId', null);
