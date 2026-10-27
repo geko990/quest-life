@@ -7991,7 +7991,6 @@ html[data-animations="off"] .acc-card-shine { display: none; }
     .acc-card-shine { display: none; }
 }
 
-<<<<<<< HEAD
 /* ============================================
    OPZIONI — una sola grammatica per tutte le righe
    (componenti in src/components/settings/SettingsUI.jsx)
@@ -8144,7 +8143,8 @@ html[data-animations="off"] .opt-toggle, html[data-animations="off"] .opt-toggle
   height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--glass-border);
   background: color-mix(in srgb, var(--text-primary) 5%, transparent); color: var(--text-primary);
   font-family: inherit; font-size: 12px; font-weight: 600;
-=======
+}
+
 /* ============================================================
    Celebrazioni (#35): barra XP, coriandoli, medaglia di livello
    Componente: src/components/CelebrationLayer.jsx
@@ -8353,5 +8353,4 @@ html[data-animations="off"] :is(.xp-toast, .xp-toast-row, .xp-toast-level, .xp-t
     .celebration-banner, .levelup-overlay, .levelup-card, .levelup-rays, .levelup-disc, .levelup-number),
 html[data-animations="off"] .levelup-disc::after {
     animation: none !important;
->>>>>>> 4e818b8 (Celebrazioni: barra XP delle abilità, coriandoli per abitudini e Azioni del Giorno completate, medaglia di livello)
 }
