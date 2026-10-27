@@ -14,8 +14,6 @@ export const DEFAULT_ABILITIES = [
     { id: 'cre', name: 'Creatività', icon: '🎨', description: 'Immaginazione e creazione. Arte, musica, scrittura, design e innovazione.', type: 'ability', visible: false, level: 1, xp: 0 }
 ];
 
-export const AVATAR_EMOJIS = ['⚔️', '🗡️', '🏹', '🛡️', '👑', '🧙', '🧝', '🧚', '🦸', '🦹', '🥷', '🧑‍🚀', '👤', '🐉', '🦅', '🐺', '🦁', '🐻', '🌟', '💎', '🔥', '❄️', '⚡', '🌙'];
-
 export const ACCENT_COLORS = ['violet', 'blue', 'indigo', 'cyan', 'teal', 'emerald', 'gold', 'orange', 'rose', 'pink', 'red', 'green', 'yellow', 'lime', 'sky'];
 
 export const LEVEL_CAP = 20;

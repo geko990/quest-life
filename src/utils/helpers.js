@@ -18,20 +18,10 @@ export function getGameDate(dayStartTime = 0) {
     return formatISO(getGameDateObj(dayStartTime));
 }
 
-export function getYesterdayGameDate(dayStartTime = 0) {
-    const todayObj = getGameDateObj(dayStartTime);
-    const yesterdayObj = new Date(todayObj.getTime() - 86400000);
-    return formatISO(yesterdayObj);
-}
-
 export function getTomorrowGameDate(dayStartTime = 0) {
     const todayObj = getGameDateObj(dayStartTime);
     const tomorrowObj = new Date(todayObj.getTime() + 86400000);
     return formatISO(tomorrowObj);
-}
-
-export function getGameDateString(dayStartTime = 0) {
-    return getGameDateObj(dayStartTime).toDateString();
 }
 
 // Helpers for periodic habits
@@ -101,30 +91,6 @@ export function calculateLevelFromXp(totalXp) {
         level++;
     }
     return level;
-}
-
-export function generateId(prefix = '') {
-    return prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-}
-
-export function ensureUniqueIds(list, prefix) {
-    if (!list) return;
-    const seen = new Set();
-    list.forEach(item => {
-        if (seen.has(item.id)) {
-            // Generate new ID
-            const newId = generateId(prefix);
-            console.warn(`Duplicate ID found: ${item.id} -> replaced with ${newId}`);
-            item.id = newId;
-        }
-        seen.add(item.id);
-    });
-}
-
-export function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
 }
 
 export function getMonthlyStarCounts(monthId, completionLog = {}, oneshots = [], quests = [], xpLog = []) {

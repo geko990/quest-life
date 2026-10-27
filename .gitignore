@@ -19,7 +19,14 @@ node_modules/
 dist/
 .vite/
 
-# Temporary screenshots
-screenshot_*.png
+# Screenshot e file temporanei di test
+screenshot*.png
+
+# Output del build copiato per errore nella radice (il sito si costruisce in dist/)
+/assets/
+/sw.js
+/version.json
+/icon.png
+/manifest.json
 
 

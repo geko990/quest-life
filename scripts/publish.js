@@ -20,10 +20,10 @@ try {
   // 1. Build project & bump version if needed
   console.log('📦 1/4 Aggiornamento versione e build dell\'applicazione...');
   const bumpFlag = noBump ? '' : ' --bump';
+  // Il build locale serve solo come verifica: il sito pubblicato viene
+  // ricostruito da GitHub Actions (.github/workflows/deploy.yml) partendo dai sorgenti.
   execSync(`node scripts/update-version.js${bumpFlag}`, execOpts);
   execSync(`npx vite build`, execOpts);
-  execSync(`cp -r dist/* .`, execOpts);
-  execSync(`node scripts/update-version.js --post`, execOpts);
 
   // Read updated version
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));

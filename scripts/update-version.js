@@ -6,72 +6,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-const isPostBuild = process.argv.includes('--post');
-
-const cleanIndexHtml = `<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>RPG Life</title>
-  
-  <!-- PWA Setup -->
-  <link rel="manifest" href="./manifest.json">
-  <link rel="apple-touch-icon" href="./icon.png">
-  <link rel="icon" type="image/png" href="./icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f0f1a">
-
-  <!-- Emergency Auto-Recovery Script (Preserves localStorage user data) -->
-  <script>
-    (function() {
-      window.onerror = function(msg, url, line) {
-        console.error('[Emergency Recovery] Startup Error:', msg);
-        var lastReload = localStorage.getItem('rpg_last_emergency_reload');
-        var now = Date.now();
-        if (!lastReload || (now - parseInt(lastReload, 10)) > 15000) {
-          localStorage.setItem('rpg_last_emergency_reload', now.toString());
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
-            });
-          }
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              for (var i = 0; i < names.length; i++) { caches.delete(names[i]); }
-            });
-          }
-          setTimeout(function() {
-            var search = window.location.search || '?';
-            window.location.href = window.location.pathname + search + '&v=' + Date.now();
-          }, 300);
-        }
-      };
-    })();
-  </script>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
-</head>
-<body class="min-h-screen">
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
-</html>
-`;
-
-if (isPostBuild) {
-  // Post build step: preserve production index.html copied from dist
-  console.log('[Version Updater] Post-build: Production index.html preserved.');
-  process.exit(0);
-}
-
-// Pre-build step
-fs.writeFileSync(path.join(rootDir, 'index.html'), cleanIndexHtml, 'utf8');
-
 const pkgPath = path.join(rootDir, 'package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
@@ -96,8 +30,8 @@ console.log(`[Version Updater] Syncing RPG Life v${version} (Build: ${buildTime}
 
 const versionJsonContent = JSON.stringify({ version, buildTime, timestamp }, null, 2) + '\n';
 
-// 1. Update version.json everywhere (root, public, dist)
-const targetDirs = [rootDir, path.join(rootDir, 'public'), path.join(rootDir, 'dist')];
+// 1. Update version.json in public/ (source) and dist/ (if a build already exists)
+const targetDirs = [path.join(rootDir, 'public'), path.join(rootDir, 'dist')];
 
 targetDirs.forEach((dir) => {
   if (fs.existsSync(dir)) {
@@ -127,7 +61,7 @@ if (fs.existsSync(constantsPath)) {
   fs.writeFileSync(constantsPath, constantsContent, 'utf8');
 }
 
-// 3. Update sw.js everywhere (root, public, dist)
+// 3. Update sw.js in public/ and dist/
 const updateSWFile = (swPath) => {
   if (!fs.existsSync(swPath)) return;
   let swContent = fs.readFileSync(swPath, 'utf8');
@@ -156,4 +90,4 @@ targetDirs.forEach((dir) => {
   updateSWFile(path.join(dir, 'sw.js'));
 });
 
-console.log('[Version Updater] Successfully updated all version strings and cache keys across root, public, and dist.');
+console.log('[Version Updater] Successfully updated all version strings and cache keys in public/ and dist/.');

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/update-version.js && vite build && cp -r dist/* . && node scripts/update-version.js --post",
+    "build": "node scripts/update-version.js && vite build",
     "release": "node scripts/publish.js",
     "deploy": "node scripts/publish.js",
     "preview": "vite preview"
