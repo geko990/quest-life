@@ -20,6 +20,10 @@ Ogni volta che viene effettuata una modifica:
 - I testi visibili passano da `_t("Testo italiano")` (da `src/i18n`); ogni testo nuovo va tradotto in `src/i18n/en.json`.
 - Controllo: `node scripts/check-i18n.mjs`.
 
+## Lavoro in parallelo con altre sessioni (anche di Claude)
+- Prima di pubblicare: `git pull --rebase origin main`, poi incrementa la versione partendo dall'ultimo `main`.
+- L'elenco delle modifiche e dei punti aperti è nel documento "Roadmap Quest Life" del Progetto claude.ai "Solo RPG".
+
 ## Da non fare
 - Non copiare `dist/` nella radice del progetto e non committarlo: il sito viene costruito da GitHub Actions.
 - Non sovrascrivere `index.html` con la versione compilata: è il file sorgente (entry `/src/main.jsx`).

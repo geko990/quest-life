@@ -64,6 +64,16 @@ pubblica (1-2 minuti). L'output del build (`dist/`) non va mai committato né co
 Se non si può fare il build in locale: `node scripts/update-version.js --bump`, commit e push;
 il build lo fa comunque GitHub Actions.
 
+## Lavoro in più conversazioni in parallelo
+- Il documento **"Roadmap Quest Life"** nel Progetto claude.ai "Solo RPG" contiene l'elenco numerato delle
+  modifiche, i punti aperti, le decisioni e le linee di lavoro. Leggilo all'inizio; aggiornalo quando chiudi o apri un punto.
+- Ogni conversazione lavora su un proprio ramo (`claude/<argomento>`), mai direttamente su `main`.
+- Prima di pubblicare: `git fetch origin main` e `git rebase origin/main` (o merge), poi
+  `node scripts/update-version.js --bump`: il numero di versione si prende sempre dall'ultimo `main`.
+  Se il push su `main` viene rifiutato perché un'altra conversazione ha pubblicato nel frattempo, ripeti fetch, rebase e bump.
+- Non modificare la stessa schermata contemporaneamente in due conversazioni (vedi le linee di lavoro nella Roadmap).
+- Il repository è pubblico: mai committare dati personali dell'utente (backup, export, screenshot con dati reali).
+
 ## Comandi
 - `npm run dev` — server di sviluppo
 - `npm run build` — build di produzione in `dist/`
