@@ -2430,10 +2430,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          // Finestre standard (dettagli e form di missioni, abitudini, cibi...): stessa dimensione fissa,
-          // indipendente dal contenuto, che scorre all'interno. Le altre (salute, peso) restano adattive.
+          // Finestre standard (dettagli e form di missioni, abitudini, cibi...): stessa larghezza,
+          // altezza che segue il contenuto entro un minimo e un massimo comuni (oltre si scorre).
+          // Le altre (salute, peso) restano adattive.
           ...(isStandardModal
-            ? { width: '92%', maxWidth: isLandscape ? '440px' : '400px', height: isLandscape ? 'min(92dvh, 640px)' : 'min(80dvh, 660px)' }
+            ? { width: '92%', maxWidth: isLandscape ? '420px' : '360px', minHeight: isLandscape ? 'min(300px, 88dvh)' : 'min(400px, 78dvh)', maxHeight: isLandscape ? '92dvh' : '78dvh' }
             : {
                 aspectRatio: (isExpandedModal || isLandscape) ? 'auto' : '3 / 4',
                 maxWidth: isExpandedModal ? '480px' : (isLandscape ? '440px' : '360px'),
