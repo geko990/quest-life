@@ -7703,11 +7703,21 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
    Nei task il colore va sulla parte visibile (.swipe-content), nelle campagne sul pannello. */
 .task-card.due-card-attention .swipe-content,
 .glass-panel.due-card-attention {
-    background: color-mix(in srgb, #f97316 24%, var(--bg-card)) !important;
+    background: #ffedd5 !important;
     border: 1px solid rgba(249, 115, 22, 0.6) !important;
 }
 .task-card.due-card-urgent .swipe-content,
 .glass-panel.due-card-urgent {
-    background: color-mix(in srgb, #ef4444 24%, var(--bg-card)) !important;
+    background: #fee2e2 !important;
     border: 1px solid rgba(239, 68, 68, 0.65) !important;
+}
+
+/* Tema scuro: tinte coprenti (sotto la tessera ci sono le azioni di swipe, non devono trasparire) */
+[data-mode="dark"] .task-card.due-card-attention .swipe-content,
+[data-mode="dark"] .glass-panel.due-card-attention {
+    background: #3d2616 !important;
+}
+[data-mode="dark"] .task-card.due-card-urgent .swipe-content,
+[data-mode="dark"] .glass-panel.due-card-urgent {
+    background: #401c20 !important;
 }
