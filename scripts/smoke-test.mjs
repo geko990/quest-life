@@ -20,10 +20,11 @@ page.on('response', (r) => {
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
-report(`App avviata: "${(await page.title())}"`);
+report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('#root').innerText()).length} caratteri visibili`);
 
 // Schede principali, poi un secondo tocco per le sotto-schede (Campagne, Spesa, Tesoro)
-const tabs = ['Abitudini', 'Missioni', 'Missioni', 'Salute', 'Salute', 'Opzioni', 'Opzioni', 'Eroe'];
+// (la Home "Eroe" è già aperta all'avvio: il suo pulsante mostra l'avatar, non la scritta)
+const tabs = ['Abitudini', 'Missioni', 'Missioni', 'Salute', 'Salute', 'Opzioni', 'Opzioni'];
 for (const label of tabs) {
   const btn = page.locator('button, [role="button"], div, span', { hasText: new RegExp(`^${label}$`) }).last();
   if (await btn.count() === 0) { problems.push(`Scheda non trovata: ${label}`); continue; }
