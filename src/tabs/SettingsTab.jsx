@@ -1075,9 +1075,9 @@ export default function SettingsTab({
                     marginTop: '6px',
                     padding: '9px 12px',
                     borderRadius: '10px',
-                    background: 'var(--bg-primary, rgba(0,0,0,0.3))',
-                    border: '1px solid var(--glass-border)',
-                    color: 'var(--text-primary)',
+                    background: '#24292f',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    color: '#ffffff',
                     fontSize: '11px',
                     fontWeight: 'bold',
                     cursor: 'pointer'
