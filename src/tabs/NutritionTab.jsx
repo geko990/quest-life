@@ -1275,8 +1275,9 @@ export default function NutritionTab({
                     cy="70"
                     r={radius}
                     fill="transparent"
-                    stroke="var(--accent-primary)"
+                    stroke="#3b82f6"
                     strokeWidth="9"
+                    strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={dashoffset}
                     style={{ transition: 'stroke-dashoffset 0.5s ease' }}
@@ -1296,7 +1297,7 @@ export default function NutritionTab({
                 {/* 1) Obiettivo Card (Clean layout, no extra configure text) */}
                 <div
                   onClick={handleOpenGoalsModal}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '9px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
                   title={_t("Configura obiettivi e calcola fabbisogno TDEE")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1309,7 +1310,7 @@ export default function NutritionTab({
                 {/* 2) Cibo Consumato Card (Opens meals registry to log or pick from memory) */}
                 <div
                   onClick={() => setShowMealsModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '9px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
                   title={_t("Apri registro pasti per inserire o scegliere cibi dalla memoria")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1323,7 +1324,7 @@ export default function NutritionTab({
                 {/* 3) Bruciate Card (Clean layout, no +100🔥 legend, clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
                 <div
                   onClick={() => setShowExercisesModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '9px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
                   title={_t("Apri registro allenamenti")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1396,7 +1397,7 @@ export default function NutritionTab({
 
               <div>
                 <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${stepsPct}%`, background: 'var(--accent-primary)', transition: 'width 0.3s' }}></div>
+                  <div style={{ height: '100%', width: `${stepsPct}%`, background: '#4ade80', transition: 'width 0.3s' }}></div>
                 </div>
               </div>
             </div>
@@ -1499,22 +1500,22 @@ export default function NutritionTab({
             const perfectDays = days.filter(dd => dd.metCount === 4).length;
 
             // Anello a 4 spicchi (uno per obiettivo)
-            const R = 13, C = 2 * Math.PI * R, GAP = 5, SEG = C / 4 - GAP;
+            const R = 15.5, C = 2 * Math.PI * R, GAP = 5.5, SEG = C / 4 - GAP;
             const ring = (dd) => (
-              <svg width="34" height="34" viewBox="0 0 34 34" style={{ display: 'block', overflow: 'visible' }}>
+              <svg width="40" height="40" viewBox="0 0 40 40" style={{ display: 'block', overflow: 'visible' }}>
                 {[0, 1, 2, 3].map(q => (
-                  <circle key={'t' + q} cx="17" cy="17" r={R} fill="none" stroke="var(--bg-secondary)" strokeWidth="4" strokeLinecap="round"
-                    strokeDasharray={`${SEG} ${C - SEG}`} strokeDashoffset={-(q * C / 4) - GAP / 2} transform="rotate(-90 17 17)" />
+                  <circle key={'t' + q} cx="20" cy="20" r={R} fill="none" stroke="var(--bg-secondary)" strokeWidth="4.5" strokeLinecap="round"
+                    strokeDasharray={`${SEG} ${C - SEG}`} strokeDashoffset={-(q * C / 4) - GAP / 2} transform="rotate(-90 20 20)" />
                 ))}
                 {dd.goals && dd.goals.map((g, q) => (
-                  <circle key={g.key} cx="17" cy="17" r={R} fill="none" stroke={g.over ? '#ef4444' : g.color} strokeWidth="4" strokeLinecap="round"
+                  <circle key={g.key} cx="20" cy="20" r={R} fill="none" stroke={g.over ? '#ef4444' : g.color} strokeWidth="4.5" strokeLinecap="round"
                     strokeDasharray={`${weekRingsReady ? Math.max(0.01, SEG * g.pct) : 0.01} ${C}`} strokeDashoffset={-(q * C / 4) - GAP / 2}
-                    transform="rotate(-90 17 17)" opacity={g.pct > 0 ? 1 : 0}
+                    transform="rotate(-90 20 20)" opacity={g.pct > 0 ? 1 : 0}
                     className="week-ring-arc" style={{ transitionDelay: `${days.indexOf(dd) * 60 + q * 40}ms`, filter: g.met ? `drop-shadow(0 0 3px ${g.color})` : 'none' }} />
                 ))}
-                {dd.metCount === 4 && <text x="17" y="21" textAnchor="middle" fontSize="11">⭐</text>}
+                {dd.metCount === 4 && <text x="20" y="24.5" textAnchor="middle" fontSize="13">⭐</text>}
                 {dd.metCount > 0 && dd.metCount < 4 && (
-                  <text x="17" y="20.5" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="var(--text-secondary)">{dd.metCount}</text>
+                  <text x="20" y="24" textAnchor="middle" fontSize="11" fontWeight="800" fill="var(--text-secondary)">{dd.metCount}</text>
                 )}
               </svg>
             );
@@ -1575,8 +1576,8 @@ export default function NutritionTab({
                 </div>
 
                 {/* La tua settimana */}
-                <div onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', gap: '6px' }}>
+                <div onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', gap: '6px' }}>
                     <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                       {_t("La tua settimana")}
                       {perfectDays > 0 && <span className="week-perfect-count" title={_t("Giornate perfette: tutti e 4 gli obiettivi")}>⭐ {perfectDays}</span>}
