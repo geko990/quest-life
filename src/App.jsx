@@ -329,10 +329,21 @@ export default function App() {
     root.setAttribute('data-accent', activeAccent);
     
     // Set theme color metadata
+    // Il colore della barra di stato di iOS deve coincidere con quello della barra superiore dell'app,
+    // altrimenti iOS fonde i due colori e compare una sfumatura verso l'alto
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      meta.setAttribute('content', modeName === 'light' ? '#f1f5f9' : '#0b0b14');
-    }
+    const applyStatusBarColor = () => {
+      const headerEl = document.querySelector('.app-header');
+      let color = headerEl ? getComputedStyle(headerEl).backgroundColor : '';
+      if (!color || color === 'rgba(0, 0, 0, 0)' || color === 'transparent') {
+        color = getComputedStyle(root).getPropertyValue('--bg-secondary').trim() || (modeName === 'light' ? '#f1f5f9' : '#0b0b14');
+      }
+      if (meta) meta.setAttribute('content', color);
+      document.documentElement.style.backgroundColor = color;
+      document.body.style.backgroundColor = color;
+    };
+    applyStatusBarColor();
+    requestAnimationFrame(applyStatusBarColor);
   }, [settings.theme, settings.accent, settings.accentColor, settings.mode, settings.themeMode]);
 
   // Prevent contextmenu callout popups on long-press (except in inputs & textareas)
