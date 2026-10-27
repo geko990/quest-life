@@ -201,6 +201,9 @@ try {
   const rootText = await page.locator('#root').innerText();
   if (!/5×/.test(rootText)) throw new Error('i 5 errori uguali non sono raggruppati');
   if (/Pasta della nonna|mario\.rossi/.test(rootText)) throw new Error('il filtro dei dati personali non ha funzionato');
+  await page.getByText('🗑️ Svuota').first().scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, 140));
+  await page.waitForTimeout(300);
   await shot('12-registro-errori');
   await page.getByText('🐙 Segnala su GitHub').first().click();
   const url = await page.evaluate(() => window.__openedUrl);
