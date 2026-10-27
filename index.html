@@ -10,7 +10,18 @@
   <link rel="apple-touch-icon" href="./icon.png">
   <link rel="icon" type="image/png" href="./icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Barra di stato iOS "normale" (l'app inizia sotto di essa): con black-translucent iOS 26
+       sfoca i contenuti che finiscono sotto la barra di stato. Scura o chiara in base al tema salvato. -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" id="statusBarStyle">
+  <script>
+    (function() {
+      try {
+        var st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}').settings || {};
+        var light = st.themeMode === 'light' || (st.themeMode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) || (!st.themeMode && (st.mode === 'light' || st.theme === 'light'));
+        document.getElementById('statusBarStyle').setAttribute('content', light ? 'default' : 'black');
+      } catch (e) {}
+    })();
+  </script>
   <meta name="theme-color" content="#0f0f1a">
 
   <!-- Emergency Auto-Recovery Script (Preserves localStorage user data) -->
