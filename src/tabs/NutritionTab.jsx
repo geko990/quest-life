@@ -37,6 +37,7 @@ export default function NutritionTab({
   const [showExercisesModal, setShowExercisesModal] = useState(initialModal === 'workouts');
   const [showQuickMealModal, setShowQuickMealModal] = useState(false);
   const [quickMealSearch, setQuickMealSearch] = useState('');
+  const [showFoodsModal, setShowFoodsModal] = useState(false);
 
   const handleCloseMealsModal = () => {
     setShowMealsModal(false);
@@ -846,14 +847,14 @@ export default function NutritionTab({
             <div
               className="modal-content"
               onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: '440px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+              style={{ maxWidth: '400px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
             >
               <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
                 <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '20px' }}>🍴</span> {" "}{_t("Registro Pasti e Nutrizione")}</h3>
               </div>
 
-              <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ padding: '16px 16px 24px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
                 {/* Category tabs */}
                 <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
                   {[
@@ -1006,14 +1007,14 @@ export default function NutritionTab({
             <div
               className="modal-content"
               onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: '440px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+              style={{ maxWidth: '400px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
             >
               <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
                 <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '20px' }}>🏋️</span> {" "}{_t("Registro Allenamenti")}</h3>
               </div>
 
-              <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ padding: '16px 16px 24px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
                 {/* Logged Workouts Today Section */}
                 <div style={{ marginBottom: '16px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
@@ -1464,60 +1465,123 @@ export default function NutritionTab({
             </div>
           </div>
 
-          {/* Row: Weight + History */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-            {/* Weight card */}
-            <div
-              onClick={() => onOpenModal('weight', {
-                current: weightCurrent,
-                target: targetWeight,
-                currentFat: fatPct,
-                currentLean: leanPct,
-                calorieGoal,
-                proteinGoal: proteinsGoal
-              })}
-              className="glass-panel"
-              style={{ padding: '12px', cursor: 'pointer' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Peso Corporeo")}</div>
-                <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>{_t("Target: {0} kg", targetWeight)}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '6px 0 4px 0' }}>
-                <span style={{ fontSize: '16px' }}>⚖️</span>
-                <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{weightCurrent}</span>
-                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{_t("kg")}</span>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                <span>{_t("Magra:")}{" "}<b>{leanPct > 0 ? `${leanPct}%` : '--'}</b></span>
-                <span>{_t("Grassa:")}{" "}<b>{fatPct > 0 ? `${fatPct}%` : '--'}</b></span>
-              </div>
-              <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${Math.min(100, (Math.min(weightCurrent, targetWeight) / Math.max(weightCurrent, targetWeight)) * 100)}%`,
-                    background: '#ec4899',
-                    transition: 'width 0.3s'
-                  }}
-                ></div>
-              </div>
-            </div>
+          {/* Peso corporeo a tutta larghezza: valore, andamento 30 giorni, distanza dal target, composizione */}
+          {(() => {
+            const points = [
+              ...(historyList || []).filter(h => Number(h.weight) > 0).map(h => ({ date: h.date, w: Number(h.weight) })),
+              { date: 'oggi', w: Number(weightCurrent) }
+            ].slice(-31);
+            const diff = Math.round((Number(weightCurrent) - Number(targetWeight)) * 10) / 10;
+            const W = 300, H = 56, pad = 4;
+            const ws = points.map(p => p.w).concat([Number(targetWeight)]);
+            const minW = Math.min(...ws) - 0.5, maxW = Math.max(...ws) + 0.5;
+            const x = (i) => points.length > 1 ? pad + (i * (W - pad * 2)) / (points.length - 1) : W / 2;
+            const y = (w) => pad + ((maxW - w) * (H - pad * 2)) / Math.max(0.1, maxW - minW);
+            const line = points.map((p, i) => `${x(i)},${y(p.w)}`).join(' ');
+            const area = points.length > 1 ? `${x(0)},${H} ${line} ${x(points.length - 1)},${H}` : '';
+            const first = points[0]?.w;
+            const trend = points.length > 1 ? Math.round((points[points.length - 1].w - first) * 10) / 10 : 0;
+            return (
+              <div
+                onClick={() => onOpenModal('weight', {
+                  current: weightCurrent,
+                  target: targetWeight,
+                  currentFat: fatPct,
+                  currentLean: leanPct,
+                  calorieGoal,
+                  proteinGoal: proteinsGoal
+                })}
+                className="glass-panel weight-card"
+                style={{ padding: '14px', cursor: 'pointer', marginBottom: '10px' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Peso Corporeo")}</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
+                      <span style={{ fontSize: '18px' }}>⚖️</span>
+                      <span style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>{weightCurrent}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{_t("kg")}</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>{_t("Target: {0} kg", targetWeight)}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '4px', color: diff === 0 ? '#4ade80' : 'var(--accent-primary)' }}>
+                      {diff === 0 ? _t("Obiettivo raggiunto! 🎯") : _t("{0} kg al target", (diff > 0 ? '−' : '+') + Math.abs(diff).toLocaleString(getLocale()))}
+                    </div>
+                    {points.length > 1 && (
+                      <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        {_t("{0} kg in {1} giorni", (trend > 0 ? '+' : trend < 0 ? '−' : '') + Math.abs(trend).toLocaleString(getLocale()), points.length - 1)}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-            {/* History button card */}
+                {points.length > 1 ? (
+                  <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height: '56px', margin: '8px 0 6px 0', display: 'block' }}>
+                    <defs>
+                      <linearGradient id="weightArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#ec4899" stopOpacity="0.28" />
+                        <stop offset="100%" stopColor="#ec4899" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <line x1="0" x2={W} y1={y(Number(targetWeight))} y2={y(Number(targetWeight))} stroke="var(--accent-primary)" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" vectorEffect="non-scaling-stroke" />
+                    <polygon points={area} fill="url(#weightArea)" />
+                    <polyline points={line} fill="none" stroke="#ec4899" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                    <circle cx={x(points.length - 1)} cy={y(points[points.length - 1].w)} r="3" fill="#ec4899" />
+                  </svg>
+                ) : (
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '8px 0' }}>
+                    {_t("Il grafico dell'andamento comparirà dopo qualche giorno di registrazioni.")}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      <span>{_t("Magra:")}</span><b style={{ color: 'var(--text-primary)' }}>{leanPct > 0 ? `${leanPct}%` : '--'}</b>
+                    </div>
+                    <div style={{ height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${Math.min(100, leanPct)}%`, background: '#38bdf8' }} />
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: 'var(--text-muted)', marginBottom: '3px' }}>
+                      <span>{_t("Grassa:")}</span><b style={{ color: 'var(--text-primary)' }}>{fatPct > 0 ? `${fatPct}%` : '--'}</b>
+                    </div>
+                    <div style={{ height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${Math.min(100, fatPct)}%`, background: '#f59e0b' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Archivi: dei giorni (Storico Dati) e dei cibi (I miei cibi) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
             <div
               onClick={() => setShowHistoryModal(true)}
               className="glass-panel"
-              style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '24px' }}>📊</span>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Storico Dati")}</h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '9px', color: 'var(--text-muted)' }}>{_t("{0} giorni registrati", historyList.length)}</p>
-                </div>
+              <span style={{ fontSize: '24px' }}>📊</span>
+              <div style={{ minWidth: 0 }}>
+                <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Storico Dati")}</h4>
+                <p style={{ margin: '2px 0 0 0', fontSize: '9px', color: 'var(--text-muted)' }}>{_t("{0} giorni registrati", historyList.length)}</p>
               </div>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>▶</span>
+            </div>
+            <div
+              onClick={() => { setSearchQuery(''); setShowFoodsModal(true); }}
+              className="glass-panel"
+              style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+            >
+              <span style={{ fontSize: '24px' }}>🍽️</span>
+              <div style={{ minWidth: 0 }}>
+                <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("I miei cibi")}</h4>
+                <p style={{ margin: '2px 0 0 0', fontSize: '9px', color: 'var(--text-muted)' }}>
+                  {_t("{0} cibi • {1} preferiti", (health.foodDatabase || []).length, favoriteFoodsCount)}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1845,14 +1909,14 @@ export default function NutritionTab({
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '440px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+            style={{ maxWidth: '400px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
           >
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🍴</span> {" "}{_t("Registro Pasti e Nutrizione")}</h3>
+                <span style={{ fontSize: '20px' }}>🍴</span> {" "}{_t("Mangiato oggi")}</h3>
             </div>
 
-            <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+            <div style={{ padding: '16px 16px 24px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
               {/* Category tabs */}
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
                 {[
@@ -1970,8 +2034,62 @@ export default function NutritionTab({
                 </div>
               </div>
 
-              {/* Food Database Search & 3-Column Grid */}
+              {/* Preferiti da aggiungere con un tocco + ricerca */}
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
+                    {_t("⭐ Aggiungi dai preferiti")}
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickMealSearch('');
+                      setShowMealsModal(false);
+                      setShowQuickMealModal(true);
+                    }}
+                    className="health-add-btn"
+                  >
+                    {_t("+ Cerca o inserisci")}
+                  </button>
+                </div>
+                {(health.foodDatabase || []).some(f => f.favorite) ? (
+                  <div className="fav-food-row no-scrollbar">
+                    {(health.foodDatabase || []).filter(f => f.favorite).map(food => (
+                      <button key={food.id} type="button" className="fav-food-chip" onClick={() => handleFoodClick(food)}>
+                        <span style={{ fontSize: '20px' }}>{food.emoji}</span>
+                        <span className="fav-food-name">{food.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    {_t("Nessun preferito: aprili da 🍽️ I miei cibi e tocca ☆ sui cibi che mangi più spesso.")}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* I MIEI CIBI: archivio completo dei cibi (preferiti, ricerca, modifica) */}
+      {showFoodsModal && (
+        <div
+          onClick={() => setShowFoodsModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '400px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+          >
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
+              <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>🍽️</span> {" "}{_t("I miei cibi")}</h3>
+            </div>
+            <div style={{ padding: '16px 16px 24px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
+              {/* Food Database Search & 3-Column Grid */}
+              <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
                     {_t("Cibi")}</h4>
@@ -1979,7 +2097,7 @@ export default function NutritionTab({
                     <button
                       onClick={() => {
                         setQuickMealSearch(searchQuery || '');
-                        setShowMealsModal(false);
+                        setShowFoodsModal(false);
                         setShowQuickMealModal(true);
                       }}
                       style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '6px', padding: '2px 7px', cursor: 'pointer' }}
@@ -2167,7 +2285,7 @@ export default function NutritionTab({
                     type="button"
                     onClick={() => {
                       setQuickMealSearch(searchQuery.trim());
-                      setShowMealsModal(false);
+                      setShowFoodsModal(false);
                       setShowQuickMealModal(true);
                     }}
                     style={{
@@ -2207,14 +2325,14 @@ export default function NutritionTab({
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '440px', width: '92%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+            style={{ maxWidth: '400px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
           >
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '20px' }}>🏋️</span> {" "}{_t("Registro Allenamenti")}</h3>
             </div>
 
-            <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
+            <div style={{ padding: '16px 16px 24px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
               {/* Logged Workouts Today Section */}
               <div style={{ marginBottom: '16px' }}>
                 <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>

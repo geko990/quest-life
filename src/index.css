@@ -7760,3 +7760,48 @@ html[data-animations="off"] .stagger-in,
 html[data-animations="off"] .stagger-in-inner,
 html[data-animations="off"] .nav-icon-pop,
 html[data-animations="off"] .nav-active-dot { animation: none !important; }
+
+/* Salute: preferiti da aggiungere con un tocco */
+.fav-food-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+.fav-food-chip {
+    flex-shrink: 0;
+    width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    border-radius: 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+}
+.fav-food-chip:active { transform: scale(0.94); }
+.fav-food-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.health-add-btn {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, transparent);
+    border-radius: 10px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
