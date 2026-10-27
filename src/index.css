@@ -7364,8 +7364,8 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
    ========================================================================== */
 .modal-edit-fab {
     position: absolute;
-    top: 4px;
-    right: 8px;
+    top: 22px;
+    right: 24px;
     z-index: 5;
     width: 30px;
     height: 30px;
@@ -7386,10 +7386,7 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
 .modal-scroll-body {
     padding: 18px 20px 28px 20px;
 }
-/* Nei dettagli in sola lettura lascio spazio in alto alla matita, così non tocca il contenuto */
-.modal-scroll-body.is-detail {
-    padding-top: 34px;
-}
+/* Nei dettagli la matita sta dentro la tessera d'intestazione, nel suo angolo in alto a destra */
 .modal-edit-fab:active {
     transform: scale(0.88);
     opacity: 1;

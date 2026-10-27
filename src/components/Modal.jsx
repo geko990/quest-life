@@ -890,7 +890,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, var(--bg-secondary) 100%)',
-                padding: '16px 14px',
+                padding: '28px 16px 24px 16px',
                 borderRadius: '18px',
                 border: '1.5px solid rgba(124, 58, 237, 0.35)',
                 textAlign: 'center',
@@ -899,7 +899,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  fontSize: '36px',
+                  fontSize: '48px',
                   margin: '0 auto 6px auto',
                   lineHeight: 1,
                   filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
@@ -907,7 +907,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               >
                 {currentQuest.emoji || '🏆'}
               </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '19px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {currentQuest.name}
               </h3>
 
@@ -1033,7 +1033,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, var(--bg-secondary) 100%)',
-                padding: '14px 12px',
+                padding: '28px 16px 24px 16px',
                 borderRadius: '16px',
                 border: '1px solid rgba(124, 58, 237, 0.3)',
                 textAlign: 'center'
@@ -1041,7 +1041,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  fontSize: '36px',
+                  fontSize: '48px',
                   margin: '0 auto 6px auto',
                   lineHeight: 1,
                   filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
@@ -1049,7 +1049,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               >
                 {item.emoji || '💥'}
               </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '19px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {item.name}
               </h3>
               <div style={{ fontSize: '14px', color: '#f59e0b' }}>
@@ -1127,7 +1127,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div
               style={{
                 background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, var(--bg-secondary) 100%)',
-                padding: '14px 12px',
+                padding: '28px 16px 24px 16px',
                 borderRadius: '16px',
                 border: '1px solid rgba(34, 197, 94, 0.3)',
                 textAlign: 'center'
@@ -1135,7 +1135,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  fontSize: '36px',
+                  fontSize: '48px',
                   margin: '0 auto 6px auto',
                   lineHeight: 1,
                   filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
@@ -1143,7 +1143,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               >
                 {habit.emoji || '📜'}
               </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '19px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {habit.name}
               </h3>
               <div style={{ fontSize: '14px', color: '#f59e0b' }}>
@@ -1215,7 +1215,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div
               style={{
                 background: `linear-gradient(135deg, ${tmpl.color || '#7c3aed'}15 0%, var(--bg-secondary) 100%)`,
-                padding: '16px 14px',
+                padding: '28px 16px 24px 16px',
                 borderRadius: '18px',
                 border: `1.5px solid ${tmpl.color || 'var(--accent-primary)'}40`,
                 textAlign: 'center',
@@ -1224,7 +1224,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             >
               <div
                 style={{
-                  fontSize: '36px',
+                  fontSize: '48px',
                   margin: '0 auto 6px auto',
                   lineHeight: 1,
                   filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))'
@@ -1232,7 +1232,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               >
                 {tmpl.icon || '⚔️'}
               </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '19px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {cleanName || tmpl.name}
               </h3>
 
