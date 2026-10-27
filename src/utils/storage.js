@@ -57,7 +57,7 @@ export async function saveDataToFile(data, handle) {
         const perm = await handle.queryPermission({ mode: 'readwrite' });
         if (perm === 'granted') {
             const writable = await handle.createWritable();
-            await writable.write(JSON.stringify(data, null, 2));
+            await writable.write(safeStringify(data, 2));
             await writable.close();
         }
     } catch (err) {
@@ -130,3 +130,22 @@ export async function loadAppStateFromIndexedDB() {
     }
 }
 
+
+// JSON a prova di strutture cicliche (es. un evento finito per errore nello stato):
+// i riferimenti circolari e gli oggetti DOM vengono scartati invece di bloccare il salvataggio.
+export function safeStringify(value, space) {
+    try {
+        return JSON.stringify(value, null, space);
+    } catch (_) {
+        const seen = new WeakSet();
+        return JSON.stringify(value, (key, val) => {
+            if (typeof val === 'object' && val !== null) {
+                if (typeof Node !== 'undefined' && val instanceof Node) return undefined;
+                if (typeof Event !== 'undefined' && val instanceof Event) return undefined;
+                if (seen.has(val)) return undefined;
+                seen.add(val);
+            }
+            return val;
+        }, space);
+    }
+}

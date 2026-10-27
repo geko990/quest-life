@@ -14,7 +14,7 @@ import FinancesTab from './tabs/FinancesTab';
 import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
 import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp, getMonthlyStarCounts, isMonthlyPyramidMet } from './utils/helpers';
-import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile, saveAppStateToIndexedDB, loadAppStateFromIndexedDB } from './utils/storage';
+import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile, saveAppStateToIndexedDB, loadAppStateFromIndexedDB, safeStringify } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
 import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
@@ -97,7 +97,12 @@ export default function App() {
     return getInitialState();
   };
 
-  const initialFullState = getLoadedState();
+  // Lettura iniziale una sola volta (prima veniva rifatta a ogni render, con il parse di tutto l'archivio)
+  const [initialFullState] = useState(getLoadedState);
+  // Se all'avvio c'era solo la copia ridotta, non sovrascrivere IndexedDB finché non si è recuperato l'archivio completo
+  const idbRecoveryPendingRef = useRef((() => {
+    try { return (localStorage.getItem('questlife_state_v2') || '').includes('"_trimmedCopy"'); } catch (_) { return false; }
+  })());
 
   // 2. React state hook declarations
   const [player, setPlayer] = useState(initialFullState.player);
@@ -205,9 +210,13 @@ export default function App() {
     async function checkIndexedDbBackup() {
       try {
         const saved = localStorage.getItem('questlife_state_v2');
-        if (!saved) {
+        // Se in localStorage c'è solo la copia ridotta (memoria piena), l'archivio completo è in IndexedDB
+        let isTrimmedCopy = false;
+        try { isTrimmedCopy = !!(saved && JSON.parse(saved)._trimmedCopy); } catch (_) {}
+        if (!saved || isTrimmedCopy) {
           const backup = await loadAppStateFromIndexedDB();
-          if (backup) {
+          const backupIsComplete = backup && !backup._trimmedCopy;
+          if (backup && (!saved || backupIsComplete)) {
             console.log("[QuestLife] Restoring state from IndexedDB backup.");
             const sanitized = sanitizeState(backup);
             setPlayer(sanitized.player);
@@ -226,6 +235,8 @@ export default function App() {
         }
       } catch (e) {
         console.warn("IndexedDB recovery check error:", e);
+      } finally {
+        idbRecoveryPendingRef.current = false;
       }
     }
     checkIndexedDbBackup();
@@ -250,12 +261,12 @@ export default function App() {
 
     // Save to LocalStorage with safe try-catch & quota overflow auto-recovery
     try {
-      localStorage.setItem('questlife_state_v2', JSON.stringify(stateObj));
+      localStorage.setItem('questlife_state_v2', safeStringify(stateObj));
     } catch (err) {
       console.error("Critical Storage Error saving to localStorage:", err);
       let sizeEstimate = 0;
       try {
-        sizeEstimate = JSON.stringify(stateObj).length;
+        sizeEstimate = safeStringify(stateObj).length;
       } catch (_) {}
       logAppError(err, {
         context: 'localStorage.setItem_persistence',
@@ -267,15 +278,17 @@ export default function App() {
       // while IndexedDB keeps the full archive intact.
       if (err.name === 'QuotaExceededError' || (err.message && err.message.toLowerCase().includes('quota'))) {
         try {
+          // Copia ridotta marcata: all'avvio si ricarica l'archivio completo da IndexedDB
           const trimmedObj = {
             ...stateObj,
+            _trimmedCopy: Date.now(),
             xpLog: (stateObj.xpLog || []).slice(-1000),
             health: {
               ...stateObj.health,
               history: (stateObj.health?.history || []).slice(-90)
             }
           };
-          localStorage.setItem('questlife_state_v2', JSON.stringify(trimmedObj));
+          localStorage.setItem('questlife_state_v2', safeStringify(trimmedObj));
           console.warn("Storage emergency recovered in localStorage (full archive preserved in IndexedDB).");
         } catch (e2) {
           console.error("Storage trim fallback also failed:", e2);
@@ -284,7 +297,7 @@ export default function App() {
     }
 
     // Mirror to IndexedDB as high-capacity persistent backup
-    saveAppStateToIndexedDB(stateObj).catch(e => console.warn("IndexedDB mirror failed:", e));
+    if (!idbRecoveryPendingRef.current) saveAppStateToIndexedDB(JSON.parse(safeStringify(stateObj))).catch(e => console.warn("IndexedDB mirror failed:", e));
 
     // Save to File if connected
     if (fileHandle) {
