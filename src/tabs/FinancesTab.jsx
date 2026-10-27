@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getGameDate } from '../utils/helpers';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 import UserManualModal from '../components/UserManualModal';
+import { useBarInsets, overlayPadding } from '../utils/useBarInsets';
+import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getAccountCardTheme, getPeriodInterest } from '../utils/accounts';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
 const EXPENSE_CATEGORIES = [
@@ -106,6 +108,8 @@ export default function FinancesTab({
   const [showRecurringModal, setShowRecurringModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedAccountDetail, setSelectedAccountDetail] = useState(null); // 'base' | 'cash' | accId
+  const [accMovLimit, setAccMovLimit] = useState(20); // movimenti mostrati nella scheda del conto
+  useEffect(() => { setAccMovLimit(20); }, [selectedAccountDetail]);
   const [showRenameBaseModal, setShowRenameBaseModal] = useState(false);
   const [baseNameInput, setBaseNameInput] = useState('');
 
@@ -236,6 +240,14 @@ export default function FinancesTab({
   const [editRecDay, setEditRecDay] = useState(1);
   const [editRecExcludeBudget, setEditRecExcludeBudget] = useState(false);
   const [editRecActive, setEditRecActive] = useState(true);
+
+  // Finestre del Tesoro sempre tra barra superiore e nav bar (misurate dal vivo a ogni apertura)
+  const barInsets = useBarInsets([
+    selectedAccountDetail, showHistoryModal, showAddTxModal, showRecurringModal, showAddSecModal, Boolean(secAccountAction),
+    showBudgetModal, showWithdrawModal, showTransferModal, showRenameBaseModal, showEditBalanceModal,
+    showAddInvestmentModal, showQuickPriceModal, showEditRecurringModal, showSyncHelpModal
+  ].map(String).join('|'));
+  const TREASURE_OVERLAY_PAD = overlayPadding(barInsets);
 
   // Currency Formatter Helper
   const fmtCurrency = (val) => {
@@ -2927,7 +2939,7 @@ export default function FinancesTab({
       {showHistoryModal && (
         <div
           onClick={() => setShowHistoryModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -3608,7 +3620,7 @@ export default function FinancesTab({
         </div>
       )}
 
-      {/* MODAL: Scheda Dettaglio Conto */}
+      {/* MODAL: Scheda Dettaglio Conto (intestazione a forma di carta, corpo scorrevole) */}
       {selectedAccountDetail !== null && (() => {
         const isBase = selectedAccountDetail === 'base';
         const isCash = selectedAccountDetail === 'cash';
@@ -3617,371 +3629,290 @@ export default function FinancesTab({
           : null;
 
         const accId = isBase ? 'base' : (isCash ? 'cash' : (secAccount?.id || 'base'));
-        const accName = isBase ? (finances.baseAccountName || 'Conto Base') : (isCash ? 'Contanti Disponibili' : (secAccount?.name || 'Conto Secondario'));
+        const accName = isBase ? (finances.baseAccountName || _t("Conto Base")) : (isCash ? _t("Contanti") : (secAccount?.name || _t("Conto Secondario")));
         const accEmoji = isBase ? '💳' : (isCash ? '💵' : (secAccount?.emoji || '🏦'));
         const accBalance = isBase ? finances.balance : (isCash ? (finances.cashBalance || 0) : (secAccount?.balance || 0));
+        const accKind = isBase ? _t("Conto principale") : (isCash ? _t("Portafoglio") : _t("Risparmio"));
+        const theme = getAccountCardTheme(accId);
 
-        // Transactions belonging to this account
-        const accTxList = (finances.transactions || []).filter(t => (t.account || 'base') === accId);
-        const accMonthTxList = accTxList.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
-        const accMonthIncome = accMonthTxList.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-        const accMonthExpenses = accMonthTxList.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-        const accMonthNet = Math.round((accMonthIncome - accMonthExpenses) * 100) / 100;
-
-        // Recurring transactions on this account
+        const movements = getAccountMovements(finances.transactions, accId);
+        const monthStats = getAccountMonthStats(movements, currentMonthPrefix);
+        const shownMovements = movements.slice(0, accMovLimit);
+        const dayGroups = groupMovementsByDay(shownMovements);
         const accRecurring = (finances.recurringTransactions || []).filter(r => (r.account || 'base') === accId);
+
+        const today = getGameDate();
+        const yDate = new Date(today + 'T12:00:00');
+        yDate.setDate(yDate.getDate() - 1);
+        const yesterday = `${yDate.getFullYear()}-${String(yDate.getMonth() + 1).padStart(2, '0')}-${String(yDate.getDate()).padStart(2, '0')}`;
+        const dayLabel = (d) => (d === today ? _t("Oggi") : (d === yesterday ? _t("Ieri") : formatDateShort(d)));
+
+        const freqLabel = (f) => (f === 'daily' ? _t("giornaliero") : (f === 'quarterly' ? _t("trimestrale") : (f === 'annual' ? _t("annuale") : _t("mensile"))));
+
+        const close = () => setSelectedAccountDetail(null);
+        const openEditBalance = () => {
+          setEditBalanceTarget(accId);
+          setEditBalanceValue(String(accBalance));
+          if (secAccount) {
+            setEditBalanceSecRate(String(secAccount.interestRate || '0'));
+            setEditBalanceSecFreq(secAccount.interestFrequency || 'monthly');
+          }
+          setShowEditBalanceModal(true);
+        };
+
+        // Azioni rapide (cerchi con etichetta sotto)
+        const actions = [];
+        if (secAccount) {
+          actions.push({ id: 'dep', icon: '＋', label: _t("Deposita"), tone: '#4ade80', run: () => { close(); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'deposit' }); } });
+          actions.push({ id: 'wd', icon: '－', label: _t("Preleva"), tone: '#f87171', run: () => { close(); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'withdraw' }); } });
+          if (secAccount.interestRate > 0) {
+            actions.push({ id: 'int', icon: '📈', label: _t("Interessi"), tone: '#38bdf8', run: () => {
+              close();
+              const accrued = getPeriodInterest(secAccount);
+              setSecActionAmount(String(accrued > 0 ? accrued : '0'));
+              setSecAccountAction({ account: secAccount, type: 'interest' });
+            } });
+          }
+        } else {
+          actions.push({ id: 'exp', icon: '－', label: _t("Uscita"), tone: '#f87171', run: () => { close(); handleOpenAddTxModal('expense', accId); } });
+          actions.push({ id: 'inc', icon: '＋', label: _t("Entrata"), tone: '#4ade80', run: () => { close(); handleOpenAddTxModal('income', accId); } });
+        }
+        if (isCash) {
+          actions.push({ id: 'atm', icon: '🏧', label: _t("Preleva"), tone: '#fde047', run: () => { close(); setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); } });
+        }
+        actions.push({ id: 'trf', icon: '⇄', label: _t("Trasferisci"), tone: '#a5b4fc', run: () => { close(); handleOpenTransferModal(accId, isBase ? 'cash' : 'base'); } });
+        if (isBase) {
+          actions.push({ id: 'bud', icon: '🎯', label: _t("Budget"), tone: '#fbbf24', run: () => { close(); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); } });
+        }
+        if (isSuperUser) {
+          actions.push({ id: 'bal', icon: '🔓', label: _t("Saldo"), tone: '#eab308', run: openEditBalance });
+        }
 
         return (
           <div
-            onClick={() => setSelectedAccountDetail(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
+            onClick={close}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
           >
             <div
+              className="acc-sheet"
               onClick={(e) => e.stopPropagation()}
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '360px', maxHeight: '100%', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
-              
-              {/* Header (senza tasto ✖, chiusura al tocco esterno) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '28px', background: 'var(--bg-primary)', padding: '6px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                    {accEmoji}
-                  </span>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                        {accName}
-                      </h3>
-                      {isBase && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setBaseNameInput(finances.baseAccountName || 'Conto Base');
-                            setShowRenameBaseModal(true);
-                          }}
-                          style={{
-                            background: 'rgba(56, 189, 248, 0.15)',
-                            border: '1px solid rgba(56, 189, 248, 0.3)',
-                            color: '#38bdf8',
-                            borderRadius: '6px',
-                            padding: '2px 7px',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '3px'
-                          }}
-                          title={_t("Rinomina conto")}
-                        >
-                          {_t("✏️ Rinomina")}</button>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {isBase ? _t("Conto Principale di Addebito/Accredito") : (isCash ? _t("Liquidità fisica nel portafoglio") : _t("Conto Risparmi / Secondario"))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* La carta (fissa in alto) */}
+              <div className="acc-card-wrap">
+                <div
+                  className="acc-card"
+                  style={{ '--card-from': theme.from, '--card-via': theme.via, '--card-to': theme.to, '--card-glow': theme.glow, '--card-accent': theme.accent }}
+                >
+                  <div className="acc-card-pattern" aria-hidden="true" />
+                  <div className="acc-card-shine" aria-hidden="true" />
 
-              {/* Saldo Hero */}
-              <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                  {_t("Saldo Attuale")}</div>
-                <div style={{ fontSize: '24px', fontWeight: '900', color: accBalance >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
-                  {fmtCurrency(accBalance)}
-                </div>
-                {secAccount && (
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '6px' }}>
-                    {secAccount.interestRate > 0 && (
-                      <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                        +{secAccount.interestRate}% p.a. {secAccount.interestFrequency === 'daily' ? _t("giornaliero") : (secAccount.interestFrequency === 'quarterly' ? _t("trimestrale") : (secAccount.interestFrequency === 'annual' ? _t("annuale") : _t("mensile")))}
-                      </span>
+                  <div className="acc-card-top">
+                    <span className="acc-card-emoji">{accEmoji}</span>
+                    <div className="acc-card-title">
+                      <div className="acc-card-name">{accName}</div>
+                      <div className="acc-card-kind">{accKind}</div>
+                    </div>
+                    {isBase && (
+                      <button
+                        type="button"
+                        className="acc-card-edit"
+                        onClick={() => { setBaseNameInput(finances.baseAccountName || 'Conto Base'); setShowRenameBaseModal(true); }}
+                        title={_t("Rinomina conto")}
+                        aria-label={_t("Rinomina conto")}
+                      >
+                        ✏️
+                      </button>
                     )}
-                    <span style={{ fontSize: '9px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '4px' }}>
-                      {secAccount.lockPeriodMonths > 0 ? _t("⏳ Vincolo: {0} mesi", secAccount.lockPeriodMonths) : _t("🔓 Svincolato")}
-                    </span>
                   </div>
-                )}
-                <div style={{ marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHistoryAccountFilter(accId);
-                      setSelectedAccountDetail(null);
-                      setShowHistoryModal(true);
-                    }}
-                    style={{
-                      background: 'rgba(56, 189, 248, 0.12)',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
-                      color: '#38bdf8',
-                      padding: '4px 10px',
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}
-                  >
-                    {_t("📈 Storico & Grafico di questo Conto")}</button>
-                </div>
-                {isSuperUser && (
-                  <div style={{ marginTop: '8px' }}>
+
+                  <div className="acc-card-chiprow" aria-hidden="true">
+                    <svg className="acc-card-chip" viewBox="0 0 40 30">
+                      <rect x="0.5" y="0.5" width="39" height="29" rx="6" />
+                      <path d="M0.5 10.5h12M0.5 19.5h12M27.5 10.5h12M27.5 19.5h12M12.5 0.5v29M27.5 0.5v29M12.5 15h15" />
+                    </svg>
+                    <svg className="acc-card-wave" viewBox="0 0 24 24">
+                      <path d="M8.5 7.5a6.5 6.5 0 0 1 0 9M12 5a10 10 0 0 1 0 14M15.5 2.5a13.5 13.5 0 0 1 0 19" />
+                    </svg>
+                  </div>
+
+                  <div className="acc-card-balance-label">{_t("Saldo")}</div>
+                  <div className={`acc-card-balance${accBalance < 0 ? ' is-negative' : ''}`}>{fmtCurrency(accBalance)}</div>
+
+                  <div className="acc-card-bottom">
+                    <div className="acc-card-badges">
+                      {secAccount && secAccount.interestRate > 0 && (
+                        <span className="acc-card-badge">+{secAccount.interestRate}% · {freqLabel(secAccount.interestFrequency)}</span>
+                      )}
+                      {secAccount && (
+                        <span className="acc-card-badge">
+                          {secAccount.lockPeriodMonths > 0 ? _t("⏳ Vincolo: {0} mesi", secAccount.lockPeriodMonths) : _t("🔓 Svincolato")}
+                        </span>
+                      )}
+                      {isBase && (
+                        <span className="acc-card-badge">{_t("🎯 Budget {0}", fmtCurrency(finances.monthlyBudget || 1000))}</span>
+                      )}
+                    </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditBalanceTarget(accId);
-                        setEditBalanceValue(String(accBalance));
-                        if (secAccount) {
-                          setEditBalanceSecRate(String(secAccount.interestRate || '0'));
-                          setEditBalanceSecFreq(secAccount.interestFrequency || 'monthly');
-                        }
-                        setShowEditBalanceModal(true);
-                      }}
-                      style={{
-                        background: 'rgba(234, 179, 8, 0.15)',
-                        border: '1px solid rgba(234, 179, 8, 0.4)',
-                        color: '#eab308',
-                        borderRadius: '6px',
-                        padding: '4px 10px',
-                        fontSize: '10px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
+                      className="acc-card-history"
+                      onClick={() => { setHistoryAccountFilter(accId); close(); setShowHistoryModal(true); }}
                     >
-                      {_t("🔓 Modifica Saldo (Super User)")}</button>
-                  </div>
-                )}
-              </div>
-
-              {/* Monthly Performance for this Account */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '8px', color: '#86efac', fontWeight: 'bold' }}>{_t("ENTRATE")}</div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#4ade80', marginTop: '2px' }}>
-                    +{fmtCurrency(accMonthIncome)}
-                  </div>
-                </div>
-                <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '8px', color: '#fca5a5', fontWeight: 'bold' }}>{_t("USCITE")}</div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#f87171', marginTop: '2px' }}>
-                    -{fmtCurrency(accMonthExpenses)}
-                  </div>
-                </div>
-                <div style={{ background: accMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${accMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '8px', color: accMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', fontWeight: 'bold' }}>{_t("FLUSSO NETTO")}</div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: accMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
-                    {accMonthNet >= 0 ? '+' : ''}{fmtCurrency(accMonthNet)}
+                      {_t("📈 Storico")} ›
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* Quick actions for this account */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Operazioni Conto")}</div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {secAccount && (
+              {/* Corpo scorrevole */}
+              <div className="acc-body">
+                {/* Il mese di questo conto */}
+                <div className="acc-month">
+                  <div className="acc-month-title">{formatMonthLabel(currentMonthPrefix)}</div>
+                  <div className="acc-month-grid">
+                    <div>
+                      <div className="acc-month-label">{_t("Entrate")}</div>
+                      <div className="acc-month-value is-in">+{fmtCurrency(monthStats.inflow)}</div>
+                    </div>
+                    <div>
+                      <div className="acc-month-label">{_t("Uscite")}</div>
+                      <div className="acc-month-value is-out">−{fmtCurrency(monthStats.outflow)}</div>
+                    </div>
+                    <div>
+                      <div className="acc-month-label">{_t("Netto")}</div>
+                      <div className={`acc-month-value ${monthStats.net >= 0 ? 'is-net-pos' : 'is-out'}`}>
+                        {monthStats.net >= 0 ? '+' : '−'}{fmtCurrency(Math.abs(monthStats.net))}
+                      </div>
+                    </div>
+                  </div>
+                  {(monthStats.inflow > 0 || monthStats.outflow > 0) && (
+                    <div className="acc-month-bar" aria-hidden="true">
+                      <span className="is-in" style={{ flexGrow: monthStats.inflow || 0.0001 }} />
+                      <span className="is-out" style={{ flexGrow: monthStats.outflow || 0.0001 }} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Azioni rapide */}
+                <div className="acc-actions">
+                  {actions.map(a => (
+                    <button key={a.id} type="button" className="acc-action" onClick={a.run} style={{ '--tone': a.tone }}>
+                      <span className="acc-action-icon">{a.icon}</span>
+                      <span className="acc-action-label">{a.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Ricorrenti */}
+                <div className="acc-section">
+                  <div className="acc-section-head">
+                    <span>{_t("🔄 Ricorrenti ({0})", accRecurring.length)}</span>
+                    <button type="button" className="acc-link" onClick={() => { close(); setShowRecurringModal(true); }}>
+                      {_t("Gestisci")}
+                    </button>
+                  </div>
+                  {accRecurring.length === 0 ? (
+                    <div className="acc-empty">{_t("Nessun pagamento o entrata ricorrente su questo conto.")}</div>
+                  ) : (
+                    <div className="acc-list">
+                      {accRecurring.map(r => {
+                        const catObj = getCategoryObj(r.category);
+                        const isInc = r.type === 'income';
+                        return (
+                          <div
+                            key={r.id}
+                            className={`acc-row${r.active === false ? ' is-paused' : ''}`}
+                            onClick={() => { if (isSuperUser) handleOpenEditRecurring(r); }}
+                            style={{ cursor: isSuperUser ? 'pointer' : 'default' }}
+                          >
+                            <span className="acc-row-icon">{catObj.emoji}</span>
+                            <div className="acc-row-main">
+                              <div className="acc-row-title">{r.note || catObj.label}</div>
+                              <div className="acc-row-sub">
+                                {_t("ogni {0}° del mese", r.dayOfMonth)}{r.active === false ? ` · ${_t("in pausa")}` : ''}
+                              </div>
+                            </div>
+                            <span className={`acc-row-amount ${isInc ? 'is-in' : 'is-out'}`}>
+                              {isInc ? '+' : '−'}{fmtCurrency(r.amount)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Movimenti, raggruppati per giorno */}
+                <div className="acc-section">
+                  <div className="acc-section-head">
+                    <span>{_t("📜 Movimenti ({0})", movements.length)}</span>
+                  </div>
+                  {movements.length === 0 ? (
+                    <div className="acc-empty">{_t("Nessun movimento registrato su questo conto.")}</div>
+                  ) : (
                     <>
-                      <button
-                        type="button"
-                        onClick={() => { setSelectedAccountDetail(null); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'deposit' }); }}
-                        style={{ flex: 1, minWidth: '80px', padding: '6px', borderRadius: '8px', background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#4ade80', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        {_t("+ Deposita")}</button>
-                      <button
-                        type="button"
-                        onClick={() => { setSelectedAccountDetail(null); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'withdraw' }); }}
-                        style={{ flex: 1, minWidth: '80px', padding: '6px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        {_t("- Preleva")}</button>
-                      {secAccount.interestRate > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedAccountDetail(null);
-                            const freq = secAccount.interestFrequency || 'monthly';
-                            let divisor = 12;
-                            if (freq === 'daily') divisor = 365;
-                            if (freq === 'quarterly') divisor = 4;
-                            if (freq === 'annual') divisor = 1;
-                            const accrued = Math.round(((secAccount.balance * (secAccount.interestRate / 100)) / divisor) * 100) / 100;
-                            setSecActionAmount(String(accrued > 0 ? accrued : '0'));
-                            setSecAccountAction({ account: secAccount, type: 'interest' });
-                          }}
-                          style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                        >
-                          {_t("📈 Accredita Interessi")}</button>
+                      {dayGroups.map(g => (
+                        <div key={g.date || 'nodate'} className="acc-day">
+                          <div className="acc-day-label">{g.date ? dayLabel(g.date) : '—'}</div>
+                          <div className="acc-list">
+                            {g.items.map(t => {
+                              const catObj = getCategoryObj(t.category);
+                              const isTransfer = t.type === 'transfer';
+                              const otherAcc = isTransfer
+                                ? (t.direction === 'out' ? (t.targetAccount || 'cash') : (t.sourceAccount || 'base'))
+                                : null;
+                              const sub = isTransfer
+                                ? (t.direction === 'out' ? _t("verso {0}", getAccountLabel(otherAcc)) : _t("da {0}", getAccountLabel(otherAcc)))
+                                : catObj.label;
+                              const editable = !isTransfer;
+                              return (
+                                <div
+                                  key={t.id}
+                                  className="acc-row"
+                                  onClick={() => { if (editable) { close(); handleOpenEditTransaction(t); } }}
+                                  style={{ cursor: editable ? 'pointer' : 'default' }}
+                                >
+                                  <span className="acc-row-icon">{isTransfer ? '⇄' : catObj.emoji}</span>
+                                  <div className="acc-row-main">
+                                    <div className="acc-row-title">{t.note || catObj.label}</div>
+                                    <div className="acc-row-sub">{sub}</div>
+                                  </div>
+                                  <span className={`acc-row-amount ${isTransfer ? 'is-transfer' : (t.flow >= 0 ? 'is-in' : 'is-out')}`}>
+                                    {t.flow >= 0 ? '+' : '−'}{fmtCurrency(Math.abs(t.flow))}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="acc-row-delete"
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteTransaction(t.id); }}
+                                    title={_t("Elimina movimento")}
+                                    aria-label={_t("Elimina movimento")}
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                      {movements.length > shownMovements.length && (
+                        <button type="button" className="acc-more" onClick={() => setAccMovLimit(l => l + 20)}>
+                          {_t("Mostra altri ({0})", movements.length - shownMovements.length)}
+                        </button>
                       )}
                     </>
                   )}
-                  {isBase && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBaseNameInput(finances.baseAccountName || 'Conto Base');
-                          setShowRenameBaseModal(true);
-                        }}
-                        style={{ flex: 1, minWidth: '105px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        {_t("✏️ Rinomina Conto")}</button>
-                      <button
-                        type="button"
-                        onClick={() => { setSelectedAccountDetail(null); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
-                        style={{ flex: 1, minWidth: '110px', padding: '6px', borderRadius: '8px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.3)', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        {_t("🎯 Budget ({0})", fmtCurrency(finances.monthlyBudget || 1000))}</button>
-                    </>
-                  )}
-                  {isCash && (
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedAccountDetail(null); setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
-                      style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#fde047', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      {_t("🏧 Preleva Contanti")}</button>
-                  )}
-                  {isSuperUser && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditBalanceTarget(accId);
-                        setEditBalanceValue(String(accBalance));
-                        if (secAccount) {
-                          setEditBalanceSecRate(String(secAccount.interestRate || '0'));
-                          setEditBalanceSecFreq(secAccount.interestFrequency || 'monthly');
-                        }
-                        setShowEditBalanceModal(true);
-                      }}
-                      style={{ flex: 1, minWidth: '110px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      {_t("🔓 Modifica Saldo")}</button>
-                  )}
+                </div>
+
+                {secAccount && (
                   <button
                     type="button"
-                    onClick={() => { setSelectedAccountDetail(null); handleOpenTransferModal(accId, isBase ? 'cash' : 'base'); }}
-                    style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
+                    className="acc-delete-account"
+                    onClick={() => { close(); handleDeleteSecAccount(secAccount.id); }}
                   >
-                    {_t("↔️ Trasferisci Denaro")}</button>
-                  {secAccount && (
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedAccountDetail(null); handleDeleteSecAccount(secAccount.id); }}
-                      style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', fontSize: '10px', cursor: 'pointer' }}
-                      title={_t("Elimina conto secondario")}
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Recurring transactions on this account */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    {_t("🔄 Ricorrenti su questo conto ({0})", accRecurring.length)}</span>
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedAccountDetail(null); setShowRecurringModal(true); }}
-                    style={{ background: 'none', border: 'none', color: 'var(--accent-primary, #38bdf8)', fontSize: '9px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
-                  >
-                    {_t("Gestisci tutte")}</button>
-                </div>
-                {accRecurring.length === 0 ? (
-                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px' }}>
-                    {_t("Nessun pagamento o entrata ricorrente configurato su questo conto.")}</div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {accRecurring.map(r => {
-                      const catObj = getCategoryObj(r.category);
-                      const isInc = r.type === 'income';
-                        <div
-                          key={r.id}
-                          onClick={() => {
-                            if (isSuperUser) {
-                              handleOpenEditRecurring(r);
-                            }
-                          }}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            background: 'var(--bg-primary)',
-                            padding: '6px 8px',
-                            borderRadius: '6px',
-                            fontSize: '10px',
-                            cursor: isSuperUser ? 'pointer' : 'default',
-                            border: isSuperUser ? '1px dashed rgba(234, 179, 8, 0.4)' : 'none'
-                          }}
-                          title={isSuperUser ? _t("Super User: tocca per modificare la regola ricorrente") : undefined}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{catObj.emoji}</span>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{r.note || catObj.label}</span>
-                            <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{_t("ogni {0}° del mese", r.dayOfMonth)}</span>
-                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title={_t("Modifica regola (Super User)")}>✏️</span>}
-                          </div>
-                          <span style={{ fontWeight: 'bold', color: isInc ? '#22c55e' : '#ef4444' }}>
-                            {isInc ? '+' : '-'}{fmtCurrency(r.amount)}
-                          </span>
-                        </div>
-                    })}
-                  </div>
+                    {_t("🗑️ Elimina conto")}
+                  </button>
                 )}
               </div>
-
-              {/* Recent Transactions list for this account */}
-              <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  {_t("📜 Movimenti del Conto ({0})", accTxList.length)}</div>
-                {accTxList.length === 0 ? (
-                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                    {_t("Nessun movimento registrato su questo conto.")}</div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '160px', overflowY: 'auto' }}>
-                    {accTxList.slice(0, 30).map(t => {
-                      const catObj = getCategoryObj(t.category);
-                      const isInc = t.type === 'income';
-                      return (
-                        <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-primary)', padding: '5px 8px', borderRadius: '6px', fontSize: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                            <span>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
-                            <span style={{ color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {t.note || catObj.label}
-                            </span>
-                            <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{t.date}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ fontWeight: 'bold', color: t.type === 'transfer' ? '#38bdf8' : (isInc ? '#4ade80' : '#f87171') }}>
-                              {t.type === 'transfer' ? '↔️ ' : (isInc ? '+' : '-')}{fmtCurrency(t.amount)}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteTransaction(t.id)}
-                              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '9px', cursor: 'pointer', padding: 0 }}
-                              title={_t("Elimina movimento")}
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Hint chiusura al tocco esterno */}
-              <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)', paddingTop: '4px' }}>
-                {_t("Tocca all'esterno per chiudere")}</div>
-
             </div>
           </div>
         );
@@ -3991,11 +3922,11 @@ export default function FinancesTab({
       {showAddTxModal && (
         <div
           onClick={() => setShowAddTxModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: txModalMode === 'expense' ? '#ef4444' : '#22c55e' }}>
               {editingTxId ? (txModalMode === 'expense' ? _t("🔴 Modifica Uscita") : _t("🟢 Modifica Entrata")) : (txModalMode === 'expense' ? _t("🔴 Registra Uscita") : _t("🟢 Registra Entrata"))}
@@ -4146,11 +4077,11 @@ export default function FinancesTab({
       {showRecurringModal && (
         <div
           onClick={() => setShowRecurringModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '340px', padding: '18px' }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -4259,11 +4190,11 @@ export default function FinancesTab({
       {showAddSecModal && (
         <div
           onClick={() => setShowAddSecModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
               {_t("🏦 Crea Conto Secondario")}</h3>
@@ -4368,11 +4299,11 @@ export default function FinancesTab({
       {secAccountAction && (
         <div
           onClick={() => setSecAccountAction(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {secAccountAction.account.emoji} {secAccountAction.account.name}
@@ -4452,11 +4383,11 @@ export default function FinancesTab({
       {showBudgetModal && (
         <div
           onClick={() => setShowBudgetModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {_t("✏️ Limite Budget Spesa Mensile")}</h3>
@@ -4497,11 +4428,11 @@ export default function FinancesTab({
       {showWithdrawModal && (
         <div
           onClick={() => setShowWithdrawModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#fde047', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {_t("🏧 Preleva Contanti")}</h3>
@@ -4560,11 +4491,11 @@ export default function FinancesTab({
       {showTransferModal && (
         <div
           onClick={() => setShowTransferModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '340px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {_t("↔️ Trasferimento tra Conti")}</h3>
@@ -4720,11 +4651,11 @@ export default function FinancesTab({
       {showRenameBaseModal && (
         <div
           onClick={() => setShowRenameBaseModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>{_t("✏️ Rinomina Conto Base")}</h4>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
@@ -4763,11 +4694,11 @@ export default function FinancesTab({
       {showEditBalanceModal && (
         <div
           onClick={() => setShowEditBalanceModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {_t("🔓 Modifica Saldo (Super User)")}</h4>
@@ -4840,11 +4771,11 @@ export default function FinancesTab({
       {showAddInvestmentModal && (
         <div
           onClick={() => setShowAddInvestmentModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '340px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '340px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {_t("📈 Aggiungi Investimento o ETF")}</h4>
@@ -4967,11 +4898,11 @@ export default function FinancesTab({
       {showQuickPriceModal && quickPriceTarget && (
         <div
           onClick={() => setShowQuickPriceModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '300px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxHeight: '100%', overflowY: 'auto', maxWidth: '300px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)' }}>
               {_t("✏️ Aggiorna Prezzo: {0}", quickPriceTarget.name)}
@@ -5015,7 +4946,7 @@ export default function FinancesTab({
       {showEditRecurringModal && editingRecurring && (
         <div
           onClick={() => setShowEditRecurringModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -5158,7 +5089,7 @@ export default function FinancesTab({
       {showSyncHelpModal && (
         <div
           onClick={() => setShowSyncHelpModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '75px 16px 85px 16px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
         >
           <div
             onClick={(e) => e.stopPropagation()}

@@ -7825,3 +7825,168 @@ html[data-animations="off"] .nav-active-dot { animation: none !important; }
 .week-ring-arc { transition: stroke-dasharray 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
 html[data-animations="off"] .week-ring-arc { transition: none; }
 .week-perfect-count { margin-left: 6px; color: #facc15; font-weight: 800; text-transform: none; }
+
+/* ===== Tesoro: scheda del singolo conto (carta + corpo scorrevole) ===== */
+.acc-sheet {
+    width: 100%;
+    max-width: 380px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    animation: acc-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.acc-card-wrap { flex-shrink: 0; padding: 14px 14px 0; perspective: 900px; }
+.acc-card {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1.586;
+    max-height: 30dvh;
+    min-height: 170px;
+    width: 100%;
+    border-radius: 18px;
+    padding: 14px 16px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    background:
+        radial-gradient(120% 90% at 0% 0%, var(--card-glow) 0%, transparent 55%),
+        linear-gradient(135deg, var(--card-from) 0%, var(--card-via) 58%, var(--card-to) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 16px 32px -14px var(--card-glow), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transform-origin: 50% 100%;
+    animation: acc-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.acc-card > * { position: relative; z-index: 1; }
+.acc-card .acc-card-pattern,
+.acc-card .acc-card-shine { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.acc-card-pattern {
+    background:
+        radial-gradient(circle at 108% 125%, rgba(255, 255, 255, 0.10) 0 40%, transparent 40.5%),
+        radial-gradient(circle at 82% 140%, rgba(255, 255, 255, 0.07) 0 34%, transparent 34.5%),
+        repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 8px);
+}
+.acc-card-shine {
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.24) 48%, rgba(255, 255, 255, 0.05) 56%, transparent 70%);
+    transform: translateX(-130%);
+    animation: acc-card-shine 1.3s 0.35s ease-in-out forwards;
+}
+.acc-card-top { display: flex; align-items: center; gap: 10px; }
+.acc-card-emoji {
+    width: 36px; height: 36px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; border-radius: 11px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.acc-card-title { min-width: 0; flex: 1; }
+.acc-card-name { font-size: 16px; font-weight: 800; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25); }
+.acc-card-kind { font-size: 9.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--card-accent); opacity: 0.85; margin-top: 2px; }
+.acc-card-edit {
+    align-self: flex-start; flex-shrink: 0;
+    width: 28px; height: 28px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; background: none; border: none; cursor: pointer; opacity: 0.85;
+}
+.acc-card-edit:active { transform: scale(0.88); opacity: 1; }
+.acc-card-chiprow { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 6px; }
+.acc-card-chip { width: 34px; height: 26px; }
+.acc-card-chip rect { fill: #d6b46b; stroke: rgba(0, 0, 0, 0.25); }
+.acc-card-chip path { fill: none; stroke: rgba(80, 55, 10, 0.55); stroke-width: 1; }
+.acc-card-wave { width: 18px; height: 18px; fill: none; stroke: rgba(255, 255, 255, 0.7); stroke-width: 1.8; stroke-linecap: round; }
+.acc-card-balance-label { margin-top: 8px; font-size: 9.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--card-accent); opacity: 0.85; }
+.acc-card-balance {
+    font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+.acc-card-balance.is-negative { color: #fecaca; }
+.acc-card-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.acc-card-badges { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.acc-card-badge {
+    font-size: 9.5px; font-weight: 700; white-space: nowrap;
+    padding: 3px 8px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14); color: rgba(255, 255, 255, 0.92);
+}
+.acc-card-history {
+    flex-shrink: 0; cursor: pointer;
+    font-size: 11px; font-weight: 800; color: #fff;
+    padding: 5px 11px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.acc-card-history:active { transform: scale(0.94); }
+
+.acc-body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: 14px 14px 18px;
+    display: flex; flex-direction: column; gap: 16px;
+}
+.acc-month { background: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 12px; }
+.acc-month-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.acc-month-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+.acc-month-grid > div + div { border-left: 1px solid var(--glass-border); padding-left: 10px; }
+.acc-month-label { font-size: 10px; color: var(--text-secondary); }
+.acc-month-value { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 1px; white-space: nowrap; }
+.acc-month-value.is-in { color: #22c55e; }
+.acc-month-value.is-out { color: #ef4444; }
+.acc-month-value.is-net-pos { color: var(--accent-primary, #38bdf8); }
+.acc-month-bar { display: flex; gap: 3px; height: 5px; margin-top: 9px; }
+.acc-month-bar span { border-radius: 999px; min-width: 4px; transform-origin: left; animation: acc-bar-in 0.6s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.acc-month-bar .is-in { background: #22c55e; }
+.acc-month-bar .is-out { background: #ef4444; }
+
+.acc-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: 8px 4px; }
+.acc-action { display: flex; flex-direction: column; align-items: center; gap: 5px; background: none; border: none; padding: 0; cursor: pointer; }
+.acc-action-icon {
+    width: 46px; height: 46px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; font-weight: 800; color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tone) 35%, transparent);
+    transition: transform 0.12s ease;
+}
+.acc-action:active .acc-action-icon { transform: scale(0.9); }
+.acc-action-label { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+
+.acc-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 12px; font-weight: 800; color: var(--text-primary); }
+.acc-link { background: none; border: none; padding: 0; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--accent-primary, #38bdf8); }
+.acc-empty { font-size: 11px; color: var(--text-muted); font-style: italic; background: var(--bg-primary); border-radius: 12px; padding: 10px; text-align: center; }
+.acc-list { display: flex; flex-direction: column; gap: 5px; }
+.acc-day + .acc-day { margin-top: 10px; }
+.acc-day-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin: 0 0 6px 2px; }
+.acc-row { display: flex; align-items: center; gap: 10px; background: var(--bg-primary); border-radius: 12px; padding: 8px 10px; }
+.acc-row.is-paused { opacity: 0.55; }
+.acc-row-icon { width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--bg-secondary); color: var(--text-secondary); }
+.acc-row-main { flex: 1; min-width: 0; }
+.acc-row-title { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acc-row-sub { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.acc-row-amount { flex-shrink: 0; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.acc-row-amount.is-in { color: #22c55e; }
+.acc-row-amount.is-out { color: #ef4444; }
+.acc-row-amount.is-transfer { color: #60a5fa; }
+.acc-row-delete { flex-shrink: 0; background: none; border: none; padding: 2px; font-size: 11px; opacity: 0.4; cursor: pointer; }
+.acc-more { width: 100%; margin-top: 8px; padding: 8px; border-radius: 12px; background: none; border: 1px dashed var(--glass-border); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; }
+.acc-delete-account { align-self: center; background: none; border: none; padding: 6px 10px; font-size: 12px; font-weight: 600; color: #ef4444; opacity: 0.8; cursor: pointer; }
+
+@keyframes acc-sheet-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes acc-card-in {
+    from { opacity: 0; transform: translateY(16px) rotateX(22deg) scale(0.94); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes acc-card-shine { to { transform: translateX(130%); } }
+@keyframes acc-bar-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+html[data-animations="off"] .acc-sheet,
+html[data-animations="off"] .acc-card,
+html[data-animations="off"] .acc-month-bar span { animation: none; }
+html[data-animations="off"] .acc-card-shine { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .acc-sheet, .acc-card, .acc-month-bar span { animation: none; }
+    .acc-card-shine { display: none; }
+}

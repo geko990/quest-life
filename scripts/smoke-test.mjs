@@ -221,6 +221,67 @@ try {
   problems.push(`Gruppo 5 (registro errori): ${e.message}`);
 }
 
+// Tesoro: scheda del conto a forma di carta, sempre tra barra superiore e nav bar
+try {
+  await page.evaluate(() => {
+    const raw = localStorage.getItem('questlife_state_v2');
+    const st = raw ? JSON.parse(raw) : {};
+    const d = (n) => { const x = new Date(); x.setDate(x.getDate() - n); return x.toISOString().slice(0, 10); };
+    const tx = [];
+    const notes = ['Spesa settimanale', 'Benzina', 'Pizza con amici', 'Libro', 'Casello autostrada', 'Farmacia', 'Regalo', 'Abbonamento palestra'];
+    for (let i = 0; i < 40; i++) {
+      tx.push({ id: `tx_test_${i}`, type: i % 9 === 0 ? 'income' : 'expense', amount: 5 + (i * 7) % 60, category: i % 9 === 0 ? 'stipendio' : 'cibo', account: 'sec_test', note: notes[i % notes.length], date: d(Math.floor(i / 2)), timestamp: Date.now() - i * 1000 });
+    }
+    tx.push({ id: 'tx_test_trf', type: 'transfer', amount: 200, category: 'trasferimento', sourceAccount: 'base', targetAccount: 'sec_test', account: 'base', note: 'Accantonamento', date: d(1), timestamp: Date.now() });
+    st.finances = {
+      ...(st.finances || {}), baseAccountName: 'Conto Base', balance: 1520.4, cashBalance: 85, monthlyBudget: 1000,
+      secondaryAccounts: [{ id: 'sec_test', name: 'Conto Risparmi', emoji: '🛡️', balance: 2717.82, interestRate: 3, interestFrequency: 'monthly', lockPeriodMonths: 0 }],
+      transactions: tx,
+      recurringTransactions: [{ id: 'rec_test', type: 'expense', amount: 9.99, category: 'svago', account: 'sec_test', note: 'Streaming', dayOfMonth: 5, active: true }]
+    };
+    localStorage.setItem('questlife_state_v2', JSON.stringify(st));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(800);
+  await navTo('Opzioni');
+  await navTo('Opzioni');
+  await page.waitForTimeout(500);
+  await shot('13-tesoro');
+  const checkBounds = async (label) => {
+    const r = await page.evaluate(() => {
+      const sheet = document.querySelector('.acc-sheet')?.getBoundingClientRect();
+      const visible = (sel) => [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.height > 0);
+      const header = visible('header')[0];
+      const nav = visible('nav').pop();
+      return sheet ? { top: sheet.top, bottom: sheet.bottom, headerBottom: header ? header.bottom : 0, navTop: nav ? nav.top : innerHeight } : null;
+    });
+    if (!r) throw new Error(`${label}: la scheda del conto non si è aperta`);
+    if (r.top < r.headerBottom - 1 || r.bottom > r.navTop + 1) {
+      throw new Error(`${label}: la scheda esce dalle barre (scheda ${Math.round(r.top)}–${Math.round(r.bottom)}, barre ${Math.round(r.headerBottom)}–${Math.round(r.navTop)})`);
+    }
+    return r;
+  };
+  await page.getByText('Conto Risparmi').first().click();
+  await page.waitForTimeout(1600);
+  const r1 = await checkBounds('Conto risparmi');
+  const txt = await page.locator('.acc-sheet').innerText();
+  if (!/Streaming/.test(txt)) throw new Error('la ricorrente del conto non compare');
+  if (!/Accantonamento/.test(txt)) throw new Error('il trasferimento in entrata non compare nel conto di arrivo');
+  await shot('14-conto-carta');
+  await page.locator('.acc-body').evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  await page.waitForTimeout(300);
+  await shot('15-conto-carta-fondo');
+  await tapOutside();
+  await page.locator('div', { hasText: /^💳 Conto Base$/ }).last().click({ force: true });
+  await page.waitForTimeout(1200);
+  await checkBounds('Conto base');
+  await shot('16-conto-base');
+  await tapOutside();
+  report(`Tesoro: schede dei conti entro le barre (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti e trasferimenti OK`);
+} catch (e) {
+  problems.push(`Gruppo 6 (Tesoro): ${e.message}`);
+}
+
 // Inglese: imposto la lingua, ricarico e controllo le etichette
 try {
   await page.evaluate(() => {
