@@ -7723,6 +7723,16 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
 .stagger-in-inner {
     animation: staggerInInner 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* Grafico unico di un pannello (radar dell'Eroe): cresce dal centro con un leggero rimbalzo */
+@keyframes staggerPop {
+    from { opacity: 0; transform: scale(0.72) rotate(-12deg); }
+    to { opacity: 1; transform: none; }
+}
+.stagger-pop {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: staggerPop 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
 
 @keyframes navIconPop {
     0% { transform: scale(1); }
@@ -7750,10 +7760,11 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
     to { transform: scale(1); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .stagger-in, .stagger-in-inner, .nav-icon-pop, .nav-active-dot { animation: none !important; }
+    .stagger-in, .stagger-in-inner, .stagger-pop, .nav-icon-pop, .nav-active-dot { animation: none !important; }
 }
 html[data-animations="off"] .stagger-in,
 html[data-animations="off"] .stagger-in-inner,
+html[data-animations="off"] .stagger-pop,
 html[data-animations="off"] .nav-icon-pop,
 html[data-animations="off"] .nav-active-dot { animation: none !important; }
 

@@ -1034,38 +1034,35 @@ export default function App() {
         (parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== 'none');
     };
     const onScreen = (r) => r.height > 0 && r.width > 0 && r.top < vh && r.bottom > 0 && r.left < vw && r.right > 0;
-    const collect = (el, depth, out) => {
+    // Contenitori senza dimensioni (es. display: contents): non si animano, ma i loro figli sì
+    const isGhost = (el, r) => (r.height === 0 || r.width === 0) && el.children.length > 0;
+    const collect = (el, depth, out, inPanel = false) => {
       const r = el.getBoundingClientRect();
+      if (isGhost(el, r) && depth < 8) { Array.from(el.children).forEach(k => collect(k, depth + 1, out, inPanel)); return; }
       if (!onScreen(r)) return;
-      const kids = Array.from(el.children).filter(k => onScreen(k.getBoundingClientRect()));
+      const kids = Array.from(el.children).filter(k => { const kr = k.getBoundingClientRect(); return onScreen(kr) || isGhost(k, kr); });
       const card = isCard(el);
       const leaf = depth >= 8 || kids.length === 0 || ATOMIC.test(el.tagName) || card;
       if (leaf) { out.push({ el, r, card }); return; }
-      if (kids.length === 1) { collect(kids[0], depth + 1, out); return; }
+      if (kids.length === 1) { collect(kids[0], depth + 1, out, inPanel); return; }
       const tall = r.height > 120;
       const rowOfCards = kids.length > 1 && kids.every(isCard);
-      if (tall || rowOfCards) kids.forEach(k => collect(k, depth + 1, out));
+      // Dentro un pannello, anche una fila di 3+ voci affiancate (es. Bruciate / Bicchieri / Passi) entra da sinistra a destra
+      const rowOfItems = inPanel && kids.length >= 3 && kids.every(k => {
+        const kr = k.getBoundingClientRect(); return Math.abs(kr.top - kids[0].getBoundingClientRect().top) < 14 && kr.width >= 40;
+      });
+      if (tall || rowOfCards || rowOfItems) kids.forEach(k => collect(k, depth + 1, out, inPanel));
       else out.push({ el, r, card });
     };
+    const byPosition = (a, b) => (a.r.top - b.r.top) || (a.r.left - b.r.left);
     const collected = [];
     collect(root, 0, collected);
     const items = collected.slice(0, 28);
     if (!items.length) return;
 
-    // Tempi in base alla posizione: riga per riga dall'alto, e da sinistra a destra nella stessa riga.
-    // Con poche righe il passo si allunga, così la cascata si vede anche nelle schede con poche tessere.
-    items.sort((a, b) => (a.r.top - b.r.top) || (a.r.left - b.r.left));
-    let row = -1, rowTop = -Infinity, col = 0;
-    items.forEach(it => {
-      if (it.r.top > rowTop + 14) { row++; rowTop = it.r.top; col = 0; } else col++;
-      it.row = row; it.col = col;
-    });
-    const rows = row + 1;
-    const step = rows > 1 ? Math.min(80, Math.max(45, Math.round(330 / (rows - 1)))) : 0;
-
     const play = (el, cls, anim, delay) => {
       el.classList.remove(cls);
-      el.style.animationDelay = `${delay}ms`;
+      el.style.animationDelay = `${Math.round(delay)}ms`;
       void el.offsetWidth; // riavvia l'animazione
       el.classList.add(cls);
       const cleanup = (e) => {
@@ -1077,15 +1074,52 @@ export default function App() {
       el.addEventListener('animationend', cleanup);
     };
 
-    items.forEach(({ el, r, card, row: ri, col: ci }) => {
-      const delay = ri * step + ci * 55;
-      play(el, 'stagger-in', 'staggerIn', delay);
-      // Tessere grandi (liste dentro un pannello): dopo il pannello, le sue righe entrano una alla volta
-      if (card && r.height > 200) {
-        const inner = [];
-        Array.from(el.children).forEach(k => collect(k, 1, inner));
-        if (inner.length >= 3) inner.slice(0, 14).forEach((it, k) => play(it.el, 'stagger-in-inner', 'staggerInInner', delay + 110 + k * 40));
-      }
+    // Pannelli (tessere alte con contenuto): oltre al pannello, entrano una alla volta anche le sue righe
+    const all = items.map(it => Object.assign(it, { parent: null }));
+    items.forEach(it => {
+      if (!it.card || it.r.height <= 90) return;
+      // Negli elenchi di tessere uguali (es. campagne) no: rallenterebbe tutta la lista
+      const twins = Array.from(it.el.parentElement?.children || []).filter(k => k.className === it.el.className);
+      if (twins.length >= 3) return;
+      const inner = [];
+      Array.from(it.el.children).forEach(k => collect(k, 1, inner, true));
+      // side: righe di un pannello piccolo, fuori dall'onda principale (non spostano il ritmo delle tessere sotto)
+      if (inner.length >= 2) inner.slice(0, 12).forEach(x => all.push(Object.assign(x, { parent: it, side: it.r.height <= 200 })));
+      // Pannello con un solo grafico (es. il radar dell'Eroe): il grafico "sboccia" dal centro
+      else if (inner.length === 1 && /^(SVG|CANVAS)$/i.test(inner[0].el.tagName)) all.push(Object.assign(inner[0], { parent: it, pop: true }));
+    });
+
+    // Un'unica onda dall'alto verso il basso: il ritardo cresce con la posizione sullo schermo
+    // (circa 0,5 ms per pixel, tra 30 e 55 ms da una riga alla successiva), così niente compare
+    // più in basso prima di ciò che sta sopra. Nella stessa riga si va da sinistra a destra.
+    all.sort(byPosition);
+    let rowTop = null, rowStart = 0, col = 0;
+    all.filter(it => !it.side).forEach(it => {
+      if (rowTop === null) { rowTop = it.r.top; rowStart = 0; col = 0; }
+      else if (it.r.top > rowTop + 14) {
+        rowStart += Math.min(55, Math.max(30, (it.r.top - rowTop) * 0.5));
+        rowTop = it.r.top; col = 0;
+      } else col++;
+      let d = rowStart + col * 55;
+      if (it.parent) { // le righe interne dopo il loro pannello, una dopo l'altra
+        const p = it.parent;
+        d = Math.max(d, p.delay + 70, (p.lastInner ?? -Infinity) + 30);
+        p.lastInner = d;
+        if (d > rowStart) rowStart = d;
+      } else if (d > rowStart && col === 0) rowStart = d;
+      it.delay = d;
+    });
+    // Righe dei pannelli piccoli: subito dopo il loro pannello, una dopo l'altra (affiancate da sinistra a destra)
+    all.filter(it => it.side).forEach(it => {
+      const p = it.parent;
+      const sameRow = p.lastSide && Math.abs(it.r.top - p.lastSide.top) < 14;
+      it.delay = !p.lastSide ? p.delay + 70 : p.lastSide.delay + (sameRow ? 55 : 30);
+      p.lastSide = { top: it.r.top, delay: it.delay };
+    });
+    all.forEach(it => {
+      if (it.pop) play(it.el, 'stagger-pop', 'staggerPop', it.delay);
+      else if (it.parent) play(it.el, 'stagger-in-inner', 'staggerInInner', it.delay);
+      else play(it.el, 'stagger-in', 'staggerIn', it.delay);
     });
   }, [activeTab]);
 
