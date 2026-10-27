@@ -248,8 +248,9 @@ export default function Header({
             : {
                 height: 'auto',
                 minHeight: '48px',
-                // Sotto il notch iOS 26 sfoca i contenuti: la barra parte un po' più in basso per restarne fuori
-                paddingTop: 'max(8px, calc(env(safe-area-inset-top, 0px) + 18px))',
+                // Nota: nella PWA iOS 26 sfoca leggermente i contenuti sotto il notch (non evitabile da web);
+                // si mantiene la posizione originale, nell'app nativa sarà nitida
+                paddingTop: 'max(8px, env(safe-area-inset-top, 0px))',
                 paddingBottom: '8px',
                 paddingLeft: '14px',
                 paddingRight: '14px'
