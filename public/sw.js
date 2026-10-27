@@ -1,6 +1,6 @@
 // RPG LIFE SERVICE WORKER
-const CACHE_NAME = 'rpg-life-v5.9.231-1793117703539';
-const SW_VERSION = '5.9.231';
+const CACHE_NAME = 'rpg-life-v5.9.232-1793117717210';
+const SW_VERSION = '5.9.232';
 
 // Assets to precache on install (app shell)
 const PRECACHE_ASSETS = [
