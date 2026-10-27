@@ -418,6 +418,20 @@ export default function SettingsTab({
                 />
               </div>
 
+              {/* Animazioni e microinterazioni */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("✨ Animazioni")}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Ingresso delle schede, nav bar e celebrazioni animate")}</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={safeSettings.animations !== false}
+                  onChange={(e) => updateSetting('animations', e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                />
+              </div>
+
               {/* Lingua / Language */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div>

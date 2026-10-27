@@ -289,8 +289,13 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               WebkitTapHighlightColor: 'transparent'
             }}
           >
-            <span style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1, position: 'relative' }}>
+            <span
+              key={isActive ? `${item.id}-on` : `${item.id}-off`}
+              className={isActive ? 'nav-icon-pop' : undefined}
+              style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1, position: 'relative' }}
+            >
               {item.icon}
+              {isActive && <span className="nav-active-dot" />}
               {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
             </span>
             <span style={{ fontSize: '9.5px', lineHeight: 1.1, letterSpacing: '0.1px' }}>{_t(item.label)}</span>

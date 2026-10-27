@@ -119,6 +119,7 @@ export default function App() {
   // Lingua dell'interfaccia: impostata prima del render dei figli
   setLanguage(settings.language || 'it');
   setReminderPrefs(settings.deadlineReminders);
+  try { document.documentElement.setAttribute('data-animations', settings.animations === false ? 'off' : 'on'); } catch (_) {}
   const { layoutMode, isLandscape, isTablet } = useLayoutMode(settings);
   const [finances, setFinances] = useState(initialFullState.finances);
   const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);
@@ -1009,6 +1010,48 @@ export default function App() {
   };
 
   // 9. Modal Add/Edit Handlers
+  // --- Ingresso a cascata: cambiando scheda, le tessere visibili compaiono una dopo l'altra dal basso ---
+  const tabViewRef = useRef(null);
+  useEffect(() => {
+    const root = tabViewRef.current;
+    if (!root) return;
+    const reduce = settings.animations === false ||
+      (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (reduce) return;
+
+    // Contenitore "vero" della scheda: scendo finché c'è un solo figlio
+    let level = root;
+    while (level && level.children.length === 1 && level.firstElementChild.children.length > 0) level = level.firstElementChild;
+    if (!level) return;
+
+    const viewportBottom = window.innerHeight;
+    const cardSelector = '.glass-panel, .task-card, .card, .stat-card, .habit-card, [class*="-card"]';
+    const isVisible = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.height > 0 && r.top < viewportBottom;
+    };
+    // Tessere visibili (solo le più esterne) + blocchi di primo livello che non contengono tessere
+    const cards = Array.from(level.querySelectorAll(cardSelector))
+      .filter(el => isVisible(el) && !el.parentElement.closest(cardSelector));
+    const blocks = Array.from(level.children).filter(el => isVisible(el) && !el.querySelector(cardSelector) && !el.matches(cardSelector));
+    const items = [...new Set([...blocks, ...cards])]
+      .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
+      .slice(0, 16);
+
+    items.forEach((el, i) => {
+      el.classList.remove('stagger-in');
+      el.style.animationDelay = `${i * 45}ms`;
+      void el.offsetWidth; // riavvia l'animazione
+      el.classList.add('stagger-in');
+      const cleanup = () => {
+        el.classList.remove('stagger-in');
+        el.style.animationDelay = '';
+        el.removeEventListener('animationend', cleanup);
+      };
+      el.addEventListener('animationend', cleanup);
+    });
+  }, [activeTab]);
+
   // --- Scadenze: pallino rosso su Missioni, numero sull'icona dell'app, promemoria locali ---
   const [deadlineTick, setDeadlineTick] = useState(0);
   useEffect(() => {
@@ -1867,18 +1910,16 @@ export default function App() {
             <div
               key={activeTab}
               className="tab-view-transition"
+              ref={tabViewRef}
               style={{
                 width: '100%',
                 height: (activeTab === 'home' && !isLandscape) ? '100%' : 'auto',
                 minHeight: 0,
                 display: (activeTab === 'home' && !isLandscape) ? 'flex' : 'block',
                 flexDirection: (activeTab === 'home' && !isLandscape) ? 'column' : undefined,
-                animation: 'tabFadeInUp 0.28s cubic-bezier(0.25, 1, 0.5, 1) backwards',
-                willChange: 'opacity, transform',
-                transform: 'translate3d(0, 0, 0)',
-                WebkitTransform: 'translate3d(0, 0, 0)',
-                WebkitBackfaceVisibility: 'hidden',
-                backfaceVisibility: 'hidden'
+                // L'ingresso è animato tessera per tessera (vedi effetto "Ingresso a cascata").
+                // Niente transform sul contenitore: altrimenti le finestre interne alle schede
+                // resterebbero confinate nell'area centrale invece di coprire tutto lo schermo.
               }}
             >
               {renderActiveTab()}

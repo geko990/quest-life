@@ -7708,3 +7708,46 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
     background-image: linear-gradient(rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.2)) !important;
     border: 1px solid rgba(239, 68, 68, 0.65) !important;
 }
+
+/* ============================================
+   MICROINTERAZIONI: ingresso a cascata delle tessere e nav bar
+   ============================================ */
+@keyframes staggerIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+}
+.stagger-in {
+    animation: staggerIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes navIconPop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.28) translateY(-3px); }
+    65% { transform: scale(0.94); }
+    100% { transform: scale(1); }
+}
+.nav-icon-pop {
+    display: inline-block;
+    animation: navIconPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-active-dot {
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    animation: navDotGrow 0.3s ease-out;
+}
+@keyframes navDotGrow {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .stagger-in, .nav-icon-pop, .nav-active-dot { animation: none !important; }
+}
+html[data-animations="off"] .stagger-in,
+html[data-animations="off"] .nav-icon-pop,
+html[data-animations="off"] .nav-active-dot { animation: none !important; }
