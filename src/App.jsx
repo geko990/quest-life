@@ -1772,7 +1772,7 @@ export default function App() {
             color: 'white',
             padding: '10px 14px',
             borderRadius: '16px',
-            boxShadow: '0 10px 30px rgba(124, 58, 237, 0.5)',
+            boxShadow: '0 6px 14px -6px rgba(0, 0, 0, 0.35)', // ombra leggera solo verso il basso (niente alone viola verso l'alto)
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
