@@ -146,6 +146,15 @@ await step('05-modifica-missione', async () => {
   await page.waitForTimeout(600);
 });
 await tapOutside();
+await navTo('Eroe').catch(() => {});
+await step('05b-dettaglio-attributo', async () => {
+  const hero = page.locator('button[title*="tieni premuto"]').last();
+  await hero.click();
+  await page.waitForTimeout(500);
+  await page.getByText('Forza').first().click();
+  await page.waitForTimeout(600);
+});
+await tapOutside();
 await navTo('Abitudini');
 await navTo('Salute');
 await shot('06-salute');

@@ -1757,14 +1757,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* TESSERA 1: Emoji, Nome, Descrizione, Livello e XP */}
-            <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-              {/* Emoji in alto (senza cerchio) */}
-              <div style={{ fontSize: '42px', lineHeight: '1', marginBottom: '4px' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, var(--bg-secondary) 100%)', padding: '28px 16px 20px 16px', borderRadius: '18px', border: '1.5px solid rgba(124, 58, 237, 0.35)', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
+              {/* Emoji in alto (senza cerchio) — stessa intestazione dei dettagli di missioni e abitudini */}
+              <div style={{ fontSize: '48px', lineHeight: '1', margin: '0 auto 6px auto', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))' }}>
                 {statData.icon || '⭐'}
               </div>
 
               {/* Nome e Descrizione */}
-              <h3 style={{ margin: '0 0 2px 0', fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <h3 style={{ margin: '0 0 2px 0', fontSize: '19px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {statData.name}
               </h3>
               <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.4' }}>
