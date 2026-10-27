@@ -8043,7 +8043,7 @@ html[data-animations="off"] .opt-chevron { transition: none; }
 .opt-toggle {
   position: relative; width: 44px; height: 26px; flex-shrink: 0;
   border-radius: 999px; border: none; padding: 0; cursor: pointer;
-  background: color-mix(in srgb, var(--text-primary) 20%, transparent);
+  background: rgba(120, 120, 128, 0.36); /* grigio stile iOS, visibile su tessere chiare e scure */
   transition: background 0.2s ease;
 }
 .opt-toggle.is-on { background: var(--accent-primary); }
