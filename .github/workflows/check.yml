@@ -41,10 +41,11 @@ jobs:
           npx --yes wait-on http://localhost:4173/ --timeout 30000
           node scripts/smoke-test.mjs
 
-      - name: Salva screenshot nel ramo ci-screenshots
+      - name: Salva screenshot e build nel ramo ci-screenshots
         if: always() && github.ref_name != 'main'
         run: |
           [ -d ci-shots ] || exit 0
+          cp -r dist ci-shots/dist
           cd ci-shots
           echo "Ramo: ${GITHUB_REF_NAME} — commit ${GITHUB_SHA::7}" > INFO.txt
           git init -q && git checkout -q -b shots
