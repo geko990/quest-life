@@ -170,6 +170,24 @@ export default function QuickMealModal({
     }, false);
   };
 
+  // Pasto libero: solo kcal e proteine, senza cercare un alimento né indicare i grammi
+  const handleStartTotalsEntry = () => {
+    const customName = searchQuery.trim() || 'Pasto libero';
+    setSelectedFood({
+      id: 'totals_' + Date.now(),
+      name: customName,
+      emoji: guessFoodEmoji(customName),
+      isManual: true,
+      isTotalsOnly: true
+    });
+    setMealName(customName);
+    setMealEmoji(guessFoodEmoji(customName) || '🍽️');
+    setPortionGrams('');
+    setMealCalories('');
+    setMealProteins('');
+    setSaveToDb(false);
+  };
+
   // Change portion grams
   const handlePortionChange = (newGrams) => {
     const g = Number(newGrams) || 0;
@@ -192,6 +210,26 @@ export default function QuickMealModal({
 
     const calNum = Number(mealCalories) || 0;
     const protNum = Number(mealProteins) || 0;
+
+    if (selectedFood?.isTotalsOnly) {
+      onAddMeal({
+        name: cleanName,
+        emoji: mealEmoji || '🍽️',
+        category: mealCategory,
+        calories: calNum,
+        proteins: protNum,
+        grams: '1 porzione',
+        saveToDb: false,
+        baseGrams: 100,
+        baseCalories: calNum,
+        baseProteins: protNum,
+        brand: null,
+        imageUrl: null
+      });
+      onClose();
+      return;
+    }
+
     const gVal = Number(portionGrams) || 100;
 
     let baseG = 100;
@@ -386,6 +424,35 @@ export default function QuickMealModal({
                 )}
               </div>
 
+              {/* PASTO LIBERO: solo kcal e proteine */}
+              <button
+                type="button"
+                onClick={handleStartTotalsEntry}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '9px 12px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.35)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🔢</span>
+                  <span style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '12px', color: '#6ee7b7', fontWeight: 'bold' }}>
+                      {cleanQ ? `"${searchQuery.trim()}": inserisci solo kcal e proteine` : 'Inserisci solo kcal e proteine'}
+                    </span>
+                    <span style={{ fontSize: '9.5px', color: '#94a3b8' }}>Per pasti fuori casa o già calcolati, senza grammi</span>
+                  </span>
+                </span>
+                <span style={{ fontSize: '11px', color: '#6ee7b7' }}>→</span>
+              </button>
+
               {/* OPZIONE INSERIMENTO LIBERO / MANUALE */}
               {cleanQ.length >= 2 && (
                 <div
@@ -527,7 +594,9 @@ export default function QuickMealModal({
 
           {/* FASE 2: SCHEDA PORZIONE, GRAMMI E DECISIONE SALVATAGGIO */}
           {selectedFood && (() => {
-            const isSubmitDisabled = !mealName.trim() || mealCalories === '' || isNaN(Number(mealCalories)) || Number(mealCalories) < 0 || !portionGrams || isNaN(Number(portionGrams)) || Number(portionGrams) <= 0;
+            const isTotalsOnly = !!selectedFood.isTotalsOnly;
+            const isSubmitDisabled = !mealName.trim() || mealCalories === '' || isNaN(Number(mealCalories)) || Number(mealCalories) < 0 ||
+              (!isTotalsOnly && (!portionGrams || isNaN(Number(portionGrams)) || Number(portionGrams) <= 0));
 
             return (
               <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -546,7 +615,7 @@ export default function QuickMealModal({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', textTransform: 'uppercase' }}>
-                      {selectedFood.isLocal ? '💾 Cibo da Memoria' : '🌐 Cibo da Internet'}
+                      {isTotalsOnly ? '🔢 Pasto libero: solo kcal e proteine' : (selectedFood.isManual ? '✏️ Pasto personalizzato' : (selectedFood.isLocal ? '💾 Cibo da Memoria' : '🌐 Cibo da Internet'))}
                     </span>
                     <button
                       type="button"
@@ -608,14 +677,14 @@ export default function QuickMealModal({
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                  {!isTotalsOnly && <div style={{ fontSize: '10px', color: '#94a3b8' }}>
                     Valori base (100g): <b style={{ color: '#38bdf8' }}>{selectedFood.baseCalories ?? 0} kcal</b> • <b style={{ color: '#a78bfa' }}>{selectedFood.baseProteins ?? 0}g P</b>
                     {selectedFood.brand ? ` • Marca: ${selectedFood.brand}` : ''}
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Peso Assunto (Grammi) con Preset Rapidi */}
-                <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '12px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                {!isTotalsOnly && <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '12px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#f8fafc', textTransform: 'uppercase' }}>
                       ⚖️ Peso Assunto (Grammi)
@@ -663,7 +732,7 @@ export default function QuickMealModal({
                       boxSizing: 'border-box'
                     }}
                   />
-                </div>
+                </div>}
 
                 {/* Risultato Calorie e Proteine Calcolate (Editabili) */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -677,6 +746,9 @@ export default function QuickMealModal({
                       step="any"
                       value={mealCalories}
                       onChange={(e) => setMealCalories(e.target.value)}
+                      autoFocus={isTotalsOnly}
+                      inputMode="decimal"
+                      placeholder={isTotalsOnly ? 'es. 800' : undefined}
                       style={{
                         width: '100%',
                         height: '38px',
@@ -702,6 +774,8 @@ export default function QuickMealModal({
                       step="any"
                       value={mealProteins}
                       onChange={(e) => setMealProteins(e.target.value)}
+                      inputMode="decimal"
+                      placeholder={isTotalsOnly ? 'es. 40' : undefined}
                       style={{
                         width: '100%',
                         height: '38px',
@@ -761,7 +835,7 @@ export default function QuickMealModal({
                 </div>
 
                 {/* SCELTA SALVATAGGIO NEL DATABASE */}
-                <label
+                {!isTotalsOnly && <label
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -795,7 +869,7 @@ export default function QuickMealModal({
                             : 'Verrà conteggiato solo nel diario di oggi senza occupare spazio nel database.')}
                     </span>
                   </div>
-                </label>
+                </label>}
 
                 {/* Bottone Aggiungi al Diario */}
                 <button
@@ -823,7 +897,7 @@ export default function QuickMealModal({
                   }}
                 >
                   <span>
-                    {saveToDb && !selectedFood.isLocal
+                    {saveToDb && !selectedFood.isLocal && !isTotalsOnly
                       ? '➕ Aggiungi al Diario & Salva nel Database'
                       : '➕ Aggiungi al Diario di Oggi'}
                   </span>

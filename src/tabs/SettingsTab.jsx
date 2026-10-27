@@ -419,6 +419,20 @@ export default function SettingsTab({
                   style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
                 />
               </div>
+
+              {/* Tesoro: il totale include gli investimenti? */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>💰 Tesoro: Totale con Investimenti</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Se attivo, il totale somma conti e investimenti. Se disattivo, mostra solo il totale dei conti; gli investimenti restano nella loro tessera</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={safeSettings.financeTotalIncludesInvestments !== false}
+                  onChange={(e) => updateSetting('financeTotalIncludesInvestments', e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                />
+              </div>
             </div>
           )}
         </div>

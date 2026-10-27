@@ -12,6 +12,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   // OCR state for food scanning
   const fileInputRef = React.useRef(null);
+
+  // Rileva modifiche non salvate: negli elementi esistenti il pulsante Salva compare solo quando serve
+  const latestFormRef = React.useRef(null);
+  latestFormRef.current = { form, subquests, milestonesText };
+  const [baseline, setBaseline] = useState(null);
+  useEffect(() => {
+    setBaseline(null);
+    const t = setTimeout(() => setBaseline(JSON.stringify(latestFormRef.current)), 120);
+    return () => clearTimeout(t);
+  }, [currentType, editData]);
+  const isDirty = baseline !== null && JSON.stringify({ form, subquests, milestonesText }) !== baseline;
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
   const [ocrStatusText, setOcrStatusText] = useState('');
@@ -2366,6 +2377,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
   const isExpandedModal = ['quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
+  const READ_ONLY_TYPES = ['stat_detail', 'quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview'];
+  const DELETABLE_TYPES = ['attribute', 'ability', 'habit', 'oneshot', 'quest', 'food', 'exercise'];
+  const isReadOnly = READ_ONLY_TYPES.includes(activeT);
+  const canEdit = activeT !== 'challenge_preview' && (type === 'stat_detail' || ['quest_detail', 'oneshot_detail', 'habit_detail'].includes(activeT));
+  const showDelete = !isReadOnly && !!onDelete && !!editData?.id && DELETABLE_TYPES.includes(activeT);
+  const showSave = !isReadOnly && (!editData || isDirty);
+  const handleEditClick = () => {
+    if (activeT === 'quest_detail') handleTypeSwitch('quest');
+    else if (activeT === 'oneshot_detail') handleTypeSwitch('oneshot');
+    else if (activeT === 'habit_detail') handleTypeSwitch('habit');
+    else if (onEditStat) onEditStat(editData);
+  };
   const headerObj = getHeaderInfo();
 
   const isLandscape = typeof window !== 'undefined' && (window.innerWidth > window.innerHeight || window.matchMedia?.('(orientation: landscape)')?.matches);
@@ -2380,6 +2403,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         onClick={(e) => e.stopPropagation()}
         className="modal w-full rounded-3xl overflow-hidden shadow-2xl animate-scale-up flex flex-col justify-between"
         style={{
+          position: 'relative',
           background: 'var(--bg-card)',
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
@@ -2390,6 +2414,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           maxHeight: isExpandedModal ? '94dvh' : (isLandscape ? '94dvh' : '88vh')
         }}
       >
+        {/* Schede in sola lettura: solo una piccola matita in alto a destra (si chiude toccando fuori) */}
+        {canEdit && (
+          <button type="button" className="modal-edit-fab" onClick={handleEditClick} title="Modifica" aria-label="Modifica">
+            ✏️
+          </button>
+        )}
+
         {/* Header (Hidden for stat_detail, quest_detail, oneshot_detail, habit_detail, challenge_preview) */}
         {!['stat_detail', 'quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview'].includes(activeT) && (
           <div
@@ -2469,23 +2500,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {renderFormFields()}
           </div>
 
-          {/* Footer Actions (Centered Coherent 44x44 Emoji Buttons - Hidden for challenge_preview) */}
-          {activeT !== 'challenge_preview' && (
-            <div
-              style={{
-                padding: '12px 28px 24px 28px',
-                display: 'flex',
-                justify: 'center',
-                alignItems: 'center',
-                gap: '14px',
-                background: 'transparent',
-                borderTop: 'none'
-              }}
-              className="shrink-0"
-            >
-              {editData && onDelete && (
+          {/* Footer standard: cestino piccolo (solo in modifica di elementi eliminabili) + Salva a tutta larghezza (solo se c'è qualcosa da salvare) */}
+          {(showDelete || showSave) && (
+            <div className="modal-action-bar shrink-0">
+              {showDelete && (
                 <button
                   type="button"
+                  className="modal-action-delete"
                   onClick={() => {
                     if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
                       onDelete(editData.id || editData);
@@ -2493,83 +2514,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     }
                   }}
                   title="Elimina"
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '12px',
-                    fontSize: '15px',
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    border: '1px solid rgba(239, 68, 68, 0.25)',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                  }}
+                  aria-label="Elimina"
                 >
                   🗑️
                 </button>
               )}
-
-              {(type === 'stat_detail' || ['quest_detail', 'oneshot_detail', 'habit_detail'].includes(activeT)) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (activeT === 'quest_detail') {
-                      handleTypeSwitch('quest');
-                    } else if (activeT === 'oneshot_detail') {
-                      handleTypeSwitch('oneshot');
-                    } else if (activeT === 'habit_detail') {
-                      handleTypeSwitch('habit');
-                    } else if (onEditStat) {
-                      onEditStat(editData);
-                    }
-                  }}
-                  title="Modifica"
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '12px',
-                    fontSize: '15px',
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--glass-border)',
-                    color: 'var(--text-primary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                  }}
-                >
-                  ✏️
-                </button>
-              )}
-
-              {!['stat_detail', 'quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview'].includes(activeT) && (
-                <button
-                  type="submit"
-                  title="Salva"
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '12px',
-                    fontSize: '15px',
-                    fontWeight: 'bold',
-                    background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%))',
-                    color: '#ffffff',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  💾
+              {showSave && (
+                <button type="submit" className="modal-action-save" title="Salva">
+                  {editData ? 'Salva modifiche' : 'Salva'}
                 </button>
               )}
             </div>

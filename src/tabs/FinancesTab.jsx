@@ -1283,10 +1283,23 @@ export default function FinancesTab({
     setSyncStatusMsg(null);
   };
 
-  // Total Net Worth (Conto Base + Contanti + Secondary Accounts + Investimenti)
+  // Totale: Conto Base + Contanti + Conti secondari (+ Investimenti, se attivo in Opzioni)
   const secondaryAccountsTotal = (finances.secondaryAccounts || []).reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
   const cashTotal = Number(finances.cashBalance) || 0;
-  const totalPatrimonio = (Number(finances.balance) || 0) + cashTotal + secondaryAccountsTotal + totalInvestmentsValue;
+  const totalIncludesInvestments = settings?.financeTotalIncludesInvestments !== false;
+  const totalContiValue = (Number(finances.balance) || 0) + cashTotal + secondaryAccountsTotal;
+  const totalPatrimonio = totalContiValue + (totalIncludesInvestments ? totalInvestmentsValue : 0);
+  // Se il totale esclude gli investimenti, i trasferimenti verso/da un investimento cambiano il totale dei conti
+  const isInvestmentAccount = (accId) => typeof accId === 'string' && (accId.startsWith('inv_') || (finances.investments || []).some(i => i.id === accId));
+  const getInvestFlowDelta = (t) => {
+    if (totalIncludesInvestments || t.type !== 'transfer') return 0;
+    const amt = Number(t.amount) || 0;
+    const srcInv = isInvestmentAccount(t.sourceAccount || t.transferSource);
+    const dstInv = isInvestmentAccount(t.targetAccount || t.transferTarget);
+    if (dstInv && !srcInv) return -amt;
+    if (srcInv && !dstInv) return amt;
+    return 0;
+  };
 
   // Filtered Transactions
   const filteredTransactions = (finances.transactions || []).filter(t => {
@@ -1313,7 +1326,7 @@ export default function FinancesTab({
     if (accFilter === 'all') {
       if (t.type === 'income') return Number(t.amount) || 0;
       if (t.type === 'expense') return -(Number(t.amount) || 0);
-      return 0; // Internal transfers do not change total portfolio net worth
+      return getInvestFlowDelta(t); // I trasferimenti interni non cambiano il totale (salvo investimenti esclusi)
     }
     const accId = accFilter;
     if (t.type === 'transfer') {
@@ -1719,13 +1732,13 @@ export default function FinancesTab({
         });
         const incAfter = txAfter.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
         const expAfter = txAfter.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-        const netAfter = incAfter - expAfter;
+        const netAfter = incAfter - expAfter + txAfter.reduce((acc, t) => acc + getInvestFlowDelta(t), 0);
         const monthPatrimonio = Math.round((totalPatrimonio - netAfter) * 100) / 100;
 
         const mTx = allTx.filter(t => t.date && t.date.startsWith(mKey));
         const mInc = mTx.filter(t => t.type === 'income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
         const mExp = mTx.filter(t => t.type === 'expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
-        const mNet = Math.round((mInc - mExp) * 100) / 100;
+        const mNet = Math.round((mInc - mExp + mTx.reduce((acc, t) => acc + getInvestFlowDelta(t), 0)) * 100) / 100;
 
         return {
           key: mKey,
@@ -1773,6 +1786,7 @@ export default function FinancesTab({
       if (!txNetByDate[dKey]) txNetByDate[dKey] = 0;
       if (t.type === 'income') txNetByDate[dKey] += (Number(t.amount) || 0);
       else if (t.type === 'expense') txNetByDate[dKey] -= (Number(t.amount) || 0);
+      else txNetByDate[dKey] += getInvestFlowDelta(t);
     }
 
     // Compute daily balance backwards from today
@@ -1818,7 +1832,7 @@ export default function FinancesTab({
     });
 
     return { chartPoints: points, chartGranularity: 'week' };
-  }, [overviewMonthsList, finances.transactions, totalPatrimonio, currentMonthPrefix]);
+  }, [overviewMonthsList, finances.transactions, totalPatrimonio, currentMonthPrefix, totalIncludesInvestments]);
 
   const svgW = 330;
   const svgH = 110;
@@ -1985,7 +1999,7 @@ export default function FinancesTab({
         >
           <div>
             <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              📈 Patrimonio Totale
+              {totalIncludesInvestments ? '📈 Patrimonio Totale' : '🏦 Totale Conti'}
             </div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
               {fmtCurrency(activePoint.value)}

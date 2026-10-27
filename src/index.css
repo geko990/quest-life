@@ -7352,3 +7352,86 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
         transform: translateX(0);
     }
 }
+
+/* ==========================================================================
+   STANDARD AZIONI DELLE FINESTRE (modifica / elimina / salva)
+   - Sola lettura: piccola matita in alto a destra, si chiude toccando fuori
+   - Modifica: Salva a tutta larghezza solo se c'è qualcosa da salvare,
+     cestino piccolo a sinistra solo per elementi esistenti eliminabili
+   ========================================================================== */
+.modal-edit-fab {
+    position: absolute;
+    top: 22px;
+    right: 26px;
+    z-index: 5;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    line-height: 1;
+    padding: 0;
+    background: color-mix(in srgb, var(--bg-card) 75%, transparent);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    opacity: 0.85;
+}
+.modal-edit-fab:active {
+    transform: scale(0.88);
+    opacity: 1;
+}
+
+.modal-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px 20px 20px;
+    animation: modalActionIn 0.22s ease-out;
+}
+.modal-action-delete {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    padding: 0;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+}
+.modal-action-save {
+    flex: 1;
+    height: 46px;
+    border-radius: 23px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #ffffff;
+    background: var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%));
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    animation: modalActionIn 0.22s ease-out;
+}
+.modal-action-delete:active,
+.modal-action-save:active {
+    transform: scale(0.96);
+}
+@keyframes modalActionIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}

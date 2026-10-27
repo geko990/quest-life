@@ -170,7 +170,8 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
         justifyContent: 'space-around',
         alignItems: 'center',
         paddingTop: '4px',
-        paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
+        // Le etichette scendono nello spazio libero sopra la barra Home di iOS: recuperiamo qualche px
+        paddingBottom: 'max(6px, calc(env(safe-area-inset-bottom, 0px) - 8px))',
         boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
         position: 'relative',
         zIndex: 50,
@@ -231,7 +232,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               alignItems: 'center',
               justifyContent: 'center',
               flex: 1,
-              height: '42px',
+              height: '46px',
               padding: '2px 0 0 0',
               background: 'none',
               border: 'none',
@@ -242,7 +243,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               WebkitTapHighlightColor: 'transparent'
             }}
           >
-            <span style={{ fontSize: '18px', marginBottom: '4px', lineHeight: 1 }}>{item.icon}</span>
+            <span style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1 }}>{item.icon}</span>
             <span style={{ fontSize: '9.5px', lineHeight: 1.1, letterSpacing: '0.1px' }}>{item.label}</span>
           </button>
         );
