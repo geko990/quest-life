@@ -25,6 +25,9 @@ await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
 report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('#root').innerText()).length} caratteri visibili`);
 // Schermata Eroe così come si apre (tessera del radar quadrata, aria sopra la nav bar)
+// al primo avvio si apre la finestra "È il tuo turno!": tocco fuori per chiuderla
+await page.waitForTimeout(1500);
+await page.mouse.click(196, 40);
 await page.waitForTimeout(1500);
 await shot('00-eroe');
 
