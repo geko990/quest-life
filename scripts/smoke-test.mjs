@@ -112,6 +112,29 @@ try {
   problems.push(`Gruppo 4 (scadenze): ${e.message}`);
 }
 
+// Inglese: imposto la lingua, ricarico e controllo le etichette
+try {
+  await page.evaluate(() => {
+    const raw = localStorage.getItem('questlife_state_v2');
+    const st = raw ? JSON.parse(raw) : {};
+    st.settings = { ...(st.settings || {}), language: 'en' };
+    localStorage.setItem('questlife_state_v2', JSON.stringify(st));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(800);
+  const navText = await page.locator('nav').last().innerText();
+  if (!/Habits/.test(navText) || !/Missions/.test(navText)) throw new Error(`nav non tradotta: ${navText.replace(/\n/g, ' ')}`);
+  const sample = [];
+  for (const label of ['Habits', 'Missions', 'Health', 'Settings']) {
+    await page.locator('button, [role="button"], div, span', { hasText: new RegExp(`^${label}$`) }).last().click({ force: true });
+    await page.waitForTimeout(500);
+    sample.push(`${label}: ${(await page.locator('#root').innerText()).replace(/\s+/g, ' ').slice(0, 160)}`);
+  }
+  report(`Inglese OK. ${sample.join(' || ')}`.slice(0, 900));
+} catch (e) {
+  problems.push(`Gruppo 5 (inglese): ${e.message}`);
+}
+
 // Controlli sul build
 const css = fs.readdirSync('dist/assets').filter((f) => f.endsWith('.css'))
   .map((f) => fs.readFileSync(`dist/assets/${f}`, 'utf8')).join('');

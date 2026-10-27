@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { _t } from '../i18n';
 export default function MedalCelebrationModal({ medal: propMedal, starCounts: propStarCounts, celebrationData, onClose, onViewDetails }) {
   const medal = propMedal || celebrationData?.medal;
   const starCounts = propStarCounts || celebrationData?.starCounts;
@@ -69,16 +70,14 @@ export default function MedalCelebrationModal({ medal: propMedal, starCounts: pr
         </div>
 
         <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-          🏆 MEDAGLIA MENSILE CONQUISTATA!
-        </div>
+          {_t("🏆 MEDAGLIA MENSILE CONQUISTATA!")}</div>
 
         <h2 style={{ fontSize: '20px', fontWeight: '800', margin: '0 0 8px 0', color: '#ffffff' }}>
           {medal.name}
         </h2>
 
         <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.4', marginBottom: '20px' }}>
-          Congratulazioni! Hai completato la sfida mensile superando la Piramide delle Difficoltà!
-        </p>
+          {_t("Congratulazioni! Hai completato la sfida mensile superando la Piramide delle Difficoltà!")}</p>
 
         {/* Pyramid Achievement Summary Card */}
         <div
@@ -95,26 +94,25 @@ export default function MedalCelebrationModal({ medal: propMedal, starCounts: pr
           }}
         >
           <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#fbbf24', textTransform: 'uppercase', marginBottom: '2px' }}>
-            📊 REQUISITI SODDISFATTI
-          </div>
+            {_t("📊 REQUISITI SODDISFATTI")}</div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-            <span style={{ color: '#e2e8f0' }}>🎯 Task Totali (50 richiesti):</span>
+            <span style={{ color: '#e2e8f0' }}>{_t("🎯 Task Totali (50 richiesti):")}</span>
             <span style={{ fontWeight: 'bold', color: '#22c55e' }}>{medal.totalCompleted || 50}/50 ✓</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-            <span style={{ color: '#e2e8f0' }}>⭐ 5x Task da 3 Stelle:</span>
+            <span style={{ color: '#e2e8f0' }}>{_t("⭐ 5x Task da 3 Stelle:")}</span>
             <span style={{ fontWeight: 'bold', color: '#22c55e' }}>{starCounts?.[3] || 5}/5 ✓</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-            <span style={{ color: '#e2e8f0' }}>⭐ 3x Task da 4 Stelle:</span>
+            <span style={{ color: '#e2e8f0' }}>{_t("⭐ 3x Task da 4 Stelle:")}</span>
             <span style={{ fontWeight: 'bold', color: '#22c55e' }}>{starCounts?.[4] || 3}/3 ✓</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-            <span style={{ color: '#e2e8f0' }}>⭐ 2x Task da 5 Stelle:</span>
+            <span style={{ color: '#e2e8f0' }}>{_t("⭐ 2x Task da 5 Stelle:")}</span>
             <span style={{ fontWeight: 'bold', color: '#22c55e' }}>{starCounts?.[5] || 2}/2 ✓</span>
           </div>
         </div>
@@ -139,8 +137,7 @@ export default function MedalCelebrationModal({ medal: propMedal, starCounts: pr
                 cursor: 'pointer'
               }}
             >
-              📜 Dettagli
-            </button>
+              {_t("📜 Dettagli")}</button>
           )}
           <button
             onClick={onClose}
@@ -157,8 +154,7 @@ export default function MedalCelebrationModal({ medal: propMedal, starCounts: pr
               cursor: 'pointer'
             }}
           >
-            Magnifico! 🎉
-          </button>
+            {_t("Magnifico! 🎉")}</button>
         </div>
       </div>
     </div>

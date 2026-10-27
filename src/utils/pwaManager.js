@@ -1,5 +1,6 @@
 import { APP_VERSION } from './constants';
 
+import { _t } from '../i18n';
 let swRegistration = null;
 let updateAvailableCallbacks = [];
 let isUpdating = false;
@@ -169,7 +170,7 @@ function hardReloadPage() {
 export async function forceUpdateApp(promptConfirm = true) {
   if (
     promptConfirm &&
-    !window.confirm("Vuoi forzare l'aggiornamento dell'applicazione? Verrà svuotata la cache e caricata l'ultima versione.")
+    !window.confirm(_t("Vuoi forzare l'aggiornamento dell'applicazione? Verrà svuotata la cache e caricata l'ultima versione."))
   ) {
     return;
   }

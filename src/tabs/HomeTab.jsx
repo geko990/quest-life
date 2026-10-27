@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getXpForLevel, getGameDate, getTomorrowGameDate } from '../utils/helpers';
 import MarqueeText from '../components/MarqueeText';
 
+import { _t } from '../i18n';
 const SLOT_CATEGORY_INFO = [
   { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
   { type: 'bonus', title: 'Azione Bonus', emoji: '⚡', color: '#f59e0b' },
@@ -80,7 +81,7 @@ export default function HomeTab({
       } catch (e) {}
     }
 
-    alert(`🍅 Pomodoro completato! Hai guadagnato +${safePomodoro.xpPerSession || 25} XP!`);
+    alert(_t("🍅 Pomodoro completato! Hai guadagnato +{0} XP!", safePomodoro.xpPerSession || 25));
 
     if (setPomodoro) {
       setPomodoro(prev => ({
@@ -312,10 +313,9 @@ export default function HomeTab({
       return (
         <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-secondary)', padding: '36px 0' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎯</div>
-          <div>Nessun attributo visibile.</div>
+          <div>{_t("Nessun attributo visibile.")}</div>
           <div style={{ fontSize: '11px', color: 'var(--accent-primary)', marginTop: '4px', cursor: 'pointer' }} onClick={() => setShowVisibilityModal(true)}>
-            Tieni premuto qui per selezionare cosa mostrare
-          </div>
+            {_t("Tieni premuto qui per selezionare cosa mostrare")}</div>
         </div>
       );
     }
@@ -372,7 +372,7 @@ export default function HomeTab({
     const labelItems = visibleStats.map((s, i) => {
       const coords = getCoordinates(i, 1.22);
       return (
-        <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={`${s.name}: ${rollingXp[s.id] || 0} XP`}>
+        <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={_t("{0}: {1} XP", s.name, rollingXp[s.id] || 0)}>
           <text
             x={coords.x}
             y={coords.y + 9}
@@ -533,7 +533,7 @@ export default function HomeTab({
           cursor: 'pointer',
           boxSizing: 'border-box'
         }}
-        title="Tieni premuto o tocca per gestire visibilità e aggiungere attributi"
+        title={_t("Tieni premuto o tocca per gestire visibilità e aggiungere attributi")}
       >
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {renderRadarChart()}
@@ -548,7 +548,7 @@ export default function HomeTab({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
-              {cardMode === 'pomodoro' ? 'Timer Pomodoro' : 'Azioni del Giorno'}
+              {cardMode === 'pomodoro' ? _t("Timer Pomodoro") : _t("Azioni del Giorno")}
             </h3>
             {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
               <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '10px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontWeight: 'bold', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
@@ -581,7 +581,7 @@ export default function HomeTab({
                 boxShadow: safePomodoro.status === 'running' ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none',
                 border: cardMode === 'pomodoro' ? '1px solid #ef4444' : '1px solid var(--glass-border)'
               }}
-              title={cardMode === 'pomodoro' ? "Passa a Lista Task" : "Passa a Timer Pomodoro"}
+              title={cardMode === 'pomodoro' ? _t("Passa a Lista Task") : _t("Passa a Timer Pomodoro")}
             >
               <span>🍅</span>
               {safePomodoro.status === 'running' && (
@@ -591,8 +591,7 @@ export default function HomeTab({
               )}
               {safePomodoro.status === 'paused' && (
                 <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>
-                  Pausa ({formatPomoTime(pomoSecs)})
-                </span>
+                  {_t("Pausa ({0})", formatPomoTime(pomoSecs))}</span>
               )}
             </button>
 
@@ -617,7 +616,7 @@ export default function HomeTab({
                 transition: 'transform 0.2s ease'
               }}
               className="active:scale-95"
-              title="Crea nuova abitudine, task o campagna"
+              title={_t("Crea nuova abitudine, task o campagna")}
             >
               +
             </button>
@@ -643,7 +642,7 @@ export default function HomeTab({
                   height: '42px',
                   cursor: safePomodoro.status === 'running' ? 'default' : 'pointer'
                 }}
-                title={safePomodoro.status === 'running' ? '' : 'Tocca per imposta i minuti con la ruota'}
+                title={safePomodoro.status === 'running' ? '' : _t("Tocca per imposta i minuti con la ruota")}
               >
                 <span
                   style={{
@@ -703,8 +702,7 @@ export default function HomeTab({
                       onClick={startPomodoro}
                       style={{ padding: '7px 16px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)' }}
                     >
-                      ▶️ Avvia
-                    </button>
+                      {_t("▶️ Avvia")}</button>
                   )}
                   {safePomodoro.status === 'running' && (
                     <>
@@ -713,8 +711,7 @@ export default function HomeTab({
                         onClick={pausePomodoro}
                         style={{ padding: '7px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
                       >
-                        ⏸️ Pausa
-                      </button>
+                        {_t("⏸️ Pausa")}</button>
                       <button
                         type="button"
                         onClick={resetPomodoro}
@@ -731,8 +728,7 @@ export default function HomeTab({
                         onClick={startPomodoro}
                         style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer' }}
                       >
-                        ▶️ Riprendi
-                      </button>
+                        {_t("▶️ Riprendi")}</button>
                       <button
                         type="button"
                         onClick={resetPomodoro}
@@ -756,8 +752,7 @@ export default function HomeTab({
                   className="btn-primary"
                   style={{ padding: '7px 16px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
                 >
-                  Pianifica la tua giornata
-                </button>
+                  {_t("Pianifica la tua giornata")}</button>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '100%' }}>
@@ -810,7 +805,7 @@ export default function HomeTab({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <span style={{ fontSize: '11px' }}>{info.emoji}</span>
                           <span style={{ fontSize: '9px', fontWeight: 'bold', color: info.color, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {info.title}
+                            {_t(info.title)}
                           </span>
                         </div>
                         <div style={{
@@ -863,7 +858,7 @@ export default function HomeTab({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '14px' }}>{isTomorrowPlanned ? '🌟' : '🎉'}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ffffff' }}>
-                    {isTomorrowPlanned ? 'Domani già programmato!' : 'Azioni di oggi completate!'}
+                    {isTomorrowPlanned ? _t("Domani già programmato!") : _t("Azioni di oggi completate!")}
                   </span>
                 </div>
                 <span style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '6px', background: isTomorrowPlanned ? 'rgba(34,197,94,0.35)' : 'rgba(168,85,247,0.35)', color: '#ffffff', fontWeight: 'bold' }}>
@@ -894,7 +889,7 @@ export default function HomeTab({
                   boxShadow: isTomorrowPlanned ? 'none' : '0 2px 10px rgba(124, 58, 237, 0.4)'
                 }}
               >
-                <span>{isTomorrowPlanned ? '✏️ Modifica pianificazione di domani' : '🎲 Pianifica la giornata di domani ➔'}</span>
+                <span>{isTomorrowPlanned ? _t("✏️ Modifica pianificazione di domani") : _t("🎲 Pianifica la giornata di domani ➔")}</span>
               </button>
             </div>
           )}
@@ -906,8 +901,7 @@ export default function HomeTab({
         <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              🍎 Sostentamento di oggi
-            </h3>
+              {_t("🍎 Sostentamento di oggi")}</h3>
             <span
               onPointerDown={() => handleHealthPressStart('consumed')}
               onPointerUp={() => handleHealthPressEnd(() => {})}
@@ -923,10 +917,9 @@ export default function HomeTab({
                 WebkitTouchCallout: 'none',
                 touchAction: 'manipulation'
               }}
-              title="Tieni premuto per Registro Pasti e Nutrizione"
+              title={_t("Tieni premuto per Registro Pasti e Nutrizione")}
             >
-              {health.calories?.consumed || 0} / {health.calories?.goal || 2000} kcal
-            </span>
+              {_t("{0} / {1} kcal", health.calories?.consumed || 0, health.calories?.goal || 2000)}</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', textAlign: 'center' }}>
             {/* 🔥 Calorie Bruciate */}
@@ -946,11 +939,11 @@ export default function HomeTab({
                 WebkitTouchCallout: 'none',
                 touchAction: 'manipulation'
               }}
-              title="Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti"
+              title={_t("Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti")}
             >
               <div style={{ fontSize: '13px' }}>🔥</div>
               <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--text-primary)' }}>{health.calories?.burned || 0}</div>
-              <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>Bruciate</div>
+              <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>{_t("Bruciate")}</div>
             </div>
 
             {/* 💧 Acqua */}
@@ -973,7 +966,7 @@ export default function HomeTab({
             >
               <div style={{ fontSize: '13px' }}>💧</div>
               <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.goal || health.waterGoal || 8}</div>
-              <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>Bicchieri</div>
+              <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>{_t("Bicchieri")}</div>
             </div>
 
             {/* 👟 Passi */}
@@ -996,7 +989,7 @@ export default function HomeTab({
             >
               <div style={{ fontSize: '14px' }}>👟</div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{Number(health.steps?.current) || 0}</div>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Passi</div>
+              <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{_t("Passi")}</div>
             </div>
           </div>
 
@@ -1038,8 +1031,8 @@ export default function HomeTab({
                 }}
               >
                 <span>
-                  {activeTooltip === 'water' && '💧 Tap rapido: aggiunge +1 bicchiere (200ml)'}
-                  {activeTooltip === 'steps' && '👟 Tap rapido: aggiunge +1000 passi'}
+                  {activeTooltip === 'water' && _t("💧 Tap rapido: aggiunge +1 bicchiere (200ml)")}
+                  {activeTooltip === 'steps' && _t("👟 Tap rapido: aggiunge +1000 passi")}
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>✕</span>
               </div>
@@ -1061,8 +1054,7 @@ export default function HomeTab({
           >
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', textAlign: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                📊 Gestisci Visibilità Grafico
-              </h3>
+                {_t("📊 Gestisci Visibilità Grafico")}</h3>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
@@ -1071,14 +1063,12 @@ export default function HomeTab({
                 className="btn-primary"
                 style={{ flex: 1, padding: '8px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               >
-                + Attributo
-              </button>
+                {_t("+ Attributo")}</button>
               <button
                 onClick={() => { setShowVisibilityModal(false); onOpenModal('ability'); }}
                 style={{ flex: 1, padding: '8px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
               >
-                + Abilità
-              </button>
+                {_t("+ Abilità")}</button>
             </div>
 
             <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -1092,7 +1082,7 @@ export default function HomeTab({
                     <span style={{ fontSize: '20px' }}>{s.icon}</span>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{s.name}</div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{s.type} • Liv. {s.level}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{_t("{0} • Liv. {1}", s.type, s.level)}</div>
                     </div>
                   </div>
                   <input
@@ -1110,8 +1100,7 @@ export default function HomeTab({
               className="btn-primary"
               style={{ width: '100%', marginTop: '16px', padding: '10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
             >
-              Fatto ✓
-            </button>
+              {_t("Fatto ✓")}</button>
           </div>
         </div>
       )}
@@ -1203,8 +1192,7 @@ export default function HomeTab({
                         userSelect: 'none'
                       }}
                     >
-                      {m} Minuti
-                    </div>
+                      {_t("{0} Minuti", m)}</div>
                   );
                 })}
               </div>

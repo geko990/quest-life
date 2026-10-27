@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QuickMealModal from '../components/QuickMealModal';
 import { SHOPPING_CATEGORIES, groupShoppingItems, normalizeShoppingName, categorizeShoppingItem } from '../utils/shoppingCategories';
 
+import { _t, getLocale } from '../i18n';
 export default function NutritionTab({
   activeTab,
   health,
@@ -369,7 +370,7 @@ export default function NutritionTab({
 
   const handleDeleteFoodFromDatabase = (food) => {
     if (!food) return;
-    if (confirm(`Sei sicuro di voler eliminare "${food.name}" dal database alimenti?`)) {
+    if (confirm(_t("Sei sicuro di voler eliminare \"{0}\" dal database alimenti?", food.name))) {
       setHealth(prev => ({
         ...prev,
         foodDatabase: (prev.foodDatabase || []).filter(f => f.id !== food.id)
@@ -636,7 +637,7 @@ export default function NutritionTab({
 
   const handleDeleteExerciseFromDatabase = (ex) => {
     if (!ex) return;
-    if (confirm(`Sei sicuro di voler eliminare "${ex.name}" dal database allenamenti?`)) {
+    if (confirm(_t("Sei sicuro di voler eliminare \"{0}\" dal database allenamenti?", ex.name))) {
       setHealth(prev => ({
         ...prev,
         exerciseDatabase: (prev.exerciseDatabase || []).filter(e => e.id !== ex.id)
@@ -669,7 +670,7 @@ export default function NutritionTab({
   };
 
   const clearAllInventory = (tab) => {
-    if (window.confirm("Vuoi davvero svuotare tutti gli elementi in questa lista?")) {
+    if (window.confirm(_t("Vuoi davvero svuotare tutti gli elementi in questa lista?"))) {
       setInventory(prev => ({ ...prev, [tab]: [] }));
     }
   };
@@ -849,19 +850,18 @@ export default function NutritionTab({
             >
               <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
                 <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>🍴</span> Registro Pasti e Nutrizione
-                </h3>
+                  <span style={{ fontSize: '20px' }}>🍴</span> {" "}{_t("Registro Pasti e Nutrizione")}</h3>
               </div>
 
               <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
                 {/* Category tabs */}
                 <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
                   {[
-                    { id: 'all', label: '🌟 Tutti' },
-                    { id: 'breakfast', label: '☕ Colazione' },
-                    { id: 'main', label: '🍽️ Pasti Principali' },
-                    { id: 'snack', label: '🍌 Spuntino' },
-                    { id: 'cheat', label: '🍕 Sgarro' }
+                    { id: 'all', label: _t("🌟 Tutti") },
+                    { id: 'breakfast', label: _t("☕ Colazione") },
+                    { id: 'main', label: _t("🍽️ Pasti Principali") },
+                    { id: 'snack', label: _t("🍌 Spuntino") },
+                    { id: 'cheat', label: _t("🍕 Sgarro") }
                   ].map((cat) => {
                     const count = cat.id === 'all'
                       ? Object.values(health.meals || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
@@ -888,7 +888,7 @@ export default function NutritionTab({
                           gap: '4px'
                         }}
                       >
-                        <span>{cat.label}</span>
+                        <span>{_t(cat.label)}</span>
                         <span style={{
                           background: activeMealCategory === cat.id ? 'rgba(255, 255, 255, 0.25)' : 'var(--glass-border)',
                           padding: '1px 5px',
@@ -905,7 +905,7 @@ export default function NutritionTab({
                 {/* Logged Items for Active Category / All */}
                 <div style={{ marginBottom: '16px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
-                    {activeMealCategory === 'all' ? 'Alimenti consumati oggi (Tutti)' : 'Loggati oggi in questo pasto'}
+                    {activeMealCategory === 'all' ? _t("Alimenti consumati oggi (Tutti)") : _t("Loggati oggi in questo pasto")}
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {(() => {
@@ -934,8 +934,7 @@ export default function NutritionTab({
                       if (itemsToDisplay.length === 0 && extraConsumed === 0) {
                         return (
                           <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                            Nessun cibo inserito in questa sezione.
-                          </p>
+                            {_t("Nessun cibo inserito in questa sezione.")}</p>
                         );
                       }
 
@@ -946,16 +945,16 @@ export default function NutritionTab({
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams})</span>
                                 {activeMealCategory === 'all' && item.catLabel && (
-                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Pasto: {item.catLabel}</span>
+                                  <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{_t("Pasto: {0}", item.catLabel)}</span>
                                 )}
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
+                                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{_t("{0} kcal / {1}g P", item.calories, item.proteins)}</span>
                                 {settings?.allowPastEdits && (
                                   <button
                                     onClick={() => handleOpenEditLoggedItem(item)}
                                     style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', padding: '2px 4px' }}
-                                    title="Modifica porzione loggata"
+                                    title={_t("Modifica porzione loggata")}
                                   >
                                     ✏️
                                   </button>
@@ -963,7 +962,7 @@ export default function NutritionTab({
                                 <button
                                   onClick={() => removeLoggedFood(item.catKey, item.id)}
                                   style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 4px' }}
-                                  title="Rimuovi alimento"
+                                  title={_t("Rimuovi alimento")}
                                 >
                                   ✕
                                 </button>
@@ -973,15 +972,15 @@ export default function NutritionTab({
                           {extraConsumed > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px dashed #ef4444', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>🍎 Calorie Consumate Manuali</span>
-                                <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Aggiunte a mano senza alimento</span>
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{_t("🍎 Calorie Consumate Manuali")}</span>
+                                <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{_t("Aggiunte a mano senza alimento")}</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>+{extraConsumed} kcal</span>
+                                <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>{_t("+{0} kcal", extraConsumed)}</span>
                                 <button
                                   onClick={clearExtraConsumed}
                                   style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 6px' }}
-                                  title="Rimuovi calorie manuali"
+                                  title={_t("Rimuovi calorie manuali")}
                                 >
                                   ✕
                                 </button>
@@ -1011,39 +1010,35 @@ export default function NutritionTab({
             >
               <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
                 <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>🏋️</span> Registro Allenamenti
-                </h3>
+                  <span style={{ fontSize: '20px' }}>🏋️</span> {" "}{_t("Registro Allenamenti")}</h3>
               </div>
 
               <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
                 {/* Logged Workouts Today Section */}
                 <div style={{ marginBottom: '16px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
-                    Allenamenti Registrati Oggi
-                  </h4>
+                    {_t("Allenamenti Registrati Oggi")}</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {(!health.workouts || health.workouts.length === 0) && extraBurned === 0 && extraConsumed === 0 ? (
                       <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                        Nessun allenamento o valore registrato oggi.
-                      </p>
+                        {_t("Nessun allenamento o valore registrato oggi.")}</p>
                     ) : (
                       <>
                         {health.workouts && health.workouts.map((w) => (
                           <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
                             <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                              {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
+                              {w.emoji || '🏋️'} {w.name} ({w.time || _t("oggi")})
                             </span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>
-                                +{w.baseCalories} kcal
-                                {w.baseSteps > 0 && (
+                                {_t("+{0} kcal", w.baseCalories)}{w.baseSteps > 0 && (
                                   <span style={{ marginLeft: '6px', color: '#38bdf8' }}>👟 +{w.baseSteps.toLocaleString()}</span>
                                 )}
                               </span>
                               <button
                                 onClick={() => removeLoggedExercise(w.id, w.baseCalories, w.baseSteps || 0)}
                                 style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                                title="Rimuovi allenamento"
+                                title={_t("Rimuovi allenamento")}
                               >
                                 ✕
                               </button>
@@ -1052,13 +1047,13 @@ export default function NutritionTab({
                         ))}
                         {extraBurned > 0 && (
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(249, 115, 22, 0.1)', border: '1px dashed #f97316', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>⚡ Calorie Bruciate Manuali</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{_t("⚡ Calorie Bruciate Manuali")}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{extraBurned} kcal</span>
+                              <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>{_t("+{0} kcal", extraBurned)}</span>
                               <button
                                 onClick={clearExtraBurned}
                                 style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                                title="Rimuovi calorie bruciate manuali"
+                                title={_t("Rimuovi calorie bruciate manuali")}
                               >
                                 ✕
                               </button>
@@ -1067,13 +1062,13 @@ export default function NutritionTab({
                         )}
                         {extraConsumed > 0 && (
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px dashed #ef4444', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>🍎 Calorie Consumate Manuali</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{_t("🍎 Calorie Consumate Manuali")}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>+{extraConsumed} kcal</span>
+                              <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>{_t("+{0} kcal", extraConsumed)}</span>
                               <button
                                 onClick={clearExtraConsumed}
                                 style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                                title="Rimuovi calorie consumate manuali"
+                                title={_t("Rimuovi calorie consumate manuali")}
                               >
                                 ✕
                               </button>
@@ -1089,8 +1084,7 @@ export default function NutritionTab({
                 <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                      Seleziona dal Database Allenamenti
-                    </h4>
+                      {_t("Seleziona dal Database Allenamenti")}</h4>
                     <button
                       onClick={() => {
                         if (onCloseOverlay) onCloseOverlay();
@@ -1099,15 +1093,14 @@ export default function NutritionTab({
                       }}
                       style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                     >
-                      ➕ Nuovo Esercizio
-                    </button>
+                      {_t("➕ Nuovo Esercizio")}</button>
                   </div>
 
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="🔎 Cerca allenamento per nome..."
+                    placeholder={_t("🔎 Cerca allenamento per nome...")}
                     style={{
                       width: '100%',
                       height: '34px',
@@ -1124,7 +1117,7 @@ export default function NutritionTab({
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {filteredExerciseDatabase.length === 0 ? (
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>{_t("Nessun esercizio trovato.")}</p>
                     ) : (
                       filteredExerciseDatabase.map((ex) => (
                         <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
@@ -1134,8 +1127,7 @@ export default function NutritionTab({
                               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</span>
                             </div>
                             <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                              Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal
-                              {ex.baseSteps > 0 && <span style={{ color: '#38bdf8', marginLeft: '4px' }}>• 👟 {ex.baseSteps.toLocaleString()} passi</span>}
+                              {_t("Rep/Min: {0} • Brucia: {1} kcal", ex.baseCount, ex.baseCalories)}{ex.baseSteps > 0 && <span style={{ color: '#38bdf8', marginLeft: '4px' }}>{_t("• 👟 {0} passi", ex.baseSteps.toLocaleString())}</span>}
                             </div>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1146,14 +1138,14 @@ export default function NutritionTab({
                                 onOpenModal('exercise', ex);
                               }}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
-                              title="Modifica allenamento nel database"
+                              title={_t("Modifica allenamento nel database")}
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => handleDeleteExerciseFromDatabase(ex)}
                               style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
-                              title="Elimina dal database"
+                              title={_t("Elimina dal database")}
                             >
                               🗑️
                             </button>
@@ -1175,7 +1167,7 @@ export default function NutritionTab({
                                 flexShrink: 0,
                                 boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
                               }}
-                              title="Registra esercizio oggi"
+                              title={_t("Registra esercizio oggi")}
                             >
                               +
                             </button>
@@ -1212,7 +1204,7 @@ export default function NutritionTab({
       {/* Tab Header with Circle Switcher (🛒 in Health / 🍎 in Shopping) */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {activeMainTab === 'health' ? '🍎 Diario della salute' : '🛒 Lista della Spesa'}
+          {activeMainTab === 'health' ? _t("🍎 Diario della salute") : _t("🛒 Lista della Spesa")}
         </h2>
 
         {/* Top-Right Circular Switcher Button */}
@@ -1234,7 +1226,7 @@ export default function NutritionTab({
             transition: 'all 0.2s ease',
             flexShrink: 0
           }}
-          title={activeMainTab === 'health' ? 'Apri Lista della Spesa' : 'Torna al Diario della salute'}
+          title={activeMainTab === 'health' ? _t("Apri Lista della Spesa") : _t("Torna al Diario della salute")}
         >
           {activeMainTab === 'health' ? '🛒' : '🍎'}
         </button>
@@ -1247,8 +1239,8 @@ export default function NutritionTab({
           <div className="glass-panel" style={{ padding: '16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bilancio Calorico</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Obiettivo - Cibo + Allenamento = Rimaste</div>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Bilancio Calorico")}</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{_t("Obiettivo - Cibo + Allenamento = Rimaste")}</div>
               </div>
             </div>
 
@@ -1257,7 +1249,7 @@ export default function NutritionTab({
               <div
                 onClick={() => setShowQuickMealModal(true)}
                 style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                title="Tocca per inserire pasto rapido o cercare online"
+                title={_t("Tocca per inserire pasto rapido o cercare online")}
               >
                 <svg width="130" height="130" viewBox="0 0 140 140">
                   <circle
@@ -1283,11 +1275,9 @@ export default function NutritionTab({
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: '22px', fontWeight: 'bold', fontFamily: 'Orbitron, sans-serif', color: 'var(--text-primary)' }}>{caloriesRemaining}</span>
                   <span style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    Rimaste
-                  </span>
+                    {_t("Rimaste")}</span>
                   <span style={{ fontSize: '8.5px', color: '#38bdf8', marginTop: '2px', fontWeight: 'bold', letterSpacing: '0.2px' }}>
-                    + Inserisci
-                  </span>
+                    {_t("+ Inserisci")}</span>
                 </div>
               </div>
 
@@ -1297,13 +1287,13 @@ export default function NutritionTab({
                 <div
                   onClick={handleOpenGoalsModal}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Configura obiettivi e calcola fabbisogno TDEE"
+                  title={_t("Configura obiettivi e calcola fabbisogno TDEE")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '15px' }}>🚩</span>
                     <div>
-                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Obiettivo</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{calorieGoal} kcal</div>
+                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Obiettivo")}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("{0} kcal", calorieGoal)}</div>
                     </div>
                   </div>
                 </div>
@@ -1312,13 +1302,13 @@ export default function NutritionTab({
                 <div
                   onClick={() => setShowMealsModal(true)}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Apri registro pasti per inserire o scegliere cibi dalla memoria"
+                  title={_t("Apri registro pasti per inserire o scegliere cibi dalla memoria")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '15px' }}>🍴</span>
                     <div>
-                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Cibo Consumato</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{caloriesConsumed} kcal</div>
+                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Cibo Consumato")}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{_t("{0} kcal", caloriesConsumed)}</div>
                     </div>
                   </div>
                 </div>
@@ -1328,7 +1318,7 @@ export default function NutritionTab({
                 <div
                   onClick={() => setShowExercisesModal(true)}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
-                  title="Apri registro allenamenti"
+                  title={_t("Apri registro allenamenti")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
@@ -1350,13 +1340,13 @@ export default function NutritionTab({
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
-                      title="Tocca la fiamma per aggiungere +100 kcal bruciate"
+                      title={_t("Tocca la fiamma per aggiungere +100 kcal bruciate")}
                     >
                       🔥
                     </button>
                     <div>
-                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Bruciate</div>
-                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f97316' }}>{caloriesBurned} kcal</div>
+                      <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Bruciate")}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f97316' }}>{_t("{0} kcal", caloriesBurned)}</div>
                     </div>
                   </div>
                 </div>
@@ -1373,7 +1363,7 @@ export default function NutritionTab({
               style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Passi</div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Passi")}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0 2px 0' }}>
                   <button
                     type="button"
@@ -1391,13 +1381,13 @@ export default function NutritionTab({
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}
-                    title="Tocca la scarpa per aggiungere +1.000 passi"
+                    title={_t("Tocca la scarpa per aggiungere +1.000 passi")}
                   >
                     👟
                   </button>
                   <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{stepsCurrent.toLocaleString()}</span>
                 </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>Obiettivo: {stepsGoal.toLocaleString()}</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>{_t("Obiettivo: {0}", stepsGoal.toLocaleString())}</div>
               </div>
 
               <div>
@@ -1414,13 +1404,13 @@ export default function NutritionTab({
               style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Proteine</div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Proteine")}</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', margin: '6px 0 2px 0' }}>
                   <span style={{ fontSize: '16px' }}>🍗</span>
                   <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{proteinsCurrent}</span>
                   <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>g</span>
                 </div>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>Obiettivo: {proteinsGoal}g</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>{_t("Obiettivo: {0}g", proteinsGoal)}</div>
               </div>
 
               <div>
@@ -1437,7 +1427,7 @@ export default function NutritionTab({
               style={{ padding: '12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Acqua</div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Acqua")}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0 2px 0' }}>
                   <button
                     type="button"
@@ -1455,7 +1445,7 @@ export default function NutritionTab({
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}
-                    title="Tocca il bicchiere per aggiungere 0.2L (+1 bicchiere)"
+                    title={_t("Tocca il bicchiere per aggiungere 0.2L (+1 bicchiere)")}
                   >
                     🥛
                   </button>
@@ -1463,8 +1453,7 @@ export default function NutritionTab({
                   <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>L</span>
                 </div>
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {waterCurrent}/{waterGoal} bicchieri (0.2L)
-                </div>
+                  {_t("{0}/{1} bicchieri (0.2L)", waterCurrent, waterGoal)}</div>
               </div>
 
               <div>
@@ -1491,17 +1480,17 @@ export default function NutritionTab({
               style={{ padding: '12px', cursor: 'pointer' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Peso Corporeo</div>
-                <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>Target: {targetWeight} kg</span>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Peso Corporeo")}</div>
+                <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>{_t("Target: {0} kg", targetWeight)}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', margin: '6px 0 4px 0' }}>
                 <span style={{ fontSize: '16px' }}>⚖️</span>
                 <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{weightCurrent}</span>
-                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>kg</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{_t("kg")}</span>
               </div>
               <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                <span>Magra: <b>{leanPct > 0 ? `${leanPct}%` : '--'}</b></span>
-                <span>Grassa: <b>{fatPct > 0 ? `${fatPct}%` : '--'}</b></span>
+                <span>{_t("Magra:")}{" "}<b>{leanPct > 0 ? `${leanPct}%` : '--'}</b></span>
+                <span>{_t("Grassa:")}{" "}<b>{fatPct > 0 ? `${fatPct}%` : '--'}</b></span>
               </div>
               <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div
@@ -1524,8 +1513,8 @@ export default function NutritionTab({
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '24px' }}>📊</span>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Storico Dati</h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '9px', color: 'var(--text-muted)' }}>{historyList.length} giorni registrati</p>
+                  <h4 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Storico Dati")}</h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '9px', color: 'var(--text-muted)' }}>{_t("{0} giorni registrati", historyList.length)}</p>
                 </div>
               </div>
               <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>▶</span>
@@ -1539,16 +1528,15 @@ export default function NutritionTab({
         <div key="shopping" className="glass-panel" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>🛒 Lista della Spesa</h3>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("🛒 Lista della Spesa")}</h3>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                <span>{completedShopCount} su {activeInventory.length} acquistati</span>
+                <span>{_t("{0} su {1} acquistati", completedShopCount, activeInventory.length)}</span>
                 {completedShopCount > 0 && (
                   <button
                     onClick={() => clearCompletedInventory(activeInventoryTab)}
                     style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
                   >
-                    • Rimuovi completati
-                  </button>
+                    {_t("• Rimuovi completati")}</button>
                 )}
               </div>
             </div>
@@ -1562,8 +1550,7 @@ export default function NutritionTab({
                 }}
                 style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: activeInventoryTab === 'food' ? 'var(--accent-primary)' : 'transparent', color: activeInventoryTab === 'food' ? '#fff' : 'var(--text-secondary)' }}
               >
-                🍏 Cibo
-              </button>
+                {_t("🍏 Cibo")}</button>
               <button
                 onClick={() => {
                   setActiveInventoryTab('home');
@@ -1571,8 +1558,7 @@ export default function NutritionTab({
                 }}
                 style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: activeInventoryTab === 'home' ? 'var(--accent-primary)' : 'transparent', color: activeInventoryTab === 'home' ? '#fff' : 'var(--text-secondary)' }}
               >
-                🏠 Casa
-              </button>
+                {_t("🏠 Casa")}</button>
             </div>
           </div>
 
@@ -1580,7 +1566,7 @@ export default function NutritionTab({
           {settings?.allowPastEdits && (
             <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#eab308', background: 'rgba(234, 179, 8, 0.12)', padding: '6px 10px', borderRadius: '8px', marginBottom: '12px', border: '1px dashed rgba(234, 179, 8, 0.4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span>🔓</span>
-              <span><strong>Super User Attivo:</strong> tocca ✏️ su qualsiasi elemento per modificarne nome, emoji o categoria.</span>
+              <span><strong>{_t("Super User Attivo:")}</strong> {" "}{_t("tocca ✏️ su qualsiasi elemento per modificarne nome, emoji o categoria.")}</span>
             </div>
           )}
 
@@ -1590,7 +1576,7 @@ export default function NutritionTab({
               type="text"
               value={newShopItemName}
               onChange={(e) => setNewShopItemName(e.target.value)}
-              placeholder={activeInventoryTab === 'food' ? 'Es: Latte, Uova, Petto di pollo...' : 'Es: Sapone, Carta igienica...'}
+              placeholder={activeInventoryTab === 'food' ? _t("Es: Latte, Uova, Petto di pollo...") : _t("Es: Sapone, Carta igienica...")}
               style={{
                 flex: 1,
                 height: '38px',
@@ -1617,8 +1603,7 @@ export default function NutritionTab({
                 cursor: 'pointer'
               }}
             >
-              ➕ Aggiungi
-            </button>
+              {_t("➕ Aggiungi")}</button>
           </form>
 
           {/* Inventory Items List */}
@@ -1627,14 +1612,13 @@ export default function NutritionTab({
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <span style={{ fontSize: '32px' }}>🛒</span>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '8px 0 0 0' }}>
-                  Lista vuota. Digita un prodotto sopra per aggiungerlo subito!
-                </p>
+                  {_t("Lista vuota. Digita un prodotto sopra per aggiungerlo subito!")}</p>
               </div>
             ) : (
               groupShoppingItems(activeInventory, activeInventoryTab, shopOverrides).map((group) => (
                 <div key={group.id} className="shop-group">
                   <div className="shop-group-header">
-                    <span>{group.emoji} {group.label}</span>
+                    <span>{group.emoji} {_t(group.label)}</span>
                     <span className="shop-group-count">{group.items.filter(i => !i.completed).length}/{group.items.length}</span>
                   </div>
               {[...group.items].sort((a, b) => Number(!!a.completed) - Number(!!b.completed)).map((item) => (
@@ -1681,7 +1665,7 @@ export default function NutritionTab({
                             outline: 'none',
                             flexShrink: 0
                           }}
-                          title="Emoji elemento"
+                          title={_t("Emoji elemento")}
                         />
                         <input
                           type="text"
@@ -1700,7 +1684,7 @@ export default function NutritionTab({
                             borderRadius: '8px',
                             outline: 'none'
                           }}
-                          placeholder="Nome elemento..."
+                          placeholder={_t("Nome elemento...")}
                         />
                       </div>
 
@@ -1721,11 +1705,11 @@ export default function NutritionTab({
                             alignItems: 'center',
                             gap: '4px'
                           }}
-                          title="Cambia categoria (Cibo o Casa)"
+                          title={_t("Cambia categoria (Cibo o Casa)")}
                         >
-                          <span>Categoria:</span>
+                          <span>{_t("Categoria:")}</span>
                           <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                            {editingShopItemTab === 'food' ? '🍏 Cibo' : '🏠 Casa'}
+                            {editingShopItemTab === 'food' ? _t("🍏 Cibo") : _t("🏠 Casa")}
                           </span>
                         </button>
 
@@ -1744,8 +1728,7 @@ export default function NutritionTab({
                               fontWeight: 'bold'
                             }}
                           >
-                            Annulla
-                          </button>
+                            {_t("Annulla")}</button>
                           <button
                             type="submit"
                             style={{
@@ -1759,8 +1742,7 @@ export default function NutritionTab({
                               fontWeight: 'bold'
                             }}
                           >
-                            ✓ Salva
-                          </button>
+                            {_t("✓ Salva")}</button>
                         </div>
                       </div>
                     </form>
@@ -1801,7 +1783,7 @@ export default function NutritionTab({
                             type="button"
                             onClick={() => handleStartEditShopItem(item)}
                             style={{ background: 'none', border: 'none', color: '#eab308', cursor: 'pointer', fontSize: '13px', padding: '2px 4px' }}
-                            title="Modifica elemento (Super User)"
+                            title={_t("Modifica elemento (Super User)")}
                           >
                             ✏️
                           </button>
@@ -1809,7 +1791,7 @@ export default function NutritionTab({
                         <button
                           onClick={() => deleteInventoryItem(activeInventoryTab, item.id)}
                           style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', padding: '2px 4px' }}
-                          title="Elimina"
+                          title={_t("Elimina")}
                         >
                           🗑️
                         </button>
@@ -1823,8 +1805,7 @@ export default function NutritionTab({
             )}
             {activeInventory.length > 0 && (
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', fontStyle: 'italic' }}>
-                💡 Tieni premuto un prodotto per spostarlo in un altro reparto: l'app se lo ricorderà.
-              </div>
+                {_t("💡 Tieni premuto un prodotto per spostarlo in un altro reparto: l'app se lo ricorderà.")}</div>
             )}
           </div>
 
@@ -1832,7 +1813,7 @@ export default function NutritionTab({
           {shopCategoryPickerItem && (
             <div className="shop-picker-overlay" onClick={() => setShopCategoryPickerItem(null)}>
               <div className="shop-picker" onClick={(e) => e.stopPropagation()}>
-                <div className="shop-picker-title">Sposta "{shopCategoryPickerItem.name}" in:</div>
+                <div className="shop-picker-title">{_t("Sposta \"{0}\" in:", shopCategoryPickerItem.name)}</div>
                 <div className="shop-picker-grid">
                   {(SHOPPING_CATEGORIES[activeInventoryTab] || []).map(cat => {
                     const current = categorizeShoppingItem(shopCategoryPickerItem.name, activeInventoryTab, shopOverrides) === cat.id;
@@ -1844,7 +1825,7 @@ export default function NutritionTab({
                         onClick={() => assignShopCategory(shopCategoryPickerItem, cat.id)}
                       >
                         <span style={{ fontSize: '18px' }}>{cat.emoji}</span>
-                        <span>{cat.label}</span>
+                        <span>{_t(cat.label)}</span>
                       </button>
                     );
                   })}
@@ -1868,19 +1849,18 @@ export default function NutritionTab({
           >
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🍴</span> Registro Pasti e Nutrizione
-              </h3>
+                <span style={{ fontSize: '20px' }}>🍴</span> {" "}{_t("Registro Pasti e Nutrizione")}</h3>
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
               {/* Category tabs */}
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px', borderBottom: '1px solid var(--glass-border)' }}>
                 {[
-                  { id: 'all', label: '🌟 Tutti' },
-                  { id: 'breakfast', label: '☕ Colazione' },
-                  { id: 'main', label: '🍽️ Pasti Principali' },
-                  { id: 'snack', label: '🍌 Spuntino' },
-                  { id: 'cheat', label: '🍕 Sgarro' }
+                  { id: 'all', label: _t("🌟 Tutti") },
+                  { id: 'breakfast', label: _t("☕ Colazione") },
+                  { id: 'main', label: _t("🍽️ Pasti Principali") },
+                  { id: 'snack', label: _t("🍌 Spuntino") },
+                  { id: 'cheat', label: _t("🍕 Sgarro") }
                 ].map((cat) => {
                   const count = cat.id === 'all'
                     ? Object.values(health.meals || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0)
@@ -1907,7 +1887,7 @@ export default function NutritionTab({
                         gap: '4px'
                       }}
                     >
-                      <span>{cat.label}</span>
+                      <span>{_t(cat.label)}</span>
                       <span style={{
                         background: activeMealCategory === cat.id ? 'rgba(255, 255, 255, 0.25)' : 'var(--glass-border)',
                         padding: '1px 5px',
@@ -1924,7 +1904,7 @@ export default function NutritionTab({
               {/* Logged Items for Active Category / All */}
               <div style={{ marginBottom: '16px' }}>
                 <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
-                  {activeMealCategory === 'all' ? 'Alimenti consumati oggi (Tutti)' : 'Loggati oggi in questo pasto'}
+                  {activeMealCategory === 'all' ? _t("Alimenti consumati oggi (Tutti)") : _t("Loggati oggi in questo pasto")}
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {(() => {
@@ -1953,8 +1933,7 @@ export default function NutritionTab({
                     if (itemsToDisplay.length === 0) {
                       return (
                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                          Nessun cibo inserito in questa sezione.
-                        </p>
+                          {_t("Nessun cibo inserito in questa sezione.")}</p>
                       );
                     }
 
@@ -1963,16 +1942,16 @@ export default function NutritionTab({
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.emoji} {item.name} ({item.grams})</span>
                           {activeMealCategory === 'all' && item.catLabel && (
-                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Pasto: {item.catLabel}</span>
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{_t("Pasto: {0}", item.catLabel)}</span>
                           )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{item.calories} kcal / {item.proteins}g P</span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{_t("{0} kcal / {1}g P", item.calories, item.proteins)}</span>
                           {settings?.allowPastEdits && (
                             <button
                               onClick={() => handleOpenEditLoggedItem(item)}
                               style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', padding: '2px 4px' }}
-                              title="Modifica porzione loggata"
+                              title={_t("Modifica porzione loggata")}
                             >
                               ✏️
                             </button>
@@ -1980,7 +1959,7 @@ export default function NutritionTab({
                           <button
                             onClick={() => removeLoggedFood(item.catKey, item.id)}
                             style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', padding: '2px 4px' }}
-                            title="Rimuovi alimento"
+                            title={_t("Rimuovi alimento")}
                           >
                             ✕
                           </button>
@@ -1995,8 +1974,7 @@ export default function NutritionTab({
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                    Cibi
-                  </h4>
+                    {_t("Cibi")}</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
                       onClick={() => {
@@ -2006,44 +1984,39 @@ export default function NutritionTab({
                       }}
                       style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '6px', padding: '2px 7px', cursor: 'pointer' }}
                     >
-                      🌐 Cerca Online
-                    </button>
+                      {_t("🌐 Cerca Online")}</button>
                     <button
                       onClick={() => {
                         onOpenModal('food');
                       }}
                       style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                     >
-                      ➕ Nuovo Cibo
-                    </button>
+                      {_t("➕ Nuovo Cibo")}</button>
                   </div>
                 </div>
 
                 {settings?.allowPastEdits ? (
                   <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '6px 10px', borderRadius: '8px', marginBottom: '8px', border: '1px solid rgba(56, 189, 248, 0.3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>🔓</span>
-                    <span><strong>Modalità Modifica Cibi Attiva:</strong> usa ✏️ (Modifica) o 🗑️ (Elimina) direttamente sui cibi in griglia.</span>
+                    <span><strong>{_t("Modalità Modifica Cibi Attiva:")}</strong> {" "}{_t("usa ✏️ (Modifica) o 🗑️ (Elimina) direttamente sui cibi in griglia.")}</span>
                   </div>
                 ) : (
                   <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', fontStyle: 'italic' }}>
-                    💡 <strong>Tocco singolo:</strong> Inserisci porzione (ricorda l'ultima) | <strong>Tieni premuto:</strong> Modifica nel database
-                  </div>
+                    💡 <strong>{_t("Tocco singolo:")}</strong> {" "}{_t("Inserisci porzione (ricorda l'ultima) |")}{" "}<strong>{_t("Tieni premuto:")}</strong> {" "}{_t("Modifica nel database")}</div>
                 )}
 
                 <div className="food-view-switch">
                   <button type="button" className={effectiveFoodView === 'favorites' ? 'active' : ''} onClick={() => setFoodView('favorites')}>
-                    ⭐ Preferiti ({favoriteFoodsCount})
-                  </button>
+                    {_t("⭐ Preferiti ({0})", favoriteFoodsCount)}</button>
                   <button type="button" className={effectiveFoodView === 'archive' ? 'active' : ''} onClick={() => setFoodView('archive')}>
-                    📚 Archivio ({(health.foodDatabase || []).length})
-                  </button>
+                    {_t("📚 Archivio ({0})", (health.foodDatabase || []).length)}</button>
                 </div>
 
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="🔎 Cerca in tutto l'archivio..."
+                  placeholder={_t("🔎 Cerca in tutto l'archivio...")}
                   style={{
                     width: '100%',
                     height: '34px',
@@ -2068,7 +2041,7 @@ export default function NutritionTab({
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {gridFoods.length === 0 ? (
                     <p style={{ gridColumn: 'span 3', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                      {showingFavorites ? 'Nessun preferito in questa categoria. Tocca ☆ su un cibo dell\'archivio.' : 'Nessun cibo trovato.'}
+                      {showingFavorites ? _t("Nessun preferito in questa categoria. Tocca ☆ su un cibo dell'archivio.") : _t("Nessun cibo trovato.")}
                     </p>
                   ) : (
                     gridFoods.map((food) => {
@@ -2102,7 +2075,7 @@ export default function NutritionTab({
                               width: '100%',
                               boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                             }}
-                            title="Tocca per inserire porzione • Tieni premuto per modificare nel database"
+                            title={_t("Tocca per inserire porzione • Tieni premuto per modificare nel database")}
                           >
                             <span style={{ fontSize: '22px', marginBottom: '2px' }}>{food.emoji}</span>
                             <span style={{
@@ -2120,15 +2093,14 @@ export default function NutritionTab({
                               {food.name}
                             </span>
                             <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'rgba(124, 58, 237, 0.12)', padding: '2px 5px', borderRadius: '6px' }}>
-                              {kcalDisplay} kcal ({unitDisplay})
-                            </span>
+                              {_t("{0} kcal ({1})", kcalDisplay, unitDisplay)}</span>
                           </button>
                           <button
                             type="button"
                             className={`food-fav-star ${food.favorite ? 'active' : ''}`}
                             onClick={(e) => { e.stopPropagation(); toggleFoodFavorite(food.id); }}
                             onPointerDown={(e) => e.stopPropagation()}
-                            title={food.favorite ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}
+                            title={food.favorite ? _t("Togli dai preferiti") : _t("Aggiungi ai preferiti")}
                           >
                             {food.favorite ? '★' : '☆'}
                           </button>
@@ -2153,7 +2125,7 @@ export default function NutritionTab({
                                   fontSize: '11px',
                                   cursor: 'pointer'
                                 }}
-                                title="Modifica nel database"
+                                title={_t("Modifica nel database")}
                               >
                                 ✏️
                               </button>
@@ -2176,7 +2148,7 @@ export default function NutritionTab({
                                   fontSize: '11px',
                                   cursor: 'pointer'
                                 }}
-                                title="Elimina dal database"
+                                title={_t("Elimina dal database")}
                               >
                                 🗑️
                               </button>
@@ -2217,7 +2189,7 @@ export default function NutritionTab({
                     }}
                   >
                     <span>🌐</span>
-                    <span>Cerca "{searchQuery.trim()}" su Internet (Open Food Facts)</span>
+                    <span>{_t("Cerca \"{0}\" su Internet (Open Food Facts)", searchQuery.trim())}</span>
                   </button>
                 )}
               </div>
@@ -2239,39 +2211,35 @@ export default function NutritionTab({
           >
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)' }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🏋️</span> Registro Allenamenti
-              </h3>
+                <span style={{ fontSize: '20px' }}>🏋️</span> {" "}{_t("Registro Allenamenti")}</h3>
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
               {/* Logged Workouts Today Section */}
               <div style={{ marginBottom: '16px' }}>
                 <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
-                  Allenamenti Registrati Oggi
-                </h4>
+                  {_t("Allenamenti Registrati Oggi")}</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {(!health.workouts || health.workouts.length === 0) && extraBurned === 0 && extraConsumed === 0 ? (
                     <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                      Nessun allenamento o valore registrato oggi.
-                    </p>
+                      {_t("Nessun allenamento o valore registrato oggi.")}</p>
                   ) : (
                     <>
                       {health.workouts && health.workouts.map((w) => (
                         <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
                           <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                            {w.emoji || '🏋️'} {w.name} ({w.time || 'oggi'})
+                            {w.emoji || '🏋️'} {w.name} ({w.time || _t("oggi")})
                           </span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>
-                              +{w.baseCalories} kcal
-                              {w.baseSteps > 0 && (
+                              {_t("+{0} kcal", w.baseCalories)}{w.baseSteps > 0 && (
                                 <span style={{ marginLeft: '6px', color: '#38bdf8' }}>👟 +{w.baseSteps.toLocaleString()}</span>
                               )}
                             </span>
                             <button
                               onClick={() => removeLoggedExercise(w.id, w.baseCalories, w.baseSteps || 0)}
                               style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                              title="Rimuovi allenamento"
+                              title={_t("Rimuovi allenamento")}
                             >
                               ✕
                             </button>
@@ -2280,13 +2248,13 @@ export default function NutritionTab({
                       ))}
                       {extraBurned > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(249, 115, 22, 0.1)', border: '1px dashed #f97316', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
-                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>⚡ Calorie Bruciate Manuali</span>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{_t("⚡ Calorie Bruciate Manuali")}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>+{extraBurned} kcal</span>
+                            <span style={{ fontSize: '11px', color: '#f97316', fontWeight: 'bold' }}>{_t("+{0} kcal", extraBurned)}</span>
                             <button
                               onClick={clearExtraBurned}
                               style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                              title="Rimuovi calorie bruciate manuali"
+                              title={_t("Rimuovi calorie bruciate manuali")}
                             >
                               ✕
                             </button>
@@ -2295,13 +2263,13 @@ export default function NutritionTab({
                       )}
                       {extraConsumed > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px dashed #ef4444', borderRadius: '8px', fontSize: '12px', marginTop: '4px' }}>
-                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>🍎 Calorie Consumate Manuali</span>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{_t("🍎 Calorie Consumate Manuali")}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>+{extraConsumed} kcal</span>
+                            <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>{_t("+{0} kcal", extraConsumed)}</span>
                             <button
                               onClick={clearExtraConsumed}
                               style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                              title="Rimuovi calorie consumate manuali"
+                              title={_t("Rimuovi calorie consumate manuali")}
                             >
                               ✕
                             </button>
@@ -2317,8 +2285,7 @@ export default function NutritionTab({
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                    Seleziona dal Database Allenamenti
-                  </h4>
+                    {_t("Seleziona dal Database Allenamenti")}</h4>
                   <button
                     onClick={() => {
                       setShowExercisesModal(false);
@@ -2326,15 +2293,14 @@ export default function NutritionTab({
                     }}
                     style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    ➕ Nuovo Esercizio
-                  </button>
+                    {_t("➕ Nuovo Esercizio")}</button>
                 </div>
 
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="🔎 Cerca allenamento per nome..."
+                  placeholder={_t("🔎 Cerca allenamento per nome...")}
                   style={{
                     width: '100%',
                     height: '34px',
@@ -2351,7 +2317,7 @@ export default function NutritionTab({
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {filteredExerciseDatabase.length === 0 ? (
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Nessun esercizio trovato.</p>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>{_t("Nessun esercizio trovato.")}</p>
                   ) : (
                     filteredExerciseDatabase.map((ex) => (
                       <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '12px' }}>
@@ -2361,8 +2327,7 @@ export default function NutritionTab({
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</span>
                           </div>
                           <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                            Rep/Min: {ex.baseCount} • Brucia: {ex.baseCalories} kcal
-                            {ex.baseSteps > 0 && <span style={{ color: '#38bdf8', marginLeft: '4px' }}>• 👟 {ex.baseSteps.toLocaleString()} passi</span>}
+                            {_t("Rep/Min: {0} • Brucia: {1} kcal", ex.baseCount, ex.baseCalories)}{ex.baseSteps > 0 && <span style={{ color: '#38bdf8', marginLeft: '4px' }}>{_t("• 👟 {0} passi", ex.baseSteps.toLocaleString())}</span>}
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2372,14 +2337,14 @@ export default function NutritionTab({
                               onOpenModal('exercise', ex);
                             }}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
-                            title="Modifica allenamento nel database"
+                            title={_t("Modifica allenamento nel database")}
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDeleteExerciseFromDatabase(ex)}
                             style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '4px' }}
-                            title="Elimina dal database"
+                            title={_t("Elimina dal database")}
                           >
                             🗑️
                           </button>
@@ -2401,7 +2366,7 @@ export default function NutritionTab({
                               flexShrink: 0,
                               boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
                             }}
-                            title="Registra esercizio oggi"
+                            title={_t("Registra esercizio oggi")}
                           >
                             +
                           </button>
@@ -2430,28 +2395,27 @@ export default function NutritionTab({
             {/* Fixed Top Header */}
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>📊</span> Storico Dati Salute (30 Giorni)
-              </h3>
+                <span style={{ fontSize: '20px' }}>📊</span> {" "}{_t("Storico Dati Salute (30 Giorni)")}</h3>
             </div>
 
             {/* Fixed Top Summary Average Cards */}
             <div style={{ flexShrink: 0, padding: '14px 16px 8px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--glass-border)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Calorie</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{avgCalories} kcal/gg</div>
+                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Media Calorie")}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3b82f6' }}>{_t("{0} kcal/gg", avgCalories)}</div>
                 </div>
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Passi</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{avgSteps.toLocaleString()} passi/gg</div>
+                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Media Passi")}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{_t("{0} passi/gg", avgSteps.toLocaleString())}</div>
                 </div>
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Proteine</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#eab308' }}>{avgProteins} g/gg</div>
+                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Media Proteine")}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#eab308' }}>{_t("{0} g/gg", avgProteins)}</div>
                 </div>
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Media Acqua</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#06b6d4' }}>{avgWater} L/gg</div>
+                  <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Media Acqua")}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#06b6d4' }}>{_t("{0} L/gg", avgWater)}</div>
                 </div>
               </div>
             </div>
@@ -2460,19 +2424,18 @@ export default function NutritionTab({
             <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 16px 16px', minHeight: 0 }}>
               {historyList.length === 0 ? (
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '24px 0' }}>
-                  Nessun dato storico salvato nei giorni precedenti. I dati di ciascuna giornata si archiviano automaticamente al cambio del giorno!
-                </p>
+                  {_t("Nessun dato storico salvato nei giorni precedenti. I dati di ciascuna giornata si archiviano automaticamente al cambio del giorno!")}</p>
               ) : (
                 <>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
                     <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
                       <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Data</th>
-                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Calorie</th>
-                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Passi</th>
-                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Proteine</th>
-                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Acqua</th>
-                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>Peso</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>{_t("Data")}</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>{_t("Calorie")}</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>{_t("Passi")}</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>{_t("Proteine")}</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>{_t("Acqua")}</th>
+                        <th style={{ padding: '8px 6px', background: 'var(--bg-card)' }}>{_t("Peso")}</th>
                         {settings?.allowPastEdits && (
                           <th style={{ padding: '8px 6px', background: 'var(--bg-card)', textAlign: 'center' }}>✏️</th>
                         )}
@@ -2481,18 +2444,18 @@ export default function NutritionTab({
                     <tbody>
                       {historyList.map((h, idx) => (
                         <tr key={idx} style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                          <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{new Date(h.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</td>
+                          <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{new Date(h.date).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' })}</td>
                           <td style={{ padding: '8px 6px', color: '#3b82f6' }}>{h.consumed}/{h.burned}</td>
                           <td style={{ padding: '8px 6px', color: 'var(--accent-primary)' }}>{(h.steps || 0).toLocaleString()}</td>
                           <td style={{ padding: '8px 6px', color: '#eab308' }}>{h.proteins || 0}g</td>
                           <td style={{ padding: '8px 6px', color: '#06b6d4' }}>{((h.water || 0) * 0.2).toFixed(1)}L</td>
-                          <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{h.weight ? `${h.weight} kg` : '--'}</td>
+                          <td style={{ padding: '8px 6px', fontWeight: 'bold' }}>{h.weight ? _t("{0} kg", h.weight) : '--'}</td>
                           {settings?.allowPastEdits && (
                             <td style={{ padding: '8px 6px', textAlign: 'center' }}>
                               <button
                                 onClick={() => handleOpenEditHistory(h, idx)}
                                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', padding: '3px 7px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
-                                title="Modifica dati di questa giornata"
+                                title={_t("Modifica dati di questa giornata")}
                               >
                                 ✏️
                               </button>
@@ -2504,9 +2467,7 @@ export default function NutritionTab({
                   </table>
 
                   <div style={{ fontSize: '9px', color: settings?.allowPastEdits ? '#4ade80' : 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', marginTop: '10px' }}>
-                    {settings?.allowPastEdits
-                      ? '🔓 Modifica Dati Passati Attiva: usa l\'icona ✏️ per correggere una giornata.'
-                      : '💡 Attiva "Modifica Dati Passati" nelle Impostazioni per abilitare la correzione delle singole giornate.'
+                    {settings?.allowPastEdits ? _t("🔓 Modifica Dati Passati Attiva: usa l'icona ✏️ per correggere una giornata.") : _t("💡 Attiva \"Modifica Dati Passati\" nelle Impostazioni per abilitare la correzione delle singole giornate.")
                     }
                   </div>
                 </>
@@ -2521,13 +2482,13 @@ export default function NutritionTab({
         <div style={{ position: 'fixed', inset: 0, zIndex: 100001, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '340px', padding: '18px' }}>
             <h3 style={{ margin: '0 0 14px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              ✏️ Modifica Giornata: {new Date(editingHistoryDay.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {_t("✏️ Modifica Giornata:")}{" "}{new Date(editingHistoryDay.date).toLocaleDateString(getLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}
             </h3>
 
             <form onSubmit={handleSaveEditHistorySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Calorie Consumate</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Calorie Consumate")}</label>
                   <input
                     type="number"
                     value={editHistConsumed}
@@ -2536,7 +2497,7 @@ export default function NutritionTab({
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Calorie Bruciate</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Calorie Bruciate")}</label>
                   <input
                     type="number"
                     value={editHistBurned}
@@ -2548,7 +2509,7 @@ export default function NutritionTab({
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Passi</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Passi")}</label>
                   <input
                     type="number"
                     value={editHistSteps}
@@ -2557,7 +2518,7 @@ export default function NutritionTab({
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Proteine (g)</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Proteine (g)")}</label>
                   <input
                     type="number"
                     value={editHistProteins}
@@ -2569,7 +2530,7 @@ export default function NutritionTab({
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Acqua (Bicchieri)</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Acqua (Bicchieri)")}</label>
                   <input
                     type="number"
                     value={editHistWater}
@@ -2578,12 +2539,12 @@ export default function NutritionTab({
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Peso (kg)</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Peso (kg)")}</label>
                   <input
                     type="text"
                     value={editHistWeight}
                     onChange={(e) => setEditHistWeight(e.target.value)}
-                    placeholder="es. 74.5"
+                    placeholder={_t("es. 74.5")}
                     style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', boxSizing: 'border-box' }}
                   />
                 </div>
@@ -2595,14 +2556,12 @@ export default function NutritionTab({
                   onClick={() => setEditingHistoryDay(null)}
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Salva Modifica
-                </button>
+                  {_t("Salva Modifica")}</button>
               </div>
             </form>
           </div>
@@ -2647,10 +2606,10 @@ export default function NutritionTab({
             <form onSubmit={handleConfirmAddMealFood} style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {/* Reference Info Card */}
               <div style={{ background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '12px', border: '1px solid var(--glass-border)', fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '3px', textAlign: 'center' }}>
-                <span>Valori per {selectedFoodForPortion.baseGrams || 100}g: <b>{selectedFoodForPortion.baseCalories} kcal</b> • <b>{selectedFoodForPortion.baseProteins}g P</b></span>
+                <span>{_t("Valori per {0}g:", selectedFoodForPortion.baseGrams || 100)}{" "}<b>{_t("{0} kcal", selectedFoodForPortion.baseCalories)}</b> • <b>{selectedFoodForPortion.baseProteins}g P</b></span>
                 {selectedFoodForPortion.pieceCalories && (
                   <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                    Valori per pezzo: <b>{selectedFoodForPortion.pieceCalories} kcal</b> • <b>{selectedFoodForPortion.pieceProteins || 0}g P</b>
+                    {_t("Valori per pezzo:")}{" "}<b>{_t("{0} kcal", selectedFoodForPortion.pieceCalories)}</b> • <b>{selectedFoodForPortion.pieceProteins || 0}g P</b>
                   </span>
                 )}
               </div>
@@ -2673,8 +2632,7 @@ export default function NutritionTab({
                     transition: 'all 0.2s'
                   }}
                 >
-                  ⚖️ Grammi (g)
-                </button>
+                  {_t("⚖️ Grammi (g)")}</button>
                 <button
                   type="button"
                   onClick={() => setPortionUnit('piece')}
@@ -2691,27 +2649,25 @@ export default function NutritionTab({
                     transition: 'all 0.2s'
                   }}
                 >
-                  🧩 Pezzi (p)
-                </button>
+                  {_t("🧩 Pezzi (p)")}</button>
               </div>
 
               {/* Input quantity */}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    Quantità ({portionUnit === 'piece' ? 'pezzi' : 'grammi'}):
+                    {_t("Quantità (")}{portionUnit === 'piece' ? _t("pezzi") : _t("grammi")}):
                   </label>
                   {(health.foodMemory && health.foodMemory[selectedFoodForPortion.id]) && (
                     <span style={{ fontSize: '9px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                      ⚡ Ricordato dall'ultima volta
-                    </span>
+                      {_t("⚡ Ricordato dall'ultima volta")}</span>
                   )}
                 </div>
                 <input
                   type="text"
                   value={portionInputValue}
                   onChange={(e) => setPortionInputValue(e.target.value)}
-                  placeholder={portionUnit === 'piece' ? 'Es: 1 oppure 2' : 'Es: 100 oppure 150'}
+                  placeholder={portionUnit === 'piece' ? _t("Es: 1 oppure 2") : _t("Es: 100 oppure 150")}
                   style={{
                     width: '100%',
                     height: '42px',
@@ -2747,11 +2703,11 @@ export default function NutritionTab({
                 return (
                   <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-around', textAlign: 'center', fontSize: '12px' }}>
                     <div style={{ flex: 1, textAlign: 'center' }}>
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Calorie Totali</span>
-                      <b style={{ color: 'var(--text-primary)', fontSize: '13px' }}>🔥 {previewCal} kcal</b>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>{_t("Calorie Totali")}</span>
+                      <b style={{ color: 'var(--text-primary)', fontSize: '13px' }}>{_t("🔥 {0} kcal", previewCal)}</b>
                     </div>
                     <div style={{ flex: 1, textAlign: 'center' }}>
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>Proteine Totali</span>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>{_t("Proteine Totali")}</span>
                       <b style={{ color: '#eab308', fontSize: '13px' }}>🍗 {previewProt}g</b>
                     </div>
                   </div>
@@ -2775,8 +2731,7 @@ export default function NutritionTab({
                   marginTop: '4px'
                 }}
               >
-                🍴 Aggiungi al Pasto
-              </button>
+                {_t("🍴 Aggiungi al Pasto")}</button>
             </form>
           </div>
         </div>
@@ -2793,8 +2748,7 @@ export default function NutritionTab({
             style={{ maxWidth: '380px', width: '90%', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
           >
             <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ✏️ Modifica Porzione Loggata
-            </h3>
+              {_t("✏️ Modifica Porzione Loggata")}</h3>
             <p style={{ margin: '0 0 14px 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
               {editingLoggedItem.emoji} <strong>{editingLoggedItem.name}</strong>
             </p>
@@ -2802,8 +2756,7 @@ export default function NutritionTab({
             <form onSubmit={handleSaveEditLoggedItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                  Quantità / Etichetta (es: 150g oppure 2 pz)
-                </label>
+                  {_t("Quantità / Etichetta (es: 150g oppure 2 pz)")}</label>
                 <input
                   type="text"
                   value={editLoggedItemGrams}
@@ -2815,8 +2768,7 @@ export default function NutritionTab({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    Calorie (kcal)
-                  </label>
+                    {_t("Calorie (kcal)")}</label>
                   <input
                     type="number"
                     value={editLoggedItemCal}
@@ -2826,8 +2778,7 @@ export default function NutritionTab({
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                    Proteine (g)
-                  </label>
+                    {_t("Proteine (g)")}</label>
                   <input
                     type="number"
                     step="0.1"
@@ -2840,17 +2791,16 @@ export default function NutritionTab({
 
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                  Pasto / Categoria
-                </label>
+                  {_t("Pasto / Categoria")}</label>
                 <select
                   value={editLoggedItemCat}
                   onChange={(e) => setEditLoggedItemCat(e.target.value)}
                   style={{ width: '100%', height: '36px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '12px', outline: 'none' }}
                 >
-                  <option value="breakfast">Colazione ☕</option>
-                  <option value="main">Pasto Principale 🍽️</option>
-                  <option value="snack">Spuntino 🍌</option>
-                  <option value="cheat">Sgarro 🍕</option>
+                  <option value="breakfast">{_t("Colazione ☕")}</option>
+                  <option value="main">{_t("Pasto Principale 🍽️")}</option>
+                  <option value="snack">{_t("Spuntino 🍌")}</option>
+                  <option value="cheat">{_t("Sgarro 🍕")}</option>
                 </select>
               </div>
 
@@ -2860,14 +2810,12 @@ export default function NutritionTab({
                   onClick={() => setEditingLoggedItem(null)}
                   style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '12px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Salva Modifica
-                </button>
+                  {_t("Salva Modifica")}</button>
               </div>
             </form>
           </div>

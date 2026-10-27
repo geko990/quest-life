@@ -30,6 +30,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Traduzioni inglesi complete
+        run: node scripts/check-i18n.mjs
+
       - name: Test di fumo nel browser
         run: |
           npm install --no-save playwright@1

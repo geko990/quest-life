@@ -2,6 +2,7 @@ import React from 'react';
 import { logAppError, formatErrorsForClipboard } from '../utils/errorLogger';
 import { APP_VERSION } from '../utils/constants';
 
+import { _t } from '../i18n';
 export default class RootErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -44,7 +45,7 @@ export default class RootErrorBoundary extends React.Component {
         setTimeout(() => this.setState({ copied: false }), 3000);
       }
     } catch (e) {
-      alert("Impossibile copiare automaticamente. Seleziona il testo dell'errore.");
+      alert(_t("Impossibile copiare automaticamente. Seleziona il testo dell'errore."));
     }
   };
 
@@ -101,13 +102,10 @@ export default class RootErrorBoundary extends React.Component {
             </div>
 
             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#ffffff' }}>
-              Si è verificato un errore
-            </h2>
+              {_t("Si è verificato un errore")}</h2>
 
             <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
-              L'applicazione ha intercettato un problema per evitare la chiusura improvvisa.
-              I tuoi dati sono al sicuro nel database locale.
-            </p>
+              {_t("L'applicazione ha intercettato un problema per evitare la chiusura improvvisa. I tuoi dati sono al sicuro nel database locale.")}</p>
 
             <div style={{
               width: '100%',
@@ -146,7 +144,7 @@ export default class RootErrorBoundary extends React.Component {
                   transition: 'all 0.2s'
                 }}
               >
-                {this.state.copied ? '✅ Copiato!' : '📋 Copia Errore'}
+                {this.state.copied ? _t("✅ Copiato!") : _t("📋 Copia Errore")}
               </button>
 
               <button
@@ -164,12 +162,11 @@ export default class RootErrorBoundary extends React.Component {
                   boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)'
                 }}
               >
-                🔄 Ricarica App
-              </button>
+                {_t("🔄 Ricarica App")}</button>
             </div>
 
             <span style={{ fontSize: '10px', color: '#64748b' }}>
-              RPG Life v{APP_VERSION}
+              {_t("RPG Life v{0}", APP_VERSION)}
             </span>
           </div>
         </div>

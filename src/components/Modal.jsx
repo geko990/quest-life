@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+import { _t, getLocale } from '../i18n';
 export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge, onToggleSubquest, recentTaskTemplates = [] }) {
   if (!isOpen) return null;
 
@@ -352,7 +353,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           <div className="flex flex-col gap-4">
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
                 <input
                   type="text"
                   name="emoji"
@@ -362,26 +363,26 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Nome")}</label>
                 <input
                   type="text"
                   name="name"
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder={type === 'attribute' ? 'Forza, Destrezza...' : 'Scrittura, Disegno...'}
+                  placeholder={type === 'attribute' ? _t("Forza, Destrezza...") : _t("Scrittura, Disegno...")}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">Descrizione</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Descrizione")}</label>
               <textarea
                 name="description"
                 value={form.description || ''}
                 onChange={handleChange}
                 rows="3"
-                placeholder="A cosa serve questo attributo/abilità..."
+                placeholder={_t("A cosa serve questo attributo/abilità...")}
                 className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
               ></textarea>
             </div>
@@ -395,8 +396,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 className="rounded text-accent-primary focus:ring-accent-primary"
               />
               <label htmlFor="visible" className="text-xs text-text-main select-none font-medium">
-                Mostra nel Radar Chart
-              </label>
+                {_t("Mostra nel Radar Chart")}</label>
             </div>
           </div>
         );
@@ -407,7 +407,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 1: Emoji + Nome Abitudine */}
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
                 <input
                   type="text"
                   name="emoji"
@@ -417,14 +417,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome Abitudine</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Nome Abitudine")}</label>
                 <input
                   type="text"
                   name="name"
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder="Es: Leggere 10 min, Meditazione..."
+                  placeholder={_t("Es: Leggere 10 min, Meditazione...")}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
@@ -434,22 +434,22 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {form.frequency?.startsWith('times_') ? (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1.5">Frequenza</label>
+                  <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Frequenza")}</label>
                   <select
                     name="frequency"
                     value={form.frequency || 'daily'}
                     onChange={handleChange}
                     className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   >
-                    <option value="daily">Giornaliera</option>
-                    <option value="weekly">Settimanale (1 volta)</option>
-                    <option value="monthly">Mensile (1 volta)</option>
-                    <option value="times_week">N volte a Settimana</option>
-                    <option value="times_month">N volte al Mese</option>
+                    <option value="daily">{_t("Giornaliera")}</option>
+                    <option value="weekly">{_t("Settimanale (1 volta)")}</option>
+                    <option value="monthly">{_t("Mensile (1 volta)")}</option>
+                    <option value="times_week">{_t("N volte a Settimana")}</option>
+                    <option value="times_month">{_t("N volte al Mese")}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1.5">Ripetizioni</label>
+                  <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Ripetizioni")}</label>
                   <input
                     type="number"
                     name="freqTimes"
@@ -462,32 +462,31 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </div>
             ) : (
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Frequenza</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Frequenza")}</label>
                 <select
                   name="frequency"
                   value={form.frequency || 'daily'}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
-                  <option value="daily">Giornaliera</option>
-                  <option value="weekly">Settimanale (1 volta)</option>
-                  <option value="monthly">Mensile (1 volta)</option>
-                  <option value="times_week">N volte a Settimana</option>
-                  <option value="times_month">N volte al Mese</option>
+                  <option value="daily">{_t("Giornaliera")}</option>
+                  <option value="weekly">{_t("Settimanale (1 volta)")}</option>
+                  <option value="monthly">{_t("Mensile (1 volta)")}</option>
+                  <option value="times_week">{_t("N volte a Settimana")}</option>
+                  <option value="times_month">{_t("N volte al Mese")}</option>
                 </select>
               </div>
             )}
 
             {/* Row 3: Difficoltà */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Difficoltà")}</label>
               <div
                 className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
                 style={{ paddingLeft: '24px', paddingRight: '24px' }}
               >
                 <span className="text-xs text-text-muted font-semibold" style={{ paddingLeft: '6px' }}>
-                  {(form.difficulty || 3) * 4} XP Bonus
-                </span>
+                  {_t("{0} XP Bonus", (form.difficulty || 3) * 4)}</span>
                 <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '6px' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
@@ -507,7 +506,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 4: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Stat. Primaria")}</label>
                 <select
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
@@ -520,14 +519,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Secondaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Stat. Secondaria")}</label>
                 <select
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
-                  <option value="">Nessuna</option>
+                  <option value="">{_t("Nessuna")}</option>
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
@@ -543,7 +542,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Tessera 1: Emoji + Nome Task */}
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
                 <input
                   type="text"
                   name="emoji"
@@ -553,14 +552,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome Task</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Nome Task")}</label>
                 <input
                   type="text"
                   name="name"
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder="Es: Rispondere alle email, Riparare rubinetto..."
+                  placeholder={_t("Es: Rispondere alle email, Riparare rubinetto...")}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
@@ -568,7 +567,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Tessera 2: Data Entro Cui Ultimare (Scadenza) */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">📅 Ultimare Entro (Scadenza)</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("📅 Ultimare Entro (Scadenza)")}</label>
               <div className="flex gap-2">
                 <input
                   type="date"
@@ -583,7 +582,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     name="dueTime"
                     value={form.dueTime || ''}
                     onChange={handleChange}
-                    title="Ora (facoltativa): serve per il promemoria 1 ora prima"
+                    title={_t("Ora (facoltativa): serve per il promemoria 1 ora prima")}
                     className="w-[110px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                   />
                 )}
@@ -592,14 +591,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Tessera 3: Difficoltà Stelle */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Difficoltà")}</label>
               <div
                 className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
                 style={{ paddingLeft: '24px', paddingRight: '24px' }}
               >
                 <span className="text-xs text-text-muted font-semibold" style={{ paddingLeft: '6px' }}>
-                  {(form.difficulty || 3) * 8} XP Bonus
-                </span>
+                  {_t("{0} XP Bonus", (form.difficulty || 3) * 8)}</span>
                 <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '6px' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
@@ -619,7 +617,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Tessera 4: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Stat. Primaria")}</label>
                 <select
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
@@ -632,14 +630,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Secondaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Stat. Secondaria")}</label>
                 <select
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
-                  <option value="">Nessuna</option>
+                  <option value="">{_t("Nessuna")}</option>
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
@@ -652,8 +650,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               <div style={{ padding: '10px 14px', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '16px' }}>📌</span>
                 <span>
-                  Finito {editData?.scheduledCount || form.scheduledCount} {(editData?.scheduledCount || form.scheduledCount) === 1 ? 'volta' : 'volte'} tra le missioni del giorno
-                </span>
+                  {_t("Finito {0}", editData?.scheduledCount || form.scheduledCount)}{" "}{(editData?.scheduledCount || form.scheduledCount) === 1 ? _t("volta") : _t("volte")} {" "}{_t("tra le missioni del giorno")}</span>
               </div>
             )}
           </div>
@@ -665,7 +662,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 1: Emoji + Nome Campagna */}
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
                 <input
                   type="text"
                   name="emoji"
@@ -675,14 +672,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Nome Campagna</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Nome Campagna")}</label>
                 <input
                   type="text"
                   name="name"
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder="Es: Imparare React, Scrivere un libro..."
+                  placeholder={_t("Es: Imparare React, Scrivere un libro...")}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
@@ -690,33 +687,33 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Row 2: Descrizione */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">Descrizione</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Descrizione")}</label>
               <textarea
                 name="description"
                 value={form.description || ''}
                 onChange={handleChange}
                 rows="2"
-                placeholder="Spiega l'obiettivo finale di questa campagna..."
+                placeholder={_t("Spiega l'obiettivo finale di questa campagna...")}
                 className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none"
               ></textarea>
             </div>
 
             {/* Premio al completamento */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">🎁 Premio finale (Reward)</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("🎁 Premio finale (Reward)")}</label>
               <input
                 type="text"
                 name="reward"
                 value={form.reward || ''}
                 onChange={handleChange}
-                placeholder="Es: Cena al ristorante, Nuovo regalo, Giornata SPA..."
+                placeholder={_t("Es: Cena al ristorante, Nuovo regalo, Giornata SPA...")}
                 className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
               />
             </div>
 
             {/* Data di Scadenza (Opzionale) */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">📅 Data di Scadenza (Opzionale)</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("📅 Data di Scadenza (Opzionale)")}</label>
               <div className="flex gap-2">
                 <input
                   type="date"
@@ -731,7 +728,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     name="dueTime"
                     value={form.dueTime || ''}
                     onChange={handleChange}
-                    title="Ora (facoltativa): serve per il promemoria 1 ora prima"
+                    title={_t("Ora (facoltativa): serve per il promemoria 1 ora prima")}
                     className="w-[110px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                   />
                 )}
@@ -740,14 +737,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Row 3: Difficoltà */}
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1.5">Difficoltà</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Difficoltà")}</label>
               <div
                 className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl flex justify-between items-center"
                 style={{ paddingLeft: '24px', paddingRight: '24px' }}
               >
                 <span className="text-xs text-text-muted font-semibold" style={{ paddingLeft: '6px' }}>
-                  {(form.difficulty || 3) * 35} XP alla fine
-                </span>
+                  {_t("{0} XP alla fine", (form.difficulty || 3) * 35)}</span>
                 <div className="flex gap-1.5 text-xl items-center" style={{ paddingRight: '6px' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span
@@ -767,7 +763,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Row 4: Stat Primaria & Secondaria */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Primaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Stat. Primaria")}</label>
                 <select
                   name="primaryTarget"
                   value={form.primaryTarget || ''}
@@ -780,14 +776,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">Stat. Secondaria</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Stat. Secondaria")}</label>
                 <select
                   name="secondaryTarget"
                   value={form.secondaryTarget || ''}
                   onChange={handleChange}
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
-                  <option value="">Nessuna</option>
+                  <option value="">{_t("Nessuna")}</option>
                   {visibleStats.map(s => (
                     <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
@@ -798,8 +794,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Subquests Section: Multi-line Milestone Editor */}
             <div className="border-t border-[var(--glass-border)] pt-3 mt-0.5">
               <label className="block text-xs text-text-secondary font-bold mb-1.5">
-                🚩 Sotto-obiettivi / Milestones (Un rigo per milestone, inizia con -)
-              </label>
+                {_t("🚩 Sotto-obiettivi / Milestones (Un rigo per milestone, inizia con -)")}</label>
               <textarea
                 value={milestonesText}
                 onChange={(e) => {
@@ -861,8 +856,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 className="w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl p-3 px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none resize-none font-mono"
               ></textarea>
               <div className="flex justify-between items-center mt-1.5 text-[10px] text-text-muted">
-                <span>💡 Premi Invio per andare a capo e creare un nuovo rigo (-)</span>
-                <span className="font-bold text-accent-primary">{subquests.length} milestone</span>
+                <span>{_t("💡 Premi Invio per andare a capo e creare un nuovo rigo (-)")}</span>
+                <span className="font-bold text-accent-primary">{_t("{0} milestone", subquests.length)}</span>
               </div>
             </div>
           </div>
@@ -911,8 +906,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - (currentQuest.difficulty || 1))}</span>
                 </span>
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
-                  +{(currentQuest.difficulty || 3) * 35} XP
-                </span>
+                  {_t("+{0} XP", (currentQuest.difficulty || 3) * 35)}</span>
                 {primaryStat && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
                     {primaryStat.icon} {primaryStat.name}
@@ -925,7 +919,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 )}
                 {currentQuest.dueDate && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b' }}>
-                    📅 {new Date(currentQuest.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                    📅 {new Date(currentQuest.dueDate + 'T00:00:00').toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' })}
                   </span>
                 )}
               </div>
@@ -935,10 +929,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {currentQuest.description && (
               <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px' }}>
-                  📝 Descrizione Campagna
-                </div>
+                  {_t("📝 Descrizione Campagna")}</div>
                 <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--text-primary)', lineHeight: '1.45' }}>
-                  {currentQuest.description}
+                  {_t(currentQuest.description)}
                 </p>
               </div>
             )}
@@ -947,7 +940,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {currentQuest.reward && (
               <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.2) 100%)', padding: '10px 14px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.35)' }}>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span>🎁 Premio al completamento</span>
+                  <span>{_t("🎁 Premio al completamento")}</span>
                 </div>
                 <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                   {currentQuest.reward}
@@ -959,8 +952,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  🚩 Milestones ({completedSub}/{totalSub})
-                </span>
+                  {_t("🚩 Milestones ({0}/{1})", completedSub, totalSub)}</span>
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
                   {progressPct}%
                 </span>
@@ -974,8 +966,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {/* Subquest Checklist */}
               {totalSub === 0 ? (
                 <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '4px 0' }}>
-                  Nessun sotto-obiettivo definito per questa campagna.
-                </p>
+                  {_t("Nessun sotto-obiettivo definito per questa campagna.")}</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto', paddingRight: '4px' }} className="no-scrollbar">
                   {currentQuest.subquests?.map((sq, idx) => (
@@ -1058,14 +1049,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Expanded Details Section Below */}
             <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>⚡ Ricompensa XP:</span>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("⚡ Ricompensa XP:")}</span>
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
-                  +{starsCount * 8} XP
-                </span>
+                  {_t("+{0} XP", starsCount * 8)}</span>
               </div>
               {primaryStat && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🧠 Statistica Primaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🧠 Statistica Primaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     {primaryStat.icon} {primaryStat.name}
                   </span>
@@ -1073,7 +1063,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               )}
               {secondaryStat && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🛡️ Statistica Secondaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🛡️ Statistica Secondaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                     {secondaryStat.icon} {secondaryStat.name}
                   </span>
@@ -1081,9 +1071,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               )}
               {item.dueDate && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>📅 Scadenza:</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("📅 Scadenza:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#f59e0b' }}>
-                    {new Date(item.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(item.dueDate + 'T00:00:00').toLocaleDateString(getLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}
                   </span>
                 </div>
               )}
@@ -1092,10 +1082,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* In Azioni Del Giorno Info Row */}
             <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                📌 In Azioni del Giorno:
-              </span>
+                {_t("📌 In Azioni del Giorno:")}</span>
               <span style={{ fontSize: '11px', fontWeight: 'bold', color: count > 0 ? '#8b5cf6' : 'var(--text-muted)' }}>
-                {count > 0 ? `${count} ${count === 1 ? 'volta' : 'volte'}` : 'Mai inserito'}
+                {count > 0 ? `${count} ${count === 1 ? 'volta' : 'volte'}` : _t("Mai inserito")}
               </span>
             </div>
 
@@ -1103,10 +1092,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {item.description && (
               <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
                 <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
-                  📝 Note & Dettagli
-                </div>
+                  {_t("📝 Note & Dettagli")}</div>
                 <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
-                  {item.description}
+                  {_t(item.description)}
                 </p>
               </div>
             )}
@@ -1155,26 +1143,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Expanded Details Section Below */}
             <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🔥 Serie Attuale (Streak):</span>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🔥 Serie Attuale (Streak):")}</span>
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ef4444', background: 'rgba(239, 68, 68, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
-                  {streak} {streak === 1 ? 'giorno' : 'giorni'}
+                  {streak} {streak === 1 ? _t("giorno") : _t("giorni")}
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>⚡ Ricompensa XP:</span>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("⚡ Ricompensa XP:")}</span>
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#22c55e', background: 'rgba(34, 197, 94, 0.12)', padding: '2px 8px', borderRadius: '6px' }}>
-                  +{starsCount * 5} XP
-                </span>
+                  {_t("+{0} XP", starsCount * 5)}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🔄 Frequenza:</span>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🔄 Frequenza:")}</span>
                 <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  {habit.frequency === 'daily' ? 'Tutti i giorni' : (habit.frequency || 'Giornaliera')}
+                  {habit.frequency === 'daily' ? _t("Tutti i giorni") : (habit.frequency || _t("Giornaliera"))}
                 </span>
               </div>
               {primaryStat && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🧠 Statistica Primaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🧠 Statistica Primaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     {primaryStat.icon} {primaryStat.name}
                   </span>
@@ -1182,7 +1169,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               )}
               {secondaryStat && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>🛡️ Statistica Secondaria:</span>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🛡️ Statistica Secondaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                     {secondaryStat.icon} {secondaryStat.name}
                   </span>
@@ -1194,10 +1181,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {habit.description && (
               <div style={{ background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
                 <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>
-                  📝 Note & Dettagli
-                </div>
+                  {_t("📝 Note & Dettagli")}</div>
                 <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
-                  {habit.description}
+                  {_t(habit.description)}
                 </p>
               </div>
             )}
@@ -1246,22 +1232,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </span>
                 {primaryStat && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                    {primaryStat.icon} {primaryStat.name} (+{(tmpl.stars || 3) * 35} XP)
-                  </span>
+                    {_t("{0} {1} (+{2} XP)", primaryStat.icon, primaryStat.name, (tmpl.stars || 3) * 35)}</span>
                 )}
                 <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                  📅 {tmpl.duration || 30} Giorni
-                </span>
+                  {_t("📅 {0} Giorni", tmpl.duration || 30)}</span>
               </div>
             </div>
 
             {/* Description & Program Rules Box */}
             <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
               <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px' }}>
-                📖 Programma & Sovraccarico Progressivo
-              </div>
+                {_t("📖 Programma & Sovraccarico Progressivo")}</div>
               <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--text-primary)', lineHeight: '1.45' }}>
-                {tmpl.description}
+                {_t(tmpl.description)}
               </p>
             </div>
 
@@ -1269,8 +1252,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div style={{ background: 'var(--bg-secondary)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  🚩 Programma Milestones ({subquests.length} Giorni)
-                </span>
+                  {_t("🚩 Programma Milestones ({0} Giorni)", subquests.length)}</span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }} className="no-scrollbar">
@@ -1292,7 +1274,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       <span style={{ fontSize: '11px', fontWeight: '600', color: isRest ? '#38bdf8' : 'var(--text-primary)' }}>
                         {sq.name}
                       </span>
-                      {isRest && <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8' }}>RIGENERAZIONE</span>}
+                      {isRest && <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8' }}>{_t("RIGENERAZIONE")}</span>}
                     </div>
                   );
                 })}
@@ -1326,8 +1308,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   gap: '8px'
                 }}
               >
-                🚀 Attiva Questa Sfida
-              </button>
+                {_t("🚀 Attiva Questa Sfida")}</button>
             </div>
           </div>
         );
@@ -1343,11 +1324,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               className={`food-fav-toggle ${form.favorite ? 'active' : ''}`}
             >
               <span style={{ fontSize: '16px' }}>{form.favorite ? '★' : '☆'}</span>
-              <span>{form.favorite ? 'Nei preferiti: compare subito quando registri un pasto' : 'Aggiungi ai preferiti'}</span>
+              <span>{form.favorite ? _t("Nei preferiti: compare subito quando registri un pasto") : _t("Aggiungi ai preferiti")}</span>
             </button>
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Emoji")}</label>
                 <input
                   type="text"
                   name="emoji"
@@ -1357,14 +1338,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Nome Cibo</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Nome Cibo")}</label>
                 <input
                   type="text"
                   name="name"
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder="Es: Uova, Petto di Pollo..."
+                  placeholder={_t("Es: Uova, Petto di Pollo...")}
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
@@ -1389,12 +1370,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {ocrLoading ? (
                 <>
                   <span className="animate-spin text-sm">⏳</span>
-                  <span>{ocrStatusText || 'Analisi foto in corso...'}</span>
+                  <span>{ocrStatusText || _t("Analisi foto in corso...")}</span>
                 </>
               ) : (
                 <>
                   <span className="text-base">📷</span>
-                  <span>Scansiona Tabella Nutrizionale (OCR)</span>
+                  <span>{_t("Scansiona Tabella Nutrizionale (OCR)")}</span>
                 </>
               )}
             </button>
@@ -1420,7 +1401,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       onClick={() => setShowOcrDebug(!showOcrDebug)}
                       className="text-[10px] text-text-muted hover:text-text-secondary underline cursor-pointer"
                     >
-                      {showOcrDebug ? '🙈 Nascondi testo letto dall\'OCR' : '🔍 Mostra testo letto dall\'OCR'}
+                      {showOcrDebug ? _t("🙈 Nascondi testo letto dall'OCR") : _t("🔍 Mostra testo letto dall'OCR")}
                     </button>
                     {showOcrDebug && (
                       <pre className="mt-1 p-2 bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-xl text-[10px] text-text-secondary max-h-32 overflow-y-auto whitespace-pre-wrap font-mono select-all">
@@ -1434,10 +1415,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Valori per 100g */}
             <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Valori Nutrizionali per 100g</span>
+              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{_t("Valori Nutrizionali per 100g")}</span>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Grammi Base</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{_t("Grammi Base")}</label>
                   <input
                     type="number"
                     name="baseGrams"
@@ -1448,7 +1429,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal per 100g</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{_t("Kcal per 100g")}</label>
                   <input
                     type="number"
                     name="baseCalories"
@@ -1459,7 +1440,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine (g)</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{_t("Proteine (g)")}</label>
                   <input
                     type="number"
                     name="baseProteins"
@@ -1474,38 +1455,38 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             {/* Valori per Pezzo / Porzione (Opzionale) */}
             <div className="bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-accent-primary uppercase tracking-wider">🧩 Valori per Pezzo / Porzione (Opzionale)</span>
+              <span className="text-[10px] font-bold text-accent-primary uppercase tracking-wider">{_t("🧩 Valori per Pezzo / Porzione (Opzionale)")}</span>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Peso Pezzo (g)</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{_t("Peso Pezzo (g)")}</label>
                   <input
                     type="number"
                     name="pieceGrams"
                     value={form.pieceGrams ?? ''}
                     onChange={handlePieceGramsChange}
-                    placeholder="Es: 60"
+                    placeholder={_t("Es: 60")}
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Kcal 1 Pezzo</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{_t("Kcal 1 Pezzo")}</label>
                   <input
                     type="number"
                     name="pieceCalories"
                     value={form.pieceCalories ?? ''}
                     onChange={handleNumberChange}
-                    placeholder="Es: 78"
+                    placeholder={_t("Es: 78")}
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">Proteine 1 Pezzo</label>
+                  <label className="block text-[10px] text-text-secondary font-bold mb-0.5">{_t("Proteine 1 Pezzo")}</label>
                   <input
                     type="number"
                     name="pieceProteins"
                     value={form.pieceProteins ?? ''}
                     onChange={handleNumberChange}
-                    placeholder="Es: 6.5"
+                    placeholder={_t("Es: 6.5")}
                     className="w-full h-9 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-3 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
@@ -1513,17 +1494,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             </div>
 
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Categoria Pasto Predefinita</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Categoria Pasto Predefinita")}</label>
               <select
                 name="category"
                 value={form.category || 'snack'}
                 onChange={handleChange}
                 className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
               >
-                <option value="breakfast">Colazione ☕</option>
-                <option value="main">Pasti Principali 🍽️</option>
-                <option value="snack">Spuntino 🍌</option>
-                <option value="cheat">Sgarro 🍕</option>
+                <option value="breakfast">{_t("Colazione ☕")}</option>
+                <option value="main">{_t("Pasti Principali 🍽️")}</option>
+                <option value="snack">{_t("Spuntino 🍌")}</option>
+                <option value="cheat">{_t("Sgarro 🍕")}</option>
               </select>
             </div>
           </div>
@@ -1534,7 +1515,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           <div className="flex flex-col gap-3">
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Emoji")}</label>
                 <input
                   type="text"
                   name="emoji"
@@ -1544,14 +1525,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-text-secondary font-bold mb-1">Nome Esercizio</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Nome Esercizio")}</label>
                 <input
                   type="text"
                   name="name"
                   value={form.name || ''}
                   onChange={handleChange}
                   required
-                  placeholder="Es: Corsa, Beach Volley, Flessioni..."
+                  placeholder={_t("Es: Corsa, Beach Volley, Flessioni...")}
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
@@ -1559,7 +1540,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Reps / Durata (min)</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Reps / Durata (min)")}</label>
                 <input
                   type="number"
                   name="baseCount"
@@ -1570,7 +1551,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 />
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">🔥 Kcal Bruciate</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("🔥 Kcal Bruciate")}</label>
                 <input
                   type="number"
                   name="baseCalories"
@@ -1584,18 +1565,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">👟 Passi (Opzionale)</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("👟 Passi (Opzionale)")}</label>
                 <input
                   type="number"
                   name="baseSteps"
                   value={form.baseSteps ?? ''}
                   onChange={handleNumberChange}
-                  placeholder="Es: 3500"
+                  placeholder={_t("Es: 3500")}
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">⭐ XP Premio</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("⭐ XP Premio")}</label>
                 <input
                   type="number"
                   name="xpReward"
@@ -1608,7 +1589,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             </div>
 
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1">Statistica Correlata</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Statistica Correlata")}</label>
               <select
                 name="statId"
                 value={form.statId || ''}
@@ -1623,8 +1604,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
             <div className="mt-1 p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--glass-border)] flex items-center justify-between">
               <div className="flex flex-col pr-2">
-                <span className="text-xs font-bold text-[var(--text-primary)]">Registra come svolto oggi</span>
-                <span className="text-[10px] text-text-secondary">Aggiunge subito calorie{form.baseSteps ? ', passi' : ''} e XP ad oggi</span>
+                <span className="text-xs font-bold text-[var(--text-primary)]">{_t("Registra come svolto oggi")}</span>
+                <span className="text-[10px] text-text-secondary">{_t("Aggiunge subito calorie")}{form.baseSteps ? _t(", passi") : ''} {" "}{_t("e XP ad oggi")}</span>
               </div>
               <input
                 type="checkbox"
@@ -1650,22 +1631,21 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           <div className="flex flex-col gap-4">
             {/* Communication with 'Obiettivi' info card */}
             <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 text-center">
-              <span className="text-[10px] text-text-muted font-bold uppercase">Obiettivo Peso Target</span>
+              <span className="text-[10px] text-text-muted font-bold uppercase">{_t("Obiettivo Peso Target")}</span>
               <span className="text-base font-bold text-pink-500">
-                {tgtW} kg
-              </span>
-              <span className="text-[9px] text-text-muted italic mt-0.5">🔒 Il peso target è modificabile dalla finestra "Obiettivi"</span>
+                {_t("{0} kg", tgtW)}</span>
+              <span className="text-[9px] text-text-muted italic mt-0.5">{_t("🔒 Il peso target è modificabile dalla finestra \"Obiettivi\"")}</span>
               
               <div className="mt-1 pt-1.5 border-t border-[var(--glass-border)] flex justify-around text-[10px] text-text-secondary font-semibold">
-                <span>🎯 Calorie: <b className="text-text-primary">{editData?.calorieGoal || 1600} kcal</b></span>
-                <span>🍗 Proteine: <b className="text-yellow-500">{editData?.proteinGoal || 100}g</b></span>
+                <span>{_t("🎯 Calorie:")}{" "}<b className="text-text-primary">{_t("{0} kcal", editData?.calorieGoal || 1600)}</b></span>
+                <span>{_t("🍗 Proteine:")}{" "}<b className="text-yellow-500">{editData?.proteinGoal || 100}g</b></span>
               </div>
             </div>
 
             {/* Current Weight + Body Fat % + Lean % inputs */}
             <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-xs text-text-secondary font-bold mb-1">Peso Corporeo Attuale (kg)</label>
+                <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Peso Corporeo Attuale (kg)")}</label>
                 <input
                   type="number"
                   name="current"
@@ -1673,14 +1653,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   onChange={handleNumberChange}
                   step="0.1"
                   required
-                  placeholder="Es: 75.5"
+                  placeholder={_t("Es: 75.5")}
                   className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-sm font-bold focus:border-accent-primary focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">💧 Massa Grassa (%)</label>
+                  <label className="block text-xs text-text-secondary font-bold mb-1">{_t("💧 Massa Grassa (%)")}</label>
                   <input
                     type="number"
                     name="currentFat"
@@ -1698,12 +1678,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       });
                     }}
                     step="0.1"
-                    placeholder="Es: 15.0"
+                    placeholder={_t("Es: 15.0")}
                     className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-text-secondary font-bold mb-1">💪 Massa Magra (%)</label>
+                  <label className="block text-xs text-text-secondary font-bold mb-1">{_t("💪 Massa Magra (%)")}</label>
                   <input
                     type="number"
                     name="currentLean"
@@ -1721,7 +1701,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       });
                     }}
                     step="0.1"
-                    placeholder="Es: 85.0"
+                    placeholder={_t("Es: 85.0")}
                     className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
@@ -1730,8 +1710,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {/* Calculated Kg Breakdown */}
               {(fatKg || leanKg) && (
                 <div className="bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--glass-border)] flex justify-around text-center text-xs">
-                  {leanKg && <div><span className="text-[10px] text-text-muted block">Massa Magra</span><b className="text-text-primary">{leanKg} kg</b></div>}
-                  {fatKg && <div><span className="text-[10px] text-text-muted block">Massa Grassa</span><b className="text-pink-400">{fatKg} kg</b></div>}
+                  {leanKg && <div><span className="text-[10px] text-text-muted block">{_t("Massa Magra")}</span><b className="text-text-primary">{_t("{0} kg", leanKg)}</b></div>}
+                  {fatKg && <div><span className="text-[10px] text-text-muted block">{_t("Massa Grassa")}</span><b className="text-pink-400">{_t("{0} kg", fatKg)}</b></div>}
                 </div>
               )}
             </div>
@@ -1776,18 +1756,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 {statData.name}
               </h3>
               <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.4' }}>
-                {statData.description || 'Statistica del personaggio'}
+                {statData.description || _t("Statistica del personaggio")}
               </p>
 
               {/* Linea Livello e XP Accumulati */}
               <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', background: 'var(--bg-card)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
                 <div>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>LIVELLO</span>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>{_t("LIVELLO")}</span>
                   <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>{statData.level || 1}</span>
                 </div>
                 <div style={{ width: '1px', height: '24px', background: 'var(--glass-border)' }}></div>
                 <div>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>XP ACCUMULATI</span>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>{_t("XP ACCUMULATI")}</span>
                   <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>{statData.xp || 0}</span>
                 </div>
               </div>
@@ -1796,8 +1776,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* TESSERA 2: Grafico 7 Giorni + Tooltip + Ultimo XP Guadagnato */}
             <div style={{ background: 'var(--bg-secondary)', padding: '14px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
               <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '10px', textAlign: 'left' }}>
-                📊 Ultimi 7 Giorni
-              </div>
+                {_t("📊 Ultimi 7 Giorni")}</div>
 
               {/* Grafico a barre */}
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '60px', padding: '0 4px', gap: '6px', marginBottom: '10px' }}>
@@ -1817,7 +1796,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                         gap: '4px',
                         cursor: 'pointer'
                       }}
-                      title={`${day.dayLabel}: +${day.totalXp} XP`}
+                      title={_t("{0}: +{1} XP", day.dayLabel, day.totalXp)}
                     >
                       <div style={{ fontSize: '8px', fontWeight: 'bold', color: day.totalXp > 0 ? 'var(--accent-primary)' : 'transparent', height: '10px' }}>
                         {day.totalXp > 0 ? `+${day.totalXp}` : ''}
@@ -1850,16 +1829,16 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 <div style={{ marginTop: '8px', padding: '8px 10px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '10px', fontSize: '10px', textAlign: 'left', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '4px' }}>
                     <span>📅 {selectedDay.dayLabel} ({selectedDay.dateStr})</span>
-                    <span style={{ color: 'var(--accent-primary)' }}>+{selectedDay.totalXp} XP</span>
+                    <span style={{ color: 'var(--accent-primary)' }}>{_t("+{0} XP", selectedDay.totalXp)}</span>
                   </div>
                   {selectedDay.logs.length === 0 ? (
-                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Nessun XP guadagnato in questo giorno.</div>
+                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{_t("Nessun XP guadagnato in questo giorno.")}</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       {selectedDay.logs.map((l, lIdx) => (
                         <div key={lIdx} style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                           <span>• {l.title || getEntryTitle(l)}</span>
-                          <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>+{l.amount} XP</span>
+                          <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>{_t("+{0} XP", l.amount)}</span>
                         </div>
                       ))}
                     </div>
@@ -1871,13 +1850,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               <div style={{ background: 'var(--bg-card)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '15px' }}>⚡</span>
                 <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>Ultimo XP Guadagnato</div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 'bold', textTransform: 'uppercase' }}>{_t("Ultimo XP Guadagnato")}</div>
                   {lastXpEntry ? (
                     <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {lastXpEntry.title || getEntryTitle(lastXpEntry)} <span style={{ color: 'var(--accent-primary)' }}>(+{lastXpEntry.amount} XP)</span>
+                      {lastXpEntry.title || getEntryTitle(lastXpEntry)} <span style={{ color: 'var(--accent-primary)' }}>{_t("(+{0} XP)", lastXpEntry.amount)}</span>
                     </div>
                   ) : (
-                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Nessuna attività registrata di recente</div>
+                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{_t("Nessuna attività registrata di recente")}</div>
                   )}
                 </div>
               </div>
@@ -1955,26 +1934,26 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {/* TOP SECTION: Integrated BMR / TDEE & Goal Calculator Card */}
               <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1.5">
-                  <span className="text-xs font-bold text-text-primary">⚡ 1. Fabbisogno TDEE & Composizione</span>
-                  <span className="text-[10px] text-text-muted font-medium">Inserisci i tuoi dati</span>
+                  <span className="text-xs font-bold text-text-primary">{_t("⚡ 1. Fabbisogno TDEE & Composizione")}</span>
+                  <span className="text-[10px] text-text-muted font-medium">{_t("Inserisci i tuoi dati")}</span>
                 </div>
 
                 {/* 1) Sesso, Età, Altezza */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Sesso</label>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("Sesso")}</label>
                     <select
                       name="calcGender"
                       value={form.calcGender || 'male'}
                       onChange={handleChange}
                       className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-1.5 border border-[var(--glass-border)]"
                     >
-                      <option value="male">Uomo</option>
-                      <option value="female">Donna</option>
+                      <option value="male">{_t("Uomo")}</option>
+                      <option value="female">{_t("Donna")}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Età (anni)</label>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("Età (anni)")}</label>
                     <input
                       type="number"
                       name="calcAge"
@@ -1984,7 +1963,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Altezza (cm)</label>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("Altezza (cm)")}</label>
                     <input
                       type="number"
                       name="calcHeight"
@@ -1998,7 +1977,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 {/* 2) Peso Attuale, Massa Grassa %, Peso Target */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Peso Attuale (kg)</label>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("Peso Attuale (kg)")}</label>
                     <input
                       type="number"
                       name="currentWeight"
@@ -2009,19 +1988,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Massa Grassa %</label>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("Massa Grassa %")}</label>
                     <input
                       type="number"
                       name="calcFatPct"
                       step="0.1"
-                      placeholder="Es: 15%"
+                      placeholder={_t("Es: 15%")}
                       value={form.calcFatPct !== undefined ? form.calcFatPct : ''}
                       onChange={handleNumberChange}
                       className="w-full h-8 bg-[var(--bg-card)] text-text-primary text-[11px] font-semibold rounded-lg px-2 border border-[var(--glass-border)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">Peso Target (kg)</label>
+                    <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("Peso Target (kg)")}</label>
                     <input
                       type="number"
                       name="targetWeight"
@@ -2035,28 +2014,28 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
                 {/* 3) Stile di Vita & Attività */}
                 <div>
-                  <label className="block text-[10px] text-text-muted mb-0.5 font-bold">🏃 Stile di Vita & Attività Fisica:</label>
+                  <label className="block text-[10px] text-text-muted mb-0.5 font-bold">{_t("🏃 Stile di Vita & Attività Fisica:")}</label>
                   <select
                     name="calcActivity"
                     value={form.calcActivity || 1.375}
                     onChange={handleChange}
                     className="w-full h-9 bg-[var(--bg-card)] text-text-primary text-[11px] font-bold rounded-xl px-3 border border-[var(--glass-border)]"
                   >
-                    <option value="1.2">Sedentario (Poco o nessun esercizio)</option>
-                    <option value="1.375">Attività Leggera (1 - 3 allenamenti / settimana)</option>
-                    <option value="1.55">Attività Moderata (3 - 5 allenamenti / settimana)</option>
-                    <option value="1.725">Attività Intensa (6 - 7 allenamenti / settimana)</option>
+                    <option value="1.2">{_t("Sedentario (Poco o nessun esercizio)")}</option>
+                    <option value="1.375">{_t("Attività Leggera (1 - 3 allenamenti / settimana)")}</option>
+                    <option value="1.55">{_t("Attività Moderata (3 - 5 allenamenti / settimana)")}</option>
+                    <option value="1.725">{_t("Attività Intensa (6 - 7 allenamenti / settimana)")}</option>
                   </select>
                 </div>
 
                 {/* 4) MIDDLE SECTION: 3 Situations Goal Selector & Calculate Button */}
                 <div className="pt-2 border-t border-[var(--glass-border)] flex flex-col gap-2.5">
-                  <label className="block text-[10px] text-text-secondary font-bold">🎯 2. Scegli il tuo fine & Calcola:</label>
+                  <label className="block text-[10px] text-text-secondary font-bold">{_t("🎯 2. Scegli il tuo fine & Calcola:")}</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { id: 'lose', label: '📉 Dimagrimento', desc: 'Deficit' },
-                      { id: 'maintain', label: '⚖️ Tonificazione', desc: 'Mantenimento' },
-                      { id: 'gain', label: '🏋️ Massa', desc: 'Surplus' }
+                      { id: 'lose', label: _t("📉 Dimagrimento"), desc: _t("Deficit") },
+                      { id: 'maintain', label: _t("⚖️ Tonificazione"), desc: _t("Mantenimento") },
+                      { id: 'gain', label: _t("🏋️ Massa"), desc: _t("Surplus") }
                     ].map((g) => (
                       <button
                         key={g.id}
@@ -2069,8 +2048,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                           borderColor: (form.calcGoalType || 'lose') === g.id ? 'var(--accent-primary)' : 'var(--glass-border)'
                         }}
                       >
-                        <span>{g.label}</span>
-                        <span className="text-[9px] opacity-80 font-normal">{g.desc}</span>
+                        <span>{_t(g.label)}</span>
+                        <span className="text-[9px] opacity-80 font-normal">{_t(g.desc)}</span>
                       </button>
                     ))}
                   </div>
@@ -2091,7 +2070,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       }}
                     >
                       <span className="text-base">⚡</span>
-                      <span className="tracking-wide">Calcola & Applica Obiettivi</span>
+                      <span className="tracking-wide">{_t("Calcola & Applica Obiettivi")}</span>
                     </button>
                   </div>
 
@@ -2107,14 +2086,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {/* BOTTOM SECTION: Daily Goals Result Boxes (Modificabili anche manualmente) */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between border-b border-[var(--glass-border)] pb-1">
-                  <span className="text-xs font-bold text-text-primary uppercase tracking-wider">🎯 3. Obiettivi Giornalieri Risultanti</span>
-                  <span className="text-[10px] text-text-muted font-medium">Modificabili anche manualmente</span>
+                  <span className="text-xs font-bold text-text-primary uppercase tracking-wider">{_t("🎯 3. Obiettivi Giornalieri Risultanti")}</span>
+                  <span className="text-[10px] text-text-muted font-medium">{_t("Modificabili anche manualmente")}</span>
                 </div>
 
                 {/* Goal Inputs Grid */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] text-text-secondary font-bold mb-1">🚩 Calorie Target (kcal)</label>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">{_t("🚩 Calorie Target (kcal)")}</label>
                     <input
                       type="number"
                       name="calorieGoal"
@@ -2124,7 +2103,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-text-secondary font-bold mb-1">🍗 Proteine Target (g)</label>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">{_t("🍗 Proteine Target (g)")}</label>
                     <input
                       type="number"
                       name="proteinGoal"
@@ -2134,7 +2113,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-text-secondary font-bold mb-1">🥛 Acqua (Bicchieri)</label>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">{_t("🥛 Acqua (Bicchieri)")}</label>
                     <input
                       type="number"
                       name="waterGoal"
@@ -2144,7 +2123,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-text-secondary font-bold mb-1">👟 Passi Giornalieri</label>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">{_t("👟 Passi Giornalieri")}</label>
                     <input
                       type="number"
                       name="stepGoal"
@@ -2169,21 +2148,20 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             return (
               <div className="flex flex-col gap-4">
                 <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 text-center">
-                  <span className="text-[10px] text-text-muted font-bold uppercase">Obiettivo Passi Giornalieri</span>
+                  <span className="text-[10px] text-text-muted font-bold uppercase">{_t("Obiettivo Passi Giornalieri")}</span>
                   <span className="text-base font-bold text-accent-primary">
-                    {goalSteps.toLocaleString()} passi
-                  </span>
-                  <span className="text-[9px] text-text-muted italic mt-0.5">🔒 Gli obiettivi sono modificabili solo dalla finestra "Obiettivi"</span>
+                    {_t("{0} passi", goalSteps.toLocaleString())}</span>
+                  <span className="text-[9px] text-text-muted italic mt-0.5">{_t("🔒 Gli obiettivi sono modificabili solo dalla finestra \"Obiettivi\"")}</span>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="block text-xs text-text-secondary font-bold">Passi Fatti Finora Oggi:</label>
+                  <label className="block text-xs text-text-secondary font-bold">{_t("Passi Fatti Finora Oggi:")}</label>
                   <input
                     type="number"
                     name="value"
                     value={currentVal}
                     onChange={handleNumberChange}
-                    placeholder="Es: 6500"
+                    placeholder={_t("Es: 6500")}
                     className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-sm font-bold focus:border-accent-primary focus:outline-none"
                   />
                 </div>
@@ -2218,19 +2196,17 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               <div className="flex flex-col gap-3.5">
                 <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex justify-between items-center text-center">
                   <div className="w-full">
-                    <span className="block text-[10px] text-text-muted font-bold uppercase">Totale Proteine Oggi</span>
+                    <span className="block text-[10px] text-text-muted font-bold uppercase">{_t("Totale Proteine Oggi")}</span>
                     <span className="text-base font-bold text-yellow-500">{editData?.proteinsCurrent || totalProteinsLogged}g / {editData?.proteinsGoal || 100}g</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-bold text-text-primary">📋 Alimenti Consumati & Apporto Proteico:</span>
+                  <span className="text-xs font-bold text-text-primary">{_t("📋 Alimenti Consumati & Apporto Proteico:")}</span>
                   {allLoggedFoods.length === 0 ? (
                     <div className="p-4 text-center rounded-2xl bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-xs text-text-muted italic">
-                      Nessun alimento registrato oggi nel diario nutrizionale.
-                      <br />
-                      Aggiungi cibi dal Registro Pasti per vedere l'apporto proteico automatico!
-                    </div>
+                      {_t("Nessun alimento registrato oggi nel diario nutrizionale.")}<br />
+                      {_t("Aggiungi cibi dal Registro Pasti per vedere l'apporto proteico automatico!")}</div>
                   ) : (
                     <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
                       {allLoggedFoods.map((food, idx) => (
@@ -2242,7 +2218,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                               <div className="text-[10px] text-text-muted">{food.catName} ({food.grams || 100}g)</div>
                             </div>
                           </div>
-                          <div className="text-xs font-bold text-yellow-500">+{food.proteins || 0}g prot.</div>
+                          <div className="text-xs font-bold text-yellow-500">{_t("+{0}g prot.", food.proteins || 0)}</div>
                         </div>
                       ))}
                     </div>
@@ -2262,13 +2238,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             return (
               <div className="flex flex-col gap-4">
                 <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 items-center text-center">
-                  <span className="text-[10px] text-text-muted font-bold uppercase">Idratazione Giornaliera</span>
+                  <span className="text-[10px] text-text-muted font-bold uppercase">{_t("Idratazione Giornaliera")}</span>
                   <div className="text-xl font-bold text-cyan-400">
                     {currentLiters}L / {goalLiters}L
                   </div>
                   <span className="text-xs text-text-secondary font-semibold">
-                    ({currentGlasses} di {goalGlasses} bicchieri da 0.2L)
-                  </span>
+                    {_t("({0} di {1} bicchieri da 0.2L)", currentGlasses, goalGlasses)}</span>
                 </div>
 
                 {/* Inline -1 and +1 glass buttons inside popup (taller & tactile) */}
@@ -2282,7 +2257,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     className="flex-1 min-h-[58px] py-3.5 px-3 bg-[var(--bg-secondary)] border border-cyan-500/30 text-cyan-400 rounded-2xl font-bold text-xs hover:bg-cyan-500/10 active:scale-95 cursor-pointer transition-all flex flex-col items-center justify-center gap-0.5 shadow-sm"
                   >
                     <span className="text-base font-extrabold leading-none">− 1</span>
-                    <span className="text-[11px] font-semibold opacity-90">Bicchiere (-0.2L)</span>
+                    <span className="text-[11px] font-semibold opacity-90">{_t("Bicchiere (-0.2L)")}</span>
                   </button>
                   <button
                     type="button"
@@ -2293,12 +2268,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     className="flex-1 min-h-[58px] py-3.5 px-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-2xl font-bold text-xs hover:brightness-110 active:scale-95 cursor-pointer shadow-lg shadow-cyan-500/20 transition-all flex flex-col items-center justify-center gap-0.5"
                   >
                     <span className="text-base font-extrabold leading-none">+ 1</span>
-                    <span className="text-[11px] font-semibold opacity-95">Bicchiere (+0.2L)</span>
+                    <span className="text-[11px] font-semibold opacity-95">{_t("Bicchiere (+0.2L)")}</span>
                   </button>
                 </div>
 
                 <div className="flex flex-col gap-1.5 mt-1">
-                  <label className="block text-xs text-text-secondary font-bold">Oppure modifica manualmente i bicchieri (0.2L l'uno):</label>
+                  <label className="block text-xs text-text-secondary font-bold">{_t("Oppure modifica manualmente i bicchieri (0.2L l'uno):")}</label>
                   <input
                     type="number"
                     name="value"
@@ -2319,7 +2294,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           return (
             <div className="flex flex-col gap-2">
               <label className="block text-xs text-text-secondary font-bold">
-                {labels[field] || labels[type.substring(7)] || 'Inserisci Valore'}
+                {labels[field] || labels[type.substring(7)] || _t("Inserisci Valore")}
               </label>
               <input
                 type="number"
@@ -2336,7 +2311,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         return (
           <div className="flex flex-col gap-3">
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">Allena Abilità</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">{_t("Allena Abilità")}</label>
               <select
                 name="targetStatId"
                 value={form.targetStatId || stats[0]?.id || 'int'}
@@ -2349,7 +2324,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               </select>
             </div>
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">Durata Lavoro (minuti)</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">{_t("Durata Lavoro (minuti)")}</label>
               <input
                 type="number"
                 name="workDuration"
@@ -2362,7 +2337,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               />
             </div>
             <div>
-              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">XP Premio a fine sessione</label>
+              <label className="block text-xs text-text-secondary font-bold mb-1 uppercase tracking-wider">{_t("XP Premio a fine sessione")}</label>
               <input
                 type="number"
                 name="xpPerSession"
@@ -2397,13 +2372,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       stat_detail: '',
       pomodoro: 'Timer Pomodoro'
     };
-    if (activeT === 'quest_detail') return { emoji: '🏆', title: 'Dettaglio Campagna' };
-    if (activeT === 'health_goals' || activeT === 'health_goal') return { emoji: '🚩', title: 'Obiettivi di Salute' };
-    if (activeT === 'health_steps') return { emoji: '👟', title: 'Registro Passi' };
-    if (activeT === 'health_protein' || activeT === 'health_proteins') return { emoji: '🍗', title: 'Apporto Proteico' };
-    if (activeT === 'health_water' || activeT === 'health_water_goal') return { emoji: '🥛', title: 'Registro Acqua' };
-    if (activeT === 'weight') return { emoji: '⚖️', title: 'Statistiche Peso & Composizione' };
-    if (activeT?.startsWith('health_')) return { emoji: '📊', title: 'Aggiorna Dati' };
+    if (activeT === 'quest_detail') return { emoji: '🏆', title: _t("Dettaglio Campagna") };
+    if (activeT === 'health_goals' || activeT === 'health_goal') return { emoji: '🚩', title: _t("Obiettivi di Salute") };
+    if (activeT === 'health_steps') return { emoji: '👟', title: _t("Registro Passi") };
+    if (activeT === 'health_protein' || activeT === 'health_proteins') return { emoji: '🍗', title: _t("Apporto Proteico") };
+    if (activeT === 'health_water' || activeT === 'health_water_goal') return { emoji: '🥛', title: _t("Registro Acqua") };
+    if (activeT === 'weight') return { emoji: '⚖️', title: _t("Statistiche Peso & Composizione") };
+    if (activeT?.startsWith('health_')) return { emoji: '📊', title: _t("Aggiorna Dati") };
     return { emoji: null, title: `${action} ${names[activeT] || 'Elemento'}` };
   };
 
@@ -2449,7 +2424,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       >
         {/* Schede in sola lettura: solo una piccola matita in alto a destra (si chiude toccando fuori) */}
         {canEdit && (
-          <button type="button" className="modal-edit-fab" onClick={handleEditClick} title="Modifica" aria-label="Modifica">
+          <button type="button" className="modal-edit-fab" onClick={handleEditClick} title={_t("Modifica")} aria-label={_t("Modifica")}>
             ✏️
           </button>
         )}
@@ -2462,7 +2437,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           >
             <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               {headerObj.emoji && <span style={{ fontSize: '20px' }}>{headerObj.emoji}</span>}
-              {headerObj.title}
+              {_t(headerObj.title)}
             </h3>
           </div>
         )}
@@ -2489,8 +2464,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  📜 Abitudine
-                </button>
+                  {_t("📜 Abitudine")}</button>
                 <button
                   type="button"
                   onClick={() => handleTypeSwitch('oneshot')}
@@ -2507,8 +2481,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  💥 Task Singolo
-                </button>
+                  {_t("💥 Task Singolo")}</button>
                 <button
                   type="button"
                   onClick={() => handleTypeSwitch('quest')}
@@ -2525,8 +2498,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🏆 Campagna
-                </button>
+                  {_t("🏆 Campagna")}</button>
               </div>
             )}
 
@@ -2558,7 +2530,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               };
               return (
                 <div className="recent-templates">
-                  <div className="recent-templates-label">🔁 {q ? 'Usate di recente' : 'Rifai una missione recente'}</div>
+                  <div className="recent-templates-label">🔁 {q ? _t("Usate di recente") : _t("Rifai una missione recente")}</div>
                   <div className="recent-templates-row no-scrollbar">
                     {list.map(t => (
                       <button key={t.kind + t.name} type="button" className="recent-template-chip" onClick={() => applyTemplate(t)}>
@@ -2588,15 +2560,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       onClose();
                     }
                   }}
-                  title="Elimina"
-                  aria-label="Elimina"
+                  title={_t("Elimina")}
+                  aria-label={_t("Elimina")}
                 >
                   🗑️
                 </button>
               )}
               {showSave && (
-                <button type="submit" className="modal-action-save" title="Salva">
-                  {editData ? 'Salva modifiche' : 'Salva'}
+                <button type="submit" className="modal-action-save" title={_t("Salva")}>
+                  {editData ? _t("Salva modifiche") : _t("Salva")}
                 </button>
               )}
             </div>

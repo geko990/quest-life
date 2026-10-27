@@ -4,6 +4,7 @@ import SwipeableCard from '../components/SwipeableCard';
 import { useTouchReorder } from '../utils/useTouchReorder';
 import MarqueeText from '../components/MarqueeText';
 
+import { _t } from '../i18n';
 export default function HabitsTab({
   habits = [],
   setHabits,
@@ -175,7 +176,7 @@ export default function HabitsTab({
       <div className="habits-wrapper">
         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '8px' }}>
           <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            📜 Abitudini <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--text-secondary)' }}>({viewedDate === todayStr ? 'Oggi' : viewedDate})</span>
+            {_t("📜 Abitudini")}{" "}<span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--text-secondary)' }}>({viewedDate === todayStr ? _t("Oggi") : viewedDate})</span>
           </h2>
           <div className="header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
             <button
@@ -192,8 +193,8 @@ export default function HabitsTab({
           {habitsToShow.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📜</div>
-              <div className="empty-state-text">Nessuna abitudine</div>
-              <div className="empty-state-hint">Clicca "+" per iniziare</div>
+              <div className="empty-state-text">{_t("Nessuna abitudine")}</div>
+              <div className="empty-state-hint">{_t("Clicca \"+\" per iniziare")}</div>
             </div>
           ) : (
             habitsToShow.map((h, idx) => {

@@ -3,6 +3,7 @@ import { getGameDate } from '../utils/helpers';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 import UserManualModal from '../components/UserManualModal';
 
+import { _t, getLocale } from '../i18n';
 const EXPENSE_CATEGORIES = [
   { id: 'cibo', label: 'Cibo & Ristorante', emoji: '🍕' },
   { id: 'casa', label: 'Casa & Bollette', emoji: '🏠' },
@@ -27,7 +28,7 @@ const INCOME_CATEGORIES = [
 const ALL_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
 
 const getCategoryObj = (catId) => {
-  return ALL_CATEGORIES.find(c => c.id === catId) || { emoji: '📦', label: 'Altro' };
+  return ALL_CATEGORIES.find(c => c.id === catId) || { emoji: '📦', label: _t("Altro") };
 };
 
 const MONTH_NAMES_IT = [
@@ -250,7 +251,7 @@ export default function FinancesTab({
   const fmtCurrency = (val) => {
     if (finances.hideBalances) return '*** €';
     const num = Number(val) || 0;
-    return num.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+    return num.toLocaleString(getLocale(), { style: 'currency', currency: 'EUR' });
   };
 
   const fmtCompactCurrency = (val) => {
@@ -290,13 +291,13 @@ export default function FinancesTab({
     }
     const accKey = tx.account || 'base';
     if (accKey === 'cash') {
-      return <span style={{ fontSize: '8px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💵 Contanti</span>;
+      return <span style={{ fontSize: '8px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{_t("💵 Contanti")}</span>;
     }
     if (accKey !== 'base') {
       const sec = (finances.secondaryAccounts || []).find(a => a.id === accKey);
-      return <span style={{ fontSize: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Secondo'}</span>;
+      return <span style={{ fontSize: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{sec ? `${sec.emoji || '🏦'} ${sec.name}` : _t("🏦 Secondo")}</span>;
     }
-    return <span style={{ fontSize: '8px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💳 Base</span>;
+    return <span style={{ fontSize: '8px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{_t("💳 Base")}</span>;
   };
 
   const handleSaveBaseAccountName = () => {
@@ -627,7 +628,7 @@ export default function FinancesTab({
   const handleDeleteTransaction = (txId) => {
     const tx = (finances.transactions || []).find(t => t.id === txId);
     if (!tx) return;
-    if (window.confirm(`Eliminare il movimento di ${tx.amount} €?`)) {
+    if (window.confirm(_t("Eliminare il movimento di {0} €?", tx.amount))) {
       setFinances(prev => {
         let newBalance = prev.balance;
         let newCashBalance = prev.cashBalance || 0;
@@ -715,7 +716,7 @@ export default function FinancesTab({
     const val = parseFloat(transferAmount.replace(',', '.'));
     if (isNaN(val) || val <= 0) return;
     if (transferSource === transferTarget) {
-      alert("Seleziona due conti o strumenti diversi per effettuare il trasferimento.");
+      alert(_t("Seleziona due conti o strumenti diversi per effettuare il trasferimento."));
       return;
     }
 
@@ -882,7 +883,7 @@ export default function FinancesTab({
   };
 
   const handleDeleteRecurring = (recId) => {
-    if (window.confirm("Eliminare questa regola di pagamento ricorrente?")) {
+    if (window.confirm(_t("Eliminare questa regola di pagamento ricorrente?"))) {
       setFinances(prev => ({
         ...prev,
         recurringTransactions: (prev.recurringTransactions || []).filter(r => r.id !== recId)
@@ -909,7 +910,7 @@ export default function FinancesTab({
     if (!editingRecurring) return;
     const parsedAmount = Math.round((parseFloat(String(editRecAmount).replace(',', '.')) || 0) * 100) / 100;
     if (parsedAmount <= 0) {
-      alert('Inserisci un importo valido maggiore di 0.');
+      alert(_t("Inserisci un importo valido maggiore di 0."));
       return;
     }
     const parsedDay = Math.max(1, Math.min(31, parseInt(editRecDay, 10) || 1));
@@ -983,7 +984,7 @@ export default function FinancesTab({
     if (type === 'interest') {
       const interestEarned = Math.round(parseFloat(String(secActionAmount).replace(',', '.')) * 100) / 100;
       if (isNaN(interestEarned) || interestEarned <= 0) {
-        alert("Inserisci un importo valido di interessi maturati!");
+        alert(_t("Inserisci un importo valido di interessi maturati!"));
         return;
       }
 
@@ -993,7 +994,7 @@ export default function FinancesTab({
           a.id === account.id ? { ...a, balance: Math.round((a.balance + interestEarned) * 100) / 100 } : a
         )
       }));
-      alert(`📈 Accredito effettuato! Maturati +${interestEarned} € di interessi!`);
+      alert(_t("📈 Accredito effettuato! Maturati +{0} € di interessi!", interestEarned));
       setSecAccountAction(null);
       setSecActionAmount('');
       return;
@@ -1019,7 +1020,7 @@ export default function FinancesTab({
   };
 
   const handleDeleteSecAccount = (accId) => {
-    if (window.confirm("Sei sicuro di voler eliminare questo conto secondario?")) {
+    if (window.confirm(_t("Sei sicuro di voler eliminare questo conto secondario?"))) {
       setFinances(prev => ({
         ...prev,
         secondaryAccounts: (prev.secondaryAccounts || []).filter(a => a.id !== accId)
@@ -1142,7 +1143,7 @@ export default function FinancesTab({
   };
 
   const handleDeleteInvestment = (invId) => {
-    if (window.confirm("Eliminare questa posizione di investimento?")) {
+    if (window.confirm(_t("Eliminare questa posizione di investimento?"))) {
       setFinances(prev => ({
         ...prev,
         investments: (prev.investments || []).filter(i => i.id !== invId)
@@ -1185,14 +1186,14 @@ export default function FinancesTab({
       customQuotesProxy: val
     }));
     setShowSyncHelpModal(false);
-    alert(val ? "✅ Proxy personalizzato salvato con successo!" : "Proxy personalizzato rimosso. Verranno usati i server proxy di fallback.");
+    alert(val ? _t("✅ Proxy personalizzato salvato con successo!") : _t("Proxy personalizzato rimosso. Verranno usati i server proxy di fallback."));
   };
 
   const handleSyncOnlineQuotes = async (silent = false) => {
     const list = finances.investments || [];
     const withTickers = list.filter(i => i.ticker);
     if (withTickers.length === 0) {
-      if (!silent) alert("Nessun investimento ha un Ticker configurato (es. VWCE.DE, SWDA.MI, AAPL).");
+      if (!silent) alert(_t("Nessun investimento ha un Ticker configurato (es. VWCE.DE, SWDA.MI, AAPL)."));
       return;
     }
 
@@ -1273,9 +1274,9 @@ export default function FinancesTab({
 
     if (!silent) {
       if (updatedCount > 0 && failedCount === 0) {
-        alert(`✅ Sincronizzazione completata! Aggiornate ${updatedCount} quote con successo.`);
+        alert(_t("✅ Sincronizzazione completata! Aggiornate {0} quote con successo.", updatedCount));
       } else if (updatedCount > 0 && failedCount > 0) {
-        alert(`⚠️ Aggiornate ${updatedCount} quote su ${updatedCount + failedCount}. Per le posizioni non risposte puoi aggiornare manualmente con l'icona ✏️.`);
+        alert(_t("⚠️ Aggiornate {0} quote su {1}. Per le posizioni non risposte puoi aggiornare manualmente con l'icona ✏️.", updatedCount, updatedCount + failedCount));
       } else {
         setShowSyncHelpModal(true);
       }
@@ -1539,7 +1540,7 @@ export default function FinancesTab({
     {
       id: 0,
       shortTitle: '1°',
-      title: `Inizio Mese (1 ${formatMonthShort(selectedHistoryMonth)})`,
+      title: _t("Inizio Mese (1 {0})", formatMonthShort(selectedHistoryMonth)),
       balance: monthStartBalance,
       net: 0,
       isStart: true
@@ -1551,7 +1552,7 @@ export default function FinancesTab({
       hWeekActivePointsData.push({
         id: w.id,
         shortTitle: w.isCurrent ? `Oggi (${todayDayNumber})` : w.shortTitle,
-        title: w.isCurrent ? `Oggi (${todayDayNumber} ${formatMonthShort(selectedHistoryMonth)})` : w.title,
+        title: w.isCurrent ? _t("Oggi ({0} {1})", todayDayNumber, formatMonthShort(selectedHistoryMonth)) : w.title,
         balance: w.balance,
         net: w.net,
         isCurrent: w.isCurrent
@@ -1603,9 +1604,9 @@ export default function FinancesTab({
   const hWeekStrokeColor = isWeekOverallUp ? '#4ade80' : '#f87171';
 
   const historyAccountsList = useMemo(() => [
-    { id: 'all', titleName: 'Saldo Totale', emoji: '🏛️' },
-    { id: 'base', titleName: finances.baseAccountName || 'Conto Base', emoji: '💳' },
-    { id: 'cash', titleName: 'Contanti', emoji: '💵' },
+    { id: 'all', titleName: _t("Saldo Totale"), emoji: '🏛️' },
+    { id: 'base', titleName: finances.baseAccountName || _t("Conto Base"), emoji: '💳' },
+    { id: 'cash', titleName: _t("Contanti"), emoji: '💵' },
     ...(finances.secondaryAccounts || []).map(a => ({ id: a.id, titleName: a.name, emoji: a.emoji || '🏦' }))
   ], [finances.baseAccountName, finances.secondaryAccounts]);
 
@@ -1720,7 +1721,7 @@ export default function FinancesTab({
     if (granularity === 'month') {
       if (!overviewMonthsList || overviewMonthsList.length === 0) {
         return {
-          chartPoints: [{ key: 'cur', label: 'Oggi', fullLabel: 'Oggi', value: totalPatrimonio, net: 0, isCurrent: true }],
+          chartPoints: [{ key: 'cur', label: _t("Oggi"), fullLabel: _t("Oggi"), value: totalPatrimonio, net: 0, isCurrent: true }],
           chartGranularity: 'month'
         };
       }
@@ -1924,8 +1925,7 @@ export default function FinancesTab({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            💰 Tesoro dell'Eroe
-          </h2>
+            {_t("💰 Tesoro dell'Eroe")}</h2>
         </div>
 
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -1944,7 +1944,7 @@ export default function FinancesTab({
               alignItems: 'center',
               justifyContent: 'center'
             }}
-            title={finances.hideBalances ? 'Mostra saldi' : 'Nascondi saldi'}
+            title={finances.hideBalances ? _t("Mostra saldi") : _t("Nascondi saldi")}
           >
             <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               👁️
@@ -1995,11 +1995,11 @@ export default function FinancesTab({
             borderRadius: '8px',
             transition: 'background 0.15s ease'
           }}
-          title="Tocca per aprire lo Storico e i Grafici Finanziari"
+          title={_t("Tocca per aprire lo Storico e i Grafici Finanziari")}
         >
           <div>
             <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {totalIncludesInvestments ? '📈 Patrimonio Totale' : '🏦 Totale Conti'}
+              {totalIncludesInvestments ? _t("📈 Patrimonio Totale") : _t("🏦 Totale Conti")}
             </div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
               {fmtCurrency(activePoint.value)}
@@ -2017,9 +2017,7 @@ export default function FinancesTab({
                 <span>({isPointPositive ? '+' : ''}{activeDeltaPct}%)</span>
               </span>
               <span style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '10px' }}>
-                {activePoint.isCurrent
-                  ? (chartGranularity === 'day' ? `(negli ultimi ${chartPoints.length} giorni)` : chartGranularity === 'week' ? `(nelle ultime ${chartPoints.length} settimane)` : `(negli ultimi ${chartPoints.length} mesi)`)
-                  : `(${activePoint.fullLabel})`}
+                {activePoint.isCurrent ? (chartGranularity === 'day' ? _t("(negli ultimi {0} giorni)", chartPoints.length) : chartGranularity === 'week' ? _t("(nelle ultime {0} settimane)", chartPoints.length) : _t("(negli ultimi {0} mesi)", chartPoints.length)) : `(${activePoint.fullLabel})`}
               </span>
             </div>
           </div>
@@ -2036,11 +2034,9 @@ export default function FinancesTab({
                 cursor: selectedChartPointIndex !== null ? 'pointer' : 'default',
                 fontWeight: 'bold'
               }}
-              title="Reimposta visualizzazione sul patrimonio attuale"
+              title={_t("Reimposta visualizzazione sul patrimonio attuale")}
             >
-              {selectedChartPointIndex !== null
-                ? '↺ Torna a Oggi'
-                : (chartGranularity === 'day' ? `${chartPoints.length} Giorni` : chartGranularity === 'week' ? `${chartPoints.length} Settimane` : `${chartPoints.length} Mesi`)}
+              {selectedChartPointIndex !== null ? _t("↺ Torna a Oggi") : (chartGranularity === 'day' ? _t("{0} Giorni", chartPoints.length) : chartGranularity === 'week' ? _t("{0} Settimane", chartPoints.length) : _t("{0} Mesi", chartPoints.length))}
             </span>
           </div>
         </div>
@@ -2157,7 +2153,7 @@ export default function FinancesTab({
                     transition: 'all 0.15s ease'
                   }}
                 >
-                  {pt.label}
+                  {_t(pt.label)}
                 </div>
               );
             })}
@@ -2168,12 +2164,11 @@ export default function FinancesTab({
         <div style={{ background: 'var(--bg-primary, rgba(0,0,0,0.2))', borderRadius: '12px', padding: '10px 12px', border: '1px solid var(--glass-border, rgba(255,255,255,0.06))' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '6px' }}>
             <span style={{ color: 'var(--text-primary, #f1f5f9)', fontWeight: 'bold' }}>
-              🎯 Budget Spesa Mensile
-            </span>
+              {_t("🎯 Budget Spesa Mensile")}</span>
             <span
               onClick={() => { setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
               style={{ color: '#fbbf24', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}
-              title="Tocca per modificare il massimale del budget"
+              title={_t("Tocca per modificare il massimale del budget")}
             >
               <span>{fmtCurrency(monthBudgetExpenses)} / {fmtCurrency(finances.monthlyBudget || 1000)}</span>
               <span style={{ fontSize: '11px' }}>✏️</span>
@@ -2194,9 +2189,9 @@ export default function FinancesTab({
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', fontSize: '9px', color: 'var(--text-muted, #94a3b8)' }}>
-            <span>Speso finora: {budgetPct}%</span>
+            <span>{_t("Speso finora: {0}%", budgetPct)}</span>
             <span style={{ fontWeight: 'bold', color: remainingBudget >= 0 ? '#4ade80' : '#ef4444' }}>
-              {remainingBudget >= 0 ? `Disponibili: ${fmtCurrency(remainingBudget)}` : `Sforato di: ${fmtCurrency(Math.abs(remainingBudget))}`}
+              {remainingBudget >= 0 ? _t("Disponibili: {0}", fmtCurrency(remainingBudget)) : _t("Sforato di: {0}", fmtCurrency(Math.abs(remainingBudget)))}
             </span>
           </div>
         </div>
@@ -2224,7 +2219,7 @@ export default function FinancesTab({
           }}
         >
           <span style={{ fontSize: '18px' }}>🏧</span>
-          <span>Preleva</span>
+          <span>{_t("Preleva")}</span>
         </button>
 
         <button
@@ -2247,7 +2242,7 @@ export default function FinancesTab({
           }}
         >
           <span style={{ fontSize: '18px' }}>↔️</span>
-          <span>Trasferisci</span>
+          <span>{_t("Trasferisci")}</span>
         </button>
 
         <button
@@ -2270,7 +2265,7 @@ export default function FinancesTab({
           }}
         >
           <span style={{ fontSize: '18px' }}>🔴</span>
-          <span>Uscita</span>
+          <span>{_t("Uscita")}</span>
         </button>
 
         <button
@@ -2293,7 +2288,7 @@ export default function FinancesTab({
           }}
         >
           <span style={{ fontSize: '18px' }}>🟢</span>
-          <span>Entrata</span>
+          <span>{_t("Entrata")}</span>
         </button>
       </div>
 
@@ -2318,8 +2313,7 @@ export default function FinancesTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              💵 Contanti
-            </span>
+              {_t("💵 Contanti")}</span>
             {cashRecurringCount > 0 && (
               <span
                 onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
@@ -2335,7 +2329,7 @@ export default function FinancesTab({
                   alignItems: 'center',
                   gap: '3px'
                 }}
-                title="Ricorrenti Contanti"
+                title={_t("Ricorrenti Contanti")}
               >
                 🔄 {cashRecurringCount}
               </span>
@@ -2365,7 +2359,7 @@ export default function FinancesTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              💳 {finances.baseAccountName || 'Conto Base'}
+              💳 {finances.baseAccountName || _t("Conto Base")}
             </span>
             {baseRecurringCount > 0 && (
               <span
@@ -2382,7 +2376,7 @@ export default function FinancesTab({
                   alignItems: 'center',
                   gap: '3px'
                 }}
-                title="Ricorrenti Conto Base"
+                title={_t("Ricorrenti Conto Base")}
               >
                 🔄 {baseRecurringCount}
               </span>
@@ -2398,21 +2392,18 @@ export default function FinancesTab({
       <div style={{ background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', padding: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-            🏦 Conti Secondari & Risparmi
-          </h3>
+            {_t("🏦 Conti Secondari & Risparmi")}</h3>
           <button
             type="button"
             onClick={() => setShowAddSecModal(true)}
             style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
           >
-            + Nuovo Conto
-          </button>
+            {_t("+ Nuovo Conto")}</button>
         </div>
 
         {(!finances.secondaryAccounts || finances.secondaryAccounts.length === 0) ? (
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>
-            Nessun conto secondario attivo. Crea ad es. un 🛡️ Conto Emergenze o 🎁 Conto Desideri!
-          </div>
+            {_t("Nessun conto secondario attivo. Crea ad es. un 🛡️ Conto Emergenze o 🎁 Conto Desideri!")}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {finances.secondaryAccounts.map(acc => {
@@ -2445,7 +2436,7 @@ export default function FinancesTab({
                           </span>
                         )}
                         <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                          {acc.lockPeriodMonths > 0 ? `⏳ Vincolo ${acc.lockPeriodMonths}M` : '🔓 Svincolato'}
+                          {acc.lockPeriodMonths > 0 ? _t("⏳ Vincolo {0}M", acc.lockPeriodMonths) : _t("🔓 Svincolato")}
                         </span>
                       </div>
                     </div>
@@ -2466,7 +2457,7 @@ export default function FinancesTab({
                           fontWeight: 'bold',
                           cursor: 'pointer'
                         }}
-                        title="Ricorrenti per questo conto"
+                        title={_t("Ricorrenti per questo conto")}
                       >
                         🔄 {secRecurring.length}
                       </button>
@@ -2487,11 +2478,11 @@ export default function FinancesTab({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span>📈 Investimenti & ETF</span>
+              <span>{_t("📈 Investimenti & ETF")}</span>
             </h3>
             {investmentsList.length > 0 && (
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Valore: <b style={{ color: 'var(--text-primary)' }}>{fmtCurrency(totalInvestmentsValue)}</b>
+                {_t("Valore:")}{" "}<b style={{ color: 'var(--text-primary)' }}>{fmtCurrency(totalInvestmentsValue)}</b>
                 {' • '}
                 P&L: <b style={{ color: totalInvestmentsGain >= 0 ? '#4ade80' : '#f87171' }}>
                   {totalInvestmentsGain >= 0 ? '+' : ''}{fmtCurrency(totalInvestmentsGain)} ({totalInvestmentsGainPct >= 0 ? '+' : ''}{totalInvestmentsGainPct.toFixed(2)}%)
@@ -2520,10 +2511,10 @@ export default function FinancesTab({
                     alignItems: 'center',
                     gap: '4px'
                   }}
-                  title="Sincronizza quotazioni online via mercato"
+                  title={_t("Sincronizza quotazioni online via mercato")}
                 >
                   <span>{isSyncingQuotes ? '⏳' : '🌐'}</span>
-                  <span>{isSyncingQuotes ? 'Sync...' : 'Aggiorna'}</span>
+                  <span>{isSyncingQuotes ? _t("Sync...") : _t("Aggiorna")}</span>
                 </button>
                 <button
                   type="button"
@@ -2537,7 +2528,7 @@ export default function FinancesTab({
                     fontSize: '10px',
                     cursor: 'pointer'
                   }}
-                  title="Impostazioni Proxy e Sincronizzazione"
+                  title={_t("Impostazioni Proxy e Sincronizzazione")}
                 >
                   ⚙️
                 </button>
@@ -2549,15 +2540,13 @@ export default function FinancesTab({
               onClick={handleOpenAddInvestment}
               style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              + Investimento
-            </button>
+              {_t("+ Investimento")}</button>
           </div>
         </div>
 
         {investmentsList.length === 0 ? (
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '8px 0' }}>
-            Nessun investimento registrato. Aggiungi ad es. un ETF (VWCE, SWDA), azioni o fondi per tracciarne l'andamento!
-          </div>
+            {_t("Nessun investimento registrato. Aggiungi ad es. un ETF (VWCE, SWDA), azioni o fondi per tracciarne l'andamento!")}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {investmentsList.map(inv => {
@@ -2595,9 +2584,9 @@ export default function FinancesTab({
                       )}
                     </div>
                     <div style={{ fontSize: '9px', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '2px' }}>
-                      <span>{shares} quote</span>
+                      <span>{_t("{0} quote", shares)}</span>
                       <span>•</span>
-                      <span>PMC: {fmtCurrency(buyPrice)}</span>
+                      <span>{_t("PMC: {0}", fmtCurrency(buyPrice))}</span>
                       <span>•</span>
                       <span
                         onClick={() => {
@@ -2606,10 +2595,9 @@ export default function FinancesTab({
                           setShowQuickPriceModal(true);
                         }}
                         style={{ color: '#fbbf24', cursor: 'pointer', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
-                        title="Tocca per aggiornare manualmente il prezzo"
+                        title={_t("Tocca per aggiornare manualmente il prezzo")}
                       >
-                        Prezzo: {fmtCurrency(curPrice)} ✏️
-                      </span>
+                        {_t("Prezzo: {0} ✏️", fmtCurrency(curPrice))}</span>
                     </div>
                   </div>
 
@@ -2639,16 +2627,16 @@ export default function FinancesTab({
                         alignItems: 'center',
                         gap: '3px'
                       }}
-                      title="Sposta denaro da un conto a questo investimento"
+                      title={_t("Sposta denaro da un conto a questo investimento")}
                     >
                       <span>↔️</span>
-                      <span>Investi</span>
+                      <span>{_t("Investi")}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeleteInvestment(inv.id)}
                       style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: '2px' }}
-                      title="Elimina posizione"
+                      title={_t("Elimina posizione")}
                     >
                       🗑️
                     </button>
@@ -2679,8 +2667,7 @@ export default function FinancesTab({
                 cursor: 'pointer'
               }}
             >
-              📜 Movimenti ({filteredTransactions.length})
-            </button>
+              {_t("📜 Movimenti ({0})", filteredTransactions.length)}</button>
             <button
               onClick={() => setActiveSubView('categories')}
               style={{
@@ -2694,8 +2681,7 @@ export default function FinancesTab({
                 cursor: 'pointer'
               }}
             >
-              📊 Categorie
-            </button>
+              {_t("📊 Categorie")}</button>
           </div>
 
           <button
@@ -2713,9 +2699,9 @@ export default function FinancesTab({
               alignItems: 'center',
               gap: '4px'
             }}
-            title="Filtra movimenti per tipo e categoria"
+            title={_t("Filtra movimenti per tipo e categoria")}
           >
-            <span>🌪️ Filtri</span>
+            <span>{_t("🌪️ Filtri")}</span>
             {(filterType !== 'all' || filterCategory !== 'all') && <span style={{ fontSize: '9px' }}>•</span>}
           </button>
         </div>
@@ -2724,7 +2710,7 @@ export default function FinancesTab({
         {showFilterModal && (
           <div style={{ background: 'var(--bg-primary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Filtra Tipo:</span>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Filtra Tipo:")}</span>
               <div style={{ display: 'flex', gap: '4px' }}>
                 {['all', 'expense', 'income', 'transfer'].map(t => (
                   <button
@@ -2743,22 +2729,22 @@ export default function FinancesTab({
                       cursor: 'pointer'
                     }}
                   >
-                    {t === 'all' ? 'Tutti' : t === 'expense' ? 'Uscite' : t === 'income' ? 'Entrate' : 'Trasferimenti'}
+                    {t === 'all' ? _t("Tutti") : t === 'expense' ? _t("Uscite") : t === 'income' ? _t("Entrate") : _t("Trasferimenti")}
                   </button>
                 ))}
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria:</span>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Categoria:")}</span>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '6px', fontSize: '10px', padding: '2px 4px' }}
               >
-                <option value="all">Tutte le Categorie</option>
+                <option value="all">{_t("Tutte le Categorie")}</option>
                 {availableCategoriesForFilter.map(c => (
-                  <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
+                  <option key={c.id} value={c.id}>{c.emoji} {_t(c.label)}</option>
                 ))}
               </select>
             </div>
@@ -2769,8 +2755,7 @@ export default function FinancesTab({
         {activeSubView === 'transactions' && (
           filteredTransactions.length === 0 ? (
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
-              Nessun movimento trovato con i filtri attuali.
-            </div>
+              {_t("Nessun movimento trovato con i filtri attuali.")}</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '200px', overflowY: 'auto', paddingRight: '2px' }}>
               {filteredTransactions.map(t => {
@@ -2789,13 +2774,13 @@ export default function FinancesTab({
                   }
                   const accKey = tx.account || 'base';
                   if (accKey === 'cash') {
-                    return <span style={{ fontSize: '8px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💵 Contanti</span>;
+                    return <span style={{ fontSize: '8px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{_t("💵 Contanti")}</span>;
                   }
                   if (accKey !== 'base') {
                     const sec = (finances.secondaryAccounts || []).find(a => a.id === accKey);
-                    return <span style={{ fontSize: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{sec ? `${sec.emoji || '🏦'} ${sec.name}` : '🏦 Secondo'}</span>;
+                    return <span style={{ fontSize: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{sec ? `${sec.emoji || '🏦'} ${sec.name}` : _t("🏦 Secondo")}</span>;
                   }
-                  return <span style={{ fontSize: '8px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>💳 Base</span>;
+                  return <span style={{ fontSize: '8px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>{_t("💳 Base")}</span>;
                 };
 
                 return (
@@ -2814,7 +2799,7 @@ export default function FinancesTab({
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
-                    title="Tocca per modificare questo movimento"
+                    title={_t("Tocca per modificare questo movimento")}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                       <span style={{ fontSize: '18px', flexShrink: 0 }}>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
@@ -2827,8 +2812,7 @@ export default function FinancesTab({
                           {getAccountBadge(t)}
                           {t.excludeFromBudget && (
                             <span style={{ fontSize: '8px', background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold' }}>
-                              ⚪ Fuori Budget
-                            </span>
+                              {_t("⚪ Fuori Budget")}</span>
                           )}
                         </div>
                       </div>
@@ -2858,7 +2842,7 @@ export default function FinancesTab({
                           cursor: 'pointer',
                           padding: 0
                         }}
-                        title="Elimina movimento"
+                        title={_t("Elimina movimento")}
                       >
                         🗑️
                       </button>
@@ -2877,12 +2861,10 @@ export default function FinancesTab({
             {(filterType === 'all' || filterType === 'expense') && (
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#ef4444', marginBottom: '4px', textTransform: 'uppercase' }}>
-                  🔴 Uscite per Categoria ({fmtCurrency(monthExpenses)})
-                </div>
+                  {_t("🔴 Uscite per Categoria ({0})", fmtCurrency(monthExpenses))}</div>
                 {monthExpenses === 0 ? (
                   <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '2px 0' }}>
-                    Nessuna spesa registrata nel mese.
-                  </div>
+                    {_t("Nessuna spesa registrata nel mese.")}</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     {EXPENSE_CATEGORIES.map(cat => {
@@ -2894,7 +2876,7 @@ export default function FinancesTab({
                         <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
                             <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                              {cat.emoji} {cat.label}
+                              {cat.emoji} {_t(cat.label)}
                             </span>
                             <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                               {fmtCurrency(catSpent)} ({catPct}%)
@@ -2915,12 +2897,10 @@ export default function FinancesTab({
             {(filterType === 'all' || filterType === 'income') && (
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#22c55e', marginBottom: '4px', textTransform: 'uppercase' }}>
-                  🟢 Entrate per Categoria ({fmtCurrency(monthIncome)})
-                </div>
+                  {_t("🟢 Entrate per Categoria ({0})", fmtCurrency(monthIncome))}</div>
                 {monthIncome === 0 ? (
                   <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '2px 0' }}>
-                    Nessuna entrata registrata nel mese.
-                  </div>
+                    {_t("Nessuna entrata registrata nel mese.")}</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     {INCOME_CATEGORIES.map(cat => {
@@ -2932,7 +2912,7 @@ export default function FinancesTab({
                         <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
                             <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
-                              {cat.emoji} {cat.label}
+                              {cat.emoji} {_t(cat.label)}
                             </span>
                             <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                               {fmtCurrency(catEarned)} ({catPct}%)
@@ -2967,8 +2947,7 @@ export default function FinancesTab({
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px', flexShrink: 0 }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                📈 Storico & Grafici Finanziari
-              </h3>
+                {_t("📈 Storico & Grafici Finanziari")}</h3>
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(false)}
@@ -2987,7 +2966,7 @@ export default function FinancesTab({
                   fontWeight: 'bold',
                   lineHeight: 1
                 }}
-                title="Chiudi"
+                title={_t("Chiudi")}
               >
                 ✕
               </button>
@@ -2999,7 +2978,7 @@ export default function FinancesTab({
                 type="button"
                 onClick={() => { setSelectedHistoryMonth(prev => shiftMonthKey(prev, -1)); setSelectedHistoryWeek(null); }}
                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px' }}
-                title="Mese precedente"
+                title={_t("Mese precedente")}
               >
                 ◀
               </button>
@@ -3013,15 +2992,14 @@ export default function FinancesTab({
                     onClick={() => { setSelectedHistoryMonth(currentMonthPrefix); setSelectedHistoryWeek(null); }}
                     style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary, #38bdf8)', fontSize: '9px', textDecoration: 'underline', cursor: 'pointer', padding: 0, marginTop: '2px' }}
                   >
-                    Torna al mese corrente
-                  </button>
+                    {_t("Torna al mese corrente")}</button>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => { setSelectedHistoryMonth(prev => shiftMonthKey(prev, 1)); setSelectedHistoryWeek(null); }}
                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px' }}
-                title="Mese successivo"
+                title={_t("Mese successivo")}
               >
                 ▶
               </button>
@@ -3061,7 +3039,7 @@ export default function FinancesTab({
                       fontWeight: 'bold',
                       padding: 0
                     }}
-                    title="Conto precedente (o swipe a destra)"
+                    title={_t("Conto precedente (o swipe a destra)")}
                   >
                     ‹
                   </button>
@@ -3069,9 +3047,7 @@ export default function FinancesTab({
                     <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span>{currentHistoryAccountObj.emoji}</span>
                       <span>
-                        {historyRange === 'short'
-                          ? `Andamento ${currentHistoryAccountObj.titleName} (${formatMonthShort(selectedHistoryMonth)})`
-                          : `Evoluzione ${currentHistoryAccountObj.titleName} (${longPeriodMonthsCount}M)`}
+                        {historyRange === 'short' ? _t("Andamento {0} ({1})", currentHistoryAccountObj.titleName, formatMonthShort(selectedHistoryMonth)) : _t("Evoluzione {0} ({1}M)", currentHistoryAccountObj.titleName, longPeriodMonthsCount)}
                       </span>
                     </div>
                     {/* Indicatore a punti dei conti */}
@@ -3088,7 +3064,7 @@ export default function FinancesTab({
                             cursor: 'pointer',
                             transition: 'all 0.2s ease'
                           }}
-                          title={acc.titleName}
+                          title={_t(acc.titleName)}
                         />
                       ))}
                     </div>
@@ -3111,7 +3087,7 @@ export default function FinancesTab({
                       fontWeight: 'bold',
                       padding: 0
                     }}
-                    title="Conto successivo (o swipe a sinistra)"
+                    title={_t("Conto successivo (o swipe a sinistra)")}
                   >
                     ›
                   </button>
@@ -3176,11 +3152,11 @@ export default function FinancesTab({
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
-                    title={historyRange === 'short' ? "Passa a vista Trend Mesi" : "Passa a vista Settimanale"}
+                    title={historyRange === 'short' ? _t("Passa a vista Trend Mesi") : _t("Passa a vista Settimanale")}
                   >
                     <span>📅</span>
                     <span style={{ fontSize: '9px', color: 'var(--accent-primary, #38bdf8)' }}>
-                      {historyRange === 'short' ? 'Sett.' : 'Mesi'}
+                      {historyRange === 'short' ? _t("Sett.") : _t("Mesi")}
                     </span>
                   </button>
                 </div>
@@ -3255,7 +3231,7 @@ export default function FinancesTab({
                   <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 10}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>
                     {/* Inizio Mese point */}
                     <div style={{ textAlign: 'center', padding: '2px 3px', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>1° Inizio</div>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{_t("1° Inizio")}</div>
                       <div style={{ fontSize: '8px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                         {fmtCurrency(monthStartBalance)}
                       </div>
@@ -3267,7 +3243,7 @@ export default function FinancesTab({
                         return (
                           <div key={wk.id} style={{ textAlign: 'center', padding: '2px 3px', opacity: 0.35 }}>
                             <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{wk.shortTitle}</div>
-                            <div style={{ fontSize: '7px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Futuro</div>
+                            <div style={{ fontSize: '7px', color: 'var(--text-muted)', fontStyle: 'italic' }}>{_t("Futuro")}</div>
                           </div>
                         );
                       }
@@ -3284,7 +3260,7 @@ export default function FinancesTab({
                           }}
                         >
                           <div style={{ fontSize: '9px', fontWeight: isSel ? 'bold' : 'normal', color: isSel ? '#38bdf8' : (wk.isCurrent ? '#38bdf8' : 'var(--text-muted)') }}>
-                            {wk.isCurrent ? `Oggi (${todayDayNumber})` : wk.shortTitle}
+                            {wk.isCurrent ? _t("Oggi ({0})", todayDayNumber) : wk.shortTitle}
                           </div>
                           <div style={{ fontSize: '8px', fontWeight: 'bold', color: wk.balance >= monthStartBalance ? '#4ade80' : '#f87171', marginTop: '1px' }}>
                             {fmtCurrency(wk.balance)}
@@ -3302,16 +3278,15 @@ export default function FinancesTab({
                       <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', marginTop: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                           <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--accent-primary, #38bdf8)' }}>
-                            🔎 Dettaglio: {activeWk.title}
+                            {_t("🔎 Dettaglio:")}{" "}{_t(activeWk.title)}
                           </span>
                           <span style={{ fontSize: '9px', fontWeight: 'bold', color: activeWk.net >= 0 ? '#4ade80' : '#f87171' }}>
-                            Saldo: {fmtCurrency(activeWk.balance)} ({activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)})
+                            {_t("Saldo: {0} (", fmtCurrency(activeWk.balance))}{activeWk.net >= 0 ? '+' : ''}{fmtCurrency(activeWk.net)})
                           </span>
                         </div>
                         {activeWk.transactions.length === 0 ? (
                           <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '4px 0' }}>
-                            Nessun movimento registrato in questa settimana.
-                          </div>
+                            {_t("Nessun movimento registrato in questa settimana.")}</div>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '130px', overflowY: 'auto' }}>
                             {activeWk.transactions.map(t => {
@@ -3322,7 +3297,7 @@ export default function FinancesTab({
                                   key={t.id}
                                   onClick={() => handleOpenEditTransaction(t)}
                                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px', cursor: 'pointer' }}
-                                  title="Tocca per modificare questo movimento"
+                                  title={_t("Tocca per modificare questo movimento")}
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
                                     <span>{t.type === 'transfer' ? '↔️' : catObj.emoji}</span>
@@ -3458,13 +3433,13 @@ export default function FinancesTab({
                   {/* Metriche Aggregate di Lungo Periodo */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '8px' }}>
                     <div style={{ background: 'var(--bg-secondary)', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>📊 Media Spese</div>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{_t("📊 Media Spese")}</div>
                       <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#f87171', marginTop: '1px' }}>
                         -{fmtCurrency(avgMonthlyExpense)}
                       </div>
                     </div>
                     <div style={{ background: 'var(--bg-secondary)', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>📈 Media Entrate</div>
+                      <div style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{_t("📈 Media Entrate")}</div>
                       <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#4ade80', marginTop: '1px' }}>
                         +{fmtCurrency(avgMonthlyIncome)}
                       </div>
@@ -3475,8 +3450,7 @@ export default function FinancesTab({
 
               {/* Hint swipe / frecce */}
               <div style={{ textAlign: 'center', fontSize: '8px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                ↔️ Scorri in orizzontale o tocca ‹ › per cambiare conto
-              </div>
+                {_t("↔️ Scorri in orizzontale o tocca ‹ › per cambiare conto")}</div>
             </div>
 
             {/* 3. RPG Financial Health Badge */}
@@ -3499,14 +3473,10 @@ export default function FinancesTab({
               </span>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: selMonthNet >= 0 ? '#4ade80' : '#f87171' }}>
-                  {selMonthNet >= 0
-                    ? (selMonthSavingsRate >= 30 ? 'Capitale Florido & in Crescita' : 'Bilancio in Attivo')
-                    : 'Attenzione al Deficit'}
+                  {selMonthNet >= 0 ? (selMonthSavingsRate >= 30 ? _t("Capitale Florido & in Crescita") : _t("Bilancio in Attivo")) : _t("Attenzione al Deficit")}
                 </div>
                 <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
-                  {selMonthNet >= 0
-                    ? `In questo mese hai risparmiato ${fmtCurrency(selMonthNet)}. Il tuo forziere ringrazia!`
-                    : `Le spese di questo mese superano le entrate di ${fmtCurrency(Math.abs(selMonthNet))}. Monitora le categorie secondarie.`}
+                  {selMonthNet >= 0 ? _t("In questo mese hai risparmiato {0}. Il tuo forziere ringrazia!", fmtCurrency(selMonthNet)) : _t("Le spese di questo mese superano le entrate di {0}. Monitora le categorie secondarie.", fmtCurrency(Math.abs(selMonthNet)))}
                 </div>
               </div>
             </div>
@@ -3514,27 +3484,27 @@ export default function FinancesTab({
             {/* 4. Monthly Financial Health KPI Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flexShrink: 0 }}>
               <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: '#86efac', textTransform: 'uppercase', fontWeight: 'bold' }}>🟢 Entrate Mese</div>
+                <div style={{ fontSize: '9px', color: '#86efac', textTransform: 'uppercase', fontWeight: 'bold' }}>{_t("🟢 Entrate Mese")}</div>
                 <div style={{ fontSize: '15px', fontWeight: '900', color: '#4ade80', marginTop: '2px' }}>
                   +{fmtCurrency(selMonthIncome)}
                 </div>
               </div>
               <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>🔴 Uscite Mese</div>
+                <div style={{ fontSize: '9px', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>{_t("🔴 Uscite Mese")}</div>
                 <div style={{ fontSize: '15px', fontWeight: '900', color: '#f87171', marginTop: '2px' }}>
                   -{fmtCurrency(selMonthExpenses)}
                 </div>
               </div>
               <div style={{ background: selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${selMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '10px', padding: '8px 10px' }}>
                 <div style={{ fontSize: '9px', color: selMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', textTransform: 'uppercase', fontWeight: 'bold' }}>
-                  {selMonthNet >= 0 ? '⚖️ Risparmio Netto' : '⚠️ Deficit Mese'}
+                  {selMonthNet >= 0 ? _t("⚖️ Risparmio Netto") : _t("⚠️ Deficit Mese")}
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
                   {selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
                 </div>
               </div>
               <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '8px 10px' }}>
-                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>📊 Tasso Risparmio</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>{_t("📊 Tasso Risparmio")}</div>
                 <div style={{ fontSize: '15px', fontWeight: '900', color: selMonthSavingsRate >= 20 ? '#4ade80' : selMonthSavingsRate >= 0 ? '#fbbf24' : '#ef4444', marginTop: '2px' }}>
                   {selMonthSavingsRate}%
                 </div>
@@ -3545,20 +3515,19 @@ export default function FinancesTab({
             <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>📜 Movimenti di {formatMonthLabel(selectedHistoryMonth)}</span>
+                  <span>{_t("📜 Movimenti di {0}", formatMonthLabel(selectedHistoryMonth))}</span>
                   <span style={{ fontSize: '9px', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: 'var(--accent-primary, #38bdf8)', fontWeight: 'bold' }}>
                     {selMonthTx.length}
                   </span>
                 </div>
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: selMonthNet >= 0 ? '#4ade80' : '#f87171' }}>
-                  Netto: {selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
+                  {_t("Netto:")}{" "}{selMonthNet >= 0 ? '+' : ''}{fmtCurrency(selMonthNet)}
                 </span>
               </div>
 
               {selMonthTx.length === 0 ? (
                 <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '14px 0', textAlign: 'center' }}>
-                  Nessun movimento registrato in {formatMonthLabel(selectedHistoryMonth)}.
-                </div>
+                  {_t("Nessun movimento registrato in {0}.", formatMonthLabel(selectedHistoryMonth))}</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto', paddingRight: '2px' }}>
                   {selMonthTx
@@ -3587,7 +3556,7 @@ export default function FinancesTab({
                             transition: 'all 0.15s ease',
                             boxSizing: 'border-box'
                           }}
-                          title="Tocca per modificare questo movimento"
+                          title={_t("Tocca per modificare questo movimento")}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
                             <span style={{ fontSize: '20px', flexShrink: 0 }}>{isTrans ? '↔️' : catObj.emoji}</span>
@@ -3600,8 +3569,7 @@ export default function FinancesTab({
                                 {renderAccountBadge(t)}
                                 {t.excludeFromBudget && (
                                   <span style={{ fontSize: '8px', background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
-                                    ⚪ Fuori Budget
-                                  </span>
+                                    {_t("⚪ Fuori Budget")}</span>
                                 )}
                               </div>
                             </div>
@@ -3630,7 +3598,7 @@ export default function FinancesTab({
                                 fontSize: '11px',
                                 cursor: 'pointer'
                               }}
-                              title="Elimina movimento"
+                              title={_t("Elimina movimento")}
                             >
                               🗑️
                             </button>
@@ -3644,8 +3612,7 @@ export default function FinancesTab({
 
             {/* Hint tocco esterno per chiudere */}
             <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)', paddingTop: '2px' }}>
-              Tocca all'esterno per chiudere
-            </div>
+              {_t("Tocca all'esterno per chiudere")}</div>
 
           </div>
         </div>
@@ -3716,14 +3683,13 @@ export default function FinancesTab({
                             alignItems: 'center',
                             gap: '3px'
                           }}
-                          title="Rinomina conto"
+                          title={_t("Rinomina conto")}
                         >
-                          ✏️ Rinomina
-                        </button>
+                          {_t("✏️ Rinomina")}</button>
                       )}
                     </div>
                     <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {isBase ? 'Conto Principale di Addebito/Accredito' : (isCash ? 'Liquidità fisica nel portafoglio' : 'Conto Risparmi / Secondario')}
+                      {isBase ? _t("Conto Principale di Addebito/Accredito") : (isCash ? _t("Liquidità fisica nel portafoglio") : _t("Conto Risparmi / Secondario"))}
                     </div>
                   </div>
                 </div>
@@ -3732,8 +3698,7 @@ export default function FinancesTab({
               {/* Saldo Hero */}
               <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
                 <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                  Saldo Attuale
-                </div>
+                  {_t("Saldo Attuale")}</div>
                 <div style={{ fontSize: '24px', fontWeight: '900', color: accBalance >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
                   {fmtCurrency(accBalance)}
                 </div>
@@ -3741,11 +3706,11 @@ export default function FinancesTab({
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '6px' }}>
                     {secAccount.interestRate > 0 && (
                       <span style={{ fontSize: '9px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                        +{secAccount.interestRate}% p.a. {secAccount.interestFrequency === 'daily' ? 'giornaliero' : (secAccount.interestFrequency === 'quarterly' ? 'trimestrale' : (secAccount.interestFrequency === 'annual' ? 'annuale' : 'mensile'))}
+                        +{secAccount.interestRate}% p.a. {secAccount.interestFrequency === 'daily' ? _t("giornaliero") : (secAccount.interestFrequency === 'quarterly' ? _t("trimestrale") : (secAccount.interestFrequency === 'annual' ? _t("annuale") : _t("mensile")))}
                       </span>
                     )}
                     <span style={{ fontSize: '9px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', padding: '2px 6px', borderRadius: '4px' }}>
-                      {secAccount.lockPeriodMonths > 0 ? `⏳ Vincolo: ${secAccount.lockPeriodMonths} mesi` : '🔓 Svincolato'}
+                      {secAccount.lockPeriodMonths > 0 ? _t("⏳ Vincolo: {0} mesi", secAccount.lockPeriodMonths) : _t("🔓 Svincolato")}
                     </span>
                   </div>
                 )}
@@ -3771,8 +3736,7 @@ export default function FinancesTab({
                       gap: '5px'
                     }}
                   >
-                    📈 Storico & Grafico di questo Conto
-                  </button>
+                    {_t("📈 Storico & Grafico di questo Conto")}</button>
                 </div>
                 {isSuperUser && (
                   <div style={{ marginTop: '8px' }}>
@@ -3801,8 +3765,7 @@ export default function FinancesTab({
                         gap: '4px'
                       }}
                     >
-                      🔓 Modifica Saldo (Super User)
-                    </button>
+                      {_t("🔓 Modifica Saldo (Super User)")}</button>
                   </div>
                 )}
               </div>
@@ -3810,19 +3773,19 @@ export default function FinancesTab({
               {/* Monthly Performance for this Account */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                 <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '8px', color: '#86efac', fontWeight: 'bold' }}>ENTRATE</div>
+                  <div style={{ fontSize: '8px', color: '#86efac', fontWeight: 'bold' }}>{_t("ENTRATE")}</div>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#4ade80', marginTop: '2px' }}>
                     +{fmtCurrency(accMonthIncome)}
                   </div>
                 </div>
                 <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '8px', color: '#fca5a5', fontWeight: 'bold' }}>USCITE</div>
+                  <div style={{ fontSize: '8px', color: '#fca5a5', fontWeight: 'bold' }}>{_t("USCITE")}</div>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#f87171', marginTop: '2px' }}>
                     -{fmtCurrency(accMonthExpenses)}
                   </div>
                 </div>
                 <div style={{ background: accMonthNet >= 0 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(239, 68, 68, 0.15)', border: `1px solid ${accMonthNet >= 0 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(239, 68, 68, 0.35)'}`, borderRadius: '8px', padding: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '8px', color: accMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', fontWeight: 'bold' }}>FLUSSO NETTO</div>
+                  <div style={{ fontSize: '8px', color: accMonthNet >= 0 ? '#7dd3fc' : '#fca5a5', fontWeight: 'bold' }}>{_t("FLUSSO NETTO")}</div>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: accMonthNet >= 0 ? '#38bdf8' : '#ef4444', marginTop: '2px' }}>
                     {accMonthNet >= 0 ? '+' : ''}{fmtCurrency(accMonthNet)}
                   </div>
@@ -3831,7 +3794,7 @@ export default function FinancesTab({
 
               {/* Quick actions for this account */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Operazioni Conto</div>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Operazioni Conto")}</div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {secAccount && (
                     <>
@@ -3840,15 +3803,13 @@ export default function FinancesTab({
                         onClick={() => { setSelectedAccountDetail(null); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'deposit' }); }}
                         style={{ flex: 1, minWidth: '80px', padding: '6px', borderRadius: '8px', background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#4ade80', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        + Deposita
-                      </button>
+                        {_t("+ Deposita")}</button>
                       <button
                         type="button"
                         onClick={() => { setSelectedAccountDetail(null); setSecActionAmount(''); setSecAccountAction({ account: secAccount, type: 'withdraw' }); }}
                         style={{ flex: 1, minWidth: '80px', padding: '6px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        - Preleva
-                      </button>
+                        {_t("- Preleva")}</button>
                       {secAccount.interestRate > 0 && (
                         <button
                           type="button"
@@ -3865,8 +3826,7 @@ export default function FinancesTab({
                           }}
                           style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                         >
-                          📈 Accredita Interessi
-                        </button>
+                          {_t("📈 Accredita Interessi")}</button>
                       )}
                     </>
                   )}
@@ -3880,15 +3840,13 @@ export default function FinancesTab({
                         }}
                         style={{ flex: 1, minWidth: '105px', padding: '6px', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        ✏️ Rinomina Conto
-                      </button>
+                        {_t("✏️ Rinomina Conto")}</button>
                       <button
                         type="button"
                         onClick={() => { setSelectedAccountDetail(null); setBudgetInput(finances.monthlyBudget || 1000); setShowBudgetModal(true); }}
                         style={{ flex: 1, minWidth: '110px', padding: '6px', borderRadius: '8px', background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.3)', color: '#fbbf24', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
-                        🎯 Budget ({fmtCurrency(finances.monthlyBudget || 1000)})
-                      </button>
+                        {_t("🎯 Budget ({0})", fmtCurrency(finances.monthlyBudget || 1000))}</button>
                     </>
                   )}
                   {isCash && (
@@ -3897,8 +3855,7 @@ export default function FinancesTab({
                       onClick={() => { setSelectedAccountDetail(null); setWithdrawAmount(''); setWithdrawSource('base'); setShowWithdrawModal(true); }}
                       style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#fde047', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                      🏧 Preleva Contanti
-                    </button>
+                      {_t("🏧 Preleva Contanti")}</button>
                   )}
                   {isSuperUser && (
                     <button
@@ -3914,22 +3871,20 @@ export default function FinancesTab({
                       }}
                       style={{ flex: 1, minWidth: '110px', padding: '6px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                      🔓 Modifica Saldo
-                    </button>
+                      {_t("🔓 Modifica Saldo")}</button>
                   )}
                   <button
                     type="button"
                     onClick={() => { setSelectedAccountDetail(null); handleOpenTransferModal(accId, isBase ? 'cash' : 'base'); }}
                     style={{ flex: 1, minWidth: '100px', padding: '6px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
                   >
-                    ↔️ Trasferisci Denaro
-                  </button>
+                    {_t("↔️ Trasferisci Denaro")}</button>
                   {secAccount && (
                     <button
                       type="button"
                       onClick={() => { setSelectedAccountDetail(null); handleDeleteSecAccount(secAccount.id); }}
                       style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', fontSize: '10px', cursor: 'pointer' }}
-                      title="Elimina conto secondario"
+                      title={_t("Elimina conto secondario")}
                     >
                       🗑️
                     </button>
@@ -3941,20 +3896,17 @@ export default function FinancesTab({
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    🔄 Ricorrenti su questo conto ({accRecurring.length})
-                  </span>
+                    {_t("🔄 Ricorrenti su questo conto ({0})", accRecurring.length)}</span>
                   <button
                     type="button"
                     onClick={() => { setSelectedAccountDetail(null); setShowRecurringModal(true); }}
                     style={{ background: 'none', border: 'none', color: 'var(--accent-primary, #38bdf8)', fontSize: '9px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
                   >
-                    Gestisci tutte
-                  </button>
+                    {_t("Gestisci tutte")}</button>
                 </div>
                 {accRecurring.length === 0 ? (
                   <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '6px 8px', borderRadius: '6px' }}>
-                    Nessun pagamento o entrata ricorrente configurato su questo conto.
-                  </div>
+                    {_t("Nessun pagamento o entrata ricorrente configurato su questo conto.")}</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {accRecurring.map(r => {
@@ -3978,13 +3930,13 @@ export default function FinancesTab({
                             cursor: isSuperUser ? 'pointer' : 'default',
                             border: isSuperUser ? '1px dashed rgba(234, 179, 8, 0.4)' : 'none'
                           }}
-                          title={isSuperUser ? 'Super User: tocca per modificare la regola ricorrente' : undefined}
+                          title={isSuperUser ? _t("Super User: tocca per modificare la regola ricorrente") : undefined}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span>{catObj.emoji}</span>
                             <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{r.note || catObj.label}</span>
-                            <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>ogni {r.dayOfMonth}° del mese</span>
-                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title="Modifica regola (Super User)">✏️</span>}
+                            <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>{_t("ogni {0}° del mese", r.dayOfMonth)}</span>
+                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title={_t("Modifica regola (Super User)")}>✏️</span>}
                           </div>
                           <span style={{ fontWeight: 'bold', color: isInc ? '#22c55e' : '#ef4444' }}>
                             {isInc ? '+' : '-'}{fmtCurrency(r.amount)}
@@ -3998,12 +3950,10 @@ export default function FinancesTab({
               {/* Recent Transactions list for this account */}
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  📜 Movimenti del Conto ({accTxList.length})
-                </div>
+                  {_t("📜 Movimenti del Conto ({0})", accTxList.length)}</div>
                 {accTxList.length === 0 ? (
                   <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontStyle: 'italic', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                    Nessun movimento registrato su questo conto.
-                  </div>
+                    {_t("Nessun movimento registrato su questo conto.")}</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '160px', overflowY: 'auto' }}>
                     {accTxList.slice(0, 30).map(t => {
@@ -4026,7 +3976,7 @@ export default function FinancesTab({
                               type="button"
                               onClick={() => handleDeleteTransaction(t.id)}
                               style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '9px', cursor: 'pointer', padding: 0 }}
-                              title="Elimina movimento"
+                              title={_t("Elimina movimento")}
                             >
                               🗑️
                             </button>
@@ -4040,8 +3990,7 @@ export default function FinancesTab({
 
               {/* Hint chiusura al tocco esterno */}
               <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)', paddingTop: '4px' }}>
-                Tocca all'esterno per chiudere
-              </div>
+                {_t("Tocca all'esterno per chiudere")}</div>
 
             </div>
           </div>
@@ -4059,14 +4008,12 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: txModalMode === 'expense' ? '#ef4444' : '#22c55e' }}>
-              {editingTxId
-                ? (txModalMode === 'expense' ? '🔴 Modifica Uscita' : '🟢 Modifica Entrata')
-                : (txModalMode === 'expense' ? '🔴 Registra Uscita' : '🟢 Registra Entrata')}
+              {editingTxId ? (txModalMode === 'expense' ? _t("🔴 Modifica Uscita") : _t("🟢 Modifica Entrata")) : (txModalMode === 'expense' ? _t("🔴 Registra Uscita") : _t("🟢 Registra Entrata"))}
             </h3>
 
             <form onSubmit={handleSaveTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo (€)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Importo (€)*")}</label>
                 <input
                   type="text"
                   placeholder="0.00"
@@ -4080,15 +4027,15 @@ export default function FinancesTab({
 
               <div>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                  {txModalMode === 'expense' ? 'Conto da Addebitare' : 'Conto di Accredito'}
+                  {txModalMode === 'expense' ? _t("Conto da Addebitare") : _t("Conto di Accredito")}
                 </label>
                 <select
                   value={txAccountInput}
                   onChange={(e) => setTxAccountInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
-                  <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
+                  <option value="base">💳 {finances.baseAccountName || _t("Conto Base")} ({fmtCurrency(finances.balance)})</option>
+                  <option value="cash">{_t("💵 Contanti Disponibili ({0})", fmtCurrency(finances.cashBalance || 0))}</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
                   ))}
@@ -4097,7 +4044,7 @@ export default function FinancesTab({
 
               <div>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                  Categoria {txModalMode === 'expense' ? '(Uscita)' : '(Entrata)'}
+                  {_t("Categoria")}{" "}{txModalMode === 'expense' ? _t("(Uscita)") : _t("(Entrata)")}
                 </label>
                 <select
                   value={categoryInput}
@@ -4105,16 +4052,16 @@ export default function FinancesTab({
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
                   {currentModalCategories.map(c => (
-                    <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
+                    <option key={c.id} value={c.id}>{c.emoji} {_t(c.label)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Nota / Descrizione")}</label>
                 <input
                   type="text"
-                  placeholder={txModalMode === 'expense' ? "Es. Spesa, Affitto..." : "Es. Stipendio Mese, Consulenza..."}
+                  placeholder={txModalMode === 'expense' ? _t("Es. Spesa, Affitto...") : _t("Es. Stipendio Mese, Consulenza...")}
                   value={noteInput}
                   onChange={(e) => setNoteInput(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
@@ -4123,7 +4070,7 @@ export default function FinancesTab({
 
               <div>
                 <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                  {editingTxId ? 'Data Movimento' : 'Data Prima Esecuzione'}
+                  {editingTxId ? _t("Data Movimento") : _t("Data Prima Esecuzione")}
                 </label>
                 <input
                   type="date"
@@ -4144,11 +4091,9 @@ export default function FinancesTab({
                       style={{ width: '15px', height: '15px', marginTop: '1px', cursor: 'pointer' }}
                     />
                     <div>
-                      <div>🎯 Scala dal Budget Spesa Mensile</div>
+                      <div>{_t("🎯 Scala dal Budget Spesa Mensile")}</div>
                       <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 'normal', marginTop: '2px', lineHeight: '1.3' }}>
-                        {affectsBudgetInput
-                          ? 'Questa spesa verrà conteggiata nel budget mensile.'
-                          : 'Esclusa dal budget (ideale per bollette, affitti, mutui e spese fisse).'}
+                        {affectsBudgetInput ? _t("Questa spesa verrà conteggiata nel budget mensile.") : _t("Esclusa dal budget (ideale per bollette, affitti, mutui e spese fisse).")}
                       </div>
                     </div>
                   </label>
@@ -4165,16 +4110,15 @@ export default function FinancesTab({
                       onChange={(e) => setIsRecurring(e.target.checked)}
                       style={{ width: '15px', height: '15px', cursor: 'pointer' }}
                     />
-                    <span>🔄 Rendi Pagamento Ricorrente</span>
+                    <span>{_t("🔄 Rendi Pagamento Ricorrente")}</span>
                   </label>
 
                   {isRecurring && (
                     <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                        Si ripeterà automaticamente ogni mese nel giorno stabilito.
-                      </div>
+                        {_t("Si ripeterà automaticamente ogni mese nel giorno stabilito.")}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Giorno del mese:</span>
+                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Giorno del mese:")}</span>
                         <input
                           type="number"
                           min="1"
@@ -4195,13 +4139,12 @@ export default function FinancesTab({
                   onClick={() => setShowAddTxModal(false)}
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: txModalMode === 'expense' ? '#ef4444' : '#22c55e', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  {editingTxId ? 'Aggiorna' : 'Salva'}
+                  {editingTxId ? _t("Aggiorna") : _t("Salva")}
                 </button>
               </div>
             </form>
@@ -4221,21 +4164,19 @@ export default function FinancesTab({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                🔄 Pagamenti Ricorrenti
-              </h3>
+                {_t("🔄 Pagamenti Ricorrenti")}</h3>
             </div>
 
             {isSuperUser && (
               <div style={{ fontSize: '10px', color: '#eab308', background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(234, 179, 8, 0.25)', padding: '6px 8px', borderRadius: '8px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <span>🔓</span>
-                <span>Super User attivo: tocca una regola per modificarla.</span>
+                <span>{_t("Super User attivo: tocca una regola per modificarla.")}</span>
               </div>
             )}
 
             {(!finances.recurringTransactions || finances.recurringTransactions.length === 0) ? (
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>
-                Nessun pagamento o entrata ricorrente salvato. Quando aggiungi un'uscita o un'entrata, spunta "Rendi Pagamento Ricorrente"!
-              </div>
+                {_t("Nessun pagamento o entrata ricorrente salvato. Quando aggiungi un'uscita o un'entrata, spunta \"Rendi Pagamento Ricorrente\"!")}</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
                 {finances.recurringTransactions.map(rec => {
@@ -4257,7 +4198,7 @@ export default function FinancesTab({
                         opacity: rec.active ? 1 : 0.6,
                         cursor: isSuperUser ? 'pointer' : 'default'
                       }}
-                      title={isSuperUser ? 'Super User: tocca per modificare la regola' : undefined}
+                      title={isSuperUser ? _t("Super User: tocca per modificare la regola") : undefined}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                         <span style={{ fontSize: '18px', flexShrink: 0 }}>{catObj.emoji}</span>
@@ -4266,10 +4207,10 @@ export default function FinancesTab({
                             <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {rec.note || catObj.label}
                             </span>
-                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title="Modifica regola (Super User)">✏️</span>}
+                            {isSuperUser && <span style={{ fontSize: '10px', color: '#eab308' }} title={_t("Modifica regola (Super User)")}>✏️</span>}
                           </div>
                           <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                            Mensile (giorno {rec.dayOfMonth || 1}) {rec.excludeFromBudget && '• ⚪ Fuori Budget'}
+                            {_t("Mensile (giorno {0})", rec.dayOfMonth || 1)}{" "}{rec.excludeFromBudget && _t("• ⚪ Fuori Budget")}
                           </div>
                         </div>
                       </div>
@@ -4284,7 +4225,7 @@ export default function FinancesTab({
                               type="button"
                               onClick={(e) => { e.stopPropagation(); handleOpenEditRecurring(rec); }}
                               style={{ background: 'rgba(234, 179, 8, 0.15)', border: '1px solid rgba(234, 179, 8, 0.3)', color: '#eab308', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                              title="Modifica regola ricorrente"
+                              title={_t("Modifica regola ricorrente")}
                             >
                               ✏️
                             </button>
@@ -4293,7 +4234,7 @@ export default function FinancesTab({
                             type="button"
                             onClick={(e) => { e.stopPropagation(); handleToggleRecurringActive(rec.id); }}
                             style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: rec.active ? '#22c55e' : 'var(--text-muted)', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                            title={rec.active ? 'Metti in pausa' : 'Attiva'}
+                            title={rec.active ? _t("Metti in pausa") : _t("Attiva")}
                           >
                             {rec.active ? '▶️' : '⏸️'}
                           </button>
@@ -4301,7 +4242,7 @@ export default function FinancesTab({
                             type="button"
                             onClick={(e) => { e.stopPropagation(); handleDeleteRecurring(rec.id); }}
                             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer', padding: '1px' }}
-                            title="Elimina regola"
+                            title={_t("Elimina regola")}
                           >
                             🗑️
                           </button>
@@ -4318,8 +4259,7 @@ export default function FinancesTab({
                 onClick={() => setShowRecurringModal(false)}
                 style={{ width: '100%', padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
               >
-                Chiudi
-              </button>
+                {_t("Chiudi")}</button>
             </div>
           </div>
         </div>
@@ -4336,15 +4276,14 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-              🏦 Crea Conto Secondario
-            </h3>
+              {_t("🏦 Crea Conto Secondario")}</h3>
 
             <form onSubmit={handleCreateSecAccount} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nome Conto*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Nome Conto*")}</label>
                 <input
                   type="text"
-                  placeholder="Es. Conto Emergenze, Conto Desideri..."
+                  placeholder={_t("Es. Conto Emergenze, Conto Desideri...")}
                   value={secName}
                   onChange={(e) => setSecName(e.target.value)}
                   autoFocus
@@ -4355,7 +4294,7 @@ export default function FinancesTab({
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Saldo Iniziale (€)</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Saldo Iniziale (€)")}</label>
                   <input
                     type="text"
                     placeholder="0"
@@ -4365,7 +4304,7 @@ export default function FinancesTab({
                   />
                 </div>
                 <div style={{ width: '70px' }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Emoji</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Emoji")}</label>
                   <input
                     type="text"
                     value={secEmoji}
@@ -4377,7 +4316,7 @@ export default function FinancesTab({
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Interesse (% p.a.)</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Interesse (% p.a.)")}</label>
                   <input
                     type="text"
                     placeholder="3.5"
@@ -4387,32 +4326,32 @@ export default function FinancesTab({
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Vincolo</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Vincolo")}</label>
                   <select
                     value={secLockMonths}
                     onChange={(e) => setSecLockMonths(e.target.value)}
                     style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                   >
-                    <option value="0">Svincolato</option>
-                    <option value="6">6 Mesi</option>
-                    <option value="12">12 Mesi</option>
-                    <option value="24">24 Mesi</option>
+                    <option value="0">{_t("Svincolato")}</option>
+                    <option value="6">{_t("6 Mesi")}</option>
+                    <option value="12">{_t("12 Mesi")}</option>
+                    <option value="24">{_t("24 Mesi")}</option>
                   </select>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Frequenza Accredito</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Frequenza Accredito")}</label>
                   <select
                     value={secInterestFreq}
                     onChange={(e) => setSecInterestFreq(e.target.value)}
                     style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                   >
-                    <option value="daily">Giornaliero (1/365 p.a.)</option>
-                    <option value="monthly">Mensile (1/12 p.a.)</option>
-                    <option value="quarterly">Trimestrale (1/4 p.a.)</option>
-                    <option value="annual">Annuale</option>
+                    <option value="daily">{_t("Giornaliero (1/365 p.a.)")}</option>
+                    <option value="monthly">{_t("Mensile (1/12 p.a.)")}</option>
+                    <option value="quarterly">{_t("Trimestrale (1/4 p.a.)")}</option>
+                    <option value="annual">{_t("Annuale")}</option>
                   </select>
                 </div>
               </div>
@@ -4423,14 +4362,12 @@ export default function FinancesTab({
                   onClick={() => setShowAddSecModal(false)}
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Crea Conto
-                </button>
+                  {_t("Crea Conto")}</button>
               </div>
             </form>
           </div>
@@ -4454,11 +4391,11 @@ export default function FinancesTab({
             {secAccountAction.type === 'interest' ? (
               <form onSubmit={handleSecAccountActionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
-                  Interessi calcolati sul saldo attuale di <b>{fmtCurrency(secAccountAction.account.balance)}</b> al <b>{secAccountAction.account.interestRate}% p.a.</b> ({secAccountAction.account.interestFrequency === 'daily' ? 'Giornaliero 1/365' : (secAccountAction.account.interestFrequency === 'quarterly' ? 'Trimestrale 1/4' : (secAccountAction.account.interestFrequency === 'annual' ? 'Annuale' : 'Mensile 1/12'))}).
+                  {_t("Interessi calcolati sul saldo attuale di")}{" "}<b>{fmtCurrency(secAccountAction.account.balance)}</b> {" "}{_t("al")}{" "}<b>{secAccountAction.account.interestRate}% p.a.</b> ({secAccountAction.account.interestFrequency === 'daily' ? _t("Giornaliero 1/365") : (secAccountAction.account.interestFrequency === 'quarterly' ? _t("Trimestrale 1/4") : (secAccountAction.account.interestFrequency === 'annual' ? _t("Annuale") : _t("Mensile 1/12")))}).
                 </p>
 
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo Interessi da Accreditare (€)*</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Importo Interessi da Accreditare (€)*")}</label>
                   <input
                     type="text"
                     value={secActionAmount}
@@ -4468,8 +4405,7 @@ export default function FinancesTab({
                     style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: '#22c55e', fontSize: '16px', fontWeight: 'bold', marginTop: '2px', boxSizing: 'border-box' }}
                   />
                   <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Puoi modificare liberamente la cifra per allinearla a quella esatta della tua banca.
-                  </div>
+                    {_t("Puoi modificare liberamente la cifra per allinearla a quella esatta della tua banca.")}</div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
@@ -4478,21 +4414,19 @@ export default function FinancesTab({
                     onClick={() => setSecAccountAction(null)}
                     style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                   >
-                    Annulla
-                  </button>
+                    {_t("Annulla")}</button>
                   <button
                     type="submit"
                     style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#22c55e', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                   >
-                    Accredita
-                  </button>
+                    {_t("Accredita")}</button>
                 </div>
               </form>
             ) : (
               <form onSubmit={handleSecAccountActionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
                   <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    {secAccountAction.type === 'deposit' ? 'Importo da Depositare (€)' : 'Importo da Prelevare (€)'}
+                    {secAccountAction.type === 'deposit' ? _t("Importo da Depositare (€)") : _t("Importo da Prelevare (€)")}
                   </label>
                   <input
                     type="text"
@@ -4511,14 +4445,12 @@ export default function FinancesTab({
                     onClick={() => setSecAccountAction(null)}
                     style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                   >
-                    Annulla
-                  </button>
+                    {_t("Annulla")}</button>
                   <button
                     type="submit"
                     style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                   >
-                    Conferma
-                  </button>
+                    {_t("Conferma")}</button>
                 </div>
               </form>
             )}
@@ -4537,12 +4469,11 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              ✏️ Limite Budget Spesa Mensile
-            </h3>
+              {_t("✏️ Limite Budget Spesa Mensile")}</h3>
 
             <form onSubmit={handleSaveBudget} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Limite Budget Spesa (€)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Limite Budget Spesa (€)")}</label>
                 <input
                   type="number"
                   placeholder="1000"
@@ -4560,14 +4491,12 @@ export default function FinancesTab({
                   onClick={() => setShowBudgetModal(false)}
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Salva Budget
-                </button>
+                  {_t("Salva Budget")}</button>
               </div>
             </form>
           </div>
@@ -4585,18 +4514,17 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '320px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#fde047', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🏧 Preleva Contanti
-            </h3>
+              {_t("🏧 Preleva Contanti")}</h3>
 
             <form onSubmit={handleWithdrawCashSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Preleva Da (Conto Sorgente)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Preleva Da (Conto Sorgente)")}</label>
                 <select
                   value={withdrawSource}
                   onChange={(e) => setWithdrawSource(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
+                  <option value="base">💳 {finances.baseAccountName || _t("Conto Base")} ({fmtCurrency(finances.balance)})</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
                   ))}
@@ -4604,7 +4532,7 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo da Prelevare (€)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Importo da Prelevare (€)*")}</label>
                 <input
                   type="text"
                   placeholder="50"
@@ -4617,7 +4545,7 @@ export default function FinancesTab({
               </div>
 
               <div style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', border: '1px solid var(--glass-border)' }}>
-                💡 L'importo verrà scalato dal conto selezionato e aggiunto al tuo fondo <b>💵 Contanti Disponibili</b>.
+                {_t("💡 L'importo verrà scalato dal conto selezionato e aggiunto al tuo fondo")}{" "}<b>{_t("💵 Contanti Disponibili")}</b>.
               </div>
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
@@ -4626,14 +4554,12 @@ export default function FinancesTab({
                   onClick={() => setShowWithdrawModal(false)}
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Conferma Prelievo
-                </button>
+                  {_t("Conferma Prelievo")}</button>
               </div>
             </form>
           </div>
@@ -4651,12 +4577,11 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', width: '100%', maxWidth: '340px', padding: '18px' }}
           >
             <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 'bold', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              ↔️ Trasferimento tra Conti
-            </h3>
+              {_t("↔️ Trasferimento tra Conti")}</h3>
 
             <form onSubmit={handleTransferSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto di Origine (Da)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Conto di Origine (Da)*")}</label>
                 <select
                   value={transferSource}
                   onChange={(e) => {
@@ -4668,8 +4593,8 @@ export default function FinancesTab({
                   }}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
-                  <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
+                  <option value="base">💳 {finances.baseAccountName || _t("Conto Base")} ({fmtCurrency(finances.balance)})</option>
+                  <option value="cash">{_t("💵 Contanti Disponibili ({0})", fmtCurrency(finances.cashBalance || 0))}</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
                   ))}
@@ -4677,25 +4602,24 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto / Strumento di Destinazione (A)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Conto / Strumento di Destinazione (A)*")}</label>
                 <select
                   value={transferTarget}
                   onChange={(e) => setTransferTarget(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <optgroup label="💳 Conti di Liquidità">
-                    {transferSource !== 'base' && <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>}
-                    {transferSource !== 'cash' && <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>}
+                  <optgroup label={_t("💳 Conti di Liquidità")}>
+                    {transferSource !== 'base' && <option value="base">💳 {finances.baseAccountName || _t("Conto Base")} ({fmtCurrency(finances.balance)})</option>}
+                    {transferSource !== 'cash' && <option value="cash">{_t("💵 Contanti Disponibili ({0})", fmtCurrency(finances.cashBalance || 0))}</option>}
                     {finances.secondaryAccounts && finances.secondaryAccounts.filter(acc => acc.id !== transferSource).map(acc => (
                       <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
                     ))}
                   </optgroup>
                   {finances.investments && finances.investments.length > 0 && (
-                    <optgroup label="📈 Investimenti & ETF">
+                    <optgroup label={_t("📈 Investimenti & ETF")}>
                       {finances.investments.map(inv => (
                         <option key={inv.id} value={`inv_${inv.id}`}>
-                          📈 {inv.name} {inv.ticker ? `(${inv.ticker})` : ''} • {inv.shares} quote
-                        </option>
+                          📈 {inv.name} {inv.ticker ? `(${inv.ticker})` : ''} {" "}{_t("• {0} quote", inv.shares)}</option>
                       ))}
                     </optgroup>
                   )}
@@ -4717,13 +4641,13 @@ export default function FinancesTab({
                         📈 {targetInv.name}
                       </span>
                       <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                        Quote in portafoglio: {targetInv.shares || 0}
+                        {_t("Quote in portafoglio: {0}", targetInv.shares || 0)}
                       </span>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       <div>
-                        <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Quota (€)</label>
+                        <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Prezzo Quota (€)")}</label>
                         <input
                           type="text"
                           value={transferInvestSharePrice}
@@ -4733,12 +4657,12 @@ export default function FinancesTab({
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Quote Aggiunte</label>
+                        <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Quote Aggiunte")}</label>
                         <input
                           type="text"
                           value={transferInvestShares || (amtNum > 0 ? String(autoCalcShares) : '')}
                           onChange={(e) => setTransferInvestShares(e.target.value)}
-                          placeholder={amtNum > 0 ? String(autoCalcShares) : 'Quote...'}
+                          placeholder={amtNum > 0 ? String(autoCalcShares) : _t("Quote...")}
                           style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                         />
                       </div>
@@ -4748,7 +4672,7 @@ export default function FinancesTab({
               })()}
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo da Trasferire (€)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Importo da Trasferire (€)*")}</label>
                 <input
                   type="text"
                   placeholder="0.00"
@@ -4761,10 +4685,10 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nota / Descrizione (Opzionale)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Nota / Descrizione (Opzionale)")}</label>
                 <input
                   type="text"
-                  placeholder="Es. Spostamento risparmi, Ricarica contanti..."
+                  placeholder={_t("Es. Spostamento risparmi, Ricarica contanti...")}
                   value={transferNote}
                   onChange={(e) => setTransferNote(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
@@ -4772,7 +4696,7 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Data Operazione</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Data Operazione")}</label>
                 <input
                   type="date"
                   value={transferDate}
@@ -4782,8 +4706,7 @@ export default function FinancesTab({
               </div>
 
               <div style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--bg-primary)', padding: '8px', borderRadius: '6px', border: '1px solid var(--glass-border)', lineHeight: '1.4' }}>
-                💡 I trasferimenti spostano liquidità tra i tuoi conti senza incidere sulle entrate, sulle uscite o sul budget mensile.
-              </div>
+                {_t("💡 I trasferimenti spostano liquidità tra i tuoi conti senza incidere sulle entrate, sulle uscite o sul budget mensile.")}</div>
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                 <button
@@ -4791,14 +4714,12 @@ export default function FinancesTab({
                   onClick={() => setShowTransferModal(false)}
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-primary)', fontSize: '11px', cursor: 'pointer' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', background: '#38bdf8', color: '#000', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Conferma Trasferimento
-                </button>
+                  {_t("Conferma Trasferimento")}</button>
               </div>
             </form>
           </div>
@@ -4815,15 +4736,14 @@ export default function FinancesTab({
             onClick={(e) => e.stopPropagation()}
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
-            <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>✏️ Rinomina Conto Base</h4>
+            <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>{_t("✏️ Rinomina Conto Base")}</h4>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Personalizza il nome del tuo conto principale (es. Intesa Sanpaolo, Fineco, BBVA...)
-            </div>
+              {_t("Personalizza il nome del tuo conto principale (es. Intesa Sanpaolo, Fineco, BBVA...)")}</div>
             <input
               type="text"
               value={baseNameInput}
               onChange={(e) => setBaseNameInput(e.target.value)}
-              placeholder="Es. Intesa Sanpaolo, Fineco..."
+              placeholder={_t("Es. Intesa Sanpaolo, Fineco...")}
               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px', boxSizing: 'border-box' }}
               autoFocus
               onKeyDown={(e) => {
@@ -4837,15 +4757,13 @@ export default function FinancesTab({
                 onClick={() => setShowRenameBaseModal(false)}
                 style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
               >
-                Annulla
-              </button>
+                {_t("Annulla")}</button>
               <button
                 type="button"
                 onClick={handleSaveBaseAccountName}
                 style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
               >
-                Salva
-              </button>
+                {_t("Salva")}</button>
             </div>
           </div>
         </div>
@@ -4862,14 +4780,13 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '320px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🔓 Modifica Saldo (Super User)
-            </h4>
+              {_t("🔓 Modifica Saldo (Super User)")}</h4>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Correzione diretta del saldo per <b>{getAccountLabel(editBalanceTarget)}</b>.
+              {_t("Correzione diretta del saldo per")}{" "}<b>{getAccountLabel(editBalanceTarget)}</b>.
             </div>
 
             <div>
-              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nuovo Saldo (€)*</label>
+              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Nuovo Saldo (€)*")}</label>
               <input
                 type="text"
                 value={editBalanceValue}
@@ -4883,7 +4800,7 @@ export default function FinancesTab({
             {editBalanceTarget !== 'base' && editBalanceTarget !== 'cash' && (
               <>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Tasso Interesse (% p.a.)</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Tasso Interesse (% p.a.)")}</label>
                   <input
                     type="text"
                     value={editBalanceSecRate}
@@ -4893,24 +4810,23 @@ export default function FinancesTab({
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Frequenza Accredito</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Frequenza Accredito")}</label>
                   <select
                     value={editBalanceSecFreq}
                     onChange={(e) => setEditBalanceSecFreq(e.target.value)}
                     style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                   >
-                    <option value="daily">Giornaliero (1/365 p.a.)</option>
-                    <option value="monthly">Mensile (1/12 p.a.)</option>
-                    <option value="quarterly">Trimestrale (1/4 p.a.)</option>
-                    <option value="annual">Annuale</option>
+                    <option value="daily">{_t("Giornaliero (1/365 p.a.)")}</option>
+                    <option value="monthly">{_t("Mensile (1/12 p.a.)")}</option>
+                    <option value="quarterly">{_t("Trimestrale (1/4 p.a.)")}</option>
+                    <option value="annual">{_t("Annuale")}</option>
                   </select>
                 </div>
               </>
             )}
 
             <div style={{ fontSize: '10px', color: '#eab308', background: 'rgba(234, 179, 8, 0.1)', padding: '8px', borderRadius: '6px', border: '1px solid rgba(234, 179, 8, 0.2)' }}>
-              ⚠️ Questa operazione sovrascrive direttamente il saldo senza registrare movimenti fittizi nello storico.
-            </div>
+              {_t("⚠️ Questa operazione sovrascrive direttamente il saldo senza registrare movimenti fittizi nello storico.")}</div>
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
               <button
@@ -4918,15 +4834,13 @@ export default function FinancesTab({
                 onClick={() => setShowEditBalanceModal(false)}
                 style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
               >
-                Annulla
-              </button>
+                {_t("Annulla")}</button>
               <button
                 type="button"
                 onClick={handleSaveEditedBalance}
                 style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
               >
-                Salva Modifiche
-              </button>
+                {_t("Salva Modifiche")}</button>
             </div>
           </div>
         </div>
@@ -4943,20 +4857,18 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '340px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              📈 Aggiungi Investimento o ETF
-            </h4>
+              {_t("📈 Aggiungi Investimento o ETF")}</h4>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Inserisci le quote acquistate e il ticker di borsa per tracciarne l'andamento.
-            </div>
+              {_t("Inserisci le quote acquistate e il ticker di borsa per tracciarne l'andamento.")}</div>
 
             <form onSubmit={handleSaveInvestment} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Nome Strumento*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Nome Strumento*")}</label>
                 <input
                   type="text"
                   value={invName}
                   onChange={(e) => setInvName(e.target.value)}
-                  placeholder="Es. Vanguard FTSE All-World, S&P 500, Apple..."
+                  placeholder={_t("Es. Vanguard FTSE All-World, S&P 500, Apple...")}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                   autoFocus
                   required
@@ -4964,38 +4876,37 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Ticker di Mercato (Opzionale)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Ticker di Mercato (Opzionale)")}</label>
                 <input
                   type="text"
                   value={invTicker}
                   onChange={(e) => setInvTicker(e.target.value)}
-                  placeholder="Es. VWCE.DE, SWDA.MI, CSSPX.MI, AAPL..."
+                  placeholder={_t("Es. VWCE.DE, SWDA.MI, CSSPX.MI, AAPL...")}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Usato per la sincronizzazione online automatica delle quotazioni.
-                </div>
+                  {_t("Usato per la sincronizzazione online automatica delle quotazioni.")}</div>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>N° Quote*</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("N° Quote*")}</label>
                   <input
                     type="text"
                     value={invShares}
                     onChange={(e) => setInvShares(e.target.value)}
-                    placeholder="Es. 10.5"
+                    placeholder={_t("Es. 10.5")}
                     style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                     required
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Carico PMC (€)*</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Prezzo Carico PMC (€)*")}</label>
                   <input
                     type="text"
                     value={invBuyPrice}
                     onChange={(e) => setInvBuyPrice(e.target.value)}
-                    placeholder="Es. 115.40"
+                    placeholder={_t("Es. 115.40")}
                     style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                     required
                   />
@@ -5003,45 +4914,44 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Attuale di Mercato (€)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Prezzo Attuale di Mercato (€)")}</label>
                 <input
                   type="text"
                   value={invCurrentPrice}
                   onChange={(e) => setInvCurrentPrice(e.target.value)}
-                  placeholder="Se vuoto, usa il prezzo di carico"
+                  placeholder={_t("Se vuoto, usa il prezzo di carico")}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Note / Piattaforma (Opzionale)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Note / Piattaforma (Opzionale)")}</label>
                 <input
                   type="text"
                   value={invNotes}
                   onChange={(e) => setInvNotes(e.target.value)}
-                  placeholder="Es. Scalable Capital, Directa, Degiro..."
+                  placeholder={_t("Es. Scalable Capital, Directa, Degiro...")}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Addebita Importo su un Conto (Opzionale)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Addebita Importo su un Conto (Opzionale)")}</label>
                 <select
                   value={invFundingAccount}
                   onChange={(e) => setInvFundingAccount(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="none">Nessuno (Non scalare dai conti)</option>
-                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'} ({fmtCurrency(finances.balance)})</option>
-                  <option value="cash">💵 Contanti Disponibili ({fmtCurrency(finances.cashBalance || 0)})</option>
+                  <option value="none">{_t("Nessuno (Non scalare dai conti)")}</option>
+                  <option value="base">💳 {finances.baseAccountName || _t("Conto Base")} ({fmtCurrency(finances.balance)})</option>
+                  <option value="cash">{_t("💵 Contanti Disponibili ({0})", fmtCurrency(finances.cashBalance || 0))}</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name} ({fmtCurrency(acc.balance)})</option>
                   ))}
                 </select>
                 {invFundingAccount !== 'none' && (
                   <div style={{ fontSize: '10px', color: '#38bdf8', marginTop: '3px' }}>
-                    💡 Verranno scalati <b>{fmtCurrency((parseFloat(String(invShares).replace(',', '.')) || 0) * (parseFloat(String(invBuyPrice).replace(',', '.')) || 0))}</b> dal conto selezionato.
-                  </div>
+                    {_t("💡 Verranno scalati")}{" "}<b>{fmtCurrency((parseFloat(String(invShares).replace(',', '.')) || 0) * (parseFloat(String(invBuyPrice).replace(',', '.')) || 0))}</b> {" "}{_t("dal conto selezionato.")}</div>
                 )}
               </div>
 
@@ -5051,14 +4961,12 @@ export default function FinancesTab({
                   onClick={() => setShowAddInvestmentModal(false)}
                   style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Salva Investimento
-                </button>
+                  {_t("Salva Investimento")}</button>
               </div>
             </form>
           </div>
@@ -5076,15 +4984,15 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '300px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)' }}>
-              ✏️ Aggiorna Prezzo: {quickPriceTarget.name}
+              {_t("✏️ Aggiorna Prezzo: {0}", quickPriceTarget.name)}
             </h4>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-              Prezzo medio di carico: <b>{fmtCurrency(quickPriceTarget.buyPrice)}</b>
+              {_t("Prezzo medio di carico:")}{" "}<b>{fmtCurrency(quickPriceTarget.buyPrice)}</b>
             </div>
 
             <form onSubmit={handleQuickPriceSave} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Prezzo Corrente di Mercato (€)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Prezzo Corrente di Mercato (€)*")}</label>
                 <input
                   type="text"
                   value={quickPriceValue}
@@ -5101,14 +5009,12 @@ export default function FinancesTab({
                   onClick={() => setShowQuickPriceModal(false)}
                   style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Aggiorna
-                </button>
+                  {_t("Aggiorna")}</button>
               </div>
             </form>
           </div>
@@ -5126,35 +5032,31 @@ export default function FinancesTab({
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '340px', maxHeight: '100%', overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             <h4 style={{ margin: 0, fontSize: '15px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🔓 Modifica Ricorrente (Super User)
-            </h4>
+              {_t("🔓 Modifica Ricorrente (Super User)")}</h4>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Modifica importo, giorno, categoria o conto della regola periodica.
-            </div>
+              {_t("Modifica importo, giorno, categoria o conto della regola periodica.")}</div>
 
             <form onSubmit={handleSaveEditedRecurring} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Tipo Movimento</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Tipo Movimento")}</label>
                 <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
                   <button
                     type="button"
                     onClick={() => setEditRecType('expense')}
                     style={{ flex: 1, padding: '7px', borderRadius: '8px', border: 'none', background: editRecType === 'expense' ? '#ef4444' : 'var(--bg-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                   >
-                    🔴 Uscita
-                  </button>
+                    {_t("🔴 Uscita")}</button>
                   <button
                     type="button"
                     onClick={() => setEditRecType('income')}
                     style={{ flex: 1, padding: '7px', borderRadius: '8px', border: 'none', background: editRecType === 'income' ? '#22c55e' : 'var(--bg-primary)', color: '#fff', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
                   >
-                    🟢 Entrata
-                  </button>
+                    {_t("🟢 Entrata")}</button>
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Importo (€)*</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Importo (€)*")}</label>
                 <input
                   type="text"
                   value={editRecAmount}
@@ -5167,14 +5069,14 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Conto</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Conto")}</label>
                 <select
                   value={editRecAccount}
                   onChange={(e) => setEditRecAccount(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
-                  <option value="base">💳 {finances.baseAccountName || 'Conto Base'}</option>
-                  <option value="cash">💵 Contanti</option>
+                  <option value="base">💳 {finances.baseAccountName || _t("Conto Base")}</option>
+                  <option value="cash">{_t("💵 Contanti")}</option>
                   {finances.secondaryAccounts && finances.secondaryAccounts.map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.emoji || '🏦'} {acc.name}</option>
                   ))}
@@ -5182,32 +5084,32 @@ export default function FinancesTab({
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Categoria</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Categoria")}</label>
                 <select
                   value={editRecCategory}
                   onChange={(e) => setEditRecCategory(e.target.value)}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '11px', marginTop: '2px', boxSizing: 'border-box' }}
                 >
                   {(editRecType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).map(c => (
-                    <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>
+                    <option key={c.id} value={c.id}>{c.emoji} {_t(c.label)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Descrizione / Nota</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Descrizione / Nota")}</label>
                 <input
                   type="text"
                   value={editRecNote}
                   onChange={(e) => setEditRecNote(e.target.value)}
-                  placeholder="Es. Affitto, Bolletta luce, Stipendio..."
+                  placeholder={_t("Es. Affitto, Bolletta luce, Stipendio...")}
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '2px', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Giorno del mese</label>
+                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Giorno del mese")}</label>
                   <input
                     type="number"
                     min="1"
@@ -5225,7 +5127,7 @@ export default function FinancesTab({
                       onChange={(e) => setEditRecActive(e.target.checked)}
                       style={{ width: '15px', height: '15px' }}
                     />
-                    <span>Attiva</span>
+                    <span>{_t("Attiva")}</span>
                   </label>
                 </div>
               </div>
@@ -5239,7 +5141,7 @@ export default function FinancesTab({
                       onChange={(e) => setEditRecExcludeBudget(!e.target.checked)}
                       style={{ width: '15px', height: '15px' }}
                     />
-                    <span>🎯 Scala dal Budget Mensile</span>
+                    <span>{_t("🎯 Scala dal Budget Mensile")}</span>
                   </label>
                 </div>
               )}
@@ -5250,14 +5152,12 @@ export default function FinancesTab({
                   onClick={() => setShowEditRecurringModal(false)}
                   style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   type="submit"
                   style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#000', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Salva Modifiche
-                </button>
+                  {_t("Salva Modifiche")}</button>
               </div>
             </form>
           </div>
@@ -5276,20 +5176,16 @@ export default function FinancesTab({
           >
             <div>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                🌐 Sincronizzazione Mercati
-              </h3>
+                {_t("🌐 Sincronizzazione Mercati")}</h3>
               <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '3px' }}>
-                Come funzionano le quotazioni online degli investimenti
-              </div>
+                {_t("Come funzionano le quotazioni online degli investimenti")}</div>
             </div>
 
             <div style={{ background: 'var(--bg-primary)', padding: '10px', borderRadius: '10px', border: '1px solid var(--glass-border)', fontSize: '11px', lineHeight: '1.45', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div>
-                🔒 <b style={{ color: 'var(--text-primary)' }}>Blocco CORS dei browser:</b> Per sicurezza, i browser mobili (iOS Safari, Android Chrome) impediscono a qualsiasi sito o PWA di chiamare direttamente Yahoo Finance senza un proxy intermedio.
-              </div>
+                🔒 <b style={{ color: 'var(--text-primary)' }}>{_t("Blocco CORS dei browser:")}</b> {" "}{_t("Per sicurezza, i browser mobili (iOS Safari, Android Chrome) impediscono a qualsiasi sito o PWA di chiamare direttamente Yahoo Finance senza un proxy intermedio.")}</div>
               <div>
-                ⚡ <b style={{ color: '#4ade80' }}>Sincronizzazione Automatica:</b> L'app prova automaticamente diversi nodi di rete pubblici (come allorigins). Tuttavia, le reti telefoniche o i nodi sovraccarichi possono rallentare o bloccare le richieste.
-              </div>
+                ⚡ <b style={{ color: '#4ade80' }}>{_t("Sincronizzazione Automatica:")}</b> {" "}{_t("L'app prova automaticamente diversi nodi di rete pubblici (come allorigins). Tuttavia, le reti telefoniche o i nodi sovraccarichi possono rallentare o bloccare le richieste.")}</div>
             </div>
 
             {/* Box Guida Rapida Cloudflare Worker con Codice Copiabile */}
@@ -5306,8 +5202,7 @@ export default function FinancesTab({
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <b style={{ fontSize: '12px', color: 'var(--accent-primary, #38bdf8)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>⚡</span> Configura Cloudflare Worker (1 min)
-                </b>
+                  <span>⚡</span> {" "}{_t("Configura Cloudflare Worker (1 min)")}</b>
                 <button
                   type="button"
                   onClick={handleCopyWorkerCodeInFinances}
@@ -5326,15 +5221,14 @@ export default function FinancesTab({
                   }}
                 >
                   <span>{copiedWorkerCodeInFinances ? '✓' : '📋'}</span>
-                  <span>{copiedWorkerCodeInFinances ? 'Copiato!' : 'Copia Codice'}</span>
+                  <span>{copiedWorkerCodeInFinances ? _t("Copiato!") : _t("Copia Codice")}</span>
                 </button>
               </div>
 
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                1. Su <a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>dash.cloudflare.com</a> crea un Worker <b>Hello World</b>.<br/>
-                2. Clicca su <b>Edit code</b>, cancella tutto il codice e incolla il codice copiato.<br/>
-                3. Clicca <b>Deploy</b>, copia l'URL (es. <code>https://tuo-proxy.workers.dev</code>) e incollalo qui sotto!
-              </div>
+                {_t("1. Su")}{" "}<a href="https://dash.cloudflare.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline' }}>{_t("dash.cloudflare.com")}</a> {" "}{_t("crea un Worker")}{" "}<b>{_t("Hello World")}</b>.<br/>
+                {_t("2. Clicca su")}{" "}<b>{_t("Edit code")}</b>{_t(", cancella tutto il codice e incolla il codice copiato.")}<br/>
+                {_t("3. Clicca")}{" "}<b>{_t("Deploy")}</b>{_t(", copia l'URL (es.")}{" "}<code>https://tuo-proxy.workers.dev</code>{_t(") e incollalo qui sotto!")}</div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button
@@ -5342,15 +5236,14 @@ export default function FinancesTab({
                   onClick={() => setShowWorkerGuideInModal(!showWorkerGuideInModal)}
                   style={{ background: 'transparent', border: 'none', color: '#38bdf8', fontSize: '10px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
                 >
-                  {showWorkerGuideInModal ? '▲ Nascondi anteprima codice' : '▼ Mostra anteprima codice'}
+                  {showWorkerGuideInModal ? _t("▲ Nascondi anteprima codice") : _t("▼ Mostra anteprima codice")}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowSyncHelpModal(false); setShowManualModalInFinances(true); }}
                   style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '10px', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
                 >
-                  📖 Manuale Completo
-                </button>
+                  {_t("📖 Manuale Completo")}</button>
               </div>
 
               {showWorkerGuideInModal && (
@@ -5376,8 +5269,7 @@ export default function FinancesTab({
             <form onSubmit={handleSaveCustomProxy} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'block' }}>
-                  Proxy Personale (Incolla l'URL del tuo Cloudflare Worker)
-                </label>
+                  {_t("Proxy Personale (Incolla l'URL del tuo Cloudflare Worker)")}</label>
                 <input
                   type="text"
                   placeholder="https://mio-proxy.workers.dev"
@@ -5386,8 +5278,7 @@ export default function FinancesTab({
                   style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', marginTop: '4px', boxSizing: 'border-box' }}
                 />
                 <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '3px' }}>
-                  Una volta incollato, tutte le richieste di aggiornamento prezzi useranno il tuo Worker istantaneamente.
-                </div>
+                  {_t("Una volta incollato, tutte le richieste di aggiornamento prezzi useranno il tuo Worker istantaneamente.")}</div>
               </div>
 
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
@@ -5396,20 +5287,17 @@ export default function FinancesTab({
                   onClick={() => setShowSyncHelpModal(false)}
                   style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Chiudi
-                </button>
+                  {_t("Chiudi")}</button>
                 <button
                   type="submit"
                   style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent-primary, #38bdf8)', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Salva Configurazione
-                </button>
+                  {_t("Salva Configurazione")}</button>
               </div>
             </form>
 
             <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-muted)' }}>
-              Tocca all'esterno per chiudere
-            </div>
+              {_t("Tocca all'esterno per chiudere")}</div>
           </div>
         </div>
       )}

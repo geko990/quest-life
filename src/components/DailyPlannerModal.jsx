@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getGameDate } from '../utils/helpers';
 
+import { _t } from '../i18n';
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false }) {
   const [slots, setSlots] = useState({
     action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
@@ -132,10 +133,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
   };
 
   const slotThemes = {
-    action: { title: 'AZIONE', emoji: '🎯', color: '#ef4444' },
-    bonus: { title: 'AZIONE BONUS', emoji: '⚡', color: '#f59e0b' },
-    movement: { title: 'MOVIMENTO', emoji: '🚶', color: '#0ea5e9' },
-    reaction: { title: 'REAZIONE', emoji: '🛡️', color: '#a855f7' }
+    action: { title: _t("AZIONE"), emoji: '🎯', color: '#ef4444' },
+    bonus: { title: _t("AZIONE BONUS"), emoji: '⚡', color: '#f59e0b' },
+    movement: { title: _t("MOVIMENTO"), emoji: '🚶', color: '#0ea5e9' },
+    reaction: { title: _t("REAZIONE"), emoji: '🛡️', color: '#a855f7' }
   };
 
   const renderSlot = (key, placeholder) => {
@@ -156,7 +157,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
       >
         {/* Rigo 1: Categoria Colore (Senza Emoji duplicata) */}
         <div style={{ fontSize: '10px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          {theme.title}
+          {_t(theme.title)}
         </div>
 
         {/* Rigo 2: Custom Emoji + Barra Nome + Emoji 📋 */}
@@ -184,7 +185,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               flexShrink: 0,
               boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
             }}
-            title="Tocca per scegliere l'emoji"
+            title={_t("Tocca per scegliere l'emoji")}
           >
             {slot.emoji || theme.emoji}
           </button>
@@ -250,18 +251,18 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   zIndex: 2
                 }}
               >
-                <option value="">📋 Attingi da Task o Campagne...</option>
+                <option value="">{_t("📋 Attingi da Task o Campagne...")}</option>
                 {uncompletedOneshots.length > 0 && (
-                  <optgroup label="💥 Task Singoli in Sospeso">
+                  <optgroup label={_t("💥 Task Singoli in Sospeso")}>
                     {uncompletedOneshots.map(o => (
                       <option key={o.id} value={`oneshot-${o.id}`}>
-                        {o.emoji || '💥'} {o.name} {o.scheduledCount ? `(programmato ${o.scheduledCount}x)` : ''}
+                        {o.emoji || '💥'} {o.name} {o.scheduledCount ? _t("(programmato {0}x)", o.scheduledCount) : ''}
                       </option>
                     ))}
                   </optgroup>
                 )}
                 {activeCampaignMilestones.length > 0 && (
-                  <optgroup label="🏆 Prossimo Obiettivo Campagne">
+                  <optgroup label={_t("🏆 Prossimo Obiettivo Campagne")}>
                     {activeCampaignMilestones.map(m => (
                       <option key={m.id} value={m.id}>
                         {m.emoji || '🏆'} {m.name} {m.questName ? `(${m.questName})` : ''}
@@ -285,7 +286,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   justifyContent: 'center',
                   cursor: 'pointer'
                 }}
-                title="Scegli da Task esistenti o Campagne"
+                title={_t("Scegli da Task esistenti o Campagne")}
               >
                 📋
               </button>
@@ -347,7 +348,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                 height: '22px'
               }}
             >
-              <option value="">+ Sec (nessuno)</option>
+              <option value="">{_t("+ Sec (nessuno)")}</option>
               {stats.map(s => (
                 <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
               ))}
@@ -401,10 +402,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '6px' }}>
           <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <span>🎲</span> {isTomorrow ? 'PIANIFICA DOMANI' : 'È IL TUO TURNO!'}
+            <span>🎲</span> {isTomorrow ? _t("PIANIFICA DOMANI") : _t("È IL TUO TURNO!")}
           </h2>
           <p style={{ margin: '1px 0 0 0', fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-            {isTomorrow ? 'Prepara le tue azioni in anticipo per domani' : 'Pianifica le tue azioni per oggi'}
+            {isTomorrow ? _t("Prepara le tue azioni in anticipo per domani") : _t("Pianifica le tue azioni per oggi")}
           </p>
         </div>
 
@@ -427,8 +428,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               {diceResult}
             </div>
             <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#22c55e' }}>
-              + {diceResult * 10}% XP Bonus! 🎉
-            </div>
+              {_t("+ {0}% XP Bonus! 🎉", diceResult * 10)}</div>
           </div>
         ) : isRolling ? (
           <div style={{ textAlign: 'center', padding: '8px 0' }}>
@@ -457,8 +457,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                 gap: '6px'
               }}
             >
-              🎲 Lancia un D10!
-            </button>
+              {_t("🎲 Lancia un D10!")}</button>
           </div>
         )}
       </div>

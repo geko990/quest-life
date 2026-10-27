@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 
+import { _t } from '../i18n';
 export default function SwipeableCard({
   children,
   onSwipeRight, // e.g. Complete
@@ -82,10 +83,10 @@ export default function SwipeableCard({
       >
         <div className="flex items-center gap-1.5 opacity-80">
           <span>✓</span>
-          <span>Completa</span>
+          <span>{_t("Completa")}</span>
         </div>
         <div className="flex items-center gap-1.5 opacity-80">
-          <span>Modifica</span>
+          <span>{_t("Modifica")}</span>
           <span>✏️</span>
         </div>
       </div>

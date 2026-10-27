@@ -1,5 +1,6 @@
 import { DB_NAME, DB_VERSION, DB_STORE } from './constants.js';
 
+import { _t } from '../i18n';
 export async function getDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -68,7 +69,7 @@ export async function linkDatabaseFile(initialData) {
     try {
         const options = {
             types: [{
-                description: 'Quest Life Database (JSON)',
+                description: _t("Quest Life Database (JSON)"),
                 accept: { 'application/json': ['.json'] },
             }],
             suggestedName: 'quest-life-db.json',
@@ -81,7 +82,7 @@ export async function linkDatabaseFile(initialData) {
     } catch (err) {
         console.error('Errore nel collegamento database:', err);
         if (err.name !== 'AbortError') {
-            alert('Impossibile collegare il database.');
+            alert(_t("Impossibile collegare il database."));
         }
         return null;
     }

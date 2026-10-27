@@ -4,12 +4,13 @@ import { CHALLENGE_TEMPLATES } from '../utils/constants';
 import { useTouchReorder } from '../utils/useTouchReorder';
 import { getDueStatus } from '../utils/deadlines';
 
+import { _t, getLocale } from '../i18n';
 // Etichetta della scadenza, colorata in base all'urgenza
 function DuePill({ item, compact = false }) {
   const status = getDueStatus(item);
   const date = new Date(item.dueDate + 'T00:00:00');
   const labels = { overdue: 'Scaduta', soon: 'Tra poco', today: 'Oggi', tomorrow: 'Domani' };
-  const text = labels[status] || date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+  const text = labels[status] || date.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
   return (
     <span className={`due-pill due-${status || 'done'}`} style={compact ? { fontSize: '10px', padding: '1px 6px' } : undefined}>
       📅 {text}{item.dueTime && status !== 'overdue' ? ` ${item.dueTime}` : ''}
@@ -66,12 +67,12 @@ export default function MissionsTab({
     <section id="section-activities" className="section active">
       {/* Top Header */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', gap: '8px' }}>
-        <h2 style={{ margin: 0, fontSize: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>⚔️ Registro Missioni</h2>
+        <h2 style={{ margin: 0, fontSize: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{_t("⚔️ Registro Missioni")}</h2>
         <div className="header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <button
             className="add-btn-circle"
             onClick={() => setShowCompletedOneshots(!showCompletedOneshots)}
-            title={showCompletedOneshots ? "Mostra missioni da completare" : "Mostra missioni completate"}
+            title={showCompletedOneshots ? _t("Mostra missioni da completare") : _t("Mostra missioni completate")}
             style={{
               background: showCompletedOneshots ? 'var(--accent-gradient, #7c3aed)' : 'var(--bg-secondary)',
               color: showCompletedOneshots ? '#ffffff' : 'var(--text-primary)',
@@ -87,7 +88,7 @@ export default function MissionsTab({
           <button
             className="add-btn-circle"
             onClick={() => onOpenModal(subTab === 'quest' ? 'quest' : 'oneshot')}
-            title="Crea nuova missione"
+            title={_t("Crea nuova missione")}
           >
             +
           </button>
@@ -100,20 +101,17 @@ export default function MissionsTab({
           onClick={() => setSubTab('oneshot')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'oneshot' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'oneshot' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
-          💥 Singole
-        </button>
+          {_t("💥 Singole")}</button>
         <button
           onClick={() => setSubTab('quest')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'quest' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'quest' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
-          🏆 Campagne
-        </button>
+          {_t("🏆 Campagne")}</button>
         <button
           onClick={() => setSubTab('catalog')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'catalog' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'catalog' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
-          ⚔️ Sfide
-        </button>
+          {_t("⚔️ Sfide")}</button>
       </div>
 
       {/* SUB-TAB 1: MISSIONI SINGOLE (ONE-SHOTS) */}
@@ -125,8 +123,8 @@ export default function MissionsTab({
             {filteredOneshots.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">💥</div>
-                <div className="empty-state-text">Nessuna missione {showCompletedOneshots ? 'completata' : 'attiva'}</div>
-                <div className="empty-state-hint">Clicca "+" per crearne una</div>
+                <div className="empty-state-text">{_t("Nessuna missione")}{" "}{showCompletedOneshots ? _t("completata") : _t("attiva")}</div>
+                <div className="empty-state-hint">{_t("Clicca \"+\" per crearne una")}</div>
               </div>
             ) : (
               filteredOneshots.map((o, idx) => {
@@ -190,8 +188,8 @@ export default function MissionsTab({
               {activeQuests.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-state-icon">🏆</div>
-                  <div className="empty-state-text">Nessuna campagna attiva</div>
-                  <div className="empty-state-hint">Attiva una sfida dal catalogo o creane una nuova</div>
+                  <div className="empty-state-text">{_t("Nessuna campagna attiva")}</div>
+                  <div className="empty-state-hint">{_t("Attiva una sfida dal catalogo o creane una nuova")}</div>
                 </div>
               ) : (
                 activeQuests.map((q, idx) => {
@@ -224,7 +222,7 @@ export default function MissionsTab({
                       <div
                         onClick={() => onOpenModal('quest_detail', q)}
                         style={{ padding: '14px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}
-                        title="Clicca per aprire la finestra dettagli della campagna"
+                        title={_t("Clicca per aprire la finestra dettagli della campagna")}
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -236,7 +234,7 @@ export default function MissionsTab({
 
                           {q.description && (
                             <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
-                              {q.description}
+                              {_t(q.description)}
                             </p>
                           )}
 
@@ -250,13 +248,13 @@ export default function MissionsTab({
                               <DuePill item={q} />
                             )}
                             <span style={{ color: '#f59e0b' }}>{'★'.repeat(q.difficulty || 1)}</span>
-                            <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{completedSub}/{totalSub} sotto-obiettivi</span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("{0}/{1} sotto-obiettivi", completedSub, totalSub)}</span>
                           </div>
 
                           {/* Reward Badge */}
                           {q.reward && (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', fontSize: '11px', color: '#f59e0b', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                              🎁 Premio: {q.reward}
+                              {_t("🎁 Premio: {0}", q.reward)}
                             </div>
                           )}
                         </div>
@@ -269,7 +267,7 @@ export default function MissionsTab({
                               e.stopPropagation();
                               toggleQuestExpand(q.id);
                             }}
-                            title="Espandi elenco sottotask"
+                            title={_t("Espandi elenco sottotask")}
                             style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '14px', cursor: 'pointer', padding: '4px' }}
                           >
                             {isExpanded ? '▲' : '▼'}
@@ -297,7 +295,7 @@ export default function MissionsTab({
                             transition: 'all 0.2s ease',
                             boxShadow: '0 2px 8px rgba(124, 58, 237, 0.12)'
                           }}
-                          title="Clicca per spuntare direttamente il prossimo sotto-obiettivo!"
+                          title={_t("Clicca per spuntare direttamente il prossimo sotto-obiettivo!")}
                         >
                           <div
                             style={{
@@ -318,8 +316,7 @@ export default function MissionsTab({
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>
-                              ⚡ PROSSIMO SOTTO-OBIETTIVO
-                            </span>
+                              {_t("⚡ PROSSIMO SOTTO-OBIETTIVO")}</span>
                             <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
                               {nextSubquest.name}
                             </span>
@@ -340,8 +337,7 @@ export default function MissionsTab({
                           }}
                         >
                           <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e' }}>
-                            🏆 Tutti i sotto-obiettivi completati!
-                          </span>
+                            {_t("🏆 Tutti i sotto-obiettivi completati!")}</span>
                         </div>
                       ) : (
                         <div
@@ -361,8 +357,7 @@ export default function MissionsTab({
                             cursor: 'pointer'
                           }}
                         >
-                          + Aggiungi milestones / sotto-obiettivi
-                        </div>
+                          {_t("+ Aggiungi milestones / sotto-obiettivi")}</div>
                       )}
 
                       {/* Progress Bar */}
@@ -375,8 +370,7 @@ export default function MissionsTab({
                         <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--glass-border)', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {totalSub === 0 ? (
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
-                              Nessun sotto-obiettivo definito.
-                            </p>
+                              {_t("Nessun sotto-obiettivo definito.")}</p>
                           ) : (
                             q.subquests.map((sq, idx) => (
                               <div
@@ -423,7 +417,7 @@ export default function MissionsTab({
               {completedQuests.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-state-icon">🏆</div>
-                  <div className="empty-state-text">Nessuna campagna completata</div>
+                  <div className="empty-state-text">{_t("Nessuna campagna completata")}</div>
                 </div>
               ) : (
                 completedQuests.map((q) => (
@@ -437,9 +431,9 @@ export default function MissionsTab({
                       <span style={{ fontSize: '22px' }}>{q.emoji || '🏆'}</span>
                       <div>
                         <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: 'line-through' }}>{q.name}</h4>
-                        <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold' }}>Completata!</span>
+                        <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: 'bold' }}>{_t("Completata!")}</span>
                         {q.reward && (
-                          <div style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>🎁 Premio sbloccato: {q.reward}</div>
+                          <div style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>{_t("🎁 Premio sbloccato: {0}", q.reward)}</div>
                         )}
                       </div>
                     </div>
@@ -451,8 +445,7 @@ export default function MissionsTab({
                       }}
                       style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
-                      🔍 Dettagli
-                    </button>
+                      {_t("🔍 Dettagli")}</button>
                   </div>
                 ))
               )}
@@ -466,9 +459,8 @@ export default function MissionsTab({
         <div key="catalog" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '8px' }}>
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-              ⚔️ Catalogo Sfide Preimpostate
-            </h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>Scegli una sfida per iniziare subito</p>
+              {_t("⚔️ Catalogo Sfide Preimpostate")}</h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>{_t("Scegli una sfida per iniziare subito")}</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -482,7 +474,7 @@ export default function MissionsTab({
                   className="glass-panel"
                   onClick={() => onOpenModal('challenge_preview', tmpl)}
                   style={{ padding: '14px', borderLeft: `4px solid ${tmpl.color || 'var(--accent-primary)'}`, display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }}
-                  title="Clicca per visualizzare l'anteprima completa delle milestones e i dettagli della sfida"
+                  title={_t("Clicca per visualizzare l'anteprima completa delle milestones e i dettagli della sfida")}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
@@ -507,7 +499,7 @@ export default function MissionsTab({
                           {cleanName || tmpl.name}
                         </h4>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-                          <span style={{ background: 'var(--bg-secondary)', padding: '1px 6px', borderRadius: '6px', fontWeight: 'bold' }}>{tmpl.duration} GG</span>
+                          <span style={{ background: 'var(--bg-secondary)', padding: '1px 6px', borderRadius: '6px', fontWeight: 'bold' }}>{_t("{0} GG", tmpl.duration)}</span>
                           {primaryStat && <span>• {primaryStat.icon} {primaryStat.name}</span>}
                           <span>• {'⭐'.repeat(tmpl.stars || 3)}</span>
                         </div>
@@ -533,11 +525,10 @@ export default function MissionsTab({
                         boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)'
                       }}
                     >
-                      Attiva Sfida
-                    </button>
+                      {_t("Attiva Sfida")}</button>
                   </div>
                   <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                    {tmpl.description}
+                    {_t(tmpl.description)}
                   </p>
                 </div>
               );

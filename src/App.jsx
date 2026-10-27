@@ -20,6 +20,7 @@ import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
 import { getUrgentItems, updateAppBadge, checkDeadlineReminders } from './utils/deadlines';
 
+import { setLanguage, _t } from './i18n';
 class TabErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -54,10 +55,9 @@ class TabErrorBoundary extends React.Component {
         }}>
           <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold' }}>
-            Si è verificato un problema di caricamento
-          </h3>
+            {_t("Si è verificato un problema di caricamento")}</h3>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '340px', marginBottom: '20px', lineHeight: '1.4' }}>
-            {this.state.error?.message || this.state.error?.toString() || 'Errore imprevisto di rendering.'}
+            {this.state.error?.message || this.state.error?.toString() || _t("Errore imprevisto di rendering.")}
           </p>
           <button
             onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
@@ -74,8 +74,7 @@ class TabErrorBoundary extends React.Component {
               width: 'auto'
             }}
           >
-            🔄 Ripristina Schermata
-          </button>
+            {_t("🔄 Ripristina Schermata")}</button>
         </div>
       );
     }
@@ -112,6 +111,8 @@ export default function App() {
   const [inventory, setInventory] = useState(initialFullState.inventory);
   const [health, setHealth] = useState(initialFullState.health);
   const [settings, setSettings] = useState(initialFullState.settings);
+  // Lingua dell'interfaccia: impostata prima del render dei figli
+  setLanguage(settings.language || 'it');
   const { layoutMode, isLandscape, isTablet } = useLayoutMode(settings);
   const [finances, setFinances] = useState(initialFullState.finances);
   const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);
@@ -490,7 +491,7 @@ export default function App() {
         const newMedal = {
           id: monthId,
           name: `Medaglia di ${monthName} ${yr}`,
-          description: "Obiettivo mensile e Piramide delle Difficoltà completati!",
+          description: _t("Obiettivo mensile e Piramide delle Difficoltà completati!"),
           icon: topStatObj?.icon || '🏅',
           topStatName: topStatObj?.name || 'Varie',
           topStatIcon: topStatObj?.icon || '🏆',
@@ -522,7 +523,7 @@ export default function App() {
 
     if (leveledUp) {
       if (settings.soundEnabled) playLevelUpSound();
-      alert(`🎉 LEVEL UP! Sei salito al Livello ${achievedLevel}! Continua così, eroe!`);
+      alert(_t("🎉 LEVEL UP! Sei salito al Livello {0}! Continua così, eroe!", achievedLevel));
     }
   };
 
@@ -817,7 +818,7 @@ export default function App() {
         return { ...prev, [todayStr]: { ...dayLog, quests: list } };
       });
       setTimeout(() => {
-        alert(`🏆 CAMPAGNA COMPLETATA! "${targetQuest.name}" è finita! Hai guadagnato +${xpReward} XP!`);
+        alert(_t("🏆 CAMPAGNA COMPLETATA! \"{0}\" è finita! Hai guadagnato +{1} XP!", targetQuest.name, xpReward));
       }, 50);
     } else if (!allDone && wasDone) {
       // Deduct Campaign Completion XP if uncompleted
@@ -1317,7 +1318,7 @@ export default function App() {
       subquests
     };
     setQuests(prev => [...prev, newQuest]);
-    alert(`⚔️ CAMPAGNA SFIDA ATTIVATA! "${tmpl.name}" è stata aggiunta alla scheda Campagne.`);
+    alert(_t("⚔️ CAMPAGNA SFIDA ATTIVATA! \"{0}\" è stata aggiunta alla scheda Campagne.", tmpl.name));
   };
 
   // 11. Database Actions (FileSystem API bindings)
@@ -1328,7 +1329,7 @@ export default function App() {
     const handle = await linkDatabaseFile(fullStateObj);
     if (handle) {
       setFileHandle(handle);
-      alert(`🟢 Database file collegato correttamente: ${handle.name}`);
+      alert(_t("🟢 Database file collegato correttamente: {0}", handle.name));
     }
   };
 
@@ -1338,12 +1339,12 @@ export default function App() {
       const granted = await verifyPermission(handle, true);
       if (granted) {
         setFileHandle(handle);
-        alert(`🔌 Connesso a: ${handle.name}`);
+        alert(_t("🔌 Connesso a: {0}", handle.name));
       } else {
-        alert(`❌ Permessi non accordati.`);
+        alert(_t("❌ Permessi non accordati."));
       }
     } else {
-      alert(`⚠️ Nessun file da riconnettere.`);
+      alert(_t("⚠️ Nessun file da riconnettere."));
     }
   };
 
@@ -1368,7 +1369,7 @@ export default function App() {
           const fileHandle = await window.showSaveFilePicker({
             suggestedName: filename,
             types: [{
-              description: 'Quest Life Backup (JSON)',
+              description: _t("Quest Life Backup (JSON)"),
               accept: { 'application/json': ['.json'] }
             }]
           });
@@ -1420,7 +1421,7 @@ export default function App() {
         URL.revokeObjectURL(url);
       }, 1000);
     } catch (err) {
-      alert(`⚠️ Errore durante l'esportazione: ${err.message}`);
+      alert(_t("⚠️ Errore durante l'esportazione: {0}", err.message));
     } finally {
       setTimeout(() => {
         isExportingRef.current = false;
@@ -1456,9 +1457,9 @@ export default function App() {
             setFinances(sanitized.finances);
           }
 
-          alert("📥 Dati importati correttamente!");
+          alert(_t("📥 Dati importati correttamente!"));
         } catch (err) {
-          alert("❌ Errore nel caricamento del file JSON.");
+          alert(_t("❌ Errore nel caricamento del file JSON."));
         }
       };
       reader.readAsText(file);
@@ -1492,7 +1493,7 @@ export default function App() {
     setCompletionLog(sanitized.completionLog);
     setXpLog(sanitized.xpLog);
     if (sanitized.finances) setFinances(sanitized.finances);
-    alert("🔧 Database sanificato, task duplicati rimossi e punti XP ricalcolati con successo!");
+    alert(_t("🔧 Database sanificato, task duplicati rimossi e punti XP ricalcolati con successo!"));
   };
 
   const handleRepairStreaks = () => {
@@ -1526,11 +1527,11 @@ export default function App() {
     });
 
     setHabits(updatedHabits);
-    alert("🔥 Serie delle abitudini ricalcolate correttamente.");
+    alert(_t("🔥 Serie delle abitudini ricalcolate correttamente."));
   };
 
   const handleReset = () => {
-    if (window.confirm("Sei sicuro di voler cancellare tutto? I tuoi dati andranno persi permanente!")) {
+    if (window.confirm(_t("Sei sicuro di voler cancellare tutto? I tuoi dati andranno persi permanente!"))) {
       localStorage.removeItem('questlife_state_v2');
       window.location.reload();
     }
@@ -1555,7 +1556,7 @@ export default function App() {
       }
     }));
 
-    alert(`⚡ Routine "${preset.name || 'Giornata Tipo'}" applicata per oggi! 🎉`);
+    alert(_t("⚡ Routine \"{0}\" applicata per oggi! 🎉", preset.name || _t("Giornata Tipo")));
   };
 
   // Form open helpers
@@ -1756,11 +1757,10 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '16px' }}>🚀</span>
-            <span>Nuova versione v{latestVersion} pronta!</span>
+            <span>{_t("Nuova versione v{0} pronta!", latestVersion)}</span>
           </div>
           <span style={{ background: 'rgba(255,255,255,0.25)', padding: '4px 10px', borderRadius: '10px', fontSize: '11px' }}>
-            Aggiorna Ora 🔄
-          </span>
+            {_t("Aggiorna Ora 🔄")}</span>
         </div>
       )}
 
@@ -1901,14 +1901,14 @@ export default function App() {
             className="w-full max-w-sm bg-bg-main border border-border-color rounded-2xl shadow-2xl animate-scale-up"
           >
             <div className="px-5 py-4 border-b border-border-color/50 flex justify-center items-center text-center">
-              <h3 className="font-bold text-text-main text-base font-cinzel">✍️ Modifica Motto</h3>
+              <h3 className="font-bold text-text-main text-base font-cinzel">{_t("✍️ Modifica Motto")}</h3>
             </div>
             <div className="p-5">
               <input
                 type="text"
                 value={mottoText}
                 onChange={(e) => setMottoText(e.target.value)}
-                placeholder="Digita il tuo motto personale..."
+                placeholder={_t("Digita il tuo motto personale...")}
                 className="w-full bg-slate-950/40 border border-border-color rounded px-3 py-2 text-sm text-text-main focus:outline-none"
                 maxLength="50"
               />
@@ -1917,8 +1917,7 @@ export default function App() {
                   onClick={() => setShowMottoModal(false)}
                   className="px-4 py-2 border border-border-color rounded text-xs text-text-secondary"
                 >
-                  Annulla
-                </button>
+                  {_t("Annulla")}</button>
                 <button
                   onClick={() => {
                     setPlayer(prev => ({ ...prev, motto: mottoText }));
@@ -1926,8 +1925,7 @@ export default function App() {
                   }}
                   className="px-5 py-2 bg-accent-primary hover:brightness-110 text-white rounded text-xs font-bold"
                 >
-                  Salva
-                </button>
+                  {_t("Salva")}</button>
               </div>
             </div>
           </div>

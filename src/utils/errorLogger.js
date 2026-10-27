@@ -1,3 +1,4 @@
+import { getLocale } from '../i18n';
 /**
  * Error Logger & Diagnostics for Quest Life
  * Captures uncaught runtime errors, unhandled rejections, storage exceptions,
@@ -22,7 +23,7 @@ export function getAppErrors() {
 export function logAppError(error, context = {}) {
   try {
     const timestamp = new Date().toISOString();
-    const readableTime = new Date().toLocaleString('it-IT', {
+    const readableTime = new Date().toLocaleString(getLocale(), {
       dateStyle: 'short',
       timeStyle: 'medium'
     });
@@ -77,13 +78,13 @@ export function clearAppErrors() {
 export function formatErrorsForClipboard(appVersion) {
   const errors = getAppErrors();
   if (errors.length === 0) {
-    return `=== QUEST LIFE DIAGNOSTICA ===\nApp Version: ${appVersion || 'N/A'}\nData: ${new Date().toLocaleString('it-IT')}\nNessun errore registrato. Tutto operativo.`;
+    return `=== QUEST LIFE DIAGNOSTICA ===\nApp Version: ${appVersion || 'N/A'}\nData: ${new Date().toLocaleString(getLocale())}\nNessun errore registrato. Tutto operativo.`;
   }
 
   const lines = [
     `=== QUEST LIFE DIAGNOSTICA ERRORI ===`,
     `App Version: ${appVersion || 'N/A'}`,
-    `Data report: ${new Date().toLocaleString('it-IT')}`,
+    `Data report: ${new Date().toLocaleString(getLocale())}`,
     `Errori totali registrati: ${errors.length}`,
     `--------------------------------------`
   ];

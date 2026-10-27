@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchOnlineFood, guessFoodEmoji } from '../utils/nutritionSearch';
 
+import { _t } from '../i18n';
 export default function QuickMealModal({
   isOpen,
   onClose,
@@ -320,7 +321,7 @@ export default function QuickMealModal({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>
-                  {selectedFood ? 'Scheda Porzione Pasto' : 'Inserisci Pasto Rapido'}
+                  {selectedFood ? _t("Scheda Porzione Pasto") : _t("Inserisci Pasto Rapido")}
                 </h3>
                 <span
                   style={{
@@ -333,13 +334,10 @@ export default function QuickMealModal({
                     border: '1px solid rgba(56, 189, 248, 0.3)'
                   }}
                 >
-                  MEMORIA & ONLINE
-                </span>
+                  {_t("MEMORIA & ONLINE")}</span>
               </div>
               <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#94a3b8' }}>
-                {selectedFood
-                  ? 'Imposta i grammi assunti e decidi se salvarlo nel database'
-                  : 'Cerca nei tuoi cibi o su internet per compilare al volo'}
+                {selectedFood ? _t("Imposta i grammi assunti e decidi se salvarlo nel database") : _t("Cerca nei tuoi cibi o su internet per compilare al volo")}
               </p>
             </div>
           </div>
@@ -376,7 +374,7 @@ export default function QuickMealModal({
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onKeyDown={(e) => e.key === 'Enter' && triggerOnlineSearch()}
-                  placeholder="🔎 Cerca cibo nei tuoi alimenti o su internet..."
+                  placeholder={_t("🔎 Cerca cibo nei tuoi alimenti o su internet...")}
                   autoFocus
                   style={{
                     width: '100%',
@@ -451,9 +449,9 @@ export default function QuickMealModal({
                   <span style={{ fontSize: '16px' }}>🔢</span>
                   <span style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '12px', color: '#6ee7b7', fontWeight: 'bold' }}>
-                      {cleanQ ? `"${searchQuery.trim()}": inserisci solo kcal e proteine` : 'Inserisci solo kcal e proteine'}
+                      {cleanQ ? _t("\"{0}\": inserisci solo kcal e proteine", searchQuery.trim()) : _t("Inserisci solo kcal e proteine")}
                     </span>
-                    <span style={{ fontSize: '9.5px', color: '#94a3b8' }}>Per pasti fuori casa o già calcolati, senza grammi</span>
+                    <span style={{ fontSize: '9.5px', color: '#94a3b8' }}>{_t("Per pasti fuori casa o già calcolati, senza grammi")}</span>
                   </span>
                 </span>
                 <span style={{ fontSize: '11px', color: '#6ee7b7' }}>→</span>
@@ -477,8 +475,7 @@ export default function QuickMealModal({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '16px' }}>✏️</span>
                     <span style={{ fontSize: '12px', color: '#c4b5fd', fontWeight: 'bold' }}>
-                      Inserisci "{searchQuery.trim()}" come pasto personalizzato
-                    </span>
+                      {_t("Inserisci \"{0}\" come pasto personalizzato", searchQuery.trim())}</span>
                   </div>
                   <span style={{ fontSize: '11px', color: '#a78bfa' }}>→</span>
                 </div>
@@ -488,17 +485,16 @@ export default function QuickMealModal({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span>{showingFavorites ? '⭐' : '💾'}</span> {cleanQ ? `Nel tuo archivio (${localMatches.length})` : (showingFavorites ? `Preferiti (${favoriteFoods.length})` : 'Cibi in memoria')}
+                    <span>{showingFavorites ? '⭐' : '💾'}</span> {cleanQ ? _t("Nel tuo archivio ({0})", localMatches.length) : (showingFavorites ? _t("Preferiti ({0})", favoriteFoods.length) : _t("Cibi in memoria"))}
                   </span>
                   {!cleanQ && (
-                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{showingFavorites ? 'Scrivi per cercare in tutto l\'archivio' : 'Tocca ☆ in un cibo per i preferiti'}</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{showingFavorites ? _t("Scrivi per cercare in tutto l'archivio") : _t("Tocca ☆ in un cibo per i preferiti")}</span>
                   )}
                 </div>
 
                 {localMatches.length === 0 ? (
                   <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', padding: '6px 2px' }}>
-                    Nessun cibo corrispondente trovato in memoria.
-                  </div>
+                    {_t("Nessun cibo corrispondente trovato in memoria.")}</div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
                     {localMatches.map((food) => (
@@ -523,8 +519,7 @@ export default function QuickMealModal({
                             {food.name}
                           </div>
                           <div style={{ fontSize: '9.5px', color: '#38bdf8', marginTop: '1px' }}>
-                            {food.baseCalories} kcal • {food.baseProteins}g P
-                          </div>
+                            {_t("{0} kcal • {1}g P", food.baseCalories, food.baseProteins)}</div>
                         </div>
                       </div>
                     ))}
@@ -537,10 +532,9 @@ export default function QuickMealModal({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '11px', fontWeight: '800', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>🌐</span> Da Internet (Open Food Facts)
-                    </span>
+                      <span>🌐</span> {" "}{_t("Da Internet (Open Food Facts)")}</span>
                     {isSearchingOnline && (
-                      <span style={{ fontSize: '10px', color: '#a78bfa' }}>Ricerca in corso...</span>
+                      <span style={{ fontSize: '10px', color: '#a78bfa' }}>{_t("Ricerca in corso...")}</span>
                     )}
                   </div>
 
@@ -577,8 +571,7 @@ export default function QuickMealModal({
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: '8px' }}>
                             <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#38bdf8' }}>
-                              {item.baseCalories} kcal
-                            </span>
+                              {_t("{0} kcal", item.baseCalories)}</span>
                             <span style={{ fontSize: '10px', color: '#a78bfa', background: 'rgba(167, 139, 250, 0.15)', padding: '1px 5px', borderRadius: '6px' }}>
                               {item.baseProteins}g P
                             </span>
@@ -589,7 +582,7 @@ export default function QuickMealModal({
                   ) : (
                     !isSearchingOnline && cleanQ.length >= 2 && (
                       <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', padding: '6px 2px' }}>
-                        {onlineError || 'Nessun alimento trovato online. Puoi crearlo manualmente toccando sopra!'}
+                        {onlineError || _t("Nessun alimento trovato online. Puoi crearlo manualmente toccando sopra!")}
                       </div>
                     )
                   )}
@@ -628,14 +621,14 @@ export default function QuickMealModal({
                           onToggleFavorite(selectedFood.id);
                           setSelectedFood(prev => ({ ...prev, favorite: !prev.favorite }));
                         }}
-                        title={selectedFood.favorite ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}
+                        title={selectedFood.favorite ? _t("Togli dai preferiti") : _t("Aggiungi ai preferiti")}
                         style={{ background: 'none', border: 'none', padding: 0, fontSize: '16px', lineHeight: 1, cursor: 'pointer', color: selectedFood.favorite ? '#f59e0b' : '#64748b' }}
                       >
                         {selectedFood.favorite ? '★' : '☆'}
                       </button>
                     )}
                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', textTransform: 'uppercase' }}>
-                      {isTotalsOnly ? '🔢 Pasto libero: solo kcal e proteine' : (selectedFood.isManual ? '✏️ Pasto personalizzato' : (selectedFood.isLocal ? '💾 Cibo da Memoria' : '🌐 Cibo da Internet'))}
+                      {isTotalsOnly ? _t("🔢 Pasto libero: solo kcal e proteine") : (selectedFood.isManual ? _t("✏️ Pasto personalizzato") : (selectedFood.isLocal ? _t("💾 Cibo da Memoria") : _t("🌐 Cibo da Internet")))}
                     </span>
                     </span>
                     <button
@@ -652,14 +645,12 @@ export default function QuickMealModal({
                         cursor: 'pointer'
                       }}
                     >
-                      ← Cambia cibo
-                    </button>
+                      {_t("← Cambia cibo")}</button>
                   </div>
 
                   <div>
                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>
-                      Nome Alimento
-                    </label>
+                      {_t("Nome Alimento")}</label>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <input
                         type="text"
@@ -675,13 +666,13 @@ export default function QuickMealModal({
                           borderRadius: '10px',
                           color: '#f8fafc'
                         }}
-                        title="Icona / Emoji"
+                        title={_t("Icona / Emoji")}
                       />
                       <input
                         type="text"
                         value={mealName}
                         onChange={(e) => setMealName(e.target.value)}
-                        placeholder="Nome dell'alimento..."
+                        placeholder={_t("Nome dell'alimento...")}
                         style={{
                           flex: 1,
                           height: '38px',
@@ -699,8 +690,8 @@ export default function QuickMealModal({
                   </div>
 
                   {!isTotalsOnly && <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                    Valori base (100g): <b style={{ color: '#38bdf8' }}>{selectedFood.baseCalories ?? 0} kcal</b> • <b style={{ color: '#a78bfa' }}>{selectedFood.baseProteins ?? 0}g P</b>
-                    {selectedFood.brand ? ` • Marca: ${selectedFood.brand}` : ''}
+                    {_t("Valori base (100g):")}{" "}<b style={{ color: '#38bdf8' }}>{_t("{0} kcal", selectedFood.baseCalories ?? 0)}</b> • <b style={{ color: '#a78bfa' }}>{selectedFood.baseProteins ?? 0}g P</b>
+                    {selectedFood.brand ? _t(" • Marca: {0}", selectedFood.brand) : ''}
                   </div>}
                 </div>
 
@@ -708,8 +699,7 @@ export default function QuickMealModal({
                 {!isTotalsOnly && <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '12px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#f8fafc', textTransform: 'uppercase' }}>
-                      ⚖️ Peso Assunto (Grammi)
-                    </label>
+                      {_t("⚖️ Peso Assunto (Grammi)")}</label>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       {[50, 100, 150, 200, 250, 300].map((g) => (
                         <button
@@ -739,7 +729,7 @@ export default function QuickMealModal({
                     step="any"
                     value={portionGrams}
                     onChange={(e) => handlePortionChange(e.target.value)}
-                    placeholder="Inserisci grammi..."
+                    placeholder={_t("Inserisci grammi...")}
                     style={{
                       width: '100%',
                       height: '40px',
@@ -759,8 +749,7 @@ export default function QuickMealModal({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '4px', textTransform: 'uppercase' }}>
-                      🔥 Calorie Pasto (kcal)
-                    </label>
+                      {_t("🔥 Calorie Pasto (kcal)")}</label>
                     <input
                       type="number"
                       min="0"
@@ -769,7 +758,7 @@ export default function QuickMealModal({
                       onChange={(e) => setMealCalories(e.target.value)}
                       autoFocus={isTotalsOnly}
                       inputMode="decimal"
-                      placeholder={isTotalsOnly ? 'es. 800' : undefined}
+                      placeholder={isTotalsOnly ? _t("es. 800") : undefined}
                       style={{
                         width: '100%',
                         height: '38px',
@@ -787,8 +776,7 @@ export default function QuickMealModal({
 
                   <div>
                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#a78bfa', marginBottom: '4px', textTransform: 'uppercase' }}>
-                      🥩 Proteine (g)
-                    </label>
+                      {_t("🥩 Proteine (g)")}</label>
                     <input
                       type="number"
                       min="0"
@@ -796,7 +784,7 @@ export default function QuickMealModal({
                       value={mealProteins}
                       onChange={(e) => setMealProteins(e.target.value)}
                       inputMode="decimal"
-                      placeholder={isTotalsOnly ? 'es. 40' : undefined}
+                      placeholder={isTotalsOnly ? _t("es. 40") : undefined}
                       style={{
                         width: '100%',
                         height: '38px',
@@ -816,14 +804,13 @@ export default function QuickMealModal({
                 {/* Pasto di Destinazione */}
                 <div>
                   <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Pasto di Destinazione
-                  </label>
+                    {_t("Pasto di Destinazione")}</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                     {[
-                      { id: 'breakfast', label: 'Colazione', icon: '☕' },
-                      { id: 'main', label: 'Principale', icon: '🍽️' },
-                      { id: 'snack', label: 'Spuntino', icon: '🍌' },
-                      { id: 'cheat', label: 'Sgarro', icon: '🍕' }
+                      { id: 'breakfast', label: _t("Colazione"), icon: '☕' },
+                      { id: 'main', label: _t("Principale"), icon: '🍽️' },
+                      { id: 'snack', label: _t("Spuntino"), icon: '🍌' },
+                      { id: 'cheat', label: _t("Sgarro"), icon: '🍕' }
                     ].map((cat) => {
                       const isSel = mealCategory === cat.id;
                       return (
@@ -848,7 +835,7 @@ export default function QuickMealModal({
                           }}
                         >
                           <span style={{ fontSize: '14px' }}>{cat.icon}</span>
-                          <span>{cat.label}</span>
+                          <span>{_t(cat.label)}</span>
                         </button>
                       );
                     })}
@@ -878,16 +865,10 @@ export default function QuickMealModal({
                   />
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: '#f8fafc' }}>
-                      {selectedFood.isLocal
-                        ? '✅ Già presente nel Database Alimenti'
-                        : (saveToDb ? '💾 Salva anche nel Database Alimenti' : '❌ Non salvare nel Database (solo oggi)')}
+                      {selectedFood.isLocal ? _t("✅ Già presente nel Database Alimenti") : (saveToDb ? _t("💾 Salva anche nel Database Alimenti") : _t("❌ Non salvare nel Database (solo oggi)"))}
                     </span>
                     <span style={{ fontSize: '9.5px', color: '#94a3b8' }}>
-                      {selectedFood.isLocal
-                        ? 'Questo alimento è già memorizzato e pronto all\'uso.'
-                        : (saveToDb
-                            ? 'Aggiungilo alla lista cibi per ritrovarlo al volo anche domani.'
-                            : 'Verrà conteggiato solo nel diario di oggi senza occupare spazio nel database.')}
+                      {selectedFood.isLocal ? _t("Questo alimento è già memorizzato e pronto all'uso.") : (saveToDb ? _t("Aggiungilo alla lista cibi per ritrovarlo al volo anche domani.") : _t("Verrà conteggiato solo nel diario di oggi senza occupare spazio nel database."))}
                     </span>
                   </div>
                 </label>}
@@ -918,13 +899,11 @@ export default function QuickMealModal({
                   }}
                 >
                   <span>
-                    {saveToDb && !selectedFood.isLocal && !isTotalsOnly
-                      ? '➕ Aggiungi al Diario & Salva nel Database'
-                      : '➕ Aggiungi al Diario di Oggi'}
+                    {saveToDb && !selectedFood.isLocal && !isTotalsOnly ? _t("➕ Aggiungi al Diario & Salva nel Database") : _t("➕ Aggiungi al Diario di Oggi")}
                   </span>
                   {mealCalories !== '' && !isNaN(Number(mealCalories)) ? (
                     <span style={{ background: 'rgba(0, 0, 0, 0.2)', padding: '2px 7px', borderRadius: '6px', fontSize: '11px' }}>
-                      +{mealCalories} kcal {mealProteins ? `/ ${mealProteins}g P` : ''}
+                      {_t("+{0} kcal", mealCalories)}{" "}{mealProteins ? `/ ${mealProteins}g P` : ''}
                     </span>
                   ) : null}
                 </button>

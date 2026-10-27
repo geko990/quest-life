@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 
+import { _t } from '../i18n';
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome, badges = {} }) {
   const lastClicksRef = useRef({});
 
@@ -46,22 +47,22 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
   };
 
   const navItems = [
-    { id: 'habits', icon: '📜', label: 'Abitudini' },
+    { id: 'habits', icon: '📜', label: _t("Abitudini") },
     {
       id: 'missions',
       icon: activeTab === 'quests' ? '🏆' : '⚔️',
-      label: activeTab === 'quests' ? 'Campagne' : 'Missioni'
+      label: activeTab === 'quests' ? _t("Campagne") : _t("Missioni")
     },
-    { id: 'home', icon: 'avatar', label: 'Eroe', isCenter: true },
+    { id: 'home', icon: 'avatar', label: _t("Eroe"), isCenter: true },
     {
       id: 'nutrition',
       icon: activeTab === 'shopping' ? '🛒' : '🍎',
-      label: activeTab === 'shopping' ? 'Spesa' : 'Salute'
+      label: activeTab === 'shopping' ? _t("Spesa") : _t("Salute")
     },
     {
       id: 'settings',
       icon: activeTab === 'finances' ? '💰' : '⚙️',
-      label: activeTab === 'finances' ? 'Tesoro' : 'Opzioni'
+      label: activeTab === 'finances' ? _t("Tesoro") : _t("Opzioni")
     },
   ];
 
@@ -136,12 +137,12 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                   padding: 0,
                   marginBottom: '4px'
                 }}
-                title="Scheda Eroe (Home) — tieni premuto per creare una missione"
+                title={_t("Scheda Eroe (Home) — tieni premuto per creare una missione")}
               >
                 {avatarType === 'image' && avatarImage ? (
                   <img
                     src={avatarImage}
-                    alt="Avatar"
+                    alt={_t("Avatar")}
                     draggable={false}
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', pointerEvents: 'none', WebkitTouchCallout: 'none' }}
                   />
@@ -181,14 +182,14 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                   fontWeight: isActive ? 'bold' : 'normal',
                   transition: 'all 0.2s ease'
                 }}
-                title={item.label}
+                title={_t(item.label)}
               >
                 <span style={{ fontSize: '18px', marginBottom: '2px', position: 'relative' }}>
                   {item.icon}
                   {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
                 </span>
                 <span style={{ fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '58px' }}>
-                  {item.label}
+                  {_t(item.label)}
                 </span>
               </button>
             );
@@ -245,12 +246,12 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                   transition: isPressingHome ? 'transform 0.45s ease-out' : 'transform 0.2s',
                   WebkitTapHighlightColor: 'transparent'
                 }}
-                title="Scheda Eroe (Home) — tieni premuto per creare una missione"
+                title={_t("Scheda Eroe (Home) — tieni premuto per creare una missione")}
               >
                 {avatarType === 'image' && avatarImage ? (
                   <img
                     src={avatarImage}
-                    alt="Avatar"
+                    alt={_t("Avatar")}
                     draggable={false}
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', pointerEvents: 'none', WebkitTouchCallout: 'none' }}
                   />
@@ -292,7 +293,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               {item.icon}
               {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
             </span>
-            <span style={{ fontSize: '9.5px', lineHeight: 1.1, letterSpacing: '0.1px' }}>{item.label}</span>
+            <span style={{ fontSize: '9.5px', lineHeight: 1.1, letterSpacing: '0.1px' }}>{_t(item.label)}</span>
           </button>
         );
       })}

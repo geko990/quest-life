@@ -1,3 +1,4 @@
+import { _t, getLocale } from '../i18n';
 // Scadenze di task e campagne: stato (scaduta, tra poco, oggi, domani), contatori per
 // pallini rossi e numero sull'icona, promemoria locali (1 giorno / 1 ora prima).
 // Limite di una PWA: i promemoria partono solo mentre l'app è aperta o in background da poco.
@@ -77,8 +78,8 @@ const writeFired = (fired) => {
 };
 
 const fmtWhen = (dueAt, hasTime) =>
-  dueAt.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }) +
-  (hasTime ? ` alle ${dueAt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}` : '');
+  dueAt.toLocaleDateString(getLocale(), { weekday: 'short', day: 'numeric', month: 'short' }) +
+  (hasTime ? ` alle ${dueAt.toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit' })}` : '');
 
 // Invia i promemoria dovuti (una sola volta ciascuno). prefs: { enabled, dayBefore, hourBefore }
 export function checkDeadlineReminders(oneshots = [], quests = [], prefs = {}, now = new Date()) {
@@ -95,8 +96,8 @@ export function checkDeadlineReminders(oneshots = [], quests = [], prefs = {}, n
     if (dueMs < nowMs) continue;
 
     const reminders = [];
-    if (prefs.dayBefore !== false) reminders.push({ type: '1g', at: dueMs - DAY, text: 'Scade domani' });
-    if (prefs.hourBefore !== false && item.dueTime) reminders.push({ type: '1h', at: dueMs - HOUR, text: 'Scade tra meno di un\'ora' });
+    if (prefs.dayBefore !== false) reminders.push({ type: '1g', at: dueMs - DAY, text: _t("Scade domani") });
+    if (prefs.hourBefore !== false && item.dueTime) reminders.push({ type: '1h', at: dueMs - HOUR, text: _t("Scade tra meno di un'ora") });
 
     for (const r of reminders) {
       const key = `${item.id}|${r.type}|${dueMs}`;

@@ -20,6 +20,7 @@ src/
   tabs/                 Una schermata per scheda: Home, Habits, Missions (include quest e one-shot),
                         Nutrition (include lista spesa), Finances, Settings
   components/           Header, BottomNav, Modal (form di creazione/modifica), planner, ecc.
+  i18n/                 Multilingua: _t(), getLocale(), dizionario en.json
   utils/
     constants.js        APP_VERSION/BUILD_TIME (aggiornati in automatico), template sfide, colori
     state.js            Stato iniziale e sanitizeState (migrazione/validazione dei dati salvati)
@@ -27,10 +28,22 @@ src/
     helpers.js          Date "di gioco", calcolo XP/livelli, settimane/mesi, conteggio stelle
     pwaManager.js       Rilevamento nuove versioni e aggiornamento forzato
 scripts/
+  check-i18n.mjs        Verifica che tutti i testi _t() abbiano la traduzione inglese
+  smoke-test.mjs        Test nel browser usato dalla verifica su GitHub
   update-version.js     Sincronizza la versione in package.json, public/version.json, public/sw.js, constants.js
   publish.js            Rilascio completo: incrementa versione, build di verifica, commit, push su main
 .github/workflows/deploy.yml   Build e pubblicazione su GitHub Pages a ogni push su main
+.github/workflows/check.yml    Verifica (build, traduzioni, test nel browser) sui rami di lavoro
 ```
+
+## Multilingua (italiano / inglese)
+- I testi visibili si scrivono in italiano e passano sempre da `_t("Testo italiano")` (import da `src/i18n`).
+  Valori dinamici con segnaposto: `_t('Hai {0} missioni', n)`.
+- Ogni nuovo testo va aggiunto con la traduzione in `src/i18n/en.json` (chiave = testo italiano).
+  `node scripts/check-i18n.mjs` segnala quelli mancanti (gira anche nella verifica su GitHub).
+- Date: usare `getLocale()` invece di `'it-IT'` in `toLocaleDateString` e simili.
+- La lingua si sceglie in Opzioni (`settings.language`: `'it'` predefinito, `'en'`).
+- I dati creati dall'utente (nomi di abitudini, missioni, cibi) non si traducono.
 
 ## Dati dell'utente (non romperli!)
 - Stato principale in `localStorage` alla chiave `questlife_state_v2`, con copia in IndexedDB.

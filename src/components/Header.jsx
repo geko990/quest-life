@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES, LEVEL_CAP } from '../utils/constants';
 
+import { _t } from '../i18n';
 export default function Header({
   player,
   setPlayer,
@@ -260,7 +261,7 @@ export default function Header({
           className="header-streak"
           id="headerStreak"
           onClick={() => setShowStreak(!showStreak)}
-          title="Visualizza lo stato di regolarità delle tue abitudini negli ultimi 7 giorni"
+          title={_t("Visualizza lo stato di regolarità delle tue abitudini negli ultimi 7 giorni")}
           style={{ cursor: 'pointer' }}
         >
           <div
@@ -285,20 +286,19 @@ export default function Header({
           className="app-title"
           onClick={() => forceUpdateApp(true)}
           style={{ cursor: 'pointer', fontSize: isLandscape ? '15px' : undefined }}
-          title="Tocca per forzare l'aggiornamento dell'app"
+          title={_t("Tocca per forzare l'aggiornamento dell'app")}
         >
-          Real Playing Game
-        </h1>
+          {_t("Real Playing Game")}</h1>
 
         {/* Compact Profile (Avatar + Level) */}
         <div
           className="header-profile"
           onClick={() => setShowProfile(!showProfile)}
-          title="Visualizza profilo e medaglie"
+          title={_t("Visualizza profilo e medaglie")}
         >
           <div className="header-avatar-frame" id="headerAvatarFrame" style={isLandscape ? { width: '32px', height: '32px' } : undefined}>
             {player.avatarType === 'image' && player.avatarImage ? (
-              <img className="header-img" src={player.avatarImage} alt="Avatar" />
+              <img className="header-img" src={player.avatarImage} alt={_t("Avatar")} />
             ) : (
               <span className="header-emoji" id="headerEmoji" style={isLandscape ? { fontSize: '16px' } : undefined}>
                 {player.avatarEmoji || '⚔️'}
@@ -341,7 +341,7 @@ export default function Header({
             <div className="popup-header-info">
               <div className="popup-avatar-frame">
                 {player.avatarType === 'image' && player.avatarImage ? (
-                  <img className="popup-img" src={player.avatarImage} alt="Avatar" />
+                  <img className="popup-img" src={player.avatarImage} alt={_t("Avatar")} />
                 ) : (
                   <span className="popup-emoji" id="popupEmoji">
                     {player.avatarEmoji || '⚔️'}
@@ -352,7 +352,7 @@ export default function Header({
                 <h3 className="popup-name" id="popupName">{player.name}</h3>
                 <div className="popup-level-info">
                   <span className="popup-level">
-                    Livello <span id="popupLevel">{player.level}</span>
+                    {_t("Livello")}{" "}<span id="popupLevel">{player.level}</span>
                   </span>
                   <span className="popup-title" id="popupTitle">{getPlayerTitle()}</span>
                 </div>
@@ -368,11 +368,7 @@ export default function Header({
                 ></div>
               </div>
               <div className="popup-xp-text" id="popupXpText">
-                {isMaxLevel ? (
-                  `LIV. MASSIMO (20) • ${player.totalXp} XP Totali`
-                ) : (
-                  `${Math.floor(xpInLevel)} / ${Math.floor(xpNeededForLevel)} XP`
-                )}
+                {isMaxLevel ? (_t("LIV. MASSIMO (20) • {0} XP Totali", player.totalXp)) : (_t("{0} / {1} XP", Math.floor(xpInLevel), Math.floor(xpNeededForLevel)))}
               </div>
 
               {/* Medal Progress */}
@@ -393,11 +389,9 @@ export default function Header({
                 return (
                   <div style={{ marginTop: '15px' }}>
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 'bold' }}>
-                      MEDAGLIE MENSILI ({getMonthName(currentMonthId)})
-                    </div>
+                      {_t("MEDAGLIE MENSILI ({0})", getMonthName(currentMonthId))}</div>
                     <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                      🎯 Task Singoli, Milestones e Campagne
-                    </div>
+                      {_t("🎯 Task Singoli, Milestones e Campagne")}</div>
                     <div className="popup-xp-bar">
                       <div
                         className="popup-xp-fill"
@@ -411,19 +405,18 @@ export default function Header({
                     <div className="popup-xp-text" style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span id="monthlyLabel">{getMonthName(currentMonthId)}</span>
                       <span id="monthlyPoints" style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-                        {displayPoints}/{targetPoints} Task
-                      </span>
+                        {_t("{0}/{1} Task", displayPoints, targetPoints)}</span>
                     </div>
 
                     {/* Pyramid Progress Status */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px', marginTop: '8px', fontSize: '10px', background: 'var(--bg-secondary)', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                      <span style={{ color: starCounts[3] >= 5 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[3] >= 5 ? 'bold' : 'normal' }} title="Almeno 5 task da 3 stelle">
+                      <span style={{ color: starCounts[3] >= 5 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[3] >= 5 ? 'bold' : 'normal' }} title={_t("Almeno 5 task da 3 stelle")}>
                         3★: {starCounts[3] || 0}/5 {starCounts[3] >= 5 ? '✓' : ''}
                       </span>
-                      <span style={{ color: starCounts[4] >= 3 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[4] >= 3 ? 'bold' : 'normal' }} title="Almeno 3 task da 4 stelle">
+                      <span style={{ color: starCounts[4] >= 3 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[4] >= 3 ? 'bold' : 'normal' }} title={_t("Almeno 3 task da 4 stelle")}>
                         4★: {starCounts[4] || 0}/3 {starCounts[4] >= 3 ? '✓' : ''}
                       </span>
-                      <span style={{ color: starCounts[5] >= 2 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[5] >= 2 ? 'bold' : 'normal' }} title="Almeno 2 task da 5 stelle">
+                      <span style={{ color: starCounts[5] >= 2 ? '#22c55e' : 'var(--text-muted)', fontWeight: starCounts[5] >= 2 ? 'bold' : 'normal' }} title={_t("Almeno 2 task da 5 stelle")}>
                         5★: {starCounts[5] || 0}/2 {starCounts[5] >= 2 ? '✓' : ''}
                       </span>
                     </div>
@@ -440,8 +433,7 @@ export default function Header({
                   if (medalsList.length === 0) {
                     return (
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        Nessuna medaglia sbloccata ancora
-                      </span>
+                        {_t("Nessuna medaglia sbloccata ancora")}</span>
                     );
                   }
 
@@ -463,7 +455,7 @@ export default function Header({
                     return (
                       <div
                         key={idx}
-                        title={`${medal.name} - Touch per il riepilogo mensile`}
+                        title={_t("{0} - Touch per il riepilogo mensile", medal.name)}
                         className="medal-item"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -529,7 +521,7 @@ export default function Header({
                 }}
                 style={{ cursor: 'pointer', fontStyle: 'italic' }}
               >
-                {player.motto ? `"${player.motto}"` : 'Inserisci il tuo motto qui... ✍️'}
+                {player.motto ? `"${player.motto}"` : _t("Inserisci il tuo motto qui... ✍️")}
               </div>
             </div>
           </div>
@@ -572,8 +564,7 @@ export default function Header({
                 <h3 className="popup-name">{activity7Days.moodTitle}</h3>
                 <div className="popup-level-info">
                   <span className="popup-level" style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>
-                    {activity7Days.totalCompleted7Days} abitudini nei 7 giorni
-                  </span>
+                    {_t("{0} abitudini nei 7 giorni", activity7Days.totalCompleted7Days)}</span>
                 </div>
               </div>
             </div>
@@ -588,8 +579,8 @@ export default function Header({
             {/* 7-Day Activity Chart */}
             <div style={{ marginTop: '12px' }}>
               <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>Regolarità Abitudini (7 gg)</span>
-                <span style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>Media: {(activity7Days.totalCompleted7Days / 7).toFixed(1)}/gg</span>
+                <span>{_t("Regolarità Abitudini (7 gg)")}</span>
+                <span style={{ color: activity7Days.moodColor, fontWeight: 'bold' }}>{_t("Media: {0}/gg", (activity7Days.totalCompleted7Days / 7).toFixed(1))}</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '70px', padding: '0 4px', gap: '6px' }}>
@@ -670,10 +661,10 @@ export default function Header({
                     {selectedMedal.icon || '🏅'}
                   </div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    {selectedMedal.name || `Medaglia di ${summary.displayMonthYear}`}
+                    {selectedMedal.name || _t("Medaglia di {0}", summary.displayMonthYear)}
                   </h3>
                   <div style={{ fontSize: '10px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold', marginTop: '1px' }}>
-                    Sbloccata nel mese di {summary.displayMonthYear}
+                    {_t("Sbloccata nel mese di {0}", summary.displayMonthYear)}
                   </div>
                 </div>
 
@@ -682,32 +673,29 @@ export default function Header({
                   {/* 1. Attributo / Abilità maggiormente sviluppato */}
                   <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
                     <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>
-                      🎯 Top Attributo
-                    </div>
+                      {_t("🎯 Top Attributo")}</div>
                     <div style={{ fontSize: '24px', marginBottom: '2px' }}>
                       {summary.topStatObj?.icon || '⭐'}
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {summary.topStatObj?.name || 'Nessuno'}
+                      {summary.topStatObj?.name || _t("Nessuno")}
                     </div>
                     <div style={{ fontSize: '9px', color: 'var(--accent-primary)', fontWeight: 'bold', marginTop: '1px' }}>
-                      +{summary.maxStatXp} XP
-                    </div>
+                      {_t("+{0} XP", summary.maxStatXp)}</div>
                   </div>
 
                   {/* 2. Abitudine più rispettata */}
                   <div style={{ background: 'var(--bg-secondary)', padding: '10px', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
                     <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>
-                      📜 Top Abitudine
-                    </div>
+                      {_t("📜 Top Abitudine")}</div>
                     <div style={{ fontSize: '24px', marginBottom: '2px' }}>
                       {summary.topHabitObj?.emoji || '📜'}
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {summary.topHabitObj?.name || 'Nessuna'}
+                      {summary.topHabitObj?.name || _t("Nessuna")}
                     </div>
                     <div style={{ fontSize: '9px', color: '#22c55e', fontWeight: 'bold', marginTop: '1px' }}>
-                      {summary.maxHabitCount > 0 ? `${summary.maxHabitCount} gg ✓` : '0 gg'}
+                      {summary.maxHabitCount > 0 ? _t("{0} gg ✓", summary.maxHabitCount) : _t("0 gg")}
                     </div>
                   </div>
                 </div>
@@ -717,13 +705,12 @@ export default function Header({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '18px' }}>⚡</span>
                     <div>
-                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>XP Maturati nel Mese</div>
-                      <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>Esperienza totale accumulata</div>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("XP Maturati nel Mese")}</div>
+                      <div style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>{_t("Esperienza totale accumulata")}</div>
                     </div>
                   </div>
                   <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
-                    +{summary.totalMonthXp} XP
-                  </div>
+                    {_t("+{0} XP", summary.totalMonthXp)}</div>
                 </div>
               </div>
 
@@ -731,17 +718,14 @@ export default function Header({
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '14px', border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
                 <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                    ⭐ Top 10 Task Completati
-                  </span>
+                    {_t("⭐ Top 10 Task Completati")}</span>
                   <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>
-                    {summary.top10Tasks.length} completati
-                  </span>
+                    {_t("{0} completati", summary.top10Tasks.length)}</span>
                 </div>
 
                 {summary.top10Tasks.length === 0 ? (
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
-                    Nessuna missione completata registrata per questo mese.
-                  </div>
+                    {_t("Nessuna missione completata registrata per questo mese.")}</div>
                 ) : (
                   <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', minHeight: 0, paddingRight: '2px' }}>
                     {summary.top10Tasks.map((t, idx) => {

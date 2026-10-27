@@ -5,6 +5,7 @@ import { getAppErrors, clearAppErrors, formatErrorsForClipboard } from '../utils
 import UserManualModal from '../components/UserManualModal';
 import { requestNotificationPermission, notificationsSupported } from '../utils/deadlines';
 
+import { _t, getLocale } from '../i18n';
 export default function SettingsTab({
   settings = {},
   setSettings,
@@ -57,7 +58,7 @@ export default function SettingsTab({
   };
 
   const handleClearErrorLog = () => {
-    if (window.confirm("Vuoi cancellare il registro errori dell'app?")) {
+    if (window.confirm(_t("Vuoi cancellare il registro errori dell'app?"))) {
       clearAppErrors();
       setErrorsList([]);
       setIsErrorsDismissed(true);
@@ -143,39 +144,39 @@ export default function SettingsTab({
       id: 'preset_work',
       name: 'Giorno Lavorativo',
       emoji: '💼',
-      description: 'Sequenza guidata per la giornata lavorativa',
+      description: _t("Sequenza guidata per la giornata lavorativa"),
       steps: [
-        { id: '1', time: '07:00', title: '🌅 Sveglia, Idratazione & Stretching' },
-        { id: '2', time: '08:30', title: '💻 Deep Work & Task Prioritarie' },
-        { id: '3', time: '12:30', title: '🥗 Pranzo Leggero & Camminata 15m' },
-        { id: '4', time: '14:00', title: '📧 Gestione Messaggi & Meeting' },
-        { id: '5', time: '22:00', title: '📖 Lettura & Prep Routine Notturna' }
+        { id: '1', time: '07:00', title: _t("🌅 Sveglia, Idratazione & Stretching") },
+        { id: '2', time: '08:30', title: _t("💻 Deep Work & Task Prioritarie") },
+        { id: '3', time: '12:30', title: _t("🥗 Pranzo Leggero & Camminata 15m") },
+        { id: '4', time: '14:00', title: _t("📧 Gestione Messaggi & Meeting") },
+        { id: '5', time: '22:00', title: _t("📖 Lettura & Prep Routine Notturna") }
       ]
     },
     {
       id: 'preset_rest',
       name: 'Giorno di Riposo',
       emoji: '🌿',
-      description: 'Routine per ricaricare le energie e rilassarsi',
+      description: _t("Routine per ricaricare le energie e rilassarsi"),
       steps: [
-        { id: '1', time: '08:30', title: '☕ Sveglia Calma & Colazione' },
-        { id: '2', time: '10:30', title: '🚶 Camminata nella Natura o Hobby' },
-        { id: '3', time: '13:00', title: '🍕 Pranzo Conviviale & Svago' },
-        { id: '4', time: '16:00', title: '🎮 Tempo Libero & Relax Total' },
-        { id: '5', time: '22:30', title: '🛋️ Routine Serale Decompressiva' }
+        { id: '1', time: '08:30', title: _t("☕ Sveglia Calma & Colazione") },
+        { id: '2', time: '10:30', title: _t("🚶 Camminata nella Natura o Hobby") },
+        { id: '3', time: '13:00', title: _t("🍕 Pranzo Conviviale & Svago") },
+        { id: '4', time: '16:00', title: _t("🎮 Tempo Libero & Relax Total") },
+        { id: '5', time: '22:30', title: _t("🛋️ Routine Serale Decompressiva") }
       ]
     },
     {
       id: 'preset_fit',
       name: 'Giorno Allenamento',
       emoji: '🏋️',
-      description: 'Routine incentrata su movimento, nutrizione e recupero',
+      description: _t("Routine incentrata su movimento, nutrizione e recupero"),
       steps: [
-        { id: '1', time: '07:00', title: '💧 Idratazione & Colazione Energetica' },
-        { id: '2', time: '10:00', title: '🏋️ Sessione Allenamento Completa' },
-        { id: '3', time: '13:00', title: '🍗 Pasto Post-Workout Bilanciato' },
-        { id: '4', time: '17:00', title: '🚶 10.000 Passi & Stretching Mobility' },
-        { id: '5', time: '22:00', title: '💤 Sonno Rigenerante' }
+        { id: '1', time: '07:00', title: _t("💧 Idratazione & Colazione Energetica") },
+        { id: '2', time: '10:00', title: _t("🏋️ Sessione Allenamento Completa") },
+        { id: '3', time: '13:00', title: _t("🍗 Pasto Post-Workout Bilanciato") },
+        { id: '4', time: '17:00', title: _t("🚶 10.000 Passi & Stretching Mobility") },
+        { id: '5', time: '22:00', title: _t("💤 Sonno Rigenerante") }
       ]
     }
   ];
@@ -215,10 +216,10 @@ export default function SettingsTab({
       emoji: '📅',
       description: '',
       steps: [
-        { id: 'step_1', time: '07:00', title: '🌅 Sveglia & Idratazione' },
-        { id: 'step_2', time: '08:30', title: '💻 Focus & Task Principali' },
-        { id: 'step_3', time: '13:00', title: '🥗 Pranzo & Relax' },
-        { id: 'step_4', time: '22:00', title: '📖 Routine Notturna' }
+        { id: 'step_1', time: '07:00', title: _t("🌅 Sveglia & Idratazione") },
+        { id: 'step_2', time: '08:30', title: _t("💻 Focus & Task Principali") },
+        { id: 'step_3', time: '13:00', title: _t("🥗 Pranzo & Relax") },
+        { id: 'step_4', time: '22:00', title: _t("📖 Routine Notturna") }
       ]
     });
     setShowPresetModal(true);
@@ -235,7 +236,7 @@ export default function SettingsTab({
 
   const handleSavePreset = (presetData) => {
     if (!presetData || !presetData.name || !presetData.name.trim()) {
-      alert('Inserisci un nome per la Giornata Tipo!');
+      alert(_t("Inserisci un nome per la Giornata Tipo!"));
       return;
     }
     const existing = safePresetDays;
@@ -251,7 +252,7 @@ export default function SettingsTab({
   };
 
   const handleDeletePreset = (id) => {
-    if (window.confirm('Vuoi davvero eliminare questo modello di giornata?')) {
+    if (window.confirm(_t("Vuoi davvero eliminare questo modello di giornata?"))) {
       const updated = safePresetDays.filter(p => p && p.id !== id);
       if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
     }
@@ -290,7 +291,7 @@ export default function SettingsTab({
           {safePlayer.avatarType === 'image' && safePlayer.avatarImage ? (
             <img
               src={safePlayer.avatarImage}
-              alt="Avatar"
+              alt={_t("Avatar")}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
@@ -312,7 +313,7 @@ export default function SettingsTab({
               letterSpacing: '0.5px'
             }}
           >
-            Lvl {safePlayer.level || 1}
+            {_t("Lvl {0}", safePlayer.level || 1)}
           </div>
         </div>
 
@@ -331,9 +332,9 @@ export default function SettingsTab({
             textAlign: 'center',
             letterSpacing: '0.3px'
           }}
-          title="Tocca per rinominare"
+          title={_t("Tocca per rinominare")}
         >
-          {safePlayer.name || 'Avventuriero'}
+          {safePlayer.name || _t("Avventuriero")}
         </h2>
       </div>
 
@@ -345,8 +346,7 @@ export default function SettingsTab({
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              🎮 Gameplay
-            </h3>
+              {_t("🎮 Gameplay")}</h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'gameplay' ? '▲' : '▼'}
             </span>
@@ -356,13 +356,13 @@ export default function SettingsTab({
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
               {/* Day Start Hour */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Inizio nuovo giorno</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Inizio nuovo giorno")}</label>
                 <select
                   value={safeSettings.dayStartTime !== undefined ? safeSettings.dayStartTime : 0}
                   onChange={(e) => updateSetting('dayStartTime', parseInt(e.target.value))}
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 >
-                  <option value="0">00:00 (Mezzanotte)</option>
+                  <option value="0">{_t("00:00 (Mezzanotte)")}</option>
                   <option value="1">01:00</option>
                   <option value="2">02:00</option>
                   <option value="3">03:00</option>
@@ -374,28 +374,26 @@ export default function SettingsTab({
 
               {/* Week Start Day */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Inizio Settimana</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Inizio Settimana")}</span>
                 <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
                   <button
                     onClick={() => updateSetting('weekStart', 'monday')}
                     style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: safeSettings.weekStart === 'monday' ? 'var(--accent-primary)' : 'transparent', color: safeSettings.weekStart === 'monday' ? '#fff' : 'var(--text-secondary)' }}
                   >
-                    Lun
-                  </button>
+                    {_t("Lun")}</button>
                   <button
                     onClick={() => updateSetting('weekStart', 'sunday')}
                     style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: safeSettings.weekStart === 'sunday' ? 'var(--accent-primary)' : 'transparent', color: safeSettings.weekStart === 'sunday' ? '#fff' : 'var(--text-secondary)' }}
                   >
-                    Dom
-                  </button>
+                    {_t("Dom")}</button>
                 </div>
               </div>
 
               {/* Daily Penalties Toggle */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Penalità Giornaliere</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Sottrai XP per abitudini quotidiane saltate</div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Penalità Giornaliere")}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Sottrai XP per abitudini quotidiane saltate")}</div>
                 </div>
                 <input
                   type="checkbox"
@@ -409,9 +407,8 @@ export default function SettingsTab({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div>
                   <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    🔓 Super User: Modifica Avanzata (Saldi Conti, Spesa, Cibi & Storico)
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Abilita la modifica manuale dei saldi nel Tesoro, degli elementi nella Lista della Spesa, dei cibi e dei dati nello Storico</div>
+                    {_t("🔓 Super User: Modifica Avanzata (Saldi Conti, Spesa, Cibi & Storico)")}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Abilita la modifica manuale dei saldi nel Tesoro, degli elementi nella Lista della Spesa, dei cibi e dei dati nello Storico")}</div>
                 </div>
                 <input
                   type="checkbox"
@@ -419,6 +416,26 @@ export default function SettingsTab({
                   onChange={(e) => updateSetting('allowPastEdits', e.target.checked)}
                   style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
                 />
+              </div>
+
+              {/* Lingua / Language */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>🌍 Lingua / Language</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Italiano · English</div>
+                </div>
+                <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px' }}>
+                  {[{ id: 'it', label: '🇮🇹 IT' }, { id: 'en', label: '🇬🇧 EN' }].map(l => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => updateSetting('language', l.id)}
+                      style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: (safeSettings.language || 'it') === l.id ? 'var(--accent-primary)' : 'transparent', color: (safeSettings.language || 'it') === l.id ? '#fff' : 'var(--text-secondary)' }}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Promemoria scadenze: notifiche locali + numero sull'icona */}
@@ -430,8 +447,8 @@ export default function SettingsTab({
                   <div style={{ paddingTop: '8px', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>🔔 Promemoria Scadenze</div>
-                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Notifica prima della scadenza di task e campagne</div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("🔔 Promemoria Scadenze")}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Notifica prima della scadenza di task e campagne")}</div>
                       </div>
                       <input
                         type="checkbox"
@@ -457,9 +474,9 @@ export default function SettingsTab({
                     {prefs.enabled && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {[
-                          { key: 'dayBefore', label: '1 giorno prima' },
-                          { key: 'hourBefore', label: '1 ora prima (se c\'è l\'ora)' },
-                          { key: 'badge', label: 'Numero sull\'icona' }
+                          { key: 'dayBefore', label: _t("1 giorno prima") },
+                          { key: 'hourBefore', label: _t("1 ora prima (se c'è l'ora)") },
+                          { key: 'badge', label: _t("Numero sull'icona") }
                         ].map(opt => (
                           <button
                             key={opt.key}
@@ -472,15 +489,14 @@ export default function SettingsTab({
                               color: prefs[opt.key] ? 'var(--text-primary)' : 'var(--text-secondary)'
                             }}
                           >
-                            {prefs[opt.key] ? '✓ ' : ''}{opt.label}
+                            {prefs[opt.key] ? '✓ ' : ''}{_t(opt.label)}
                           </button>
                         ))}
                       </div>
                     )}
                     {prefs.enabled && permission === 'granted' && (
                       <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        Da PWA i promemoria arrivano mentre l'app è aperta o in background da poco; il numero sull'icona si aggiorna a ogni apertura.
-                      </div>
+                        {_t("Da PWA i promemoria arrivano mentre l'app è aperta o in background da poco; il numero sull'icona si aggiorna a ogni apertura.")}</div>
                     )}
                   </div>
                 );
@@ -489,8 +505,8 @@ export default function SettingsTab({
               {/* Tesoro: il totale include gli investimenti? */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>💰 Tesoro: Totale con Investimenti</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Se attivo, il totale somma conti e investimenti. Se disattivo, mostra solo il totale dei conti; gli investimenti restano nella loro tessera</div>
+                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("💰 Tesoro: Totale con Investimenti")}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Se attivo, il totale somma conti e investimenti. Se disattivo, mostra solo il totale dei conti; gli investimenti restano nella loro tessera")}</div>
                 </div>
                 <input
                   type="checkbox"
@@ -510,8 +526,7 @@ export default function SettingsTab({
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              🗓️ Giornate Tipo (Modelli di Routine)
-            </h3>
+              {_t("🗓️ Giornate Tipo (Modelli di Routine)")}</h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'presetDays' ? '▲' : '▼'}
             </span>
@@ -521,8 +536,7 @@ export default function SettingsTab({
             <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                  Sequenze di riferimento (scorri a destra ↔️):
-                </span>
+                  {_t("Sequenze di riferimento (scorri a destra ↔️):")}</span>
                 <button
                   onClick={handleOpenNewPreset}
                   style={{
@@ -537,8 +551,7 @@ export default function SettingsTab({
                     gap: '4px'
                   }}
                 >
-                  ➕ Nuova Routine
-                </button>
+                  {_t("➕ Nuova Routine")}</button>
               </div>
 
               {/* Horizontal Swipeable Cards ("Tessere Laterali") */}
@@ -554,8 +567,7 @@ export default function SettingsTab({
               >
                 {safePresetDays.length === 0 ? (
                   <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontStyle: 'italic', width: '100%' }}>
-                    Nessun modello salvato. Tocca ➕ Nuova Routine per aggiungere una sequenza!
-                  </div>
+                    {_t("Nessun modello salvato. Tocca ➕ Nuova Routine per aggiungere una sequenza!")}</div>
                 ) : (
                   safePresetDays.map((preset) => {
                     const steps = getPresetSteps(preset);
@@ -586,7 +598,7 @@ export default function SettingsTab({
                           </div>
                           {preset.description && (
                             <p style={{ margin: '0 0 10px 0', fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.3' }}>
-                              {preset.description}
+                              {_t(preset.description)}
                             </p>
                           )}
 
@@ -612,7 +624,7 @@ export default function SettingsTab({
                                   </span>
                                 )}
                                 <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {st.title}
+                                  {_t(st.title)}
                                 </span>
                               </div>
                             ))}
@@ -624,14 +636,13 @@ export default function SettingsTab({
                           <button
                             onClick={() => handleEditPreset(preset)}
                             style={{ flex: 1, padding: '7px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-                            title="Modifica Routine"
+                            title={_t("Modifica Routine")}
                           >
-                            ✏️ Modifica
-                          </button>
+                            {_t("✏️ Modifica")}</button>
                           <button
                             onClick={() => handleDeletePreset(preset.id)}
                             style={{ padding: '7px 10px', borderRadius: '8px', fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}
-                            title="Elimina"
+                            title={_t("Elimina")}
                           >
                             🗑️
                           </button>
@@ -652,8 +663,7 @@ export default function SettingsTab({
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              🎨 Aspetto & Temi
-            </h3>
+              {_t("🎨 Aspetto & Temi")}</h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'theme' ? '▲' : '▼'}
             </span>
@@ -663,23 +673,23 @@ export default function SettingsTab({
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
               {/* Theme selection */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Stile Tema</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Stile Tema")}</label>
                 <select
                   value={safeSettings.theme || 'standard'}
                   onChange={(e) => updateSetting('theme', e.target.value)}
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 >
-                  <option value="standard">Standard RPG</option>
-                  <option value="fantasy">Fantasy (Pergamena / Legno)</option>
-                  <option value="dnd">D&D Paper Map</option>
-                  <option value="futuristic">Cyberpunk Neon</option>
-                  <option value="pirate">7th Sea / Pirate</option>
+                  <option value="standard">{_t("Standard RPG")}</option>
+                  <option value="fantasy">{_t("Fantasy (Pergamena / Legno)")}</option>
+                  <option value="dnd">{_t("D&D Paper Map")}</option>
+                  <option value="futuristic">{_t("Cyberpunk Neon")}</option>
+                  <option value="pirate">{_t("7th Sea / Pirate")}</option>
                 </select>
               </div>
 
               {/* Mode Selection */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Modalità</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Modalità")}</span>
                 <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
                   {['dark', 'light', 'system'].map((m) => (
                     <button
@@ -687,7 +697,7 @@ export default function SettingsTab({
                       onClick={() => updateSetting('themeMode', m)}
                       style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: (safeSettings.themeMode || 'dark') === m ? 'var(--accent-primary)' : 'transparent', color: (safeSettings.themeMode || 'dark') === m ? '#fff' : 'var(--text-secondary)' }}
                     >
-                      {m === 'dark' ? 'Scuro' : m === 'light' ? 'Chiaro' : 'Auto'}
+                      {m === 'dark' ? _t("Scuro") : m === 'light' ? _t("Chiaro") : _t("Auto")}
                     </button>
                   ))}
                 </div>
@@ -695,7 +705,7 @@ export default function SettingsTab({
 
               {/* Accent Color Selection (Colore Dettagli) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Colore Dettagli (Accent)</label>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Colore Dettagli (Accent)")}</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
                   {ACCENT_COLORS.map((c) => {
                     const activeColor = safeSettings.accent || safeSettings.accentColor || 'violet';
@@ -754,10 +764,9 @@ export default function SettingsTab({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                    📱 Disposizione Schermo & Layout
-                  </label>
+                    {_t("📱 Disposizione Schermo & Layout")}</label>
                   <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                    {safeSettings.screenMode === 'landscape' ? 'Orizzontale' : safeSettings.screenMode === 'tablet' ? 'Tablet' : safeSettings.screenMode === 'portrait' ? 'Verticale' : 'Auto'}
+                    {safeSettings.screenMode === 'landscape' ? _t("Orizzontale") : safeSettings.screenMode === 'tablet' ? _t("Tablet") : safeSettings.screenMode === 'portrait' ? _t("Verticale") : _t("Auto")}
                   </span>
                 </div>
                 <select
@@ -765,14 +774,13 @@ export default function SettingsTab({
                   onChange={(e) => updateSetting('screenMode', e.target.value)}
                   style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 >
-                  <option value="auto">🔄 Automatica (in base all'orientamento)</option>
-                  <option value="landscape">🖥️ Landscape (Navigation Rail a sinistra)</option>
-                  <option value="tablet">📱 Tablet Mode (iPad, Surface/Duo, Android)</option>
-                  <option value="portrait">📱 Smartphone Portrait (Verticale fisso)</option>
+                  <option value="auto">{_t("🔄 Automatica (in base all'orientamento)")}</option>
+                  <option value="landscape">{_t("🖥️ Landscape (Navigation Rail a sinistra)")}</option>
+                  <option value="tablet">{_t("📱 Tablet Mode (iPad, Surface/Duo, Android)")}</option>
+                  <option value="portrait">{_t("📱 Smartphone Portrait (Verticale fisso)")}</option>
                 </select>
                 <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  In Landscape la barra di navigazione si sposta a sinistra massimizzando lo spazio verticale per le missioni e la schermata eroe.
-                </div>
+                  {_t("In Landscape la barra di navigazione si sposta a sinistra massimizzando lo spazio verticale per le missioni e la schermata eroe.")}</div>
               </div>
             </div>
           )}
@@ -785,8 +793,7 @@ export default function SettingsTab({
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              💾 Sync & Backup Dati
-            </h3>
+              {_t("💾 Sync & Backup Dati")}</h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'data' ? '▲' : '▼'}
             </span>
@@ -797,22 +804,20 @@ export default function SettingsTab({
               {/* Section 1: File Database Sync */}
               <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>📁 Sync File Locale (PC / Chrome)</span>
+                  <span>{_t("📁 Sync File Locale (PC / Chrome)")}</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                  Collega un file `.json` locale per salvare le modifiche direttamente sul tuo disco rigido ad ogni azione.
-                </p>
+                  {_t("Collega un file `.json` locale per salvare le modifiche direttamente sul tuo disco rigido ad ogni azione.")}</p>
                 {fileHandle ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '8px 10px', borderRadius: '8px' }}>
                     <div style={{ fontWeight: 'bold', color: '#22c55e', fontSize: '10px' }}>
-                      ✓ File Collegato: {fileHandle.name}
+                      {_t("✓ File Collegato: {0}", fileHandle.name)}
                     </div>
                     <button
                       onClick={onReconnectDatabase}
                       style={{ padding: '5px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer' }}
                     >
-                      🔄 Riconnetti Autorizzazioni File
-                    </button>
+                      {_t("🔄 Riconnetti Autorizzazioni File")}</button>
                   </div>
                 ) : (
                   <button
@@ -820,8 +825,7 @@ export default function SettingsTab({
                     className="btn-primary"
                     style={{ padding: '8px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
                   >
-                    🔗 Collega File Database su Disco
-                  </button>
+                    {_t("🔗 Collega File Database su Disco")}</button>
                 )}
               </div>
 
@@ -833,14 +837,12 @@ export default function SettingsTab({
                     className="btn-primary"
                     style={{ padding: '9px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
-                    📤 Esporta Backup
-                  </button>
+                    {_t("📤 Esporta Backup")}</button>
                   <button
                     onClick={onImport}
                     style={{ padding: '9px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
-                    📥 Importa Backup
-                  </button>
+                    {_t("📥 Importa Backup")}</button>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -848,22 +850,19 @@ export default function SettingsTab({
                     onClick={onFixData}
                     style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
                   >
-                    🔧 Ripara Integrità
-                  </button>
+                    {_t("🔧 Ripara Integrità")}</button>
                   <button
                     onClick={onRepairStreaks}
                     style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
                   >
-                    🔥 Ricalcola Serie
-                  </button>
+                    {_t("🔥 Ricalcola Serie")}</button>
                 </div>
 
                 <button
                   onClick={onReset}
                   style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', cursor: 'pointer', marginTop: '4px' }}
                 >
-                  ⚠️ Azzera Tutti i Dati
-                </button>
+                  {_t("⚠️ Azzera Tutti i Dati")}</button>
               </div>
             </div>
           )}
@@ -876,8 +875,7 @@ export default function SettingsTab({
             style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              📜 Storico Imprese Recenti (Ultime 15)
-            </h3>
+              {_t("📜 Storico Imprese Recenti (Ultime 15)")}</h3>
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {expandedGroup === 'history' ? '▲' : '▼'}
             </span>
@@ -887,8 +885,7 @@ export default function SettingsTab({
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {groupedXpLog.length === 0 ? (
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
-                  Nessuna impresa registrata di recente.
-                </p>
+                  {_t("Nessuna impresa registrata di recente.")}</p>
               ) : (
                 groupedXpLog.slice(-15).reverse().map((group, idx) => {
                   if (!group) return null;
@@ -898,7 +895,7 @@ export default function SettingsTab({
                     try {
                       const d = new Date(group.date);
                       if (!isNaN(d.getTime())) {
-                        dateStr = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                        dateStr = d.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
                       }
                     } catch (e) {
                       dateStr = '';
@@ -923,7 +920,7 @@ export default function SettingsTab({
                           {dateStr && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{dateStr}</span>}
                         </div>
                       </div>
-                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>+{group.totalAmount} XP</span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>{_t("+{0} XP", group.totalAmount)}</span>
                     </div>
                   );
                 })
@@ -967,14 +964,11 @@ export default function SettingsTab({
             </div>
             <div>
               <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Manuale di Utilizzo & Guide
-                <span style={{ fontSize: '9px', background: 'var(--accent-primary, #38bdf8)', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
-                  GUIDA
-                </span>
+                {_t("Manuale di Utilizzo & Guide")}<span style={{ fontSize: '9px', background: 'var(--accent-primary, #38bdf8)', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
+                  {_t("GUIDA")}</span>
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
-                Scopri tutte le funzioni: RPG, Finanze, Cloudflare ETF, Abitudini e Nutrizione
-              </div>
+                {_t("Scopri tutte le funzioni: RPG, Finanze, Cloudflare ETF, Abitudini e Nutrizione")}</div>
             </div>
           </div>
         </div>
@@ -1002,14 +996,14 @@ export default function SettingsTab({
               gap: '6px',
               transition: 'all 0.25s ease'
             }}
-            title={hasUpdate ? `Tocca per aggiornare alla versione ${newVersionTag || ''}` : "Nessun aggiornamento disponibile"}
+            title={hasUpdate ? _t("Tocca per aggiornare alla versione {0}", newVersionTag || '') : _t("Nessun aggiornamento disponibile")}
           >
             {hasUpdate && <span>🚀</span>}
-            <span>{hasUpdate ? `Aggiorna App (v${newVersionTag || ''})` : 'Aggiorna App'}</span>
+            <span>{hasUpdate ? _t("Aggiorna App (v{0})", newVersionTag || '') : _t("Aggiorna App")}</span>
           </button>
 
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            RPG Life v{APP_VERSION} {BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })})` : ''}
+            {_t("RPG Life v{0}", APP_VERSION)}{" "}{BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString(getLocale(), { dateStyle: 'short', timeStyle: 'short' })})` : ''}
           </div>
 
           {/* Registro Errori & Diagnostica (Invisibile di default, visibile solo con errori finché non si tocca 'X') */}
@@ -1027,7 +1021,7 @@ export default function SettingsTab({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: '#ef4444' }}>
                   <span>⚠️</span>
-                  <span>Registro Errori & Diagnostica</span>
+                  <span>{_t("Registro Errori & Diagnostica")}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{
@@ -1039,7 +1033,7 @@ export default function SettingsTab({
                     color: '#ef4444',
                     border: '1px solid rgba(239, 68, 68, 0.3)'
                   }}>
-                    {errorsList.length} {errorsList.length === 1 ? 'errore' : 'errori'}
+                    {errorsList.length} {errorsList.length === 1 ? _t("errore") : _t("errori")}
                   </span>
                   {/* Close button X */}
                   <button
@@ -1060,7 +1054,7 @@ export default function SettingsTab({
                       transition: 'all 0.2s ease',
                       padding: 0
                     }}
-                    title="Chiudi avviso diagnostica"
+                    title={_t("Chiudi avviso diagnostica")}
                   >
                     ✕
                   </button>
@@ -1079,7 +1073,7 @@ export default function SettingsTab({
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '9px', marginBottom: '2px' }}>
                         <span>{err.readableTime || err.timestamp}</span>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{err.name || 'Error'}</span>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{err.name || _t("Error")}</span>
                       </div>
                       <div style={{ color: 'var(--text-primary)', fontWeight: '500', wordBreak: 'break-word' }}>
                         {err.message}
@@ -1109,7 +1103,7 @@ export default function SettingsTab({
                       transition: 'background 0.2s'
                     }}
                   >
-                    {copyStatus ? '✅ Copiato negli appunti!' : '📋 Copia Log Errori'}
+                    {copyStatus ? _t("✅ Copiato negli appunti!") : _t("📋 Copia Log Errori")}
                   </button>
                   <button
                     onClick={handleClearErrorLog}
@@ -1124,8 +1118,7 @@ export default function SettingsTab({
                       cursor: 'pointer'
                     }}
                   >
-                    🗑️ Svuota
-                  </button>
+                    {_t("🗑️ Svuota")}</button>
                 </div>
               </div>
             </div>
@@ -1146,7 +1139,7 @@ export default function SettingsTab({
           >
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🗓️</span> {editingPreset.id ? 'Modifica Modello di Giornata' : 'Crea Modello di Giornata'}
+                <span>🗓️</span> {editingPreset.id ? _t("Modifica Modello di Giornata") : _t("Crea Modello di Giornata")}
               </h3>
             </div>
 
@@ -1162,7 +1155,7 @@ export default function SettingsTab({
                 />
                 <input
                   type="text"
-                  placeholder="Nome Modello (es. 💼 Giorno Lavorativo)"
+                  placeholder={_t("Nome Modello (es. 💼 Giorno Lavorativo)")}
                   value={editingPreset.name}
                   onChange={(e) => setEditingPreset(prev => ({ ...prev, name: e.target.value }))}
                   style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
@@ -1172,7 +1165,7 @@ export default function SettingsTab({
               {/* Description */}
               <input
                 type="text"
-                placeholder="Descrizione opzionale (es. Sequenza per i giorni di lavoro)"
+                placeholder={_t("Descrizione opzionale (es. Sequenza per i giorni di lavoro)")}
                 value={editingPreset.description || ''}
                 onChange={(e) => setEditingPreset(prev => ({ ...prev, description: e.target.value }))}
                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '11px' }}
@@ -1181,8 +1174,7 @@ export default function SettingsTab({
               {/* Sequential Steps List */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                  Sequenza Oraria delle Azioni:
-                </div>
+                  {_t("Sequenza Oraria delle Azioni:")}</div>
                 <button
                   type="button"
                   onClick={() => {
@@ -1192,8 +1184,7 @@ export default function SettingsTab({
                   }}
                   style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
-                  ➕ Aggiungi Azione
-                </button>
+                  {_t("➕ Aggiungi Azione")}</button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -1214,7 +1205,7 @@ export default function SettingsTab({
                     />
                     <input
                       type="text"
-                      placeholder="Descrizione azione (es. Sveglia & Idratazione)..."
+                      placeholder={_t("Descrizione azione (es. Sveglia & Idratazione)...")}
                       value={step.title || ''}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -1234,7 +1225,7 @@ export default function SettingsTab({
                         }));
                       }}
                       style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', padding: '2px' }}
-                      title="Elimina azione"
+                      title={_t("Elimina azione")}
                     >
                       🗑️
                     </button>
@@ -1247,8 +1238,7 @@ export default function SettingsTab({
                 className="btn-primary"
                 style={{ marginTop: '8px', width: '100%', padding: '10px', borderRadius: '10px', fontWeight: 'bold', fontSize: '12px', border: 'none', cursor: 'pointer' }}
               >
-                💾 Salva Modello di Giornata
-              </button>
+                {_t("💾 Salva Modello di Giornata")}</button>
             </div>
           </div>
         </div>

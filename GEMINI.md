@@ -16,6 +16,10 @@ Ogni volta che viene effettuata una modifica:
    - Creazione commit con prefisso versione `release vX.Y.Z: ...`
    - Push automatico sul repository remoto GitHub (`origin main`): GitHub Actions ricostruisce il sito e lo pubblica su GitHub Pages.
 
+## Multilingua
+- I testi visibili passano da `_t("Testo italiano")` (da `src/i18n`); ogni testo nuovo va tradotto in `src/i18n/en.json`.
+- Controllo: `node scripts/check-i18n.mjs`.
+
 ## Da non fare
 - Non copiare `dist/` nella radice del progetto e non committarlo: il sito viene costruito da GitHub Actions.
 - Non sovrascrivere `index.html` con la versione compilata: è il file sorgente (entry `/src/main.jsx`).
