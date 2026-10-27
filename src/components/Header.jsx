@@ -636,9 +636,12 @@ export default function Header({
             <div
               onClick={(e) => e.stopPropagation()}
               style={{
-                width: '100%',
-                maxWidth: '400px',
-                maxHeight: isLandscape ? 'calc(100dvh - 20px)' : '85vh',
+                width: '92%',
+                maxWidth: isLandscape ? '420px' : '360px',
+                // Resta nello spazio tra barra superiore e nav bar; i Top 10 scorrono all'interno
+                maxHeight: isLandscape
+                  ? 'calc(100dvh - 40px)'
+                  : 'min(600px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 190px))',
                 background: 'var(--bg-card)',
                 color: 'var(--text-primary)',
                 border: '1px solid var(--glass-border)',
