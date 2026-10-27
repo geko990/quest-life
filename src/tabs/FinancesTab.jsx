@@ -3,7 +3,7 @@ import { getGameDate } from '../utils/helpers';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 import UserManualModal from '../components/UserManualModal';
 
-import { _t, getLocale } from '../i18n';
+import { _t, getLocale, monthLong, monthShort } from '../i18n';
 const EXPENSE_CATEGORIES = [
   { id: 'cibo', label: 'Cibo & Ristorante', emoji: '🍕' },
   { id: 'casa', label: 'Casa & Bollette', emoji: '🏠' },
@@ -31,28 +31,18 @@ const getCategoryObj = (catId) => {
   return ALL_CATEGORIES.find(c => c.id === catId) || { emoji: '📦', label: _t("Altro") };
 };
 
-const MONTH_NAMES_IT = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
-];
-
-const MONTH_NAMES_SHORT_IT = [
-  'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
-  'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'
-];
-
 const formatMonthLabel = (monthKey) => {
   if (!monthKey || !monthKey.includes('-')) return monthKey || '';
   const [yr, mo] = monthKey.split('-');
   const idx = parseInt(mo, 10) - 1;
-  return `${MONTH_NAMES_IT[idx] || mo} ${yr}`;
+  return `${monthLong(idx) || mo} ${yr}`;
 };
 
 const formatMonthShort = (monthKey) => {
   if (!monthKey || !monthKey.includes('-')) return monthKey || '';
   const [, mo] = monthKey.split('-');
   const idx = parseInt(mo, 10) - 1;
-  return MONTH_NAMES_SHORT_IT[idx] || mo;
+  return monthShort(idx) || mo;
 };
 
 const shiftMonthKey = (monthKey, delta) => {
@@ -72,7 +62,7 @@ const formatDateShort = (dateStr) => {
   if (parts.length < 3) return dateStr;
   const day = parseInt(parts[2], 10);
   const moIdx = parseInt(parts[1], 10) - 1;
-  return `${day} ${MONTH_NAMES_SHORT_IT[moIdx] || parts[1]}`;
+  return `${day} ${monthShort(moIdx) || parts[1]}`;
 };
 
 const formatDateFull = (dateStr) => {
@@ -81,7 +71,7 @@ const formatDateFull = (dateStr) => {
   if (parts.length < 3) return dateStr;
   const day = parseInt(parts[2], 10);
   const moIdx = parseInt(parts[1], 10) - 1;
-  return `${day} ${MONTH_NAMES_IT[moIdx] || parts[1]} ${parts[0]}`;
+  return `${day} ${monthLong(moIdx) || parts[1]} ${parts[0]}`;
 };
 
 export default function FinancesTab({

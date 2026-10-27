@@ -4,7 +4,7 @@ import SwipeableCard from '../components/SwipeableCard';
 import { useTouchReorder } from '../utils/useTouchReorder';
 import MarqueeText from '../components/MarqueeText';
 
-import { _t } from '../i18n';
+import { _t, dayShort } from '../i18n';
 export default function HabitsTab({
   habits = [],
   setHabits,
@@ -117,7 +117,6 @@ export default function HabitsTab({
             const isToday = dateStr === todayStr;
             const isSelected = dateStr === viewedDate;
             const completionPct = getCompletionPercentageForDate(dateStr);
-            const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 
             return (
               <div
@@ -125,7 +124,7 @@ export default function HabitsTab({
                 onClick={() => setViewedDate(dateStr)}
                 className={`calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'active' : ''}`}
               >
-                <div className="calendar-day-name">{dayNames[day.getDay()]}</div>
+                <div className="calendar-day-name">{dayShort(day.getDay())}</div>
                 <div className="calendar-day-number" style={{ position: 'relative' }}>
                   {/* SVG Circular Completion Ring */}
                   <svg

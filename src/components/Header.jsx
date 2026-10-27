@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES, LEVEL_CAP } from '../utils/constants';
 
-import { _t } from '../i18n';
+import { _t, dayShort } from '../i18n';
 export default function Header({
   player,
   setPlayer,
@@ -172,8 +172,7 @@ export default function Header({
       const d = new Date(todayObj);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
-      const dayName = dayNames[d.getDay()];
+      const dayName = dayShort(d.getDay());
 
       const dayLog = completionLog?.[dateStr] || {};
       const habitsCount = (dayLog.habits || []).length;

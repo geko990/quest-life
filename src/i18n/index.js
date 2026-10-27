@@ -33,3 +33,20 @@ export function _t(text, ...args) {
   if (args.length) out = out.replace(/\{(\d+)\}/g, (m, i) => (args[i] !== undefined && args[i] !== null ? args[i] : ''));
   return out;
 }
+
+// Nomi brevi di giorni e mesi (in italiano identici a prima, in inglese abbreviazioni standard)
+const DAYS_SHORT = {
+  it: ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+};
+const MONTHS_LONG = {
+  it: ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+};
+const MONTHS_SHORT = {
+  it: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+};
+export const dayShort = (dayIndex) => DAYS_SHORT[currentLang][dayIndex];
+export const monthLong = (monthIndex) => MONTHS_LONG[currentLang][monthIndex];
+export const monthShort = (monthIndex) => MONTHS_SHORT[currentLang][monthIndex];
