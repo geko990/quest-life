@@ -341,24 +341,7 @@ export default function QuickMealModal({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '30px',
-              height: '30px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#94a3b8',
-              fontSize: '15px',
-              cursor: 'pointer'
-            }}
-          >
-            ✕
-          </button>
+
         </div>
 
         {/* Content Body */}

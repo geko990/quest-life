@@ -36,6 +36,13 @@ export function getReminderOffsets(prefs = currentPrefs) {
 
 export const offsetMs = (o) => Number(o.value) * REMINDER_UNITS[o.unit].ms;
 
+// Solo l'unità con "prima": "giorni prima" / "days before"
+export function unitLabel(unit, n = 2) {
+  const lang = getLocale().startsWith('en') ? 'en' : 'it';
+  const names = REMINDER_UNITS[unit][lang];
+  return `${n === 1 ? names[0] : names[1]} ${lang === 'en' ? 'before' : 'prima'}`;
+}
+
 export function formatReminder(o) {
   const lang = getLocale().startsWith('en') ? 'en' : 'it';
   const names = REMINDER_UNITS[o.unit][lang];

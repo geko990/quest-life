@@ -5,6 +5,7 @@ import {
   getReminderOffsets,
   offsetMs,
   formatReminder,
+  unitLabel,
   requestNotificationPermission,
   notificationsSupported
 } from '../utils/deadlines';
@@ -104,7 +105,7 @@ export default function ReminderSettings({ prefs = {}, onChange }) {
           style={{ flex: 1, height: '32px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 8px', fontSize: '12px', fontWeight: 'bold' }}
         >
           {Object.keys(REMINDER_UNITS).map(u => (
-            <option key={u} value={u}>{formatReminder({ value: Number(value) || 1, unit: u })}</option>
+            <option key={u} value={u}>{unitLabel(u, Number(value) || 1)}</option>
           ))}
         </select>
         <button type="button" onClick={addOffset} style={{ ...chip(false), height: '32px', color: 'var(--accent-primary)' }}>
