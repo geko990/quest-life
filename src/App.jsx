@@ -969,6 +969,65 @@ export default function App() {
   };
 
   // 9. Modal Add/Edit Handlers
+  // --- Missioni recenti (ultimi 15 giorni): per ricreare al volo task e campagne ripetitive ---
+  const RECENT_TEMPLATE_DAYS = 15;
+  const buildTaskTemplate = (kind, data, usedAt) => {
+    const diff = data.difficulty !== undefined ? data.difficulty : (data.stars !== undefined ? data.stars : 3);
+    const tmpl = {
+      kind,
+      name: (data.name || '').trim(),
+      emoji: data.emoji || (kind === 'quest' ? '🏆' : '💥'),
+      difficulty: diff,
+      primaryTarget: data.primaryTarget,
+      secondaryTarget: data.secondaryTarget,
+      description: data.description || '',
+      reward: data.reward || '',
+      usedAt: usedAt || Date.now()
+    };
+    if (kind === 'quest' && Array.isArray(data.subquests)) {
+      tmpl.milestones = data.subquests.map(sq => sq.name).filter(Boolean);
+    }
+    return tmpl;
+  };
+  const rememberTaskTemplate = (kind, data) => {
+    const tmpl = buildTaskTemplate(kind, data);
+    if (!tmpl.name) return;
+    setSettings(prev => {
+      const cutoff = Date.now() - RECENT_TEMPLATE_DAYS * 86400000;
+      const others = (prev.recentTaskTemplates || []).filter(t =>
+        t.usedAt >= cutoff && !(t.kind === kind && (t.name || '').toLowerCase() === tmpl.name.toLowerCase())
+      );
+      return { ...prev, recentTaskTemplates: [tmpl, ...others].slice(0, 40) };
+    });
+  };
+  const recentTaskTemplates = (() => {
+    const cutoff = Date.now() - RECENT_TEMPLATE_DAYS * 86400000;
+    const toTime = (v) => (v ? new Date(v).getTime() || 0 : 0);
+    // Ultima data di completamento di ciascun elemento, dal registro giornaliero
+    const lastDone = {};
+    Object.keys(completionLog || {}).forEach(date => {
+      const t = toTime(date + 'T12:00:00');
+      const day = completionLog[date] || {};
+      [...(day.oneshots || []), ...(day.quests || [])].forEach(id => {
+        if (!lastDone[id] || lastDone[id] < t) lastDone[id] = t;
+      });
+    });
+    const fromItems = [
+      ...(oneshots || []).map(o => buildTaskTemplate('oneshot', o, Math.max(toTime(o.createdAt), lastDone[o.id] || 0))),
+      ...(quests || []).map(q => buildTaskTemplate('quest', q, Math.max(toTime(q.createdAt), lastDone[q.id] || 0)))
+    ];
+    const all = [...(settings.recentTaskTemplates || []), ...fromItems]
+      .filter(t => t.name && t.usedAt >= cutoff)
+      .sort((a, b) => b.usedAt - a.usedAt);
+    const seen = new Set();
+    return all.filter(t => {
+      const key = t.kind + '|' + t.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 20);
+  })();
+
   const handleSaveModal = (formData) => {
     const todayStr = getGameDate(settings.dayStartTime);
     const targetType = formData._targetType || formData.type || modalType;
@@ -1003,6 +1062,7 @@ export default function App() {
     } else if (targetType === 'oneshot') {
       const diff = formData.difficulty !== undefined ? formData.difficulty : (formData.stars !== undefined ? formData.stars : 3);
       const dataToSave = { ...formData, difficulty: diff, stars: diff };
+      rememberTaskTemplate('oneshot', dataToSave);
       if (editData) {
         setOneshots(prev => prev.map(o => (o.id === editData.id ? { ...o, ...dataToSave } : o)));
       } else {
@@ -1017,6 +1077,7 @@ export default function App() {
     } else if (targetType === 'quest') {
       const diff = formData.difficulty !== undefined ? formData.difficulty : (formData.stars !== undefined ? formData.stars : 3);
       const dataToSave = { ...formData, difficulty: diff, stars: diff };
+      rememberTaskTemplate('quest', dataToSave);
       if (editData) {
         setQuests(prev => prev.map(q => (q.id === editData.id ? { ...q, ...dataToSave } : q)));
       } else {
@@ -1695,6 +1756,7 @@ export default function App() {
           avatarImage={player.avatarImage}
           avatarType={player.avatarType}
           isLandscape={true}
+          onLongPressHome={() => handleOpenModal('oneshot')}
         />
       )}
 
@@ -1778,6 +1840,7 @@ export default function App() {
               avatarImage={player.avatarImage}
               avatarType={player.avatarType}
               isLandscape={false}
+              onLongPressHome={() => handleOpenModal('oneshot')}
             />
           </div>
         )}
@@ -1799,6 +1862,7 @@ export default function App() {
         settings={settings}
         onActivateChallenge={handleActivateChallenge}
         onToggleSubquest={handleToggleSubquest}
+        recentTaskTemplates={recentTaskTemplates}
         onEditStat={(statData) => {
           setModalOpen(false);
           setTimeout(() => {

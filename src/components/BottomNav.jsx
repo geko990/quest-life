@@ -1,7 +1,40 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
-export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false }) {
+export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome }) {
   const lastClicksRef = useRef({});
+
+  // Pressione prolungata sul pulsante centrale "Eroe": crea subito una nuova missione
+  const longPressTimerRef = useRef(null);
+  const longPressFiredRef = useRef(false);
+  const [isPressingHome, setIsPressingHome] = useState(false);
+  const cancelLongPress = () => {
+    clearTimeout(longPressTimerRef.current);
+    setIsPressingHome(false);
+  };
+  const homeLongPressHandlers = {
+    onPointerDown: () => {
+      longPressFiredRef.current = false;
+      if (!onLongPressHome) return;
+      setIsPressingHome(true);
+      longPressTimerRef.current = setTimeout(() => {
+        longPressFiredRef.current = true;
+        setIsPressingHome(false);
+        if (navigator.vibrate) navigator.vibrate(15);
+        onLongPressHome();
+      }, 450);
+    },
+    onPointerUp: cancelLongPress,
+    onPointerLeave: cancelLongPress,
+    onPointerCancel: cancelLongPress,
+    onContextMenu: (e) => e.preventDefault()
+  };
+  const handleHomeClick = () => {
+    if (longPressFiredRef.current) {
+      longPressFiredRef.current = false;
+      return;
+    }
+    handleItemClick('home');
+  };
 
   const doubleTapTargets = {
     missions: 'quests',
@@ -83,8 +116,11 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
             const isCenterActive = activeTab === 'home';
             return (
               <button
-                onClick={() => handleItemClick('home')}
+                onClick={handleHomeClick}
+                {...homeLongPressHandlers}
                 style={{
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
                   width: '46px',
                   height: '46px',
                   borderRadius: '50%',
@@ -100,13 +136,14 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                   padding: 0,
                   marginBottom: '4px'
                 }}
-                title="Scheda Eroe (Home)"
+                title="Scheda Eroe (Home) — tieni premuto per creare una missione"
               >
                 {avatarType === 'image' && avatarImage ? (
                   <img
                     src={avatarImage}
                     alt="Avatar"
-                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    draggable={false}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', pointerEvents: 'none', WebkitTouchCallout: 'none' }}
                   />
                 ) : (
                   <span style={{ fontSize: '20px' }}>{avatarEmoji || '⚔️'}</span>
@@ -185,8 +222,12 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
           return (
             <div key={item.id} style={{ position: 'relative', top: '-14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <button
-                onClick={() => handleItemClick(item.id)}
+                onClick={handleHomeClick}
+                {...homeLongPressHandlers}
                 style={{
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
+                  touchAction: 'manipulation',
                   width: '52px',
                   height: '52px',
                   borderRadius: '50%',
@@ -197,17 +238,18 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                   border: '3px solid var(--bg-secondary)',
                   boxShadow: '0 4px 14px rgba(124, 58, 237, 0.45)',
                   cursor: 'pointer',
-                  transform: isCenterActive ? 'scale(1.1)' : 'scale(1)',
-                  transition: 'transform 0.2s',
+                  transform: isPressingHome ? 'scale(0.9)' : (isCenterActive ? 'scale(1.1)' : 'scale(1)'),
+                  transition: isPressingHome ? 'transform 0.45s ease-out' : 'transform 0.2s',
                   WebkitTapHighlightColor: 'transparent'
                 }}
-                title="Scheda Eroe (Home)"
+                title="Scheda Eroe (Home) — tieni premuto per creare una missione"
               >
                 {avatarType === 'image' && avatarImage ? (
                   <img
                     src={avatarImage}
                     alt="Avatar"
-                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    draggable={false}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', pointerEvents: 'none', WebkitTouchCallout: 'none' }}
                   />
                 ) : (
                   <span style={{ fontSize: '22px' }}>{avatarEmoji || '⚔️'}</span>

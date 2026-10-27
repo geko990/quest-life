@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge, onToggleSubquest }) {
+export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge, onToggleSubquest, recentTaskTemplates = [] }) {
   if (!isOpen) return null;
 
   const [currentType, setCurrentType] = useState(type);
@@ -2496,6 +2496,48 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </button>
               </div>
             )}
+
+            {/* Missioni recenti (ultimi 15 giorni): un tocco e ritrovi nome, emoji, stelle e attributi */}
+            {!editData && (activeT === 'oneshot' || activeT === 'quest') && (() => {
+              const q = (form.name || '').trim().toLowerCase();
+              const list = (recentTaskTemplates || [])
+                .filter(t => t.kind === activeT)
+                .filter(t => !q || t.name.toLowerCase().includes(q))
+                .filter(t => t.name.toLowerCase() !== q)
+                .slice(0, 8);
+              if (list.length === 0) return null;
+              const applyTemplate = (t) => {
+                setForm(prev => ({
+                  ...prev,
+                  name: t.name,
+                  emoji: t.emoji,
+                  difficulty: t.difficulty,
+                  stars: t.difficulty,
+                  primaryTarget: t.primaryTarget || prev.primaryTarget,
+                  secondaryTarget: t.secondaryTarget || prev.secondaryTarget,
+                  ...(t.description ? { description: t.description } : {}),
+                  ...(t.reward ? { reward: t.reward } : {})
+                }));
+                if (activeT === 'quest' && Array.isArray(t.milestones) && t.milestones.length > 0) {
+                  setSubquests([]);
+                  setMilestonesText(t.milestones.map(n => `- ${n}`).join('\n'));
+                }
+              };
+              return (
+                <div className="recent-templates">
+                  <div className="recent-templates-label">🔁 {q ? 'Usate di recente' : 'Rifai una missione recente'}</div>
+                  <div className="recent-templates-row no-scrollbar">
+                    {list.map(t => (
+                      <button key={t.kind + t.name} type="button" className="recent-template-chip" onClick={() => applyTemplate(t)}>
+                        <span>{t.emoji}</span>
+                        <span className="recent-template-name">{t.name}</span>
+                        <span className="recent-template-stars">{'★'.repeat(t.difficulty || 1)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {renderFormFields()}
           </div>

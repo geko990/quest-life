@@ -35,6 +35,34 @@ for (const label of tabs) {
   if (text < 20) problems.push(`La scheda ${label} sembra vuota`);
 }
 
+// Pressione prolungata su "Eroe" → crea missione → la ritrovo tra le recenti
+try {
+  const hero = page.locator('button[title*="tieni premuto"]').last();
+  const box = await hero.boundingBox();
+  const longPress = async () => {
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(700);
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+  };
+  await longPress();
+  const nameInput = page.locator('input[name="name"]');
+  if (await nameInput.count() === 0) throw new Error('la finestra di creazione non si è aperta');
+  await nameInput.fill('Test fumo ripetibile');
+  await page.locator('.modal-action-save').click();
+  await page.waitForTimeout(500);
+  await longPress();
+  const chip = page.locator('.recent-template-chip', { hasText: 'Test fumo ripetibile' });
+  if (await chip.count() === 0) throw new Error('la missione non compare tra le recenti');
+  await chip.first().click();
+  if ((await nameInput.inputValue()) !== 'Test fumo ripetibile') throw new Error('il modello non compila il nome');
+  report('Pressione prolungata su Eroe e missioni recenti: OK');
+  await page.mouse.click(5, 5); // tocca fuori per chiudere
+} catch (e) {
+  problems.push(`Gruppo 2: ${e.message}`);
+}
+
 // Controlli sul build
 const css = fs.readdirSync('dist/assets').filter((f) => f.endsWith('.css'))
   .map((f) => fs.readFileSync(`dist/assets/${f}`, 'utf8')).join('');
