@@ -4,6 +4,7 @@ import { forceUpdateApp, checkForAppUpdate, onUpdateAvailable, isUpdateAvailable
 import { getAppErrors, clearAppErrors, removeAppError, formatErrorsForClipboard, buildGithubIssueUrl } from '../utils/errorLogger';
 import UserManualModal from '../components/UserManualModal';
 import ReminderSettings from '../components/ReminderSettings';
+import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } from '../components/settings/SettingsUI';
 
 import { _t, getLocale } from '../i18n';
 export default function SettingsTab({
@@ -268,711 +269,324 @@ export default function SettingsTab({
     }
   };
 
+  const accentHex = {
+    violet: '#7c3aed', blue: '#3b82f6', indigo: '#6366f1', cyan: '#06b6d4', teal: '#14b8a6',
+    emerald: '#10b981', gold: '#f59e0b', orange: '#f97316', rose: '#f43f5e', pink: '#ec4899',
+    red: '#ef4444', green: '#22c55e', yellow: '#eab308', lime: '#84cc16', sky: '#0ea5e9'
+  };
+  const activeAccent = safeSettings.accent || safeSettings.accentColor || 'violet';
+  const superUser = safeSettings.allowPastEdits === true;
+
+  const renderXpLog = () => {
+    if (groupedXpLog.length === 0) {
+      return <div className="opt-empty">{_t("Nessuna impresa registrata di recente.")}</div>;
+    }
+    return groupedXpLog.slice(-15).reverse().map((group, idx) => {
+      if (!group) return null;
+      let dateStr = '';
+      if (group.date) {
+        try {
+          const d = new Date(group.date);
+          if (!isNaN(d.getTime())) {
+            dateStr = d.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) {
+          dateStr = '';
+        }
+      }
+      const statEmojis = (group.statIds || [])
+        .map(id => {
+          const s = (stats || []).find(st => st.id === id);
+          return s ? (s.icon || s.emoji) : null;
+        })
+        .filter(Boolean);
+      return (
+        <SettingRow
+          key={idx}
+          title={`${statEmojis.length > 0 ? statEmojis.join(' ') : '✨'} ${group.title}`}
+          desc={dateStr}
+        >
+          <span className="opt-log-xp">{_t("+{0} XP", group.totalAmount)}</span>
+        </SettingRow>
+      );
+    });
+  };
+
   return (
     <section id="section-settings" className="section active">
-      {/* Centered Floating Profile Header (No Bounding Card) */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '10px',
-          margin: '8px 0 22px 0',
-          textAlign: 'center'
-        }}
-      >
-        {/* Avatar Frame (Bigger Size: 96px) */}
-        <div
-          style={{
-            position: 'relative',
-            width: '96px',
-            height: '96px',
-            borderRadius: '50%',
-            background: 'var(--bg-card)',
-            border: '3px solid var(--accent-gold, #f59e0b)',
-            boxShadow: '0 0 22px rgba(245, 158, 11, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}
-        >
+      {/* Profilo compatto: avatar, nome (tocca per rinominare) e Modifica avanzata discreta */}
+      <div className="opt-profile">
+        <div className="opt-avatar">
           {safePlayer.avatarType === 'image' && safePlayer.avatarImage ? (
-            <img
-              src={safePlayer.avatarImage}
-              alt={_t("Avatar")}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+            <img src={safePlayer.avatarImage} alt={_t("Avatar")} />
           ) : (
-            <span style={{ fontSize: '48px' }}>
-              {safePlayer.avatarEmoji || '⚔️'}
-            </span>
+            <span className="opt-avatar-emoji">{safePlayer.avatarEmoji || '⚔️'}</span>
           )}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              left: 0,
-              background: 'rgba(0,0,0,0.75)',
-              fontSize: '9px',
-              color: '#fbbf24',
-              padding: '2px 0',
-              fontWeight: 'bold',
-              letterSpacing: '0.5px'
-            }}
-          >
-            {_t("Lvl {0}", safePlayer.level || 1)}
-          </div>
+          <div className="opt-avatar-level">{_t("Lvl {0}", safePlayer.level || 1)}</div>
         </div>
-
-        {/* Clean Player Name (Tap to Rename) */}
-        <h2
+        <button
+          type="button"
+          className="opt-profile-name"
           onClick={() => {
-            const newName = window.prompt("Modifica Nome Giocatore:", safePlayer.name || 'Avventuriero');
+            const newName = window.prompt(_t("Modifica Nome Giocatore:"), safePlayer.name || 'Avventuriero');
             if (newName !== null) updatePlayerName(newName);
-          }}
-          style={{
-            margin: 0,
-            fontSize: '22px',
-            fontWeight: '800',
-            color: 'var(--text-primary)',
-            cursor: 'pointer',
-            textAlign: 'center',
-            letterSpacing: '0.3px'
           }}
           title={_t("Tocca per rinominare")}
         >
           {safePlayer.name || _t("Avventuriero")}
-        </h2>
+        </button>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={superUser}
+          className={`opt-power${superUser ? ' is-on' : ''}`}
+          onClick={() => updateSetting('allowPastEdits', !superUser)}
+          title={_t("Modifica avanzata: saldi del Tesoro, lista della spesa, cibi e storico")}
+        >
+          {superUser ? '🔓' : '🔒'} {_t("Avanzata")}
+        </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* Group 1: Gameplay */}
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div
-            onClick={() => toggleGroup('gameplay')}
-            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("🎮 Gameplay")}</h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'gameplay' ? '▲' : '▼'}
-            </span>
-          </div>
-
-          {expandedGroup === 'gameplay' && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
-              {/* Day Start Hour */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Inizio nuovo giorno")}</label>
-                <select
-                  value={safeSettings.dayStartTime !== undefined ? safeSettings.dayStartTime : 0}
-                  onChange={(e) => updateSetting('dayStartTime', parseInt(e.target.value))}
-                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
-                >
-                  <option value="0">{_t("00:00 (Mezzanotte)")}</option>
-                  <option value="1">01:00</option>
-                  <option value="2">02:00</option>
-                  <option value="3">03:00</option>
-                  <option value="4">04:00</option>
-                  <option value="5">05:00</option>
-                  <option value="6">06:00</option>
-                </select>
-              </div>
-
-              {/* Week Start Day */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Inizio Settimana")}</span>
-                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                  <button
-                    onClick={() => updateSetting('weekStart', 'monday')}
-                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: safeSettings.weekStart === 'monday' ? 'var(--accent-primary)' : 'transparent', color: safeSettings.weekStart === 'monday' ? '#fff' : 'var(--text-secondary)' }}
-                  >
-                    {_t("Lun")}</button>
-                  <button
-                    onClick={() => updateSetting('weekStart', 'sunday')}
-                    style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: safeSettings.weekStart === 'sunday' ? 'var(--accent-primary)' : 'transparent', color: safeSettings.weekStart === 'sunday' ? '#fff' : 'var(--text-secondary)' }}
-                  >
-                    {_t("Dom")}</button>
-                </div>
-              </div>
-
-              {/* Daily Penalties Toggle */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Penalità Giornaliere")}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Sottrai XP per abitudini quotidiane saltate")}</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={safeSettings.enablePenalties !== false}
-                  onChange={(e) => updateSetting('enablePenalties', e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
-                />
-              </div>
-
-              {/* Allow Past Edits Toggle */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {_t("🔓 Super User: Modifica Avanzata (Saldi Conti, Spesa, Cibi & Storico)")}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Abilita la modifica manuale dei saldi nel Tesoro, degli elementi nella Lista della Spesa, dei cibi e dei dati nello Storico")}</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={safeSettings.allowPastEdits === true}
-                  onChange={(e) => updateSetting('allowPastEdits', e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
-                />
-              </div>
-
-              {/* Animazioni e microinterazioni */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("✨ Animazioni")}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Ingresso delle schede, nav bar e celebrazioni animate")}</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={safeSettings.animations !== false}
-                  onChange={(e) => updateSetting('animations', e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
-                />
-              </div>
-
-              {/* Lingua / Language */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>🌍 Lingua / Language</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Italiano · English</div>
-                </div>
-                <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '3px', borderRadius: '8px' }}>
-                  {[{ id: 'it', label: '🇮🇹 IT' }, { id: 'en', label: '🇬🇧 EN' }].map(l => (
-                    <button
-                      key={l.id}
-                      type="button"
-                      onClick={() => updateSetting('language', l.id)}
-                      style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', background: (safeSettings.language || 'it') === l.id ? 'var(--accent-primary)' : 'transparent', color: (safeSettings.language || 'it') === l.id ? '#fff' : 'var(--text-secondary)' }}
-                    >
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Promemoria scadenze: quanti ne vuoi; il primo accende tessera arancione e pallino rosso */}
-              <ReminderSettings
-                prefs={safeSettings.deadlineReminders || {}}
-                onChange={(next) => updateSetting('deadlineReminders', next)}
-              />
-
-              {/* Tesoro: il totale include gli investimenti? */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <div>
-                  <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("💰 Tesoro: Totale con Investimenti")}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{_t("Se attivo, il totale somma conti e investimenti. Se disattivo, mostra solo il totale dei conti; gli investimenti restano nella loro tessera")}</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={safeSettings.financeTotalIncludesInvestments !== false}
-                  onChange={(e) => updateSetting('financeTotalIncludesInvestments', e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
-                />
-              </div>
+      <div className="opt-stack">
+        {/* Giornate tipo: in evidenza, con le routine visibili anche a tessera chiusa */}
+        <SettingsGroup
+          title={_t("🗓️ Giornate tipo")}
+          highlight
+          open={expandedGroup === 'presetDays'}
+          onToggle={() => toggleGroup('presetDays')}
+          summary={safePresetDays.length || ''}
+          preview={
+            <div className="opt-preview">
+              {safePresetDays.map(preset => (
+                <button key={preset.id} type="button" className="opt-chip" onClick={() => handleEditPreset(preset)}>
+                  <span>{preset.emoji || '📅'}</span>{preset.name}
+                </button>
+              ))}
+              <button type="button" className="opt-chip opt-chip--muted" onClick={handleOpenNewPreset}>
+                {_t("+ Nuova")}
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* Group 2: Giornate Tipo (Modelli di Routine) */}
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div
-            onClick={() => toggleGroup('presetDays')}
-            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("🗓️ Giornate Tipo (Modelli di Routine)")}</h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'presetDays' ? '▲' : '▼'}
-            </span>
-          </div>
-
-          {expandedGroup === 'presetDays' && (
-            <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                  {_t("Sequenze di riferimento (scorri a destra ↔️):")}</span>
-                <button
-                  onClick={handleOpenNewPreset}
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    color: 'var(--accent-primary)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  {_t("➕ Nuova Routine")}</button>
-              </div>
-
-              {/* Horizontal Swipeable Cards ("Tessere Laterali") */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  overflowX: 'auto',
-                  scrollSnapType: 'x mandatory',
-                  WebkitOverflowScrolling: 'touch',
-                  padding: '4px 2px 12px 2px'
-                }}
-              >
-                {safePresetDays.length === 0 ? (
-                  <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontStyle: 'italic', width: '100%' }}>
-                    {_t("Nessun modello salvato. Tocca ➕ Nuova Routine per aggiungere una sequenza!")}</div>
-                ) : (
-                  safePresetDays.map((preset) => {
-                    const steps = getPresetSteps(preset);
-
-                    return (
-                      <div
-                        key={preset.id}
-                        style={{
-                          flexShrink: 0,
-                          width: '260px',
-                          scrollSnapAlign: 'start',
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '16px',
-                          padding: '14px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          gap: '10px'
-                        }}
-                      >
-                        {/* Card Header & Description */}
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span>{preset.emoji || '📅'}</span> {preset.name}
-                            </h4>
-                          </div>
-                          {preset.description && (
-                            <p style={{ margin: '0 0 10px 0', fontSize: '10px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: '1.3' }}>
-                              {_t(preset.description)}
-                            </p>
-                          )}
-
-                          {/* Sequential Timeline Steps */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {steps.map((st, i) => (
-                              <div
-                                key={st.id || i}
-                                style={{
-                                  background: 'var(--bg-card)',
-                                  padding: '6px 8px',
-                                  borderRadius: '8px',
-                                  border: '1px solid var(--glass-border)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  fontSize: '10px'
-                                }}
-                              >
-                                {st.time && (
-                                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'var(--bg-primary)', padding: '2px 5px', borderRadius: '4px', flexShrink: 0 }}>
-                                    {st.time}
-                                  </span>
-                                )}
-                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {_t(st.title)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Card Actions */}
-                        <div style={{ display: 'flex', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                          <button
-                            onClick={() => handleEditPreset(preset)}
-                            style={{ flex: 1, padding: '7px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-                            title={_t("Modifica Routine")}
-                          >
-                            {_t("✏️ Modifica")}</button>
-                          <button
-                            onClick={() => handleDeletePreset(preset.id)}
-                            style={{ padding: '7px 10px', borderRadius: '8px', fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', cursor: 'pointer' }}
-                            title={_t("Elimina")}
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Group 3: Aspect & Theme */}
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div
-            onClick={() => toggleGroup('theme')}
-            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("🎨 Aspetto & Temi")}</h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'theme' ? '▲' : '▼'}
-            </span>
-          </div>
-
-          {expandedGroup === 'theme' && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
-              {/* Theme selection */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Stile Tema")}</label>
-                <select
-                  value={safeSettings.theme || 'standard'}
-                  onChange={(e) => updateSetting('theme', e.target.value)}
-                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
-                >
-                  <option value="standard">{_t("Standard RPG")}</option>
-                  <option value="fantasy">{_t("Fantasy (Pergamena / Legno)")}</option>
-                  <option value="dnd">{_t("D&D Paper Map")}</option>
-                  <option value="futuristic">{_t("Cyberpunk Neon")}</option>
-                  <option value="pirate">{_t("7th Sea / Pirate")}</option>
-                </select>
-              </div>
-
-              {/* Mode Selection */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
-                <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{_t("Modalità")}</span>
-                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '2px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                  {['dark', 'light', 'system'].map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => updateSetting('themeMode', m)}
-                      style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'capitalize', background: (safeSettings.themeMode || 'dark') === m ? 'var(--accent-primary)' : 'transparent', color: (safeSettings.themeMode || 'dark') === m ? '#fff' : 'var(--text-secondary)' }}
-                    >
-                      {m === 'dark' ? _t("Scuro") : m === 'light' ? _t("Chiaro") : _t("Auto")}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Accent Color Selection (Colore Dettagli) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Colore Dettagli (Accent)")}</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
-                  {ACCENT_COLORS.map((c) => {
-                    const activeColor = safeSettings.accent || safeSettings.accentColor || 'violet';
-                    const isSelected = activeColor === c;
-                    
-                    const hexMap = {
-                      violet: '#7c3aed',
-                      blue: '#3b82f6',
-                      indigo: '#6366f1',
-                      cyan: '#06b6d4',
-                      teal: '#14b8a6',
-                      emerald: '#10b981',
-                      gold: '#f59e0b',
-                      orange: '#f97316',
-                      rose: '#f43f5e',
-                      pink: '#ec4899',
-                      red: '#ef4444',
-                      green: '#22c55e',
-                      yellow: '#eab308',
-                      lime: '#84cc16',
-                      sky: '#0ea5e9'
-                    };
-
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => {
-                          updateSetting('accent', c);
-                          updateSetting('accentColor', c);
-                        }}
-                        title={c}
-                        style={{
-                          height: '32px',
-                          borderRadius: '10px',
-                          background: hexMap[c] || '#7c3aed',
-                          border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)',
-                          boxShadow: isSelected ? `0 0 10px ${hexMap[c] || '#7c3aed'}` : 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#ffffff',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                          transition: 'transform 0.15s ease'
-                        }}
-                      >
-                        {isSelected ? '✓' : ''}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Screen Layout Mode Selection (Orientamento & Tablet) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                    {_t("📱 Disposizione Schermo & Layout")}</label>
-                  <span style={{ fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                    {safeSettings.screenMode === 'landscape' ? _t("Orizzontale") : safeSettings.screenMode === 'tablet' ? _t("Tablet") : safeSettings.screenMode === 'portrait' ? _t("Verticale") : _t("Auto")}
-                  </span>
-                </div>
-                <select
-                  value={safeSettings.screenMode || 'auto'}
-                  onChange={(e) => updateSetting('screenMode', e.target.value)}
-                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
-                >
-                  <option value="auto">{_t("🔄 Automatica (in base all'orientamento)")}</option>
-                  <option value="landscape">{_t("🖥️ Landscape (Navigation Rail a sinistra)")}</option>
-                  <option value="tablet">{_t("📱 Tablet Mode (iPad, Surface/Duo, Android)")}</option>
-                  <option value="portrait">{_t("📱 Smartphone Portrait (Verticale fisso)")}</option>
-                </select>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {_t("In Landscape la barra di navigazione si sposta a sinistra massimizzando lo spazio verticale per le missioni e la schermata eroe.")}</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Unified Group: Sync & Backup Dati */}
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div
-            onClick={() => toggleGroup('data')}
-            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("💾 Sync & Backup Dati")}</h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'data' ? '▲' : '▼'}
-            </span>
-          </div>
-
-          {expandedGroup === 'data' && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {/* Section 1: File Database Sync */}
-              <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>{_t("📁 Sync File Locale (PC / Chrome)")}</span>
-                </div>
-                <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                  {_t("Collega un file `.json` locale per salvare le modifiche direttamente sul tuo disco rigido ad ogni azione.")}</p>
-                {fileHandle ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '8px 10px', borderRadius: '8px' }}>
-                    <div style={{ fontWeight: 'bold', color: '#22c55e', fontSize: '10px' }}>
-                      {_t("✓ File Collegato: {0}", fileHandle.name)}
-                    </div>
-                    <button
-                      onClick={onReconnectDatabase}
-                      style={{ padding: '5px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer' }}
-                    >
-                      {_t("🔄 Riconnetti Autorizzazioni File")}</button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={onLinkDatabase}
-                    className="btn-primary"
-                    style={{ padding: '8px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
-                  >
-                    {_t("🔗 Collega File Database su Disco")}</button>
-                )}
-              </div>
-
-              {/* Section 2: Backup & Export/Import */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button
-                    onClick={onExport}
-                    className="btn-primary"
-                    style={{ padding: '9px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                  >
-                    {_t("📤 Esporta Backup")}</button>
-                  <button
-                    onClick={onImport}
-                    style={{ padding: '9px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                  >
-                    {_t("📥 Importa Backup")}</button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button
-                    onClick={onFixData}
-                    style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                  >
-                    {_t("🔧 Ripara Integrità")}</button>
-                  <button
-                    onClick={onRepairStreaks}
-                    style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                  >
-                    {_t("🔥 Ricalcola Serie")}</button>
-                </div>
-
-                <button
-                  onClick={onReset}
-                  style={{ padding: '7px 10px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', cursor: 'pointer', marginTop: '4px' }}
-                >
-                  {_t("⚠️ Azzera Tutti i Dati")}</button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Group 5: Storico Imprese Recenti (Last 15 items) */}
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div
-            onClick={() => toggleGroup('history')}
-            style={{ padding: '14px 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--glass-border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("📜 Storico Imprese Recenti (Ultime 15)")}</h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {expandedGroup === 'history' ? '▲' : '▼'}
-            </span>
-          </div>
-
-          {expandedGroup === 'history' && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {groupedXpLog.length === 0 ? (
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: 0 }}>
-                  {_t("Nessuna impresa registrata di recente.")}</p>
-              ) : (
-                groupedXpLog.slice(-15).reverse().map((group, idx) => {
-                  if (!group) return null;
-                  const title = group.title;
-                  let dateStr = '';
-                  if (group.date) {
-                    try {
-                      const d = new Date(group.date);
-                      if (!isNaN(d.getTime())) {
-                        dateStr = d.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-                      }
-                    } catch (e) {
-                      dateStr = '';
-                    }
-                  }
-
-                  const statEmojis = (group.statIds || [])
-                    .map(id => {
-                      const s = (stats || []).find(st => st.id === id);
-                      return s ? (s.icon || s.emoji) : null;
-                    })
-                    .filter(Boolean);
-
-                  const emojiDisplay = statEmojis.length > 0 ? statEmojis.join(' ') : '✨';
-
-                  return (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                        <span style={{ fontSize: '14px', flexShrink: 0 }}>{emojiDisplay}</span>
-                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                          <span style={{ color: 'var(--text-primary)', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
-                          {dateStr && <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{dateStr}</span>}
-                        </div>
-                      </div>
-                      <span style={{ fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)', flexShrink: 0, marginLeft: '8px' }}>{_t("+{0} XP", group.totalAmount)}</span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Banner Manuale di Utilizzo & Guida dell'App */}
-        <div
-          onClick={() => { setManualChapter('rpg'); setShowManualModal(true); }}
-          style={{
-            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.15))',
-            border: '1px solid rgba(56, 189, 248, 0.4)',
-            borderRadius: '16px',
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-            transition: 'all 0.2s ease',
-            margin: '6px 0'
-          }}
+          }
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                background: 'rgba(56, 189, 248, 0.2)',
-                border: '1px solid rgba(56, 189, 248, 0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '22px',
-                flexShrink: 0
-              }}
-            >
-              📖
+          <div className="opt-row" style={{ borderTop: 'none', paddingTop: 0 }}>
+            <div className="opt-presets">
+              {safePresetDays.map((preset) => (
+                <div key={preset.id} className="opt-preset">
+                  <div className="opt-preset-name">{preset.emoji || '📅'} {preset.name}</div>
+                  {preset.description && <div className="opt-row-desc" style={{ marginTop: 0 }}>{_t(preset.description)}</div>}
+                  <div className="opt-preset-steps">
+                    {getPresetSteps(preset).map((st, i) => (
+                      <div key={st.id || i} className="opt-preset-step">
+                        <span className="opt-preset-time">{st.time}</span>
+                        <span className="opt-preset-title">{_t(st.title)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="opt-preset-actions">
+                    <OptButton small onClick={() => handleEditPreset(preset)} title={_t("Modifica Routine")}>{_t("Modifica")}</OptButton>
+                    <OptButton small variant="danger" onClick={() => handleDeletePreset(preset.id)} title={_t("Elimina")} aria-label={_t("Elimina")}>🗑️</OptButton>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {_t("Manuale di Utilizzo & Guide")}<span style={{ fontSize: '9px', background: 'var(--accent-primary, #38bdf8)', color: '#fff', padding: '2px 6px', borderRadius: '6px', fontWeight: '800' }}>
-                  {_t("GUIDA")}</span>
+            <OptButton variant="primary" onClick={handleOpenNewPreset}>{_t("+ Nuova giornata tipo")}</OptButton>
+          </div>
+        </SettingsGroup>
+
+        {/* Aspetto */}
+        <SettingsGroup title={_t("🎨 Aspetto")} open={expandedGroup === 'theme'} onToggle={() => toggleGroup('theme')}>
+          <SettingRow title={_t("Tema")}>
+            <SelectValue
+              label={_t("Tema")}
+              value={safeSettings.theme || 'standard'}
+              onChange={(v) => updateSetting('theme', v)}
+              options={[
+                { value: 'standard', label: _t("Standard RPG") },
+                { value: 'fantasy', label: _t("Fantasy (Pergamena / Legno)"), short: _t("Fantasy") },
+                { value: 'dnd', label: _t("D&D Paper Map") },
+                { value: 'futuristic', label: _t("Cyberpunk Neon") },
+                { value: 'pirate', label: _t("7th Sea / Pirate") }
+              ]}
+            />
+          </SettingRow>
+          <SettingRow title={_t("Modalità")}>
+            <Segmented
+              value={safeSettings.themeMode || 'dark'}
+              onChange={(v) => updateSetting('themeMode', v)}
+              options={[
+                { value: 'dark', label: _t("Scuro") },
+                { value: 'light', label: _t("Chiaro") },
+                { value: 'system', label: _t("Auto") }
+              ]}
+            />
+          </SettingRow>
+          <SettingRow
+            title={_t("Colore dettagli")}
+            below={
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                {ACCENT_COLORS.map((c) => {
+                  const isSelected = activeAccent === c;
+                  const hex = accentHex[c] || '#7c3aed';
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => { updateSetting('accent', c); updateSetting('accentColor', c); }}
+                      title={c}
+                      aria-label={c}
+                      aria-pressed={isSelected}
+                      style={{
+                        height: '30px', borderRadius: '9px', background: hex, cursor: 'pointer', padding: 0,
+                        border: isSelected ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)',
+                        boxShadow: isSelected ? `0 0 0 2px ${hex}` : 'none',
+                        color: '#ffffff', fontSize: '12px', fontWeight: 'bold'
+                      }}
+                    >
+                      {isSelected ? '✓' : ''}
+                    </button>
+                  );
+                })}
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
-                {_t("Scopri tutte le funzioni: RPG, Finanze, Cloudflare ETF, Abitudini e Nutrizione")}</div>
-            </div>
-          </div>
-        </div>
+            }
+          />
+          <SettingRow title={_t("Disposizione schermo")} desc={safeSettings.screenMode === 'landscape' ? _t("Barra di navigazione a sinistra") : undefined}>
+            <SelectValue
+              label={_t("Disposizione schermo")}
+              value={safeSettings.screenMode || 'auto'}
+              onChange={(v) => updateSetting('screenMode', v)}
+              options={[
+                { value: 'auto', label: _t("Automatica (in base all'orientamento)"), short: _t("Automatica") },
+                { value: 'portrait', label: _t("Verticale fisso"), short: _t("Verticale") },
+                { value: 'landscape', label: _t("Orizzontale (barra a sinistra)"), short: _t("Orizzontale") },
+                { value: 'tablet', label: _t("Tablet (iPad, Android)"), short: _t("Tablet") }
+              ]}
+            />
+          </SettingRow>
+          <SettingRow title={_t("Animazioni")} desc={_t("Ingresso delle schede, nav bar e celebrazioni")}>
+            <Toggle checked={safeSettings.animations !== false} onChange={(v) => updateSetting('animations', v)} label={_t("Animazioni")} />
+          </SettingRow>
+        </SettingsGroup>
 
-        {/* Version Badge & App Update */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '16px 0 36px 0', width: '100%', gap: '10px' }}>
-          {/* Aggiorna App: compare solo quando c'è davvero una nuova versione */}
-          {hasUpdate && (
-            <button
-              type="button"
-              onClick={() => forceUpdateApp(false)}
-              style={{
-                padding: '10px 28px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                border: 'none',
-                background: 'var(--accent-primary, #38bdf8)',
-                color: '#ffffff',
-                cursor: 'pointer',
-                boxShadow: '0 0 16px rgba(56, 189, 248, 0.6), 0 2px 8px rgba(0,0,0,0.2)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'all 0.25s ease'
-              }}
-              title={_t("Tocca per aggiornare alla versione {0}", newVersionTag || '')}
-            >
-              <span>🚀</span>
-              <span>{_t("Aggiorna App (v{0})", newVersionTag || '')}</span>
-            </button>
-          )}
+        {/* Generali */}
+        <SettingsGroup title={_t("⚙️ Generali")} open={expandedGroup === 'general'} onToggle={() => toggleGroup('general')}>
+          <SettingRow title="Lingua / Language">
+            <Segmented
+              value={safeSettings.language || 'it'}
+              onChange={(v) => updateSetting('language', v)}
+              options={[{ value: 'it', label: '🇮🇹 IT' }, { value: 'en', label: '🇬🇧 EN' }]}
+            />
+          </SettingRow>
+          <SettingRow title={_t("Inizio del giorno")} desc={_t("Dopo mezzanotte conta ancora come ieri")}>
+            <SelectValue
+              label={_t("Inizio del giorno")}
+              value={safeSettings.dayStartTime !== undefined ? safeSettings.dayStartTime : 0}
+              onChange={(v) => updateSetting('dayStartTime', parseInt(v))}
+              options={[0, 1, 2, 3, 4, 5, 6].map(h => ({
+                value: h,
+                label: h === 0 ? _t("00:00 (Mezzanotte)") : `0${h}:00`,
+                short: `0${h}:00`
+              }))}
+            />
+          </SettingRow>
+          <SettingRow title={_t("Inizio della settimana")}>
+            <Segmented
+              value={safeSettings.weekStart === 'sunday' ? 'sunday' : 'monday'}
+              onChange={(v) => updateSetting('weekStart', v)}
+              options={[{ value: 'monday', label: _t("Lun") }, { value: 'sunday', label: _t("Dom") }]}
+            />
+          </SettingRow>
+        </SettingsGroup>
 
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            {_t("RPG Life v{0}", APP_VERSION)}{" "}{BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString(getLocale(), { dateStyle: 'short', timeStyle: 'short' })})` : ''}
-          </div>
+        {/* Gioco */}
+        <SettingsGroup title={_t("🎮 Gioco")} open={expandedGroup === 'gameplay'} onToggle={() => toggleGroup('gameplay')}>
+          <SettingRow title={_t("Penalità giornaliere")} desc={_t("Sottrai XP per abitudini quotidiane saltate")}>
+            <Toggle checked={safeSettings.enablePenalties !== false} onChange={(v) => updateSetting('enablePenalties', v)} label={_t("Penalità giornaliere")} />
+          </SettingRow>
+          <SettingRow title={_t("Modifica avanzata")} desc={_t("Saldi del Tesoro, lista della spesa, cibi e storico")}>
+            <Toggle checked={superUser} onChange={(v) => updateSetting('allowPastEdits', v)} label={_t("Modifica avanzata")} />
+          </SettingRow>
+          <SettingRow title={_t("Tesoro: totale con investimenti")} desc={_t("Se spento, il totale mostra solo i conti")}>
+            <Toggle checked={safeSettings.financeTotalIncludesInvestments !== false} onChange={(v) => updateSetting('financeTotalIncludesInvestments', v)} label={_t("Tesoro: totale con investimenti")} />
+          </SettingRow>
+          <ReminderSettings
+            prefs={safeSettings.deadlineReminders || {}}
+            onChange={(next) => updateSetting('deadlineReminders', next)}
+          />
+        </SettingsGroup>
 
+        {/* Dati e backup */}
+        <SettingsGroup title={_t("💾 Dati e backup")} open={expandedGroup === 'data'} onToggle={() => toggleGroup('data')}>
+          <SettingRow
+            title={_t("Backup")}
+            desc={_t("Salva o ripristina tutti i dati in un file")}
+            below={
+              <div className="opt-btn-row">
+                <OptButton variant="primary" onClick={onExport}>{_t("Esporta")}</OptButton>
+                <OptButton onClick={onImport}>{_t("Importa")}</OptButton>
+              </div>
+            }
+          />
+          <SettingRow
+            title={_t("File sul computer")}
+            desc={fileHandle ? _t("✓ File Collegato: {0}", fileHandle.name) : _t("Salva ogni modifica in un file .json (PC / Chrome)")}
+          >
+            {fileHandle
+              ? <OptButton small onClick={onReconnectDatabase}>{_t("Riconnetti")}</OptButton>
+              : <OptButton small onClick={onLinkDatabase}>{_t("Collega")}</OptButton>}
+          </SettingRow>
+          <SettingRow
+            title={_t("Manutenzione")}
+            desc={_t("Correggono dati incoerenti senza cancellare nulla")}
+            below={
+              <div className="opt-btn-row">
+                <OptButton small onClick={onFixData}>{_t("Ripara integrità")}</OptButton>
+                <OptButton small onClick={onRepairStreaks}>{_t("Ricalcola serie")}</OptButton>
+              </div>
+            }
+          />
+          <SettingRow title={_t("Azzera tutti i dati")} desc={_t("Cancella tutto in modo definitivo")} danger>
+            <OptButton small variant="danger" onClick={onReset}>{_t("Azzera")}</OptButton>
+          </SettingRow>
+        </SettingsGroup>
+
+        {/* Storico imprese */}
+        <SettingsGroup title={_t("📜 Storico imprese")} open={expandedGroup === 'history'} onToggle={() => toggleGroup('history')}>
+          {renderXpLog()}
+        </SettingsGroup>
+
+        {/* Guida e info */}
+        <SettingsGroup
+          title={_t("📖 Guida e info")}
+          open={expandedGroup === 'info'}
+          onToggle={() => toggleGroup('info')}
+          summary={`v${APP_VERSION}`}
+        >
+          <SettingRow
+            title={_t("Manuale e guide")}
+            desc={_t("RPG, Finanze, Abitudini e Nutrizione")}
+            onClick={() => { setManualChapter('rpg'); setShowManualModal(true); }}
+          />
+          <SettingRow
+            title={_t("Versione")}
+            desc={BUILD_TIME ? new Date(BUILD_TIME).toLocaleString(getLocale(), { dateStyle: 'short', timeStyle: 'short' }) : undefined}
+          >
+            <span className="opt-select">v{APP_VERSION}</span>
+          </SettingRow>
+        </SettingsGroup>
+
+        {/* Aggiorna App: compare solo quando c'è davvero una nuova versione */}
+        {hasUpdate && (
+          <OptButton
+            variant="primary"
+            onClick={() => forceUpdateApp(false)}
+            title={_t("Tocca per aggiornare alla versione {0}", newVersionTag || '')}
+            style={{ alignSelf: 'center', marginTop: '6px', borderRadius: '999px', padding: '0 24px', boxShadow: '0 0 16px color-mix(in srgb, var(--accent-primary) 55%, transparent)' }}
+          >
+            🚀 {_t("Aggiorna App (v{0})", newVersionTag || '')}
+          </OptButton>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 0 12px 0', width: '100%' }}>
           {/* Registro Errori & Diagnostica (Invisibile di default, visibile solo con errori finché non si tocca 'X') */}
           {errorsList.length > 0 && !isErrorsDismissed && (
             <div style={{

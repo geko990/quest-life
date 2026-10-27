@@ -7989,4 +7989,156 @@ html[data-animations="off"] .acc-card-shine { display: none; }
 @media (prefers-reduced-motion: reduce) {
     .acc-sheet, .acc-card, .acc-month-bar span { animation: none; }
     .acc-card-shine { display: none; }
+/* ============================================
+   OPZIONI — una sola grammatica per tutte le righe
+   (componenti in src/components/settings/SettingsUI.jsx)
+   ============================================ */
+.opt-stack { display: flex; flex-direction: column; gap: 8px; }
+.opt-track { background: color-mix(in srgb, var(--text-primary) 8%, transparent); }
+
+.opt-group { overflow: hidden; }
+.opt-group--highlight { border-color: color-mix(in srgb, var(--accent-primary) 55%, transparent); }
+.opt-group-head {
+  width: 100%; display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px; background: none; border: none; cursor: pointer;
+  color: var(--text-primary); font: inherit; text-align: left;
+}
+.opt-group-title { font-size: 14px; font-weight: 700; flex: 1; min-width: 0; }
+.opt-group-summary { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.opt-group-body { display: flex; flex-direction: column; }
+.opt-chevron { flex-shrink: 0; color: var(--text-muted); transition: transform 0.2s ease; }
+.opt-group-head .opt-chevron { transform: rotate(90deg); }
+.opt-group-head .opt-chevron.is-open { transform: rotate(-90deg); }
+html[data-animations="off"] .opt-chevron { transition: none; }
+
+/* Anteprima visibile anche a tessera chiusa (es. le Giornate tipo) */
+.opt-preview { display: flex; gap: 6px; padding: 0 14px 12px; overflow-x: auto; scrollbar-width: none; }
+.opt-preview::-webkit-scrollbar { display: none; }
+.opt-chip {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 999px; border: none; cursor: pointer;
+  font-size: 11.5px; font-weight: 600; font-family: inherit; white-space: nowrap;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent-primary) 16%, transparent);
+}
+.opt-chip--muted { background: color-mix(in srgb, var(--text-primary) 8%, transparent); color: var(--text-secondary); }
+
+.opt-row {
+  display: flex; flex-direction: column; gap: 10px; width: 100%;
+  padding: 11px 14px; border: none; border-top: 1px solid var(--glass-border);
+  background: none; color: var(--text-primary); font: inherit; text-align: left;
+}
+.opt-row--tap { cursor: pointer; }
+.opt-row-main { display: flex; align-items: center; gap: 12px; min-height: 26px; }
+.opt-row-text { flex: 1; min-width: 0; }
+.opt-row-title { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.opt-row-title.is-danger { color: var(--danger, #ef4444); }
+.opt-row-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.35; margin-top: 2px; }
+.opt-row-control { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+.opt-row-below { display: flex; flex-direction: column; gap: 8px; }
+
+/* Interruttore */
+.opt-toggle {
+  position: relative; width: 44px; height: 26px; flex-shrink: 0;
+  border-radius: 999px; border: none; padding: 0; cursor: pointer;
+  background: color-mix(in srgb, var(--text-primary) 20%, transparent);
+  transition: background 0.2s ease;
+}
+.opt-toggle.is-on { background: var(--accent-primary); }
+.opt-toggle-knob {
+  position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.opt-toggle.is-on .opt-toggle-knob { transform: translateX(18px); }
+html[data-animations="off"] .opt-toggle, html[data-animations="off"] .opt-toggle-knob { transition: none; }
+
+/* Selettore a pulsanti */
+.opt-segmented {
+  display: flex; padding: 2px; border-radius: 9px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+.opt-segmented button {
+  padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer;
+  background: transparent; color: var(--text-secondary);
+  font-family: inherit; font-size: 11.5px; font-weight: 700; white-space: nowrap;
+}
+.opt-segmented button.is-on { background: var(--accent-primary); color: #fff; }
+
+/* Valore + › con scelta nativa */
+.opt-select { position: relative; display: inline-flex; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 12px; font-weight: 600; max-width: 170px; }
+.opt-select-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.opt-select select { position: absolute; inset: -8px; width: calc(100% + 16px); opacity: 0; cursor: pointer; font-size: 16px; }
+
+/* Pulsanti: principale, secondario, pericoloso */
+.opt-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 36px; padding: 0 14px; border-radius: 10px; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 700; white-space: nowrap;
+  border: 1px solid transparent;
+}
+.opt-btn--small { height: 30px; padding: 0 12px; font-size: 11.5px; }
+.opt-btn--primary { background: var(--accent-primary); color: #fff; }
+.opt-btn--secondary { background: transparent; color: var(--text-primary); border-color: var(--glass-border); }
+.opt-btn--danger { background: color-mix(in srgb, var(--danger, #ef4444) 12%, transparent); color: var(--danger, #ef4444); border-color: color-mix(in srgb, var(--danger, #ef4444) 30%, transparent); }
+.opt-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Profilo compatto con la Modifica avanzata discreta a destra */
+.opt-profile { display: flex; align-items: center; gap: 12px; padding: 2px 4px 12px; }
+.opt-avatar {
+  position: relative; width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card); border: 2px solid var(--accent-gold, #f59e0b);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+}
+.opt-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.opt-avatar-emoji { font-size: 28px; }
+.opt-avatar-level {
+  position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
+  background: rgba(0, 0, 0, 0.75); color: #fbbf24; font-size: 8px; font-weight: 700; padding: 1px 0;
+}
+.opt-profile-name {
+  flex: 1; min-width: 0; background: none; border: none; padding: 0; text-align: left; cursor: pointer;
+  font-family: inherit; font-size: 19px; font-weight: 800; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.opt-power {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-size: 11px; font-weight: 700;
+  background: transparent; color: var(--text-muted); border: 1px solid var(--glass-border);
+}
+.opt-power.is-on {
+  color: #b45309; border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(245, 158, 11, 0.16);
+}
+[data-mode="dark"] .opt-power.is-on { color: #fbbf24; }
+
+/* Giornate tipo aperte: schede affiancate */
+.opt-presets { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 0 4px; scrollbar-width: none; }
+.opt-presets::-webkit-scrollbar { display: none; }
+.opt-preset {
+  flex-shrink: 0; width: 240px; scroll-snap-align: start;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+.opt-preset-name { font-size: 13px; font-weight: 700; }
+.opt-preset-steps { display: flex; flex-direction: column; gap: 5px; }
+.opt-preset-step { display: flex; align-items: center; gap: 8px; font-size: 11.5px; min-width: 0; }
+.opt-preset-time { flex-shrink: 0; width: 38px; font-size: 11px; font-weight: 700; color: var(--accent-primary); }
+.opt-preset-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
+.opt-preset-actions { display: flex; gap: 6px; margin-top: auto; }
+.opt-preset-actions .opt-btn--secondary { flex: 1; }
+
+/* Storico imprese */
+.opt-log-xp { font-size: 12px; font-weight: 700; color: var(--accent-gold, #f59e0b); }
+.opt-empty { padding: 14px; font-size: 12px; color: var(--text-muted); text-align: center; border-top: 1px solid var(--glass-border); }
+
+/* Promemoria: numero + unità + aggiungi */
+.opt-inline-form { display: flex; gap: 6px; align-items: center; }
+.opt-input {
+  height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent); color: var(--text-primary);
+  font-family: inherit; font-size: 12px; font-weight: 600;
 }

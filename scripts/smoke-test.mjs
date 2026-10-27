@@ -174,11 +174,26 @@ await tapOutside();
 await navTo('Salute');
 await step('09-spesa', async () => {});
 await navTo('Opzioni');
+// Opzioni con tutte le tessere chiuse: devono stare in una schermata (iPhone 6,1" ≈ 393×759 senza safe area)
+await step('10a-opzioni', async () => {
+  await page.waitForTimeout(500);
+  const m = await page.evaluate(() => {
+    const groups = Array.from(document.querySelectorAll('#section-settings .opt-group'));
+    const navs = Array.from(document.querySelectorAll('nav'));
+    const nav = navs[navs.length - 1];
+    const last = groups[groups.length - 1];
+    if (!last || !nav) return null;
+    return { groups: groups.length, lastBottom: Math.round(last.getBoundingClientRect().bottom), navTop: Math.round(nav.getBoundingClientRect().top) };
+  });
+  if (!m) throw new Error('tessere delle Opzioni non trovate');
+  const over852 = m.lastBottom - m.navTop;
+  report(`Opzioni: ${m.groups} tessere, ultima finisce a ${m.lastBottom}px, nav bar a ${m.navTop}px → sporgenza ${over852}px a 852px, circa ${over852 + 93}px a 759px`);
+});
 await step('10-opzioni-promemoria', async () => {
-  const groupHeader = page.getByText('🎮 Gameplay').first();
+  const groupHeader = page.getByText('🎮 Gioco').first();
   await groupHeader.click();
   await page.waitForTimeout(400);
-  await page.getByText('🔔 Promemoria Scadenze').first().scrollIntoViewIfNeeded();
+  await page.getByText('Promemoria scadenze').first().scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
 });
 
