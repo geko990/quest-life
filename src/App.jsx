@@ -1089,16 +1089,21 @@ export default function App() {
       else if (inner.length === 1 && /^(SVG|CANVAS)$/i.test(inner[0].el.tagName)) all.push(Object.assign(inner[0], { parent: it, pop: true }));
     });
 
-    // Un'unica onda dall'alto verso il basso: il ritardo cresce con la posizione sullo schermo
-    // (circa 0,5 ms per pixel, tra 30 e 55 ms da una riga alla successiva), così niente compare
-    // più in basso prima di ciò che sta sopra. Nella stessa riga si va da sinistra a destra.
+    // Un'unica onda dall'alto verso il basso, riga per riga, così niente compare più in basso
+    // prima di ciò che sta sopra. Nella stessa riga si va da sinistra a destra.
     all.sort(byPosition);
-    let rowTop = null, rowStart = 0, col = 0;
-    all.filter(it => !it.side).forEach(it => {
+    const wave = all.filter(it => !it.side);
+    // Passo tra una riga e l'altra come nella v229 (piace così): 45 ms con tante righe, fino a 80 ms con poche
+    let rowCount = 0, lastTop = -Infinity;
+    wave.filter(it => !it.parent).forEach(it => { if (it.r.top > lastTop + 14) { rowCount++; lastTop = it.r.top; } });
+    const step = rowCount > 1 ? Math.min(80, Math.max(45, Math.round(330 / (rowCount - 1)))) : 0;
+    let rowTop = null, rowStart = 0, col = 0, prevInner = false;
+    wave.forEach(it => {
       if (rowTop === null) { rowTop = it.r.top; rowStart = 0; col = 0; }
       else if (it.r.top > rowTop + 14) {
-        rowStart += Math.min(55, Math.max(30, (it.r.top - rowTop) * 0.5));
-        rowTop = it.r.top; col = 0;
+        // le righe dentro un pannello scorrono più rapide, e la tessera dopo il pannello non si fa aspettare
+        rowStart += it.parent ? 30 : (prevInner ? Math.min(step, 45) : step);
+        rowTop = it.r.top; col = 0; prevInner = !!it.parent;
       } else col++;
       let d = rowStart + col * 55;
       if (it.parent) { // le righe interne dopo il loro pannello, una dopo l'altra
@@ -1113,7 +1118,7 @@ export default function App() {
     all.filter(it => it.side).forEach(it => {
       const p = it.parent;
       const sameRow = p.lastSide && Math.abs(it.r.top - p.lastSide.top) < 14;
-      it.delay = !p.lastSide ? p.delay + 70 : p.lastSide.delay + (sameRow ? 55 : 30);
+      it.delay = !p.lastSide ? p.delay + 60 : p.lastSide.delay + (sameRow ? 45 : 25);
       p.lastSide = { top: it.r.top, delay: it.delay };
     });
     all.forEach(it => {
