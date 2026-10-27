@@ -30,6 +30,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Test di fumo nel browser
+        run: |
+          npm install --no-save playwright@1
+          npx playwright install --with-deps chromium
+          npx vite preview --port 4173 --strictPort &
+          npx --yes wait-on http://localhost:4173/ --timeout 30000
+          node scripts/smoke-test.mjs
+
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
