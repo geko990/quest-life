@@ -24,6 +24,7 @@ report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('
 
 // Schede principali, poi un secondo tocco per le sotto-schede (Campagne, Spesa, Tesoro)
 // (la Home "Eroe" è già aperta all'avvio: il suo pulsante mostra l'avatar, non la scritta)
+const tabSummary = [];
 const tabs = ['Abitudini', 'Missioni', 'Missioni', 'Salute', 'Salute', 'Opzioni', 'Opzioni'];
 for (const label of tabs) {
   const btn = page.locator('button, [role="button"], div, span', { hasText: new RegExp(`^${label}$`) }).last();
@@ -31,9 +32,10 @@ for (const label of tabs) {
   await btn.click({ force: true }).catch((e) => problems.push(`Click fallito su ${label}: ${e.message}`));
   await page.waitForTimeout(700);
   const text = (await page.locator('#root').innerText()).length;
-  report(`Scheda "${label}" aperta (${text} caratteri visibili)`);
+  tabSummary.push(`${label} ${text}`);
   if (text < 20) problems.push(`La scheda ${label} sembra vuota`);
 }
+report(`Schede aperte (caratteri visibili): ${tabSummary.join(', ')}`);
 
 // Pressione prolungata su "Eroe" → crea missione → la ritrovo tra le recenti
 try {
@@ -61,6 +63,31 @@ try {
   await page.mouse.click(5, 5); // tocca fuori per chiudere
 } catch (e) {
   problems.push(`Gruppo 2: ${e.message}`);
+}
+
+// Lista della spesa per reparto
+try {
+  const navBtn = (label) => page.locator('button, [role="button"], div, span', { hasText: new RegExp(`^${label}$`) }).last();
+  await navBtn('Abitudini').click({ force: true });
+  await page.waitForTimeout(300);
+  await navBtn('Salute').click({ force: true });
+  await page.waitForTimeout(300);
+  await navBtn('Salute').click({ force: true });
+  await page.waitForTimeout(500);
+  const shopInput = page.locator('input[placeholder^="Es: Latte"]');
+  if (await shopInput.count() === 0) throw new Error('lista della spesa non trovata');
+  for (const name of ['Latte', 'Mele', 'Petto di pollo']) {
+    await shopInput.fill(name);
+    await shopInput.press('Enter');
+    await page.waitForTimeout(200);
+  }
+  const headers = (await page.locator('.shop-group-header').allInnerTexts()).join(' | ');
+  for (const expected of ['FRUTTA E VERDURA', 'CARNE E PESCE', 'LATTE, YOGURT E UOVA']) {
+    if (!headers.toUpperCase().includes(expected)) throw new Error(`reparto mancante: ${expected} (trovati: ${headers})`);
+  }
+  report(`Spesa per reparto: ${headers.replace(/\n/g, ' ')}`);
+} catch (e) {
+  problems.push(`Gruppo 3 (spesa): ${e.message}`);
 }
 
 // Controlli sul build

@@ -1106,14 +1106,15 @@ export default function App() {
         baseProteins: formData.baseProteins !== undefined ? Number(formData.baseProteins) : 0,
         pieceCalories: formData.pieceCalories !== '' && formData.pieceCalories !== undefined ? Number(formData.pieceCalories) : null,
         pieceProteins: formData.pieceProteins !== '' && formData.pieceProteins !== undefined ? Number(formData.pieceProteins) : null,
-        category: formData.category || 'snack'
+        category: formData.category || 'snack',
+        favorite: !!formData.favorite
       };
 
       setHealth(prev => {
         const existingDb = prev.foodDatabase || [];
         const isEdit = existingDb.some(f => f.id === newFoodItem.id);
         const updatedDb = isEdit
-          ? existingDb.map(f => (f.id === newFoodItem.id ? newFoodItem : f))
+          ? existingDb.map(f => (f.id === newFoodItem.id ? { ...f, ...newFoodItem } : f))
           : [...existingDb, newFoodItem];
         return {
           ...prev,
@@ -1652,6 +1653,7 @@ export default function App() {
             stats={stats}
             onRewardXp={handleRewardXp}
             settings={settings}
+            setSettings={setSettings}
           />
         );
       case 'settings':

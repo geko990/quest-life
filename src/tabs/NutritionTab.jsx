@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QuickMealModal from '../components/QuickMealModal';
+import { SHOPPING_CATEGORIES, groupShoppingItems, normalizeShoppingName, categorizeShoppingItem } from '../utils/shoppingCategories';
 
 export default function NutritionTab({
   activeTab,
@@ -14,7 +15,8 @@ export default function NutritionTab({
   setInitialModal,
   onlyModal = false,
   onCloseOverlay,
-  settings = {}
+  settings = {},
+  setSettings
 }) {
   if (!health) return null;
 
@@ -30,6 +32,7 @@ export default function NutritionTab({
   }, [activeTab]);
 
   const [showMealsModal, setShowMealsModal] = useState(initialModal === 'meals');
+  const [foodView, setFoodView] = useState(null); // 'favorites' | 'archive' (null = automatico)
   const [showExercisesModal, setShowExercisesModal] = useState(initialModal === 'workouts');
   const [showQuickMealModal, setShowQuickMealModal] = useState(false);
   const [quickMealSearch, setQuickMealSearch] = useState('');
@@ -671,12 +674,39 @@ export default function NutritionTab({
     }
   };
 
+  // Spesa per reparto: pressione prolungata su un prodotto per spostarlo in un altro reparto
+  const [shopCategoryPickerItem, setShopCategoryPickerItem] = useState(null);
+  const shopLongPressRef = React.useRef({ timer: null, fired: false });
+  const shopOverrides = settings?.shoppingCategoryOverrides || {};
+  const startShopLongPress = (item) => {
+    shopLongPressRef.current.fired = false;
+    clearTimeout(shopLongPressRef.current.timer);
+    shopLongPressRef.current.timer = setTimeout(() => {
+      shopLongPressRef.current.fired = true;
+      if (navigator.vibrate) navigator.vibrate(12);
+      setShopCategoryPickerItem(item);
+    }, 480);
+  };
+  const cancelShopLongPress = () => clearTimeout(shopLongPressRef.current.timer);
+  const assignShopCategory = (item, catId) => {
+    const key = `${activeInventoryTab}:${normalizeShoppingName(item.name)}`;
+    if (setSettings) {
+      setSettings(prev => ({
+        ...prev,
+        shoppingCategoryOverrides: { ...(prev.shoppingCategoryOverrides || {}), [key]: catId }
+      }));
+    }
+    setShopCategoryPickerItem(null);
+  };
+
   const handleQuickAddShopItem = (e) => {
     e.preventDefault();
     if (!newShopItemName.trim()) return;
+    const autoCat = categorizeShoppingItem(newShopItemName, activeInventoryTab, shopOverrides);
+    const autoEmoji = (SHOPPING_CATEGORIES[activeInventoryTab] || []).find(c => c.id === autoCat && c.id !== 'altro')?.emoji;
     const newItem = {
       id: 'shop_' + Date.now(),
-      emoji: activeInventoryTab === 'food' ? '🍏' : '🏠',
+      emoji: autoEmoji || (activeInventoryTab === 'food' ? '🍏' : '🏠'),
       name: newShopItemName.trim(),
       completed: false
     };
@@ -754,6 +784,16 @@ export default function NutritionTab({
 
   const activeInventory = (inventory && inventory[activeInventoryTab]) || [];
   const completedShopCount = activeInventory.filter(i => i.completed).length;
+
+  // Preferiti e archivio cibi
+  const toggleFoodFavorite = (foodId) => {
+    setHealth(prev => ({
+      ...prev,
+      foodDatabase: (prev.foodDatabase || []).map(f => (f.id === foodId ? { ...f, favorite: !f.favorite } : f))
+    }));
+  };
+  const favoriteFoodsCount = (health.foodDatabase || []).filter(f => f.favorite).length;
+  const effectiveFoodView = foodView || (favoriteFoodsCount > 0 ? 'favorites' : 'archive');
 
   // Filtered Database Items (respects searchQuery and category tabs like 'main')
   const filteredFoodDatabase = (health.foodDatabase || []).filter(f => {
@@ -1160,6 +1200,7 @@ export default function NutritionTab({
           onAddMeal={handleAddQuickMeal}
           defaultCategory={activeMealCategory !== 'all' ? activeMealCategory : 'main'}
           existingFoodDatabase={health.foodDatabase || []}
+          onToggleFavorite={toggleFoodFavorite}
           initialSearch={quickMealSearch}
         />
       </>
@@ -1590,9 +1631,20 @@ export default function NutritionTab({
                 </p>
               </div>
             ) : (
-              activeInventory.map((item) => (
+              groupShoppingItems(activeInventory, activeInventoryTab, shopOverrides).map((group) => (
+                <div key={group.id} className="shop-group">
+                  <div className="shop-group-header">
+                    <span>{group.emoji} {group.label}</span>
+                    <span className="shop-group-count">{group.items.filter(i => !i.completed).length}/{group.items.length}</span>
+                  </div>
+              {[...group.items].sort((a, b) => Number(!!a.completed) - Number(!!b.completed)).map((item) => (
                 <div
                   key={item.id}
+                  onPointerDown={() => editingShopItemId !== item.id && startShopLongPress(item)}
+                  onPointerUp={cancelShopLongPress}
+                  onPointerLeave={cancelShopLongPress}
+                  onPointerCancel={cancelShopLongPress}
+                  onContextMenu={(e) => e.preventDefault()}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1715,7 +1767,10 @@ export default function NutritionTab({
                   ) : (
                     <>
                       <div
-                        onClick={() => toggleInventoryItem(activeInventoryTab, item.id)}
+                        onClick={() => {
+                          if (shopLongPressRef.current.fired) { shopLongPressRef.current.fired = false; return; }
+                          toggleInventoryItem(activeInventoryTab, item.id);
+                        }}
                         style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1, minWidth: 0, paddingRight: '8px' }}
                       >
                         <div
@@ -1762,9 +1817,41 @@ export default function NutritionTab({
                     </>
                   )}
                 </div>
+              ))}
+                </div>
               ))
             )}
+            {activeInventory.length > 0 && (
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', fontStyle: 'italic' }}>
+                💡 Tieni premuto un prodotto per spostarlo in un altro reparto: l'app se lo ricorderà.
+              </div>
+            )}
           </div>
+
+          {/* Scelta reparto per un prodotto (dopo pressione prolungata) */}
+          {shopCategoryPickerItem && (
+            <div className="shop-picker-overlay" onClick={() => setShopCategoryPickerItem(null)}>
+              <div className="shop-picker" onClick={(e) => e.stopPropagation()}>
+                <div className="shop-picker-title">Sposta "{shopCategoryPickerItem.name}" in:</div>
+                <div className="shop-picker-grid">
+                  {(SHOPPING_CATEGORIES[activeInventoryTab] || []).map(cat => {
+                    const current = categorizeShoppingItem(shopCategoryPickerItem.name, activeInventoryTab, shopOverrides) === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        className={`shop-picker-option ${current ? 'active' : ''}`}
+                        onClick={() => assignShopCategory(shopCategoryPickerItem, cat.id)}
+                      >
+                        <span style={{ fontSize: '18px' }}>{cat.emoji}</span>
+                        <span>{cat.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1908,7 +1995,7 @@ export default function NutritionTab({
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', margin: 0 }}>
-                    Database Alimenti
+                    Cibi
                   </h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
@@ -1943,11 +2030,20 @@ export default function NutritionTab({
                   </div>
                 )}
 
+                <div className="food-view-switch">
+                  <button type="button" className={effectiveFoodView === 'favorites' ? 'active' : ''} onClick={() => setFoodView('favorites')}>
+                    ⭐ Preferiti ({favoriteFoodsCount})
+                  </button>
+                  <button type="button" className={effectiveFoodView === 'archive' ? 'active' : ''} onClick={() => setFoodView('archive')}>
+                    📚 Archivio ({(health.foodDatabase || []).length})
+                  </button>
+                </div>
+
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="🔎 Cerca cibo per nome..."
+                  placeholder="🔎 Cerca in tutto l'archivio..."
                   style={{
                     width: '100%',
                     height: '34px',
@@ -1962,13 +2058,20 @@ export default function NutritionTab({
                   }}
                 />
 
+                {(() => {
+                  // Con la ricerca si cerca sempre in tutto l'archivio
+                  const showingFavorites = !searchQuery && effectiveFoodView === 'favorites';
+                  const gridFoods = showingFavorites
+                    ? filteredFoodDatabase.filter(f => f.favorite)
+                    : [...filteredFoodDatabase].sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite));
+                  return (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  {filteredFoodDatabase.length === 0 ? (
+                  {gridFoods.length === 0 ? (
                     <p style={{ gridColumn: 'span 3', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, textAlign: 'center' }}>
-                      Nessun cibo trovato.
+                      {showingFavorites ? 'Nessun preferito in questa categoria. Tocca ☆ su un cibo dell\'archivio.' : 'Nessun cibo trovato.'}
                     </p>
                   ) : (
-                    filteredFoodDatabase.map((food) => {
+                    gridFoods.map((food) => {
                       const isPiece = !!food.pieceCalories;
                       const kcalDisplay = isPiece ? food.pieceCalories : food.baseCalories;
                       const unitDisplay = isPiece ? '1 pz' : `${food.baseGrams || 100}g`;
@@ -2019,6 +2122,15 @@ export default function NutritionTab({
                             <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'rgba(124, 58, 237, 0.12)', padding: '2px 5px', borderRadius: '6px' }}>
                               {kcalDisplay} kcal ({unitDisplay})
                             </span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`food-fav-star ${food.favorite ? 'active' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); toggleFoodFavorite(food.id); }}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            title={food.favorite ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}
+                          >
+                            {food.favorite ? '★' : '☆'}
                           </button>
                           {settings?.allowPastEdits && (
                             <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '2px', zIndex: 5 }}>
@@ -2075,6 +2187,8 @@ export default function NutritionTab({
                     })
                   )}
                 </div>
+                  );
+                })()}
 
                 {searchQuery && searchQuery.trim().length >= 2 && (
                   <button
@@ -2770,6 +2884,7 @@ export default function NutritionTab({
         onAddMeal={handleAddQuickMeal}
         defaultCategory={activeMealCategory !== 'all' ? activeMealCategory : 'main'}
         existingFoodDatabase={health.foodDatabase || []}
+        onToggleFavorite={toggleFoodFavorite}
         initialSearch={quickMealSearch}
       />
     </section>

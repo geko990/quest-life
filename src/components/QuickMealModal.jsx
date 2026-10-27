@@ -7,7 +7,8 @@ export default function QuickMealModal({
   onAddMeal,
   defaultCategory = 'main',
   existingFoodDatabase = [],
-  initialSearch = ''
+  initialSearch = '',
+  onToggleFavorite
 }) {
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,9 +73,14 @@ export default function QuickMealModal({
 
   // Filter local database in memory instantly
   const cleanQ = (searchQuery || '').trim().toLowerCase();
+  // Senza ricerca: i preferiti (o, se non ce ne sono, i primi 6 cibi). Con la ricerca: tutto l'archivio, preferiti in cima
+  const favoriteFoods = (existingFoodDatabase || []).filter(f => f.favorite);
+  const showingFavorites = cleanQ.length === 0 && favoriteFoods.length > 0;
   const localMatches = cleanQ.length >= 1
-    ? (existingFoodDatabase || []).filter(f => f.name && f.name.toLowerCase().includes(cleanQ))
-    : (existingFoodDatabase || []).slice(0, 6); // show first 6 frequent foods when search query is empty
+    ? (existingFoodDatabase || [])
+        .filter(f => f.name && f.name.toLowerCase().includes(cleanQ))
+        .sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite))
+    : (showingFavorites ? favoriteFoods : (existingFoodDatabase || []).slice(0, 6));
 
   // Debounced online search
   const handleSearchChange = (e) => {
@@ -482,10 +488,10 @@ export default function QuickMealModal({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span>💾</span> {cleanQ ? `In Memoria (${localMatches.length})` : 'Cibi Frequenti in Memoria'}
+                    <span>{showingFavorites ? '⭐' : '💾'}</span> {cleanQ ? `Nel tuo archivio (${localMatches.length})` : (showingFavorites ? `Preferiti (${favoriteFoods.length})` : 'Cibi in memoria')}
                   </span>
                   {!cleanQ && (
-                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>Database Personale</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{showingFavorites ? 'Scrivi per cercare in tutto l\'archivio' : 'Tocca ☆ in un cibo per i preferiti'}</span>
                   )}
                 </div>
 
@@ -614,8 +620,23 @@ export default function QuickMealModal({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {selectedFood.isLocal && onToggleFavorite && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onToggleFavorite(selectedFood.id);
+                          setSelectedFood(prev => ({ ...prev, favorite: !prev.favorite }));
+                        }}
+                        title={selectedFood.favorite ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}
+                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '16px', lineHeight: 1, cursor: 'pointer', color: selectedFood.favorite ? '#f59e0b' : '#64748b' }}
+                      >
+                        {selectedFood.favorite ? '★' : '☆'}
+                      </button>
+                    )}
                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#38bdf8', textTransform: 'uppercase' }}>
                       {isTotalsOnly ? '🔢 Pasto libero: solo kcal e proteine' : (selectedFood.isManual ? '✏️ Pasto personalizzato' : (selectedFood.isLocal ? '💾 Cibo da Memoria' : '🌐 Cibo da Internet'))}
+                    </span>
                     </span>
                     <button
                       type="button"

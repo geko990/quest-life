@@ -1312,6 +1312,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       case 'food':
         return (
           <div className="flex flex-col gap-3">
+            {/* Preferito: compare per primo quando registri un pasto */}
+            <button
+              type="button"
+              onClick={() => setForm(prev => ({ ...prev, favorite: !prev.favorite }))}
+              className={`food-fav-toggle ${form.favorite ? 'active' : ''}`}
+            >
+              <span style={{ fontSize: '16px' }}>{form.favorite ? '★' : '☆'}</span>
+              <span>{form.favorite ? 'Nei preferiti: compare subito quando registri un pasto' : 'Aggiungi ai preferiti'}</span>
+            </button>
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1">Emoji</label>

@@ -182,6 +182,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   if (state.settings.enableDailyPenalties === undefined) state.settings.enableDailyPenalties = true;
   if (state.settings.allowPastEdits === undefined) state.settings.allowPastEdits = false;
   if (!Array.isArray(state.settings.recentTaskTemplates)) state.settings.recentTaskTemplates = [];
+  if (!state.settings.shoppingCategoryOverrides || typeof state.settings.shoppingCategoryOverrides !== 'object') state.settings.shoppingCategoryOverrides = {};
   if (!Array.isArray(state.settings.presetDays)) {
     state.settings.presetDays = defaults.settings.presetDays;
   }
