@@ -1297,7 +1297,7 @@ export default function NutritionTab({
                 {/* 1) Obiettivo Card (Clean layout, no extra configure text) */}
                 <div
                   onClick={handleOpenGoalsModal}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '9px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
                   title={_t("Configura obiettivi e calcola fabbisogno TDEE")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1310,7 +1310,7 @@ export default function NutritionTab({
                 {/* 2) Cibo Consumato Card (Opens meals registry to log or pick from memory) */}
                 <div
                   onClick={() => setShowMealsModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '9px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
                   title={_t("Apri registro pasti per inserire o scegliere cibi dalla memoria")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1324,7 +1324,7 @@ export default function NutritionTab({
                 {/* 3) Bruciate Card (Clean layout, no +100🔥 legend, clicking 🔥 adds +100 kcal, clicking row opens exercise registry) */}
                 <div
                   onClick={() => setShowExercisesModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '9px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '8px 10px', gap: '6px', borderRadius: '10px', border: '1px solid var(--glass-border)' }}
                   title={_t("Apri registro allenamenti")}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1576,7 +1576,7 @@ export default function NutritionTab({
                 </div>
 
                 {/* La tua settimana */}
-                <div onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--glass-border)' }}>
+                <div onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '8px', paddingTop: '9px', borderTop: '1px solid var(--glass-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', gap: '6px' }}>
                     <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                       {_t("La tua settimana")}
