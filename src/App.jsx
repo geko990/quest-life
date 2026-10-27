@@ -1084,7 +1084,7 @@ export default function App() {
       const inner = [];
       Array.from(it.el.children).forEach(k => collect(k, 1, inner, true));
       // side: righe di un pannello piccolo, fuori dall'onda principale (non spostano il ritmo delle tessere sotto)
-      if (inner.length >= 2) inner.slice(0, 12).forEach(x => all.push(Object.assign(x, { parent: it, side: it.r.height <= 200 })));
+      if (inner.length >= 2) inner.slice(0, 12).forEach(x => all.push(Object.assign(x, { parent: it, side: it.r.height <= 160 })));
       // Pannello con un solo grafico (es. il radar dell'Eroe): il grafico "sboccia" dal centro
       else if (inner.length === 1 && /^(SVG|CANVAS)$/i.test(inner[0].el.tagName)) all.push(Object.assign(inner[0], { parent: it, pop: true }));
     });
