@@ -1024,19 +1024,19 @@ export default function App() {
     while (level && level.children.length === 1 && level.firstElementChild.children.length > 0) level = level.firstElementChild;
     if (!level) return;
 
+    // Scompone i blocchi grandi (liste, griglie, sezioni) nei loro elementi, finché trova le singole tessere
     const viewportBottom = window.innerHeight;
-    const cardSelector = '.glass-panel, .task-card, .card, .stat-card, .habit-card, [class*="-card"]';
-    const isVisible = (el) => {
+    const collected = [];
+    const collect = (el, depth) => {
       const r = el.getBoundingClientRect();
-      return r.height > 0 && r.top < viewportBottom;
+      if (r.height === 0 || r.top >= viewportBottom || r.bottom <= 0) return;
+      const kids = Array.from(el.children).filter(k => k.getBoundingClientRect().height > 0);
+      const isBig = r.height > Math.min(260, viewportBottom * 0.35);
+      if (depth < 4 && isBig && kids.length > 1) kids.forEach(k => collect(k, depth + 1));
+      else collected.push(el);
     };
-    // Tessere visibili (solo le più esterne) + blocchi di primo livello che non contengono tessere
-    const cards = Array.from(level.querySelectorAll(cardSelector))
-      .filter(el => isVisible(el) && !el.parentElement.closest(cardSelector));
-    const blocks = Array.from(level.children).filter(el => isVisible(el) && !el.querySelector(cardSelector) && !el.matches(cardSelector));
-    const items = [...new Set([...blocks, ...cards])]
-      .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
-      .slice(0, 16);
+    Array.from(level.children).forEach(k => collect(k, 0));
+    const items = collected.slice(0, 18);
 
     items.forEach((el, i) => {
       el.classList.remove('stagger-in');
