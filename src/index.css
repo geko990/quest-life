@@ -7719,6 +7719,14 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
 .stagger-in {
     animation: staggerIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* Righe dentro un pannello grande: entrano dopo il pannello, con uno spostamento più corto */
+@keyframes staggerInInner {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+.stagger-in-inner {
+    animation: staggerInInner 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
 @keyframes navIconPop {
     0% { transform: scale(1); }
@@ -7746,8 +7754,9 @@ body[data-theme="fantasy"][data-mode="light"] .close-btn {
     to { transform: scale(1); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .stagger-in, .nav-icon-pop, .nav-active-dot { animation: none !important; }
+    .stagger-in, .stagger-in-inner, .nav-icon-pop, .nav-active-dot { animation: none !important; }
 }
 html[data-animations="off"] .stagger-in,
+html[data-animations="off"] .stagger-in-inner,
 html[data-animations="off"] .nav-icon-pop,
 html[data-animations="off"] .nav-active-dot { animation: none !important; }

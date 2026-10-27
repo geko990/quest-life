@@ -1019,36 +1019,73 @@ export default function App() {
       (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     if (reduce) return;
 
-    // Contenitore "vero" della scheda: scendo finché c'è un solo figlio
-    let level = root;
-    while (level && level.children.length === 1 && level.firstElementChild.children.length > 0) level = level.firstElementChild;
-    if (!level) return;
-
-    // Scompone i blocchi grandi (liste, griglie, sezioni) nei loro elementi, finché trova le singole tessere
-    const viewportBottom = window.innerHeight;
-    const collected = [];
-    const collect = (el, depth) => {
-      const r = el.getBoundingClientRect();
-      if (r.height === 0 || r.top >= viewportBottom || r.bottom <= 0) return;
-      const kids = Array.from(el.children).filter(k => k.getBoundingClientRect().height > 0);
-      const isBig = r.height > Math.min(260, viewportBottom * 0.35);
-      if (depth < 4 && isBig && kids.length > 1) kids.forEach(k => collect(k, depth + 1));
-      else collected.push(el);
+    // Scompone la scheda fino alle singole tessere:
+    // - i contenitori con un solo figlio si attraversano sempre (anche se altissimi)
+    // - una tessera "vera" (con sfondo, bordo, ombra o sfocatura) resta intera, così il fondo non compare prima del contenuto
+    // - i blocchi trasparenti alti si aprono nei loro elementi; quelli bassi solo se sono una fila di tessere affiancate
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const ATOMIC = /^(SVG|CANVAS|IMG|VIDEO|BUTTON|INPUT|SELECT|TEXTAREA|LABEL)$/i;
+    const isCard = (el) => {
+      const s = getComputedStyle(el);
+      const bg = s.backgroundColor.match(/[\d.]+/g);
+      const alpha = bg ? (bg.length > 3 ? +bg[3] : 1) : 0;
+      return (bg && alpha > 0.04) || s.backgroundImage !== 'none' || s.boxShadow !== 'none' ||
+        (s.backdropFilter && s.backdropFilter !== 'none') || (s.webkitBackdropFilter && s.webkitBackdropFilter !== 'none') ||
+        (parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== 'none');
     };
-    Array.from(level.children).forEach(k => collect(k, 0));
-    const items = collected.slice(0, 18);
+    const onScreen = (r) => r.height > 0 && r.width > 0 && r.top < vh && r.bottom > 0 && r.left < vw && r.right > 0;
+    const collect = (el, depth, out) => {
+      const r = el.getBoundingClientRect();
+      if (!onScreen(r)) return;
+      const kids = Array.from(el.children).filter(k => onScreen(k.getBoundingClientRect()));
+      const card = isCard(el);
+      const leaf = depth >= 8 || kids.length === 0 || ATOMIC.test(el.tagName) || card;
+      if (leaf) { out.push({ el, r, card }); return; }
+      if (kids.length === 1) { collect(kids[0], depth + 1, out); return; }
+      const tall = r.height > 120;
+      const rowOfCards = kids.length > 1 && kids.every(isCard);
+      if (tall || rowOfCards) kids.forEach(k => collect(k, depth + 1, out));
+      else out.push({ el, r, card });
+    };
+    const collected = [];
+    collect(root, 0, collected);
+    const items = collected.slice(0, 28);
+    if (!items.length) return;
 
-    items.forEach((el, i) => {
-      el.classList.remove('stagger-in');
-      el.style.animationDelay = `${i * 45}ms`;
+    // Tempi in base alla posizione: riga per riga dall'alto, e da sinistra a destra nella stessa riga.
+    // Con poche righe il passo si allunga, così la cascata si vede anche nelle schede con poche tessere.
+    items.sort((a, b) => (a.r.top - b.r.top) || (a.r.left - b.r.left));
+    let row = -1, rowTop = -Infinity, col = 0;
+    items.forEach(it => {
+      if (it.r.top > rowTop + 14) { row++; rowTop = it.r.top; col = 0; } else col++;
+      it.row = row; it.col = col;
+    });
+    const rows = row + 1;
+    const step = rows > 1 ? Math.min(80, Math.max(45, Math.round(330 / (rows - 1)))) : 0;
+
+    const play = (el, cls, anim, delay) => {
+      el.classList.remove(cls);
+      el.style.animationDelay = `${delay}ms`;
       void el.offsetWidth; // riavvia l'animazione
-      el.classList.add('stagger-in');
-      const cleanup = () => {
-        el.classList.remove('stagger-in');
+      el.classList.add(cls);
+      const cleanup = (e) => {
+        if (e && (e.target !== el || e.animationName !== anim)) return; // ignora le altre animazioni
+        el.classList.remove(cls);
         el.style.animationDelay = '';
         el.removeEventListener('animationend', cleanup);
       };
       el.addEventListener('animationend', cleanup);
+    };
+
+    items.forEach(({ el, r, card, row: ri, col: ci }) => {
+      const delay = ri * step + ci * 55;
+      play(el, 'stagger-in', 'staggerIn', delay);
+      // Tessere grandi (liste dentro un pannello): dopo il pannello, le sue righe entrano una alla volta
+      if (card && r.height > 200) {
+        const inner = [];
+        Array.from(el.children).forEach(k => collect(k, 1, inner));
+        if (inner.length >= 3) inner.slice(0, 14).forEach((it, k) => play(it.el, 'stagger-in-inner', 'staggerInInner', delay + 110 + k * 40));
+      }
     });
   }, [activeTab]);
 
