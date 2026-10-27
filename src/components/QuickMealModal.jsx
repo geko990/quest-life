@@ -481,8 +481,8 @@ export default function QuickMealModal({
                 </div>
               )}
 
-              {/* SEZIONE 1: CIBI IN MEMORIA */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* SEZIONE 1: CIBI IN MEMORIA (solo mentre si cerca: l'anello calorie apre ricerca e inserimento manuale) */}
+              {cleanQ && <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span>{showingFavorites ? '⭐' : '💾'}</span> {cleanQ ? _t("Nel tuo archivio ({0})", localMatches.length) : (showingFavorites ? _t("Preferiti ({0})", favoriteFoods.length) : _t("Cibi in memoria"))}
@@ -525,7 +525,7 @@ export default function QuickMealModal({
                     ))}
                   </div>
                 )}
-              </div>
+              </div>}
 
               {/* SEZIONE 2: RISULTATI DA INTERNET (OPEN FOOD FACTS) */}
               {(onlineResults.length > 0 || isSearchingOnline || (cleanQ.length >= 2 && !isSearchingOnline)) && (

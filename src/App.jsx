@@ -18,7 +18,7 @@ import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFi
 import { onUpdateAvailable } from './utils/pwaManager';
 import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
-import { getUrgentItems, updateAppBadge, checkDeadlineReminders } from './utils/deadlines';
+import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPrefs } from './utils/deadlines';
 
 import { setLanguage, _t } from './i18n';
 class TabErrorBoundary extends React.Component {
@@ -113,6 +113,7 @@ export default function App() {
   const [settings, setSettings] = useState(initialFullState.settings);
   // Lingua dell'interfaccia: impostata prima del render dei figli
   setLanguage(settings.language || 'it');
+  setReminderPrefs(settings.deadlineReminders);
   const { layoutMode, isLandscape, isTablet } = useLayoutMode(settings);
   const [finances, setFinances] = useState(initialFullState.finances);
   const [dailyActions, setDailyActions] = useState(initialFullState.dailyActions || []);

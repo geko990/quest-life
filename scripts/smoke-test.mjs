@@ -5,11 +5,14 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 
 const BASE = process.env.SMOKE_URL || 'http://localhost:4173/';
+const SHOTS = 'ci-shots';
+fs.mkdirSync(SHOTS, { recursive: true });
 const problems = [];
 const report = (msg) => console.log(`::notice::${msg}`);
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+const page = await browser.newPage({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+const shot = async (name) => { try { await page.screenshot({ path: `${SHOTS}/${name}.png` }); } catch (_) {} };
 
 page.on('pageerror', (e) => problems.push(`Errore JS: ${e.message}`));
 page.on('console', (m) => { if (m.type() === 'error') problems.push(`Console: ${m.text()}`); });
@@ -112,6 +115,61 @@ try {
   problems.push(`Gruppo 4 (scadenze): ${e.message}`);
 }
 
+// Screenshot delle schermate principali (salvati su GitHub nel ramo ci-screenshots)
+const navTo = async (label) => {
+  await page.locator('button, [role="button"], div, span', { hasText: new RegExp(`^${label}$`) }).last().click({ force: true });
+  await page.waitForTimeout(600);
+};
+const tapOutside = async () => { await page.mouse.click(8, 8); await page.waitForTimeout(400); };
+const step = async (name, fn) => { try { await fn(); await shot(name); } catch (e) { console.log(`(screenshot ${name} non riuscito: ${e.message})`); } };
+await navTo('Abitudini');
+await shot('01-abitudini');
+await navTo('Missioni');
+await step('02-missioni', async () => {});
+await step('03-dettaglio-missione', async () => {
+  await page.getByText('Scadenza di prova').first().click();
+  await page.waitForTimeout(600);
+});
+await tapOutside();
+await step('04-crea-task', async () => {
+  const hero = page.locator('button[title*="tieni premuto"]').last();
+  const box = await hero.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down(); await page.waitForTimeout(700); await page.mouse.up();
+  await page.waitForTimeout(600);
+});
+await tapOutside();
+await step('05-modifica-missione', async () => {
+  await page.getByText('Scadenza di prova').first().click();
+  await page.waitForTimeout(500);
+  await page.locator('.modal-edit-fab').click();
+  await page.waitForTimeout(600);
+});
+await tapOutside();
+await navTo('Abitudini');
+await navTo('Salute');
+await shot('06-salute');
+await step('07-pasto-rapido', async () => {
+  await page.locator('[title^="Tocca per inserire pasto rapido"]').first().click();
+  await page.waitForTimeout(600);
+});
+await tapOutside();
+await step('08-registro-pasti', async () => {
+  await page.locator('[title^="Apri registro pasti"]').first().click();
+  await page.waitForTimeout(600);
+});
+await tapOutside();
+await navTo('Salute');
+await step('09-spesa', async () => {});
+await navTo('Opzioni');
+await step('10-opzioni-promemoria', async () => {
+  const groupHeader = page.getByText('🎮 Gameplay').first();
+  await groupHeader.click();
+  await page.waitForTimeout(400);
+  await page.getByText('🔔 Promemoria Scadenze').first().scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+});
+
 // Inglese: imposto la lingua, ricarico e controllo le etichette
 try {
   await page.evaluate(() => {
@@ -130,6 +188,7 @@ try {
     await page.waitForTimeout(500);
     sample.push(`${label}: ${(await page.locator('#root').innerText()).replace(/\s+/g, ' ').slice(0, 160)}`);
   }
+  await shot('11-inglese-impostazioni');
   report(`Inglese OK. ${sample.join(' || ')}`.slice(0, 900));
 } catch (e) {
   problems.push(`Gruppo 5 (inglese): ${e.message}`);

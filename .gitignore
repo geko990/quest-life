@@ -30,3 +30,6 @@ screenshot*.png
 /manifest.json
 
 
+
+# Screenshot del test automatico
+ci-shots/

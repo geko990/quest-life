@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # solo per salvare gli screenshot nel ramo ci-screenshots
 
 jobs:
   build:
@@ -40,6 +40,16 @@ jobs:
           npx vite preview --port 4173 --strictPort &
           npx --yes wait-on http://localhost:4173/ --timeout 30000
           node scripts/smoke-test.mjs
+
+      - name: Salva screenshot nel ramo ci-screenshots
+        if: always() && github.ref_name != 'main'
+        run: |
+          [ -d ci-shots ] || exit 0
+          cd ci-shots
+          echo "Ramo: ${GITHUB_REF_NAME} — commit ${GITHUB_SHA::7}" > INFO.txt
+          git init -q && git checkout -q -b shots
+          git add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "screenshot ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" shots:ci-screenshots
 
       - name: Upload build
         uses: actions/upload-artifact@v4

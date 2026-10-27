@@ -14,16 +14,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   // OCR state for food scanning
   const fileInputRef = React.useRef(null);
 
-  // Rileva modifiche non salvate: negli elementi esistenti il pulsante Salva compare solo quando serve
-  const latestFormRef = React.useRef(null);
-  latestFormRef.current = { form, subquests, milestonesText };
-  const [baseline, setBaseline] = useState(null);
-  useEffect(() => {
-    setBaseline(null);
-    const t = setTimeout(() => setBaseline(JSON.stringify(latestFormRef.current)), 120);
-    return () => clearTimeout(t);
-  }, [currentType, editData]);
-  const isDirty = baseline !== null && JSON.stringify({ form, subquests, milestonesText }) !== baseline;
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
   const [ocrStatusText, setOcrStatusText] = useState('');
@@ -583,8 +573,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     value={form.dueTime || ''}
                     onChange={handleChange}
                     title={_t("Ora (facoltativa): serve per il promemoria 1 ora prima")}
-                    className="w-[110px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                    className="w-[96px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                   />
+                )}
+                {form.dueDate && (
+                  <button
+                    type="button"
+                    className="due-clear-btn"
+                    onClick={() => setForm(prev => ({ ...prev, dueDate: '', dueTime: '' }))}
+                    title={_t("Rimuovi scadenza")}
+                    aria-label={_t("Rimuovi scadenza")}
+                  >
+                    ✕
+                  </button>
                 )}
               </div>
             </div>
@@ -729,8 +730,19 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     value={form.dueTime || ''}
                     onChange={handleChange}
                     title={_t("Ora (facoltativa): serve per il promemoria 1 ora prima")}
-                    className="w-[110px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                    className="w-[96px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
                   />
+                )}
+                {form.dueDate && (
+                  <button
+                    type="button"
+                    className="due-clear-btn"
+                    onClick={() => setForm(prev => ({ ...prev, dueDate: '', dueTime: '' }))}
+                    title={_t("Rimuovi scadenza")}
+                    aria-label={_t("Rimuovi scadenza")}
+                  >
+                    ✕
+                  </button>
                 )}
               </div>
             </div>
@@ -2385,12 +2397,14 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
   const activeT = currentType || type;
   const isCreatableItem = !editData && ['habit', 'oneshot', 'quest'].includes(activeT);
   const isExpandedModal = ['quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview', 'stat_detail', 'health_goals', 'health_goal', 'health_steps', 'health_protein', 'health_proteins', 'health_water', 'health_water_goal', 'weight'].includes(activeT);
+  const STANDARD_TYPES = ['quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview', 'stat_detail', 'habit', 'oneshot', 'quest', 'attribute', 'ability', 'food', 'exercise', 'pomodoro'];
+  const isStandardModal = STANDARD_TYPES.includes(activeT);
   const READ_ONLY_TYPES = ['stat_detail', 'quest_detail', 'oneshot_detail', 'habit_detail', 'challenge_preview'];
   const DELETABLE_TYPES = ['attribute', 'ability', 'habit', 'oneshot', 'quest', 'food', 'exercise'];
   const isReadOnly = READ_ONLY_TYPES.includes(activeT);
   const canEdit = activeT !== 'challenge_preview' && (type === 'stat_detail' || ['quest_detail', 'oneshot_detail', 'habit_detail'].includes(activeT));
   const showDelete = !isReadOnly && !!onDelete && !!editData?.id && DELETABLE_TYPES.includes(activeT);
-  const showSave = !isReadOnly && (!editData || isDirty);
+  const showSave = !isReadOnly; // sempre presente nelle aree di modifica/inserimento
   const handleEditClick = () => {
     if (activeT === 'quest_detail') handleTypeSwitch('quest');
     else if (activeT === 'oneshot_detail') handleTypeSwitch('oneshot');
@@ -2416,10 +2430,16 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           color: 'var(--text-primary)',
           border: '1px solid var(--glass-border)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
-          aspectRatio: (isExpandedModal || isLandscape) ? 'auto' : '3 / 4',
-          maxWidth: isExpandedModal ? '480px' : (isLandscape ? '440px' : '360px'),
-          width: '92%',
-          maxHeight: isExpandedModal ? '94dvh' : (isLandscape ? '94dvh' : '88vh')
+          // Finestre standard (dettagli e form di missioni, abitudini, cibi...): stessa dimensione fissa,
+          // indipendente dal contenuto, che scorre all'interno. Le altre (salute, peso) restano adattive.
+          ...(isStandardModal
+            ? { width: '92%', maxWidth: isLandscape ? '440px' : '400px', height: isLandscape ? 'min(92dvh, 640px)' : 'min(80dvh, 660px)' }
+            : {
+                aspectRatio: (isExpandedModal || isLandscape) ? 'auto' : '3 / 4',
+                maxWidth: isExpandedModal ? '480px' : (isLandscape ? '440px' : '360px'),
+                width: '92%',
+                maxHeight: isExpandedModal ? '94dvh' : (isLandscape ? '94dvh' : '88vh')
+              })
         }}
       >
         {/* Schede in sola lettura: solo una piccola matita in alto a destra (si chiude toccando fuori) */}
@@ -2444,7 +2464,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
         {/* Form */}
         <form onSubmit={handleSave} style={{ margin: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'space-between' }}>
-          <div className="px-5 py-4 overflow-y-auto no-scrollbar flex flex-col justify-start flex-1" style={{ gap: '14px' }}>
+          <div className="modal-scroll-body overflow-y-auto no-scrollbar flex flex-col justify-start flex-1" style={{ gap: '14px' }}>
             {/* Top 3-way Creation Type Selector */}
             {isCreatableItem && (
               <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '14px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>

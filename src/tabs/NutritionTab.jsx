@@ -2095,7 +2095,7 @@ export default function NutritionTab({
                             <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'rgba(124, 58, 237, 0.12)', padding: '2px 5px', borderRadius: '6px' }}>
                               {_t("{0} kcal ({1})", kcalDisplay, unitDisplay)}</span>
                           </button>
-                          <button
+                          {!showingFavorites && <button
                             type="button"
                             className={`food-fav-star ${food.favorite ? 'active' : ''}`}
                             onClick={(e) => { e.stopPropagation(); toggleFoodFavorite(food.id); }}
@@ -2103,7 +2103,7 @@ export default function NutritionTab({
                             title={food.favorite ? _t("Togli dai preferiti") : _t("Aggiungi ai preferiti")}
                           >
                             {food.favorite ? '★' : '☆'}
-                          </button>
+                          </button>}
                           {settings?.allowPastEdits && (
                             <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '2px', zIndex: 5 }}>
                               <button

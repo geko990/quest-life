@@ -2,21 +2,24 @@ import React, { useState, useEffect } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
 import { useTouchReorder } from '../utils/useTouchReorder';
-import { getDueStatus } from '../utils/deadlines';
+import { getDueStatus, getDueLabel } from '../utils/deadlines';
 
 import { _t, getLocale } from '../i18n';
-// Etichetta della scadenza, colorata in base all'urgenza
+// Etichetta della scadenza (neutra: il colore è sull'intera tessera)
 function DuePill({ item, compact = false }) {
-  const status = getDueStatus(item);
-  const date = new Date(item.dueDate + 'T00:00:00');
-  const labels = { overdue: 'Scaduta', soon: 'Tra poco', today: 'Oggi', tomorrow: 'Domani' };
-  const text = labels[status] || date.toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
   return (
-    <span className={`due-pill due-${status || 'done'}`} style={compact ? { fontSize: '10px', padding: '1px 6px' } : undefined}>
-      📅 {text}{item.dueTime && status !== 'overdue' ? ` ${item.dueTime}` : ''}
+    <span className="due-pill" style={compact ? { fontSize: '10px', padding: '1px 6px' } : undefined}>
+      📅 {getDueLabel(item)}
     </span>
   );
 }
+// Classe della tessera: arancione dal primo promemoria, rossa dal giorno della scadenza
+const dueCardClass = (item) => {
+  const st = getDueStatus(item);
+  if (st === 'overdue' || st === 'due') return ' due-card-urgent';
+  if (st === 'attention') return ' due-card-attention';
+  return '';
+};
 
 export default function MissionsTab({
   activeTab,
@@ -136,7 +139,7 @@ export default function MissionsTab({
                 return (
                   <div
                     key={o.id}
-                    className={`task-card ${o.completed ? 'completed' : ''}`}
+                    className={`task-card ${o.completed ? 'completed' : ''}${dueCardClass(o)}`}
                     data-type="oneshot"
                     data-id={o.id}
                     {...dragProps}
@@ -204,13 +207,14 @@ export default function MissionsTab({
                   return (
                     <div
                       key={q.id}
-                      className="glass-panel"
+                      className={`glass-panel${dueCardClass(q)}`}
                       {...dragProps}
                       style={{
                         padding: 0,
                         overflow: 'hidden',
                         borderLeft: `4px solid ${q.color || 'var(--accent-primary)'}`,
                         border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                        ...(dueCardClass(q) ? { border: undefined } : {}),
                         borderRadius: '16px',
                         display: 'flex',
                         flexDirection: 'column',
