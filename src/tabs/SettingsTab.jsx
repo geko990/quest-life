@@ -3,6 +3,7 @@ import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
 import { forceUpdateApp, checkForAppUpdate, onUpdateAvailable, isUpdateAvailable } from '../utils/helpers';
 import { getAppErrors, clearAppErrors, formatErrorsForClipboard } from '../utils/errorLogger';
 import UserManualModal from '../components/UserManualModal';
+import { requestNotificationPermission, notificationsSupported } from '../utils/deadlines';
 
 export default function SettingsTab({
   settings = {},
@@ -419,6 +420,71 @@ export default function SettingsTab({
                   style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
                 />
               </div>
+
+              {/* Promemoria scadenze: notifiche locali + numero sull'icona */}
+              {(() => {
+                const prefs = { enabled: false, dayBefore: true, hourBefore: true, badge: true, ...(safeSettings.deadlineReminders || {}) };
+                const setPref = (patch) => updateSetting('deadlineReminders', { ...prefs, ...patch });
+                const permission = notificationsSupported() ? Notification.permission : 'unsupported';
+                return (
+                  <div style={{ paddingTop: '8px', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>🔔 Promemoria Scadenze</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Notifica prima della scadenza di task e campagne</div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={prefs.enabled}
+                        onChange={async (e) => {
+                          const on = e.target.checked;
+                          if (on) {
+                            const res = await requestNotificationPermission();
+                            if (res === 'unsupported') {
+                              alert('Le notifiche non sono disponibili qui. Su iPhone funzionano solo con l\'app aggiunta alla schermata Home (iOS 16.4 o successivo).');
+                              return;
+                            }
+                            if (res !== 'granted') {
+                              alert('Permesso negato. Puoi riattivarlo in Impostazioni iPhone → Notifiche → Quest Life.');
+                              return;
+                            }
+                          }
+                          setPref({ enabled: on });
+                        }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                      />
+                    </div>
+                    {prefs.enabled && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {[
+                          { key: 'dayBefore', label: '1 giorno prima' },
+                          { key: 'hourBefore', label: '1 ora prima (se c\'è l\'ora)' },
+                          { key: 'badge', label: 'Numero sull\'icona' }
+                        ].map(opt => (
+                          <button
+                            key={opt.key}
+                            type="button"
+                            onClick={() => setPref({ [opt.key]: !prefs[opt.key] })}
+                            style={{
+                              padding: '5px 10px', borderRadius: '8px', fontSize: '10.5px', fontWeight: 'bold', cursor: 'pointer',
+                              border: prefs[opt.key] ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                              background: prefs[opt.key] ? 'color-mix(in srgb, var(--accent-primary) 15%, transparent)' : 'transparent',
+                              color: prefs[opt.key] ? 'var(--text-primary)' : 'var(--text-secondary)'
+                            }}
+                          >
+                            {prefs[opt.key] ? '✓ ' : ''}{opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {prefs.enabled && permission === 'granted' && (
+                      <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                        Da PWA i promemoria arrivano mentre l'app è aperta o in background da poco; il numero sull'icona si aggiorna a ogni apertura.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Tesoro: il totale include gli investimenti? */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--glass-border)' }}>

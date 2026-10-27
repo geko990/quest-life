@@ -90,6 +90,28 @@ try {
   problems.push(`Gruppo 3 (spesa): ${e.message}`);
 }
 
+// Scadenze: una missione che scade oggi accende il pallino rosso su Missioni
+try {
+  const hero = page.locator('button[title*="tieni premuto"]').last();
+  const box = await hero.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+  await page.waitForTimeout(400);
+  await page.locator('input[name="name"]').fill('Scadenza di prova');
+  const t = new Date();
+  const today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+  await page.locator('input[name="dueDate"]').first().fill(today);
+  await page.locator('.modal-action-save').click();
+  await page.waitForTimeout(600);
+  const dot = await page.locator('.nav-dot').allInnerTexts();
+  if (dot.length === 0) throw new Error('pallino rosso non comparso');
+  report(`Scadenze: pallino su Missioni = ${dot.join(',')}`);
+} catch (e) {
+  problems.push(`Gruppo 4 (scadenze): ${e.message}`);
+}
+
 // Controlli sul build
 const css = fs.readdirSync('dist/assets').filter((f) => f.endsWith('.css'))
   .map((f) => fs.readFileSync(`dist/assets/${f}`, 'utf8')).join('');

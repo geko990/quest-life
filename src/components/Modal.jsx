@@ -569,13 +569,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Tessera 2: Data Entro Cui Ultimare (Scadenza) */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">📅 Ultimare Entro (Scadenza)</label>
-              <input
-                type="date"
-                name="dueDate"
-                value={form.dueDate || ''}
-                onChange={handleChange}
-                className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={form.dueDate || ''}
+                  onChange={handleChange}
+                  className="flex-1 min-w-0 h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                />
+                {form.dueDate && (
+                  <input
+                    type="time"
+                    name="dueTime"
+                    value={form.dueTime || ''}
+                    onChange={handleChange}
+                    title="Ora (facoltativa): serve per il promemoria 1 ora prima"
+                    className="w-[110px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  />
+                )}
+              </div>
             </div>
 
             {/* Tessera 3: Difficoltà Stelle */}
@@ -705,13 +717,25 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             {/* Data di Scadenza (Opzionale) */}
             <div>
               <label className="block text-xs text-text-secondary font-bold mb-1.5">📅 Data di Scadenza (Opzionale)</label>
-              <input
-                type="date"
-                name="dueDate"
-                value={form.dueDate || ''}
-                onChange={handleChange}
-                className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 text-xs font-semibold focus:border-accent-primary focus:outline-none"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={form.dueDate || ''}
+                  onChange={handleChange}
+                  className="flex-1 min-w-0 h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-4 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                />
+                {form.dueDate && (
+                  <input
+                    type="time"
+                    name="dueTime"
+                    value={form.dueTime || ''}
+                    onChange={handleChange}
+                    title="Ora (facoltativa): serve per il promemoria 1 ora prima"
+                    className="w-[110px] h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-3 text-xs font-semibold focus:border-accent-primary focus:outline-none"
+                  />
+                )}
+              </div>
             </div>
 
             {/* Row 3: Difficoltà */}

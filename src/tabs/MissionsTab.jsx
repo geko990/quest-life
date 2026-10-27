@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react';
 import SwipeableCard from '../components/SwipeableCard';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
 import { useTouchReorder } from '../utils/useTouchReorder';
+import { getDueStatus } from '../utils/deadlines';
+
+// Etichetta della scadenza, colorata in base all'urgenza
+function DuePill({ item, compact = false }) {
+  const status = getDueStatus(item);
+  const date = new Date(item.dueDate + 'T00:00:00');
+  const labels = { overdue: 'Scaduta', soon: 'Tra poco', today: 'Oggi', tomorrow: 'Domani' };
+  const text = labels[status] || date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+  return (
+    <span className={`due-pill due-${status || 'done'}`} style={compact ? { fontSize: '10px', padding: '1px 6px' } : undefined}>
+      📅 {text}{item.dueTime && status !== 'overdue' ? ` ${item.dueTime}` : ''}
+    </span>
+  );
+}
 
 export default function MissionsTab({
   activeTab,
@@ -146,9 +160,7 @@ export default function MissionsTab({
                           {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon}</span>}
                           {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}>{secondaryStat.icon}</span>}
                           {o.dueDate && (
-                            <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.1)', padding: '1px 6px', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                              📅 {new Date(o.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
-                            </span>
+                            <DuePill item={o} compact />
                           )}
                         </div>
                       </div>
@@ -235,9 +247,7 @@ export default function MissionsTab({
                               </span>
                             )}
                             {q.dueDate && (
-                              <span style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold', color: '#f59e0b' }}>
-                                📅 {new Date(q.dueDate + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
-                              </span>
+                              <DuePill item={q} />
                             )}
                             <span style={{ color: '#f59e0b' }}>{'★'.repeat(q.difficulty || 1)}</span>
                             <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{completedSub}/{totalSub} sotto-obiettivi</span>

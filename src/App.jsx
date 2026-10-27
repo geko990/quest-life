@@ -18,6 +18,7 @@ import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFi
 import { onUpdateAvailable } from './utils/pwaManager';
 import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
+import { getUrgentItems, updateAppBadge, checkDeadlineReminders } from './utils/deadlines';
 
 class TabErrorBoundary extends React.Component {
   constructor(props) {
@@ -969,6 +970,20 @@ export default function App() {
   };
 
   // 9. Modal Add/Edit Handlers
+  // --- Scadenze: pallino rosso su Missioni, numero sull'icona dell'app, promemoria locali ---
+  const [deadlineTick, setDeadlineTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setDeadlineTick(t => t + 1), 60000);
+    const onVisible = () => { if (document.visibilityState === 'visible') setDeadlineTick(t => t + 1); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVisible); };
+  }, []);
+  const urgentMissionsCount = getUrgentItems(oneshots, quests).length;
+  useEffect(() => {
+    updateAppBadge(settings.deadlineReminders?.badge === false ? 0 : urgentMissionsCount);
+    checkDeadlineReminders(oneshots, quests, settings.deadlineReminders);
+  }, [urgentMissionsCount, oneshots, quests, settings.deadlineReminders, deadlineTick]);
+
   // --- Missioni recenti (ultimi 15 giorni): per ricreare al volo task e campagne ripetitive ---
   const RECENT_TEMPLATE_DAYS = 15;
   const buildTaskTemplate = (kind, data, usedAt) => {
@@ -1758,6 +1773,7 @@ export default function App() {
           avatarImage={player.avatarImage}
           avatarType={player.avatarType}
           isLandscape={true}
+          badges={{ missions: urgentMissionsCount }}
           onLongPressHome={() => handleOpenModal('oneshot')}
         />
       )}
@@ -1842,6 +1858,7 @@ export default function App() {
               avatarImage={player.avatarImage}
               avatarType={player.avatarType}
               isLandscape={false}
+              badges={{ missions: urgentMissionsCount }}
               onLongPressHome={() => handleOpenModal('oneshot')}
             />
           </div>

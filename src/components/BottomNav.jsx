@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 
-export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome }) {
+export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome, badges = {} }) {
   const lastClicksRef = useRef({});
 
   // Pressione prolungata sul pulsante centrale "Eroe": crea subito una nuova missione
@@ -183,7 +183,10 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                 }}
                 title={item.label}
               >
-                <span style={{ fontSize: '18px', marginBottom: '2px' }}>{item.icon}</span>
+                <span style={{ fontSize: '18px', marginBottom: '2px', position: 'relative' }}>
+                  {item.icon}
+                  {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
+                </span>
                 <span style={{ fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '58px' }}>
                   {item.label}
                 </span>
@@ -285,7 +288,10 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               WebkitTapHighlightColor: 'transparent'
             }}
           >
-            <span style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1 }}>{item.icon}</span>
+            <span style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1, position: 'relative' }}>
+              {item.icon}
+              {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
+            </span>
             <span style={{ fontSize: '9.5px', lineHeight: 1.1, letterSpacing: '0.1px' }}>{item.label}</span>
           </button>
         );
