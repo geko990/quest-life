@@ -1976,7 +1976,7 @@ export default function App() {
             touchAction: (activeTab === 'home' && !isLandscape) ? 'pan-y' : 'pan-y',
             overscrollBehavior: 'none',
             padding: activeTab === 'home'
-              ? (isLandscape ? '4px 10px 6px 10px' : '4px 10px 4px 10px')
+              ? (isLandscape ? '4px 10px 6px 10px' : '4px 10px 16px 10px') // in basso la stessa aria della Salute
               : (isLandscape ? '8px 12px 12px 12px' : '10px 12px 16px 12px'),
             boxSizing: 'border-box',
             WebkitOverflowScrolling: 'touch'

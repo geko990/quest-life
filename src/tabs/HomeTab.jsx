@@ -322,7 +322,8 @@ export default function HomeTab({
 
     const size = 360;
     const center = size / 2;
-    const radius = 98;
+    // Raggio grande: le icone (a 1.22 × raggio, ~26 px) arrivano quasi al bordo del riquadro 360×360
+    const radius = 132;
     const N = visibleStats.length;
 
     const rollingData = visibleStats.map(s => rollingXp[s.id] || 0);
@@ -417,8 +418,8 @@ export default function HomeTab({
         style={{
           width: '100%',
           height: '100%',
-          maxWidth: isLandscape ? '300px' : '340px',
-          maxHeight: isLandscape ? '270px' : '310px',
+          maxWidth: isLandscape ? '300px' : undefined,
+          maxHeight: isLandscape ? '270px' : undefined,
           margin: '0 auto'
         }}
       >
@@ -521,7 +522,10 @@ export default function HomeTab({
         onClick={handleChartClick}
         style={{
           padding: '4px 8px',
-          flex: isLandscape ? 'none' : '1.1',
+          // In verticale la tessera è quadrata (larga quanto lo schermo); se lo schermo è basso si accorcia
+          flex: isLandscape ? 'none' : '0 1 auto',
+          width: '100%',
+          aspectRatio: isLandscape ? undefined : '1 / 1',
           minHeight: 0,
           height: isLandscape ? '100%' : undefined,
           display: 'flex',
@@ -911,6 +915,8 @@ export default function HomeTab({
                 fontSize: '10px',
                 color: 'var(--accent-primary)',
                 fontWeight: 'bold',
+                // la "l" finale resta dentro il bordo destro della tessera Passi
+                paddingRight: '2px',
                 cursor: 'pointer',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',

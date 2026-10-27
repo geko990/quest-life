@@ -24,6 +24,9 @@ page.on('response', (r) => {
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
 report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('#root').innerText()).length} caratteri visibili`);
+// Schermata Eroe così come si apre (tessera del radar quadrata, aria sopra la nav bar)
+await page.waitForTimeout(1500);
+await shot('00-eroe');
 
 // Schede principali, poi un secondo tocco per le sotto-schede (Campagne, Spesa, Tesoro)
 // (la Home "Eroe" è già aperta all'avvio: il suo pulsante mostra l'avatar, non la scritta)
