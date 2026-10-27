@@ -248,7 +248,8 @@ export default function Header({
             : {
                 height: 'auto',
                 minHeight: '48px',
-                paddingTop: 'max(8px, env(safe-area-inset-top, 0px))',
+                // Sotto il notch iOS 26 sfoca i contenuti: la barra parte un po' più in basso per restarne fuori
+                paddingTop: 'max(8px, calc(env(safe-area-inset-top, 0px) + 18px))',
                 paddingBottom: '8px',
                 paddingLeft: '14px',
                 paddingRight: '14px'
