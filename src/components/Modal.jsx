@@ -2464,8 +2464,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         )}
 
         {/* Form */}
-        <form onSubmit={handleSave} style={{ margin: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, justifyContent: 'space-between' }}>
-          <div className={`modal-scroll-body${isReadOnly ? ' is-detail' : ''} overflow-y-auto no-scrollbar flex flex-col justify-start flex-1`} style={{ gap: '14px' }}>
+        <form onSubmit={handleSave} style={{ margin: 0, display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0, justifyContent: 'space-between' }}>
+          <div className={`modal-scroll-body${isReadOnly ? ' is-detail' : ''} overflow-y-auto no-scrollbar flex flex-col justify-start`} style={{ gap: '14px', flex: '1 1 auto', minHeight: 0 }}>
             {/* Top 3-way Creation Type Selector */}
             {isCreatableItem && (
               <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '14px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
