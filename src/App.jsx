@@ -443,6 +443,7 @@ export default function App() {
   const habitsToday = habitsProgress(habits, completionLog, celebrationDay);
   const actionsToday = dailyActionsProgress(oneshots, quests, celebrationDay);
   const prevCompletionRef = useRef(null);
+  const celebratedRef = useRef({});
   useEffect(() => {
     const now = {
       day: celebrationDay,
@@ -453,8 +454,11 @@ export default function App() {
     prevCompletionRef.current = now;
     if (!prev || prev.day !== now.day) return;
     if (Date.now() - lastToggleRef.current > 3000) return;
-    const habitsJustDone = now.habits && !prev.habits;
-    const actionsJustDone = now.actions && !prev.actions;
+    // Una sola festa al giorno per tipo (togliere e rimettere una spunta non la ripete)
+    const done = celebratedRef.current.day === now.day ? celebratedRef.current : { day: now.day };
+    const habitsJustDone = now.habits && !prev.habits && !done.habits;
+    const actionsJustDone = now.actions && !prev.actions && !done.actions;
+    celebratedRef.current = { ...done, habits: done.habits || habitsJustDone, actions: done.actions || actionsJustDone };
     if (habitsJustDone && actionsJustDone) celebrate('confetti', { reason: 'both', message: _t("🏆 Giornata perfetta!") });
     else if (habitsJustDone) celebrate('confetti', { reason: 'habits', message: _t("🎉 Abitudini di oggi completate!") });
     else if (actionsJustDone) celebrate('confetti', { reason: 'actions', message: _t("⚔️ Azioni del Giorno completate!") });

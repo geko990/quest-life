@@ -8161,6 +8161,7 @@ html[data-animations="off"] .opt-toggle, html[data-animations="off"] .opt-toggle
     pointer-events: none;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     gap: 8px;
     padding: 10px 12px;
     border-radius: 16px;
@@ -8181,7 +8182,7 @@ html[data-animations="off"] .opt-toggle, html[data-animations="off"] .opt-toggle
     from { opacity: 1; transform: translate(-50%, 0); }
     to { opacity: 0; transform: translate(-50%, -10px); }
 }
-.xp-toast-row { display: flex; align-items: center; gap: 10px; animation: xpRowIn 0.22s ease-out both; }
+.xp-toast-row { display: flex; align-items: center; gap: 10px; width: 100%; align-self: stretch; animation: xpRowIn 0.22s ease-out both; }
 @keyframes xpRowIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 .xp-toast-icon { font-size: 20px; line-height: 1; width: 24px; text-align: center; flex-shrink: 0; }
 .xp-toast-main { flex: 1; min-width: 0; }
