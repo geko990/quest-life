@@ -179,6 +179,45 @@ await step('10-opzioni-promemoria', async () => {
   await page.waitForTimeout(300);
 });
 
+// Registro errori: voci nel vecchio formato → raggruppate, filtrate, eliminabili, segnalabili su GitHub
+try {
+  await page.evaluate(() => {
+    const legacy = (i, msg, name = 'ReferenceError') => ({
+      id: `err_test_${i}`, timestamp: new Date(Date.now() - i * 60000).toISOString(), name, message: msg,
+      stack: 'onClick@https://geko990.github.io/quest-life/assets/index-ABC.js:1:2',
+      context: { type: 'uncaught_error', secret: 'non deve uscire' }
+    });
+    const list = [1, 2, 3, 4, 5].map(i => legacy(i, "Can't find variable: onToggleSubquest"));
+    list.push(legacy(6, 'Invalid value "Pasta della nonna" for mario.rossi@example.com', 'TypeError'));
+    localStorage.setItem('questlife_error_log', JSON.stringify(list));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(800);
+  await page.evaluate(() => { window.__openedUrl = null; window.open = (u) => { window.__openedUrl = u; return null; }; });
+  await navTo('Opzioni');
+  const panel = page.getByText('Registro Errori & Diagnostica').first();
+  await panel.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const rootText = await page.locator('#root').innerText();
+  if (!/5×/.test(rootText)) throw new Error('i 5 errori uguali non sono raggruppati');
+  if (/Pasta della nonna|mario\.rossi/.test(rootText)) throw new Error('il filtro dei dati personali non ha funzionato');
+  await shot('12-registro-errori');
+  await page.getByText('🐙 Segnala su GitHub').first().click();
+  const url = await page.evaluate(() => window.__openedUrl);
+  if (!url || !url.startsWith('https://github.com/geko990/quest-life/issues/new?')) throw new Error(`indirizzo GitHub non valido: ${url}`);
+  const body = new URL(url).searchParams.get('body') || '';
+  if (/non deve uscire|Pasta della nonna/.test(body) || !/onToggleSubquest/.test(body)) throw new Error('corpo della segnalazione non filtrato correttamente');
+  page.once('dialog', d => d.accept());
+  await page.locator('button[aria-label="Elimina questo errore (risolto)"]').first().click();
+  await page.waitForTimeout(300);
+  const left = await page.evaluate(() => JSON.parse(localStorage.getItem('questlife_error_log') || '[]').length);
+  if (left !== 1) throw new Error(`dopo l'eliminazione restano ${left} voci invece di 1`);
+  report(`Registro errori: raggruppamento, filtro, segnalazione GitHub (${url.length} caratteri) ed eliminazione OK`);
+  await page.evaluate(() => localStorage.removeItem('questlife_error_log'));
+} catch (e) {
+  problems.push(`Gruppo 5 (registro errori): ${e.message}`);
+}
+
 // Inglese: imposto la lingua, ricarico e controllo le etichette
 try {
   await page.evaluate(() => {

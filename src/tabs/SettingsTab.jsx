@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ACCENT_COLORS, APP_VERSION, BUILD_TIME } from '../utils/constants';
 import { forceUpdateApp, checkForAppUpdate, onUpdateAvailable, isUpdateAvailable } from '../utils/helpers';
-import { getAppErrors, clearAppErrors, formatErrorsForClipboard } from '../utils/errorLogger';
+import { getAppErrors, clearAppErrors, removeAppError, formatErrorsForClipboard, buildGithubIssueUrl } from '../utils/errorLogger';
 import UserManualModal from '../components/UserManualModal';
 import ReminderSettings from '../components/ReminderSettings';
 
@@ -63,6 +63,16 @@ export default function SettingsTab({
       setErrorsList([]);
       setIsErrorsDismissed(true);
     }
+  };
+
+  const handleRemoveError = (id) => {
+    const remaining = removeAppError(id);
+    setErrorsList(remaining);
+    if (remaining.length === 0) setIsErrorsDismissed(true);
+  };
+
+  const handleReportOnGithub = () => {
+    window.open(buildGithubIssueUrl(APP_VERSION), '_blank', 'noopener');
   };
 
   const handleCloseErrorLog = () => {
@@ -1027,9 +1037,24 @@ export default function SettingsTab({
                       padding: '8px 10px',
                       fontSize: '11px'
                     }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '9px', marginBottom: '2px' }}>
-                        <span>{err.readableTime || err.timestamp}</span>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{err.name || _t("Error")}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '9px', marginBottom: '2px' }}>
+                        <span>
+                          {err.readableTime || err.timestamp}
+                          {err.versions && err.versions.length > 0 && ` · v${err.versions.join(', v')}`}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {err.count > 1 && (
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{err.count}×</span>
+                          )}
+                          <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{err.name || _t("Error")}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveError(err.id)}
+                            title={_t("Elimina questo errore (risolto)")}
+                            aria-label={_t("Elimina questo errore (risolto)")}
+                            style={{ background: 'none', border: 'none', padding: '0 0 0 2px', fontSize: '11px', cursor: 'pointer', opacity: 0.7, lineHeight: 1 }}
+                          >🗑️</button>
+                        </span>
                       </div>
                       <div style={{ color: 'var(--text-primary)', fontWeight: '500', wordBreak: 'break-word' }}>
                         {err.message}
@@ -1043,7 +1068,28 @@ export default function SettingsTab({
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={handleReportOnGithub}
+                  style={{
+                    marginTop: '6px',
+                    padding: '9px 12px',
+                    borderRadius: '10px',
+                    background: 'var(--bg-primary, rgba(0,0,0,0.3))',
+                    border: '1px solid var(--glass-border)',
+                    color: 'var(--text-primary)',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {_t("🐙 Segnala su GitHub")}
+                </button>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '-2px' }}>
+                  {_t("Apre una segnalazione già compilata: i testi che hai inserito nell'app vengono esclusi.")}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
                   <button
                     onClick={handleCopyErrorLog}
                     style={{

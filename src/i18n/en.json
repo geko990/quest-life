@@ -1240,5 +1240,8 @@
  "🧠 INT (Intelligenza):": "🧠 INT (Intelligence):",
  "🧠 Statistica Primaria:": "🧠 Primary Stat:",
  "🧩 Pezzi (p)": "🧩 Pieces (p)",
- "🧩 Valori per Pezzo / Porzione (Opzionale)": "🧩 Values per Piece / Serving (Optional)"
+ "🧩 Valori per Pezzo / Porzione (Opzionale)": "🧩 Values per Piece / Serving (Optional)",
+ "Elimina questo errore (risolto)": "Delete this error (fixed)",
+ "🐙 Segnala su GitHub": "🐙 Report on GitHub",
+ "Apre una segnalazione già compilata: i testi che hai inserito nell'app vengono esclusi.": "Opens a pre-filled report: the text you entered in the app is left out."
 }
