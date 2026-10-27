@@ -7833,8 +7833,8 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
     max-height: 100%;
     display: flex;
     flex-direction: column;
-    background: var(--bg-card);
-    border: 1px solid var(--glass-border);
+    background: var(--bg-card, #22223b);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
     border-radius: 24px;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
     overflow: hidden;
@@ -7927,11 +7927,11 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
     padding: 14px 14px 18px;
     display: flex; flex-direction: column; gap: 16px;
 }
-.acc-month { background: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 12px; }
-.acc-month-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.acc-month { background: var(--bg-primary, #0f0f1a); border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1)); border-radius: 16px; padding: 10px 12px; }
+.acc-month-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted, #94a3b8); margin-bottom: 6px; }
 .acc-month-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
-.acc-month-grid > div + div { border-left: 1px solid var(--glass-border); padding-left: 10px; }
-.acc-month-label { font-size: 10px; color: var(--text-secondary); }
+.acc-month-grid > div + div { border-left: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1)); padding-left: 10px; }
+.acc-month-label { font-size: 10px; color: var(--text-secondary, #cbd5e1); }
 .acc-month-value { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 1px; white-space: nowrap; }
 .acc-month-value.is-in { color: #22c55e; }
 .acc-month-value.is-out { color: #ef4444; }
@@ -7952,26 +7952,26 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
     transition: transform 0.12s ease;
 }
 .acc-action:active .acc-action-icon { transform: scale(0.9); }
-.acc-action-label { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+.acc-action-label { font-size: 10.5px; font-weight: 600; color: var(--text-secondary, #cbd5e1); white-space: nowrap; }
 
-.acc-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 12px; font-weight: 800; color: var(--text-primary); }
+.acc-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 12px; font-weight: 800; color: var(--text-primary, #f1f5f9); }
 .acc-link { background: none; border: none; padding: 0; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--accent-primary, #38bdf8); }
-.acc-empty { font-size: 11px; color: var(--text-muted); font-style: italic; background: var(--bg-primary); border-radius: 12px; padding: 10px; text-align: center; }
+.acc-empty { font-size: 11px; color: var(--text-muted, #94a3b8); font-style: italic; background: var(--bg-primary, #0f0f1a); border-radius: 12px; padding: 10px; text-align: center; }
 .acc-list { display: flex; flex-direction: column; gap: 5px; }
 .acc-day + .acc-day { margin-top: 10px; }
-.acc-day-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin: 0 0 6px 2px; }
-.acc-row { display: flex; align-items: center; gap: 10px; background: var(--bg-primary); border-radius: 12px; padding: 8px 10px; }
+.acc-day-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted, #94a3b8); margin: 0 0 6px 2px; }
+.acc-row { display: flex; align-items: center; gap: 10px; background: var(--bg-primary, #0f0f1a); border-radius: 12px; padding: 8px 10px; }
 .acc-row.is-paused { opacity: 0.55; }
-.acc-row-icon { width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--bg-secondary); color: var(--text-secondary); }
+.acc-row-icon { width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--bg-secondary, #1a1a2e); color: var(--text-secondary, #cbd5e1); }
 .acc-row-main { flex: 1; min-width: 0; }
-.acc-row-title { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.acc-row-sub { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.acc-row-title { font-size: 13px; font-weight: 600; color: var(--text-primary, #f1f5f9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acc-row-sub { font-size: 10.5px; color: var(--text-muted, #94a3b8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 .acc-row-amount { flex-shrink: 0; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .acc-row-amount.is-in { color: #22c55e; }
 .acc-row-amount.is-out { color: #ef4444; }
 .acc-row-amount.is-transfer { color: #60a5fa; }
 .acc-row-delete { flex-shrink: 0; background: none; border: none; padding: 2px; font-size: 11px; opacity: 0.4; cursor: pointer; }
-.acc-more { width: 100%; margin-top: 8px; padding: 8px; border-radius: 12px; background: none; border: 1px dashed var(--glass-border); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; }
+.acc-more { width: 100%; margin-top: 8px; padding: 8px; border-radius: 12px; background: none; border: 1px dashed var(--glass-border, rgba(255, 255, 255, 0.1)); color: var(--text-secondary, #cbd5e1); font-size: 12px; font-weight: 600; cursor: pointer; }
 .acc-delete-account { align-self: center; background: none; border: none; padding: 6px 10px; font-size: 12px; font-weight: 600; color: #ef4444; opacity: 0.8; cursor: pointer; }
 
 @keyframes acc-sheet-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }

@@ -234,7 +234,7 @@ try {
     }
     tx.push({ id: 'tx_test_trf', type: 'transfer', amount: 200, category: 'trasferimento', sourceAccount: 'base', targetAccount: 'sec_test', account: 'base', note: 'Accantonamento', date: d(1), timestamp: Date.now() });
     st.finances = {
-      ...(st.finances || {}), baseAccountName: 'Conto Base', balance: 1520.4, cashBalance: 85, monthlyBudget: 1000,
+      ...(st.finances || {}), baseAccountName: 'Conto Base', balance: 1520.4, cashBalance: 85, monthlyBudget: 1000, hideBalances: false,
       secondaryAccounts: [{ id: 'sec_test', name: 'Conto Risparmi', emoji: '🛡️', balance: 2717.82, interestRate: 3, interestFrequency: 'monthly', lockPeriodMonths: 0 }],
       transactions: tx,
       recurringTransactions: [{ id: 'rec_test', type: 'expense', amount: 9.99, category: 'svago', account: 'sec_test', note: 'Streaming', dayOfMonth: 5, active: true }]
