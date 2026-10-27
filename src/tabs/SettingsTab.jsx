@@ -941,32 +941,33 @@ export default function SettingsTab({
 
         {/* Version Badge & App Update */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '16px 0 36px 0', width: '100%', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={hasUpdate ? () => forceUpdateApp(false) : undefined}
-            disabled={!hasUpdate}
-            style={{
-              padding: '10px 28px',
-              borderRadius: '20px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              border: hasUpdate ? 'none' : '1px solid var(--glass-border)',
-              background: hasUpdate ? 'var(--accent-primary, #38bdf8)' : 'var(--bg-secondary)',
-              color: hasUpdate ? '#ffffff' : 'var(--text-muted)',
-              cursor: hasUpdate ? 'pointer' : 'not-allowed',
-              opacity: hasUpdate ? 1 : 0.45,
-              boxShadow: hasUpdate ? '0 0 16px rgba(56, 189, 248, 0.6), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'all 0.25s ease'
-            }}
-            title={hasUpdate ? _t("Tocca per aggiornare alla versione {0}", newVersionTag || '') : _t("Nessun aggiornamento disponibile")}
-          >
-            {hasUpdate && <span>🚀</span>}
-            <span>{hasUpdate ? _t("Aggiorna App (v{0})", newVersionTag || '') : _t("Aggiorna App")}</span>
-          </button>
+          {/* Aggiorna App: compare solo quando c'è davvero una nuova versione */}
+          {hasUpdate && (
+            <button
+              type="button"
+              onClick={() => forceUpdateApp(false)}
+              style={{
+                padding: '10px 28px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                border: 'none',
+                background: 'var(--accent-primary, #38bdf8)',
+                color: '#ffffff',
+                cursor: 'pointer',
+                boxShadow: '0 0 16px rgba(56, 189, 248, 0.6), 0 2px 8px rgba(0,0,0,0.2)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.25s ease'
+              }}
+              title={_t("Tocca per aggiornare alla versione {0}", newVersionTag || '')}
+            >
+              <span>🚀</span>
+              <span>{_t("Aggiorna App (v{0})", newVersionTag || '')}</span>
+            </button>
+          )}
 
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
             {_t("RPG Life v{0}", APP_VERSION)}{" "}{BUILD_TIME ? `(${new Date(BUILD_TIME).toLocaleString(getLocale(), { dateStyle: 'short', timeStyle: 'short' })})` : ''}
