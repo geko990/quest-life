@@ -312,7 +312,7 @@ export default function App() {
   // 5. Apply Theme & Accent attributes to root HTML element
   useEffect(() => {
     const root = document.documentElement;
-    const VALID_THEMES = ['standard', 'fantasy', 'futuristic'];
+    const VALID_THEMES = ['standard'];
     const themeName = VALID_THEMES.includes(settings.theme) ? settings.theme : 'standard';
     const activeAccent = settings.accent || settings.accentColor || 'violet';
 
@@ -2065,7 +2065,7 @@ export default function App() {
             touchAction: (activeTab === 'home' && !isLandscape) ? 'pan-y' : 'pan-y',
             overscrollBehavior: 'none',
             padding: activeTab === 'home'
-              ? (isLandscape ? '4px 10px 6px 10px' : '4px 10px 16px 10px') // in basso la stessa aria della Salute
+              ? (isLandscape ? '4px 10px 6px 10px' : '10px 10px 16px 10px') // sopra 10 px dalla barra, in basso la stessa aria della Salute
               : (isLandscape ? '8px 12px 12px 12px' : '10px 12px 16px 12px'),
             boxSizing: 'border-box',
             WebkitOverflowScrolling: 'touch'

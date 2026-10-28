@@ -70,17 +70,21 @@ textarea,
 
 /* --- STANDARD THEME --- */
 [data-theme="standard"][data-mode="light"] {
-    --bg-primary: #f1f5f9;
-    --bg-secondary: #ffffff;
-    --bg-card: #ffffff;
-    --bg-main: #f1f5f9;
-    --text-primary: #0f172a;
-    --text-secondary: #334155;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(0, 0, 0, 0.1);
-    --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    /* Chiaro "non abbagliante" (5.9.261): neutri con una punta di viola come lo scuro; fondo e barre tinti,
+       tessere quasi bianche staccate da un'ombra morbida, riquadri interni (--bg-secondary) tinti
+       così si distinguono dalla tessera senza bisogno di bordi. */
+    --bg-primary: #eeedf4;
+    --bg-secondary: #f4f3f9;
+    --bg-card: #fdfdff;
+    --bg-main: #eeedf4;
+    --text-primary: #1c1930;
+    --text-secondary: #46425c;
+    --text-main: #1c1930;
+    --text-muted: #77738c;
+    --glass-bg: rgba(253, 253, 255, 0.96);
+    --glass-border: rgba(40, 30, 80, 0.07);
+    --glass-shadow: 0 1px 2px rgba(30, 20, 60, 0.05), 0 8px 22px -8px rgba(30, 20, 60, 0.16);
+    --track: rgba(40, 30, 80, 0.09);
 }
 
 [data-theme="standard"][data-mode="dark"] {
@@ -97,154 +101,6 @@ textarea,
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* --- FANTASY THEME (LotR / RPG) --- */
-[data-theme="fantasy"] {
-    --font-main: 'Cinzel', serif;
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    font-family: var(--font-main);
-}
-
-[data-theme="fantasy"][data-mode="light"] {
-    --bg-primary: #f5e6d3;
-    --bg-secondary: #ede0ce;
-    --bg-card: #fdf8f0;
-    --bg-main: #f5e6d3;
-    --text-primary: #2c1a0e;
-    --text-secondary: #4a3222;
-    --text-main: #2c1a0e;
-    --text-muted: #7a5e4b;
-    --glass-bg: rgba(253, 248, 240, 0.92);
-    --glass-border: rgba(74, 50, 34, 0.2);
-    --glass-shadow: 0 4px 14px rgba(44, 26, 14, 0.12);
-
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
-}
-
-[data-theme="fantasy"][data-mode="dark"] {
-    --bg-primary: #1c1512;
-    --bg-secondary: #261e18;
-    --bg-card: #332821;
-    --bg-main: #1c1512;
-    --text-primary: #f4eae0;
-    --text-secondary: #d1c0b0;
-    --text-main: #f4eae0;
-    --text-muted: #9c8a78;
-    --glass-bg: rgba(38, 30, 24, 0.9);
-    --glass-border: rgba(210, 180, 140, 0.18);
-    --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-}
-
-
-/* --- CYBERPUNK THEME (id "futuristic") --- */
-[data-theme="futuristic"] {
-    --font-main: 'Orbitron', sans-serif;
-    --radius-sm: 0px;
-    --radius-md: 2px;
-    --radius-lg: 4px;
-    --radius-xl: 8px;
-    font-family: var(--font-main);
-}
-
-/* --- CYBERPUNK: giallo e viola come nel gioco Cyberpunk 2077, contorni netti e luminosi ---
-   --neon = colore delle linee, --neon-rgb = colore dell'alone (in chiaro le linee sono nere e l'alone viola).
-   Il colore principale è sempre il viola del tema, qualunque accento sia scelto nelle Opzioni. */
-[data-theme="futuristic"] {
-    --cp-yellow: #fcee0a;
-    --cp-violet: #9d3cff;
-    --neon-line: 2px;
-}
-[data-theme="futuristic"][data-accent] {
-    --accent-primary: #9d3cff;
-    --accent-secondary: #c77dff;
-    --accent-light: #efe0ff;
-    --accent-gradient: linear-gradient(135deg, #7b2cbf 0%, #b44cff 100%);
-    --xp-bar: linear-gradient(90deg, #9d3cff 0%, #fcee0a 100%);
-}
-
-[data-theme="futuristic"][data-mode="dark"] {
-    --neon: var(--cp-yellow);
-    --neon-rgb: 252, 238, 10;
-    --radar-ring: rgba(157, 60, 255, 0.55);
-    --bg-primary: #07030d;
-    --bg-secondary: #120821;
-    --bg-card: rgba(14, 6, 26, 0.92);
-    --bg-main: #07030d;
-    --text-primary: #fffbe0;
-    --text-secondary: #fcee0a;
-    --text-main: #fffbe0;
-    --text-muted: #9a86b8;
-    --glass-bg: rgba(12, 5, 22, 0.94);
-    --glass-border: var(--neon);
-    --glass-shadow: 0 0 0 0.5px var(--neon), 0 0 9px rgba(var(--neon-rgb), 0.6), 0 0 24px rgba(157, 60, 255, 0.35), inset 0 0 16px rgba(157, 60, 255, 0.18);
-    --track: rgba(157, 60, 255, 0.22);
-    background-color: #07030d;
-    background-size: 100% 100%, 32px 32px, 32px 32px;
-    background-image:
-        radial-gradient(120% 60% at 50% 110%, rgba(157, 60, 255, 0.28), transparent 60%),
-        linear-gradient(to right, rgba(157, 60, 255, 0.13) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(157, 60, 255, 0.13) 1px, transparent 1px);
-}
-
-[data-theme="futuristic"][data-mode="light"] {
-    --neon: #14061f;
-    --neon-rgb: 123, 44, 191;
-    --radar-ring: rgba(20, 6, 31, 0.35);
-    --bg-primary: #fcee0a;
-    --bg-secondary: #fff7a8;
-    --bg-card: #fffbd6;
-    --bg-main: #fcee0a;
-    --text-primary: #14061f;
-    --text-secondary: #4a1d75;
-    --text-main: #14061f;
-    --text-muted: #6b5a2a;
-    --glass-bg: rgba(255, 251, 214, 0.97);
-    --glass-border: var(--neon);
-    --glass-shadow: 4px 4px 0 #7b2cbf;
-    --track: rgba(20, 6, 31, 0.14);
-    background-size: 32px 32px;
-    background-image:
-        linear-gradient(to right, rgba(20, 6, 31, 0.07) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(20, 6, 31, 0.07) 1px, transparent 1px);
-}
-
-/* Schede e riquadri: linea più spessa e luminosa */
-[data-theme="futuristic"] .glass-panel,
-[data-theme="futuristic"] .card {
-    border-width: var(--neon-line);
-}
-
-/* Barra in alto e barra in basso: una linea di luce che le separa dal resto */
-[data-theme="futuristic"] .app-header {
-    border-bottom: var(--neon-line) solid var(--neon) !important;
-    box-shadow: 0 0 12px rgba(var(--neon-rgb), 0.45), 0 1px 0 rgba(var(--neon-rgb), 0.6) !important;
-}
-[data-theme="futuristic"] .app-bottom-nav {
-    border-top: var(--neon-line) solid var(--neon) !important;
-    box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.45) !important;
-}
-[data-theme="futuristic"][data-mode="dark"] .app-title {
-    background: none !important;
-    -webkit-text-fill-color: var(--cp-yellow) !important;
-    color: var(--cp-yellow) !important;
-}
-[data-theme="futuristic"][data-mode="dark"] .app-title,
-[data-theme="futuristic"][data-mode="dark"] h1,
-[data-theme="futuristic"][data-mode="dark"] h2,
-[data-theme="futuristic"][data-mode="dark"] h3 {
-    text-shadow: 0 0 6px rgba(var(--neon-rgb), 0.75), 0 0 16px rgba(var(--neon-rgb), 0.35);
-}
-[data-theme="futuristic"] .btn-primary {
-    box-shadow: 0 0 0 1px var(--neon), 0 0 14px rgba(var(--neon-rgb), 0.55) !important;
-}
-
-/* Avatar e serie in alto: anello di luce */
-[data-theme="futuristic"] .header-avatar-frame,
-[data-theme="futuristic"] .streak-circle {
-    box-shadow: 0 0 0 2px var(--neon), 0 0 14px rgba(var(--neon-rgb), 0.7) !important;
-}
 
 /* Base Variables (overridden by themes above) */
 :root {
@@ -2149,44 +2005,10 @@ input#settingName {
     color: var(--text-primary);
 }
 
-/* Fantasy Theme Modal Fix */
-[data-theme="fantasy"] .challenge-preview-modal {
-    background: #fdf6e3;
-    /* Light parchment */
-    color: #3e2723;
-    border: 2px solid #8d6e63;
-}
-
-[data-theme="fantasy"][data-mode="dark"] .challenge-preview-modal {
-    background: #1a1a1a;
-    color: #e0e0e0;
-    border: 2px solid #4a4a4a;
-}
-
-[data-theme="fantasy"] .challenge-preview-header {
-    border-bottom: 1px solid rgba(62, 39, 35, 0.1);
-}
-
-[data-theme="fantasy"] .preview-tab.active {
-    background: rgba(62, 39, 35, 0.1);
-    color: #3e2723;
-}
-
 
 .history-item-xp {
     font-weight: 700;
     color: var(--accent-primary);
-}
-
-
-[data-theme="fantasy"][data-mode="light"] .challenge-preview-header h2,
-[data-theme="fantasy"][data-mode="light"] .preview-header h2 {
-    color: #3e2723 !important;
-}
-
-[data-theme="fantasy"][data-mode="light"] .close-btn {
-    color: #3e2723 !important;
-    background: rgba(62, 39, 35, 0.1);
 }
 
 
@@ -4628,29 +4450,6 @@ textarea {
     }
 }
 
-/* ============================================
-   FANTASY THEME CONTRAST FIX (v2.6.2)
-   ============================================ */
-/* Unified styling for Habits, Quests, OneShots to match Home/Settings */
-[data-theme="fantasy"] .habits-list .task-card .swipe-content,
-[data-theme="fantasy"] .oneshot-list .task-card .swipe-content,
-[data-theme="fantasy"] .quest-list .task-card .swipe-content {
-    background: var(--bg-card);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-}
-
-[data-theme="fantasy"][data-mode="dark"] .habits-list .task-card .swipe-content,
-[data-theme="fantasy"][data-mode="dark"] .oneshot-list .task-card .swipe-content,
-[data-theme="fantasy"][data-mode="dark"] .quest-list .task-card .swipe-content {
-    background: #6d5a4e;
-    /* Significantly Lighter Brown */
-    color: #f0e6d2;
-    /* Light text */
-    /* Light text */
-    border-color: var(--glass-border);
-}
-
 
 /* ============================================
    MONTHLY MEDALS
@@ -6868,17 +6667,6 @@ textarea {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Fantasy Light Theme Fix */
-[data-theme="fantasy"][data-mode="light"] .preview-schedule-item {
-    background: rgba(62, 39, 35, 0.08);
-    border-color: rgba(62, 39, 35, 0.15);
-    color: #3e2723;
-}
-
-[data-theme="fantasy"][data-mode="light"] .schedule-day-name {
-    color: #3e2723;
-    font-weight: 600;
-}
 
 .preview-schedule-item.rest-day {
     opacity: 0.7;
@@ -6886,25 +6674,6 @@ textarea {
     border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
-/* Fantasy Light Header & Rest Day Fix */
-body[data-theme="fantasy"][data-mode="light"] .challenge-preview-header h2,
-body[data-theme="fantasy"][data-mode="light"] .preview-header h2,
-body[data-theme="fantasy"][data-mode="light"] .modal-title,
-body[data-theme="fantasy"][data-mode="light"] h2 {
-    color: #3e2723 !important;
-    text-shadow: none !important;
-}
-
-body[data-theme="fantasy"][data-mode="light"] .close-btn {
-    color: #3e2723 !important;
-    background: rgba(62, 39, 35, 0.1);
-}
-
-[data-theme="fantasy"][data-mode="light"] .preview-schedule-item.rest-day {
-    background: rgba(62, 39, 35, 0.05);
-    border: 1px dashed rgba(62, 39, 35, 0.2);
-    color: #5d4037;
-}
 
 .schedule-day-icon {
     font-size: 1.2em;

@@ -426,18 +426,6 @@ export default function SettingsTab({
 
         {/* Aspetto */}
         <SettingsGroup title={_t("🎨 Aspetto")} open={expandedGroup === 'theme'} onToggle={() => toggleGroup('theme')}>
-          <SettingRow title={_t("Tema")}>
-            <SelectValue
-              label={_t("Tema")}
-              value={safeSettings.theme || 'standard'}
-              onChange={(v) => updateSetting('theme', v)}
-              options={[
-                { value: 'standard', label: _t("Standard") },
-                { value: 'fantasy', label: _t("Pergamena") },
-                { value: 'futuristic', label: _t("Cyberpunk") }
-              ]}
-            />
-          </SettingRow>
           <SettingRow title={_t("Modalità")}>
             <Segmented
               value={safeSettings.themeMode || (safeSettings.theme === 'light' || safeSettings.mode === 'light' ? 'light' : 'dark')}

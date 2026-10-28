@@ -505,7 +505,7 @@ export default function HomeTab({
       } : {
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
+        gap: '12px',
         height: '100%',
         maxHeight: '100%',
         touchAction: 'pan-y',
@@ -547,7 +547,7 @@ export default function HomeTab({
       {/* Right Column in Landscape (Azioni del Giorno + Sostentamento) */}
       <div style={isLandscape ? { display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
         {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
-        <div className="glass-panel" style={{ padding: '8px 12px', borderRadius: '14px' }}>
+        <div className="glass-panel" style={{ padding: '8px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
