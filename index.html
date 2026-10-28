@@ -64,10 +64,10 @@
   <!-- /SPLASH-LINKS -->
 
   <!-- Apertura animata (#41). Deve stare qui e non in React: compare prima che l'app sia partita.
-       Tutte le animazioni usano solo transform e opacity: così iOS le fa girare anche mentre l'app
-       si sta avviando e tiene occupato il telefono (l'anello è fatto di due mezzi dischi che ruotano).
-       Tempi: anello che si riempie finché l'app non è pronta (max 88%), poi si completa in 0,2 s,
-       lampo dorato e uscita in 0,34 s. Se l'app è pronta entro 0,5 s si dissolve e basta.
+       Mentre l'app si avvia: medaglione con alone che respira, riflesso e scritta (solo transform/opacity,
+       che iOS fa girare anche quando il telefono è occupato ad avviare l'app). Quando la Home è pronta
+       l'anello si riempie (0,5 s, 0,38 s se l'avvio è stato lungo), lampo dorato (0,15 s) e uscita (0,34 s).
+       Durata minima di tutta la sequenza: 1,2 s (scelta dell'utente, solo all'avvio a freddo).
        Riapertura entro 10 minuti, Animazioni spente o "Riduci movimento": immagine ferma, nessuna animazione.
        Colore di sfondo: quello del tema dell'app (salvato da App.jsx in ql_boot_bg), notte se manca. -->
   <style>
@@ -87,32 +87,21 @@
     #ql-boot .qb-emblem { position: relative; width: calc(var(--u) * 44); height: calc(var(--u) * 44); }
     #ql-boot .qb-track { position: absolute; inset: 0; width: 100%; height: 100%; }
     #ql-boot .qb-track circle { fill: none; stroke: var(--qb-track); stroke-width: 3.2; }
-    /* anello che si riempie: due metà ritagliate, ognuna con un mezzo disco colorato che ruota */
-    #ql-boot .qb-ring { position: absolute; inset: 1.4%; border-radius: 50%; }
-    #ql-boot .qb-half { position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden; }
-    #ql-boot .qb-half.r { left: 50%; }
-    #ql-boot .qb-half.l { left: 0; }
-    #ql-boot .qb-disc { position: absolute; top: 0; width: 200%; height: 100%; border-radius: 50%; will-change: transform; }
-    #ql-boot .qb-half.r .qb-disc { left: -100%; animation: qbRight 3.2s linear 0.1s both; }
-    #ql-boot .qb-half.l .qb-disc { left: 0; animation: qbLeft 3.2s linear 0.1s both; }
-    #ql-boot .qb-disc::before { content: ''; position: absolute; top: 0; bottom: 0; width: 50%; }
-    #ql-boot .qb-half.r .qb-disc::before { left: 0; border-radius: 100% 0 0 100% / 50% 0 0 50%; background: linear-gradient(to top, #7c3aed, #a78bfa); }
-    #ql-boot .qb-half.l .qb-disc::before { left: 50%; border-radius: 0 100% 100% 0 / 0 50% 50% 0; background: linear-gradient(to bottom, #a78bfa, #f59e0b); }
-    #ql-boot .qb-hole { position: absolute; inset: 3.29%; border-radius: 50%; background: var(--qb-bg); }
+    /* anello che si riempie come una barra XP, quando la Home è pronta */
+    #ql-boot .qb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    #ql-boot .qb-bar { fill: none; stroke: url(#qbGrad); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 295.3; stroke-dashoffset: 295.3; opacity: 0; }
+    #ql-boot.qb-filling .qb-bar { opacity: 1; stroke-dashoffset: 0; transition: stroke-dashoffset var(--qb-fill, 500ms) cubic-bezier(0.35, 0.1, 0.25, 1); }
     #ql-boot .qb-glow { position: absolute; inset: 8%; border-radius: 50%; background: radial-gradient(circle, rgba(124, 58, 237, 0.55), rgba(124, 58, 237, 0) 68%); opacity: 0.45; will-change: transform, opacity; animation: qbGlow 1.8s ease-in-out infinite; }
     #ql-boot .qb-tile { position: absolute; inset: 8%; border-radius: 50%; overflow: hidden; isolation: isolate; box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.14), 0 10px 28px rgba(0, 0, 0, 0.45); }
     #ql-boot .qb-tile img { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
     #ql-boot .qb-tile::after { content: ''; position: absolute; top: -30%; bottom: -30%; left: 0; width: 38%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.38), transparent); transform: translateX(-190%) skewX(-18deg); will-change: transform; animation: qbShine 2.2s ease-in-out 0.35s infinite; }
     #ql-boot .qb-word { font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-weight: 700; font-size: calc(var(--u) * 5.4); line-height: 1; letter-spacing: 0.32em; padding-left: 0.32em; color: var(--qb-word); opacity: 0; will-change: opacity; animation: qbWord 0.6s ease-out 0.25s forwards; }
     @keyframes qbGlow { 0%, 100% { opacity: 0.45; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.06); } }
-    @keyframes qbRight { 0.0% { transform: rotate(0.0deg); } 2.5% { transform: rotate(36.7deg); } 5.0% { transform: rotate(69.1deg); } 7.81% { transform: rotate(101.2deg); } 10.94% { transform: rotate(131.9deg); } 14.06% { transform: rotate(158.3deg); } 17.06% { transform: rotate(180.0deg); } 20.31% { transform: rotate(180.0deg); } 25.0% { transform: rotate(180.0deg); } 31.25% { transform: rotate(180.0deg); } 39.06% { transform: rotate(180.0deg); } 48.44% { transform: rotate(180.0deg); } 59.38% { transform: rotate(180.0deg); } 75.0% { transform: rotate(180.0deg); } 100.0% { transform: rotate(180.0deg); } }
-    @keyframes qbLeft { 0.0% { transform: rotate(0.0deg); } 2.5% { transform: rotate(0.0deg); } 5.0% { transform: rotate(0.0deg); } 7.81% { transform: rotate(0.0deg); } 10.94% { transform: rotate(0.0deg); } 14.06% { transform: rotate(0.0deg); } 17.06% { transform: rotate(0.0deg); } 20.31% { transform: rotate(20.3deg); } 25.0% { transform: rotate(44.3deg); } 31.25% { transform: rotate(68.8deg); } 39.06% { transform: rotate(90.5deg); } 48.44% { transform: rotate(107.6deg); } 59.38% { transform: rotate(119.8deg); } 75.0% { transform: rotate(128.9deg); } 100.0% { transform: rotate(134.5deg); } }
     @keyframes qbShine { 0% { transform: translateX(-190%) skewX(-18deg); } 55%, 100% { transform: translateX(370%) skewX(-18deg); } }
     @keyframes qbWord { to { opacity: 1; } }
-    #ql-boot.qb-done .qb-disc { animation: none; transition: transform 0.2s ease-out; transform: rotate(180deg) !important; }
     #ql-boot.qb-done .qb-ring { animation: qbRingFlash 0.3s ease-out both; }
     #ql-boot.qb-done .qb-glow { background: radial-gradient(circle, rgba(245, 158, 11, 0.55), rgba(245, 158, 11, 0) 70%); opacity: 1; animation: none; }
-    @keyframes qbRingFlash { 50% { transform: scale(1.07); } 100% { transform: scale(1.02); } }
+    @keyframes qbRingFlash { 50% { transform: rotate(-90deg) scale(1.07); } 100% { transform: rotate(-90deg) scale(1.02); } }
     #ql-boot.qb-exit { animation: qbOut 0.34s ease-in forwards; pointer-events: none; }
     #ql-boot.qb-exit .qb-emblem { animation: qbEmblemOut 0.34s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
     @keyframes qbOut { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
@@ -129,11 +118,10 @@
     <div class="qb-stack">
       <div class="qb-emblem">
         <svg class="qb-track" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47"/></svg>
-        <div class="qb-ring">
-          <div class="qb-half r"><div class="qb-disc"></div></div>
-          <div class="qb-half l"><div class="qb-disc"></div></div>
-          <div class="qb-hole"></div>
-        </div>
+        <svg class="qb-ring" viewBox="0 0 100 100">
+          <defs><linearGradient id="qbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="0.6" stop-color="#a78bfa"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
+          <circle class="qb-bar" cx="50" cy="50" r="47"/>
+        </svg>
         <div class="qb-glow"></div>
         <div class="qb-tile"><img src="data:image/jpeg;base64,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" alt=""></div>
       </div>
@@ -164,25 +152,34 @@
       window.addEventListener('pagehide', markSeen);
 
       var finished = false;
+      var shownAt = (window.performance && performance.now) ? performance.now() : 0; // quando compare l'apertura
+      var MIN_TOTAL = 1200; // durata minima della sequenza (fino alla fine dell'uscita)
+      var EXIT_MS = 340, FLASH_MS = 150;
       // Chiamata dall'app quando la Home è disegnata (App.jsx) o dall'error boundary
       window.__qlBootDone = function () {
         if (finished || !boot) return;
         finished = true;
-        var elapsed = (window.performance && performance.now) ? performance.now() : 1000;
         var exit = function () {
           boot.classList.add('qb-exit');
           try { window.dispatchEvent(new Event('ql-boot-exit')); } catch (e) {}
-          setTimeout(function () { if (boot && boot.parentNode) boot.parentNode.removeChild(boot); boot = null; }, quiet ? 200 : 360);
+          setTimeout(function () { if (boot && boot.parentNode) boot.parentNode.removeChild(boot); boot = null; }, quiet ? 200 : EXIT_MS + 20);
         };
-        if (quiet || elapsed < 500) { exit(); return; }
-        // ferma l'anello dov'è e lo completa
-        try {
-          var discs = boot.querySelectorAll('.qb-disc');
-          for (var i = 0; i < discs.length; i++) discs[i].style.transform = getComputedStyle(discs[i]).transform;
+        if (quiet) { exit(); return; }
+        var now = (window.performance && performance.now) ? performance.now() : shownAt + 1000;
+        var elapsed = now - shownAt;
+        var fill = elapsed > 900 ? 380 : 500;
+        var wait = Math.max(0, MIN_TOTAL - (elapsed + fill + FLASH_MS + EXIT_MS));
+        setTimeout(function () {
+          if (!boot) return;
+          boot.style.setProperty('--qb-fill', fill + 'ms');
           void boot.offsetWidth;
-        } catch (e) {}
-        boot.classList.add('qb-done');
-        setTimeout(exit, 220);
+          boot.classList.add('qb-filling');
+          setTimeout(function () {
+            if (!boot) return;
+            boot.classList.add('qb-done');
+            setTimeout(exit, FLASH_MS);
+          }, fill);
+        }, wait);
       };
       // Rete di sicurezza: se l'app non risponde, l'apertura non resta mai sopra lo schermo
       setTimeout(function () { window.__qlBootDone(); }, 8000);
