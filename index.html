@@ -41,12 +41,125 @@
     })();
   </script>
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: caricati senza bloccare la prima immagine (l'apertura compare subito) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"></noscript>
+
+  <!-- Immagini di avvio di iOS (primo istante, ferme): uguali al primo fotogramma dell'apertura.
+       Si rigenerano con: python3 scripts/make-splash.py -->
+  <!-- SPLASH-LINKS -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1320x2868.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1290x2796.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1284x2778.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1260x2736.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1242x2688.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash/splash-828x1792.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1206x2622.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1179x2556.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1170x2532.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1125x2436.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash/splash-750x1334.png">
+  <!-- /SPLASH-LINKS -->
+
+  <!-- Apertura animata (#40). Deve stare qui e non in React: compare prima che l'app sia partita.
+       Tempi: anello che si riempie finché l'app non è pronta (max 88%), poi si completa in 0,2 s,
+       lampo dorato e uscita in 0,34 s. Se l'app è pronta entro 0,5 s si dissolve e basta.
+       Riapertura entro 10 minuti, Animazioni spente o "Riduci movimento": immagine ferma, nessuna animazione. -->
+  <style>
+    html, body { background: #0f0f1a; }
+    #ql-boot {
+      --u: min(1vw, 0.6vh);
+      position: fixed; inset: 0; z-index: 2147483000;
+      background: #0f0f1a;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-user-select: none; user-select: none;
+    }
+    #ql-boot .qb-stack { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 7); transform: translateY(calc(var(--u) * -2)); }
+    #ql-boot .qb-emblem { position: relative; width: calc(var(--u) * 44); height: calc(var(--u) * 44); display: flex; align-items: center; justify-content: center; }
+    #ql-boot .qb-glow { position: absolute; inset: 8%; border-radius: 50%; background: radial-gradient(circle, rgba(124, 58, 237, 0.55), rgba(124, 58, 237, 0) 68%); opacity: 0.45; animation: qbGlow 1.8s ease-in-out infinite; }
+    #ql-boot .qb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    #ql-boot .qb-ring circle { fill: none; stroke-width: 3.2; }
+    #ql-boot .qb-track { stroke: rgba(167, 139, 250, 0.14); }
+    #ql-boot .qb-bar { stroke: url(#qbGrad); stroke-linecap: round; stroke-dasharray: 295.3; stroke-dashoffset: 295.3; animation: qbFill 3.2s cubic-bezier(0.1, 0.6, 0.3, 1) 0.1s forwards; }
+    #ql-boot .qb-tile { position: relative; width: 84%; height: 84%; border-radius: 50%; overflow: hidden; isolation: isolate; box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.14), 0 10px 28px rgba(0, 0, 0, 0.45); }
+    #ql-boot .qb-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; }
+    #ql-boot .qb-tile::after { content: ''; position: absolute; top: -30%; bottom: -30%; left: 0; width: 38%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.38), transparent); transform: translateX(-190%) skewX(-18deg); animation: qbShine 2.2s ease-in-out 0.35s infinite; }
+    #ql-boot .qb-word { font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-weight: 700; font-size: calc(var(--u) * 5.4); line-height: 1; letter-spacing: 0.32em; padding-left: 0.32em; color: #d9d2ff; opacity: 0; animation: qbWord 0.6s ease-out 0.25s forwards; }
+    @keyframes qbGlow { 0%, 100% { opacity: 0.45; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.06); } }
+    @keyframes qbFill { to { stroke-dashoffset: 35.4; } } /* 88% */
+    @keyframes qbShine { 0% { transform: translateX(-190%) skewX(-18deg); } 55%, 100% { transform: translateX(370%) skewX(-18deg); } }
+    @keyframes qbWord { to { opacity: 1; } }
+    #ql-boot.qb-done .qb-bar { animation: none; transition: stroke-dashoffset 0.2s ease-out; stroke-dashoffset: 0 !important; }
+    #ql-boot.qb-done .qb-ring { animation: qbRingFlash 0.3s ease-out both; }
+    #ql-boot.qb-done .qb-glow { background: radial-gradient(circle, rgba(245, 158, 11, 0.55), rgba(245, 158, 11, 0) 70%); opacity: 1; animation: none; }
+    @keyframes qbRingFlash { 50% { transform: rotate(-90deg) scale(1.07); } 100% { transform: rotate(-90deg) scale(1.02); } }
+    #ql-boot.qb-exit { animation: qbOut 0.34s ease-in forwards; pointer-events: none; }
+    #ql-boot.qb-exit .qb-emblem { animation: qbEmblemOut 0.34s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
+    @keyframes qbOut { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes qbEmblemOut { to { transform: scale(1.18); opacity: 0; } }
+    /* Immagine ferma (riapertura ravvicinata, Animazioni spente, Riduci movimento) */
+    #ql-boot.qb-quiet .qb-glow, #ql-boot.qb-quiet .qb-bar, #ql-boot.qb-quiet .qb-tile::after { display: none; }
+    #ql-boot.qb-quiet .qb-word { animation: none; opacity: 0; }
+    #ql-boot.qb-quiet.qb-exit, #ql-boot.qb-quiet.qb-exit .qb-emblem { animation: qbQuietOut 0.18s ease-out forwards; }
+    @keyframes qbQuietOut { to { opacity: 0; } }
+  </style>
 </head>
 <body class="min-h-screen">
+  <div id="ql-boot" aria-hidden="true">
+    <div class="qb-stack">
+      <div class="qb-emblem">
+        <div class="qb-glow"></div>
+        <svg class="qb-ring" viewBox="0 0 100 100">
+          <defs><linearGradient id="qbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="0.6" stop-color="#a78bfa"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
+          <circle class="qb-track" cx="50" cy="50" r="47"/>
+          <circle class="qb-bar" cx="50" cy="50" r="47"/>
+        </svg>
+        <div class="qb-tile"><img src="./icon.png" alt=""></div>
+      </div>
+      <div class="qb-word">QUEST LIFE</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var boot = document.getElementById('ql-boot');
+      var QUIET_WINDOW = 10 * 60 * 1000; // riaperta entro 10 minuti: niente animazione
+      var quiet = false;
+      try {
+        var lastSeen = parseInt(localStorage.getItem('ql_last_seen') || '0', 10);
+        if (lastSeen && Date.now() - lastSeen < QUIET_WINDOW) quiet = true;
+        if (localStorage.getItem('ql_anim') === 'off') quiet = true;
+      } catch (e) {}
+      try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) quiet = true; } catch (e) {}
+      if (quiet) boot.className = 'qb-quiet';
+
+      var markSeen = function () { try { localStorage.setItem('ql_last_seen', String(Date.now())); } catch (e) {} };
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') markSeen(); });
+      window.addEventListener('pagehide', markSeen);
+
+      var finished = false;
+      // Chiamata dall'app quando la Home è disegnata (App.jsx) o dall'error boundary
+      window.__qlBootDone = function () {
+        if (finished || !boot) return;
+        finished = true;
+        var elapsed = (window.performance && performance.now) ? performance.now() : 1000;
+        var bar = boot.querySelector('.qb-bar');
+        var exit = function () {
+          boot.classList.add('qb-exit');
+          try { window.dispatchEvent(new Event('ql-boot-exit')); } catch (e) {}
+          setTimeout(function () { if (boot && boot.parentNode) boot.parentNode.removeChild(boot); boot = null; }, quiet ? 200 : 360);
+        };
+        if (quiet || elapsed < 500) { exit(); return; }
+        // ferma l'anello dov'è e lo completa
+        try { bar.style.strokeDashoffset = getComputedStyle(bar).strokeDashoffset; void bar.getBoundingClientRect(); } catch (e) {}
+        boot.classList.add('qb-done');
+        setTimeout(exit, 220);
+      };
+      // Rete di sicurezza: se l'app non risponde, l'apertura non resta mai sopra lo schermo
+      setTimeout(function () { window.__qlBootDone(); }, 8000);
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

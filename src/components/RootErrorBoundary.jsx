@@ -19,6 +19,8 @@ export default class RootErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    // L'apertura animata (index.html) non deve coprire la schermata d'errore
+    try { window.__qlBootDone && window.__qlBootDone(); } catch (_) {}
     this.setState({ errorInfo });
     console.error("[RootErrorBoundary] Uncaught Application Error:", error, errorInfo);
     logAppError(error, {

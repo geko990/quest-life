@@ -1064,11 +1064,27 @@ export default function App() {
   };
 
   // 9. Modal Add/Edit Handlers
+  // --- Apertura animata (#40, in index.html): la Home è disegnata → l'apertura si chiude ---
+  // Quando l'apertura svanisce si rifà l'ingresso a cascata, che altrimenti avverrebbe nascosto sotto di lei.
+  const [bootTick, setBootTick] = useState(0);
+  useEffect(() => {
+    const onBootExit = () => setBootTick(t => t + 1);
+    window.addEventListener('ql-boot-exit', onBootExit);
+    const raf = requestAnimationFrame(() => requestAnimationFrame(() => { try { window.__qlBootDone && window.__qlBootDone(); } catch (_) {} }));
+    return () => { window.removeEventListener('ql-boot-exit', onBootExit); cancelAnimationFrame(raf); };
+  }, []);
+  // L'apertura legge questa preferenza prima che l'app parta (non può leggere tutto lo stato salvato)
+  useEffect(() => {
+    try { localStorage.setItem('ql_anim', settings.animations === false ? 'off' : 'on'); } catch (_) {}
+  }, [settings.animations]);
+
   // --- Ingresso a cascata: cambiando scheda, le tessere visibili compaiono una dopo l'altra dal basso ---
   const tabViewRef = useRef(null);
   useEffect(() => {
     const root = tabViewRef.current;
     if (!root) return;
+    // All'avvio la cascata parte quando svanisce l'apertura (bootTick), non sotto di lei
+    if (bootTick === 0 && document.getElementById('ql-boot')) return;
     const reduce = settings.animations === false ||
       (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     if (reduce) return;
@@ -1180,7 +1196,7 @@ export default function App() {
       else if (it.parent) play(it.el, 'stagger-in-inner', 'staggerInInner', it.delay);
       else play(it.el, 'stagger-in', 'staggerIn', it.delay);
     });
-  }, [activeTab]);
+  }, [activeTab, bootTick]);
 
   // --- Scadenze: pallino rosso su Missioni, numero sull'icona dell'app, promemoria locali ---
   const [deadlineTick, setDeadlineTick] = useState(0);
