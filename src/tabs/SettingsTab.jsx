@@ -589,6 +589,7 @@ export default function SettingsTab({
           >
             <span className="opt-select">v{APP_VERSION}</span>
           </SettingRow>
+          <SettingRow title={_t("Crediti")} desc={_t("Icone: Solar di 480 Design, licenza CC BY 4.0")} />
         </SettingsGroup>
 
         {/* Aggiorna App: compare solo quando c'è davvero una nuova versione */}

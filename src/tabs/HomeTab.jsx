@@ -3,6 +3,7 @@ import { getXpForLevel, getGameDate, getTomorrowGameDate } from '../utils/helper
 import MarqueeText from '../components/MarqueeText';
 
 import { _t } from '../i18n';
+import Icon from '../components/Icon';
 const SLOT_CATEGORY_INFO = [
   { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
   { type: 'bonus', title: 'Azione Bonus', emoji: '⚡', color: '#f59e0b' },
@@ -550,7 +551,9 @@ export default function HomeTab({
         <div className="glass-panel" style={{ padding: '8px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
+            <span style={{ fontSize: '20px', color: cardMode === 'pomodoro' ? '#ef4444' : 'var(--accent-primary)', display: 'flex' }}>
+              <Icon name={cardMode === 'pomodoro' ? 'stopwatch' : 'target'} />
+            </span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
               {cardMode === 'pomodoro' ? _t("Timer Pomodoro") : _t("Azioni del Giorno")}
             </h3>
@@ -587,7 +590,7 @@ export default function HomeTab({
               }}
               title={cardMode === 'pomodoro' ? _t("Passa a Lista Task") : _t("Passa a Timer Pomodoro")}
             >
-              <span>🍅</span>
+              <span style={{ fontSize: '16px', color: '#ef4444', display: 'flex' }}><Icon name="stopwatch" /></span>
               {safePomodoro.status === 'running' && (
                 <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>
                   {formatPomoTime(pomoSecs)}
@@ -905,7 +908,10 @@ export default function HomeTab({
         <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("🍎 Sostentamento di oggi")}</h3>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ fontSize: '14px', color: 'var(--accent-primary)', display: 'flex' }}><Icon name="chef-hat" /></span>
+                {_t("Sostentamento di oggi")}
+              </span></h3>
             <span
               onPointerDown={() => handleHealthPressStart('consumed')}
               onPointerUp={() => handleHealthPressEnd(() => {})}
@@ -947,7 +953,7 @@ export default function HomeTab({
               }}
               title={_t("Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti")}
             >
-              <div style={{ fontSize: '13px' }}>🔥</div>
+              <div style={{ fontSize: '15px', color: '#f97316', display: 'flex', justifyContent: 'center' }}><Icon name="fire" /></div>
               <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--text-primary)' }}>{health.calories?.burned || 0}</div>
               <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>{_t("Bruciate")}</div>
             </div>
@@ -970,7 +976,7 @@ export default function HomeTab({
                 touchAction: 'manipulation'
               }}
             >
-              <div style={{ fontSize: '13px' }}>💧</div>
+              <div style={{ fontSize: '15px', color: '#06b6d4', display: 'flex', justifyContent: 'center' }}><Icon name="waterdrop" /></div>
               <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.goal || health.waterGoal || 8}</div>
               <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>{_t("Bicchieri")}</div>
             </div>
@@ -993,7 +999,7 @@ export default function HomeTab({
                 touchAction: 'manipulation'
               }}
             >
-              <div style={{ fontSize: '14px' }}>👟</div>
+              <div style={{ fontSize: '15px', color: '#4ade80', display: 'flex', justifyContent: 'center' }}><Icon name="walking" /></div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{Number(health.steps?.current) || 0}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{_t("Passi")}</div>
             </div>

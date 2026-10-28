@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 
 import { _t } from '../i18n';
+import Icon from './Icon';
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome, badges = {} }) {
   const lastClicksRef = useRef({});
 
@@ -47,21 +48,22 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
   };
 
   const navItems = [
-    { id: 'habits', icon: '📜', label: _t("Abitudini") },
+    // Icone Solar (#53): linea vuota a riposo, piena sulla scheda attiva. Ogni icona ha un solo significato.
+    { id: 'habits', icon: 'notebook', label: _t("Abitudini") },
     {
       id: 'missions',
-      icon: activeTab === 'quests' ? '🏆' : '⚔️',
+      icon: activeTab === 'quests' ? 'cup-star' : 'rocket',
       label: activeTab === 'quests' ? _t("Campagne") : _t("Missioni")
     },
     { id: 'home', icon: 'avatar', label: _t("Eroe"), isCenter: true },
     {
       id: 'nutrition',
-      icon: activeTab === 'shopping' ? '🛒' : '🍎',
+      icon: activeTab === 'shopping' ? 'cart-large-minimalistic' : 'heart-pulse',
       label: activeTab === 'shopping' ? _t("Spesa") : _t("Salute")
     },
     {
       id: 'settings',
-      icon: activeTab === 'finances' ? '💰' : '⚙️',
+      icon: activeTab === 'finances' ? 'wallet-money' : 'settings',
       label: activeTab === 'finances' ? _t("Tesoro") : _t("Opzioni")
     },
   ];
@@ -184,8 +186,8 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                 }}
                 title={_t(item.label)}
               >
-                <span style={{ fontSize: '18px', marginBottom: '2px', position: 'relative' }}>
-                  {item.icon}
+                <span style={{ display: 'inline-block', fontSize: '22px', marginBottom: '2px', position: 'relative' }}>
+                  <Icon name={item.icon} variant={isActive ? 'bold' : 'linear'} />
                   {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
                 </span>
                 <span style={{ fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '58px' }}>
@@ -292,9 +294,9 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
             <span
               key={isActive ? `${item.id}-on` : `${item.id}-off`}
               className={isActive ? 'nav-icon-pop' : undefined}
-              style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1, position: 'relative' }}
+              style={{ display: 'inline-block', fontSize: '23px', marginBottom: '6px', lineHeight: 1, position: 'relative' }}
             >
-              {item.icon}
+              <Icon name={item.icon} variant={isActive ? 'bold' : 'linear'} />
               {isActive && <span className="nav-active-dot" />}
               {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
             </span>
