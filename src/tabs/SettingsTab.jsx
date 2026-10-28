@@ -411,7 +411,7 @@ export default function SettingsTab({
           </SettingRow>
           <SettingRow title={_t("Modalità")}>
             <Segmented
-              value={safeSettings.themeMode || 'dark'}
+              value={safeSettings.themeMode || (safeSettings.theme === 'light' || safeSettings.mode === 'light' ? 'light' : 'dark')}
               onChange={(v) => updateSetting('themeMode', v)}
               options={[
                 { value: 'dark', label: _t("Scuro") },

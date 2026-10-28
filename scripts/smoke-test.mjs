@@ -24,6 +24,14 @@ page.on('response', (r) => {
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
 report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('#root').innerText()).length} caratteri visibili`);
+
+// Primo avvio: tema Standard in modalità chiara (prima partiva con un tema inesistente, misto chiaro/scuro)
+{
+  const firstTheme = await page.evaluate(() => `${document.documentElement.dataset.theme}/${document.documentElement.dataset.mode}`);
+  if (firstTheme !== 'standard/light') problems.push(`Tema al primo avvio: ${firstTheme} invece di standard/light`);
+  else report('Primo avvio: tema Standard chiaro');
+  await shot('00-primo-avvio');
+}
 // Schermata Eroe così come si apre (tessera del radar quadrata, aria sopra la nav bar)
 await page.waitForTimeout(1500);
 await shot('00-eroe');

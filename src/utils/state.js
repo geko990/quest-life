@@ -119,7 +119,10 @@ export function getInitialState() {
       lastUpdate: null
     },
     settings: {
-      theme: 'dark',
+      // Primo avvio: tema Standard in modalità chiara.
+      // 'theme' è il tema grafico (standard, fantasy, dnd, futuristic, pirate), 'themeMode' è chiaro/scuro/auto.
+      theme: 'standard',
+      themeMode: 'light',
       accent: 'violet',
       dayStartTime: 0,
       weekStart: 'sunday',
@@ -176,7 +179,22 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     state.player.monthlyChallenge = { ...defaults.player.monthlyChallenge };
   }
 
-  state.settings = { ...state.settings, ...parsed.settings };
+  const savedSettings = (parsed.settings && typeof parsed.settings === 'object') ? parsed.settings : {};
+  state.settings = { ...state.settings, ...savedSettings };
+  // Tema: in passato lo stato iniziale salvava theme: 'dark' (che non è un tema grafico), e senza themeMode
+  // l'app veniva mostrata in un misto di chiaro e scuro. Si riporta a un tema valido conservando la modalità
+  // che l'utente vedeva (le Opzioni mostravano "Scuro" se themeMode mancava).
+  {
+    const VALID_THEMES = ['standard', 'fantasy', 'dnd', 'futuristic', 'pirate'];
+    const VALID_MODES = ['light', 'dark', 'system'];
+    const legacyLight = savedSettings.theme === 'light' || savedSettings.mode === 'light';
+    if (!VALID_MODES.includes(savedSettings.themeMode)) {
+      state.settings.themeMode = legacyLight ? 'light' : 'dark';
+    }
+    if (!VALID_THEMES.includes(state.settings.theme)) {
+      state.settings.theme = 'standard';
+    }
+  }
   if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
   if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
   if (state.settings.enableDailyPenalties === undefined) state.settings.enableDailyPenalties = true;
