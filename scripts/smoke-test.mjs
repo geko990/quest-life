@@ -392,7 +392,11 @@ try {
   // Due prove: il primo campo (nome, in cima: era coperto dalla barra superiore) e l'ultimo (in fondo)
   const fields = p3.locator('.modal-content input[type="text"], .modal-content input:not([type])');
   const results = [];
-  for (const [label, field] of [['primo', fields.first()], ['ultimo', fields.last()]]) {
+  const cases = [['primo', 0, false], ['ultimo', -1, false], ['primo-trattenuta', 0, true], ['ultimo-trattenuta', -1, true]];
+  for (const [label, idx, trapped] of cases) {
+    // "trattenuta": come su iPhone, un contenitore della pagina trattiene la finestra fissa al suo interno
+    await p3.evaluate((on) => { const m = document.querySelector('main.content-area'); if (m) m.style.transform = on ? 'translateZ(0)' : ''; }, trapped);
+    const field = idx === 0 ? fields.first() : fields.last();
     await field.focus();
     await p3.evaluate(() => window.__setKeyboard(372)); // spazio visibile 480 px
     await p3.waitForTimeout(500);
@@ -426,6 +430,7 @@ try {
     const closed = await p3.evaluate(() => ({ open: document.documentElement.getAttribute('data-keyboard'), ov: !!document.querySelector('.kb-overlay') }));
     if (closed.open || closed.ov) throw new Error('lo stato tastiera non si chiude');
   }
+  await p3.evaluate(() => { const m = document.querySelector('main.content-area'); if (m) m.style.transform = ''; });
   report(`Tastiera iOS simulata: campi visibili e non coperti (${results.join(', ')}), barra nascosta`);
   await ctx.close();
 } catch (e) {

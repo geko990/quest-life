@@ -71,9 +71,14 @@ export function initKeyboardAware() {
       // Alcune finestre stanno sotto la barra superiore dell'app (es. Giornate tipo): in quel caso la
       // finestra deve cominciare sotto la barra, altrimenti la sua parte alta (e il campo) resta coperta.
       const inset = coveredTop(overlay);
-      if (inset > 0) {
-        overlay.style.top = `${Math.round(vv.offsetTop + inset)}px`;
-        overlay.style.height = `${Math.max(120, Math.round(vv.height - inset))}px`;
+      const wantTop = vv.offsetTop + inset;
+      overlay.style.height = `${Math.max(120, Math.round(vv.height - inset))}px`;
+      // Su iOS una finestra "fissa" può restare trattenuta da un contenitore della pagina: allora `top`
+      // non si misura dallo schermo. Si controlla dove è finita davvero e la si riallinea.
+      for (let i = 0; i < 2; i++) {
+        const delta = wantTop - overlay.getBoundingClientRect().top;
+        if (Math.abs(delta) < 1) break;
+        overlay.style.top = `${Math.round((parseFloat(overlay.style.top) || 0) + delta)}px`;
       }
     }
   };
