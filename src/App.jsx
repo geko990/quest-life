@@ -1481,7 +1481,7 @@ export default function App() {
   };
 
   // Prima di cancellare qualcosa le medaglie si "stampano" (nomi ed emoji di attributi, abitudini e task),
-  // così il loro riepilogo resta completo anche dopo la cancellazione (#48)
+  // così il loro riepilogo resta completo anche dopo la cancellazione (#51)
   const freezeMedals = () => {
     setPlayer(prev => {
       const medals = prev?.monthlyChallenge?.medals;

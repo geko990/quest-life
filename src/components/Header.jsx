@@ -53,7 +53,7 @@ export default function Header({
     return monthLong(parseInt(month, 10) - 1) || _t("Mese");
   };
 
-  // Riepilogo della medaglia: calcolato dai dati vivi, con la copia "stampata" per ciò che è stato cancellato (#48)
+  // Riepilogo della medaglia: calcolato dai dati vivi, con la copia "stampata" per ciò che è stato cancellato (#51)
   const getMedalSummaryData = (medal) => {
     const sum = computeMedalSummary(medal, { xpLog, completionLog, habits, oneshots, stats });
     if (!sum) return null;

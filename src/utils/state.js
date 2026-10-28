@@ -541,7 +541,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
     };
   }
 
-  // Medaglie: copia "stampata" del riepilogo per quelle che non l'hanno ancora (#48), così non perdono
+  // Medaglie: copia "stampata" del riepilogo per quelle che non l'hanno ancora (#51), così non perdono
   // abitudini, task o attributi cancellati in seguito
   const medalList = state.player?.monthlyChallenge?.medals;
   if (Array.isArray(medalList) && medalList.some(m => m && !m.snapshot)) {

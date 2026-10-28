@@ -348,7 +348,7 @@ try {
     sample.push(`${label}: ${(await page.locator('#root').innerText()).replace(/\s+/g, ' ').slice(0, 160)}`);
   }
   await shot('11-inglese-impostazioni');
-  // ranghi, nomi dei mesi e messaggi fissi devono essere tradotti (#48)
+  // ranghi, nomi dei mesi e messaggi fissi devono essere tradotti (#51)
   const enText = await page.locator('#root').innerText();
   const leftover = ['Novizio', 'Recluta', 'Avventuriero', 'Esploratore', 'Veterano', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre', 'Nuovo Inizio', 'Costanza Straordinaria']
     .filter((w) => new RegExp(`\\b${w}\\b`).test(enText));

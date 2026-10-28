@@ -1,4 +1,4 @@
-// Riepilogo delle medaglie mensili (#48).
+// Riepilogo delle medaglie mensili (#51).
 // Il riepilogo (attributo più sviluppato, abitudine più rispettata, XP del mese, top 10 task) si
 // calcola dai dati vivi, ma ogni medaglia ne conserva una copia "stampata" (medal.snapshot) con nomi
 // ed emoji. Se un'abitudine, un task o un attributo vengono cancellati, la medaglia mostra la copia
