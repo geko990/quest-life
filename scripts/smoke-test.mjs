@@ -348,6 +348,60 @@ for (const f of ['sw.js', 'version.json', 'manifest.json', 'icon.png']) {
 }
 report(`Versione pubblicata: ${fs.readFileSync('dist/version.json', 'utf8').replace(/\s+/g, ' ')}`);
 
+// Tastiera di iOS (#45): iOS non restringe la pagina, riduce solo lo "spazio visibile" (visualViewport).
+// Lo si simula con un visualViewport finto: aprendo un campo nella finestra Giornate tipo l'app deve
+// restare entro lo spazio sopra la tastiera, senza barra in basso, con il campo in vista.
+try {
+  const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  await ctx.addInitScript(() => {
+    const fake = new EventTarget();
+    Object.assign(fake, { width: 393, height: window.innerHeight || 852, offsetTop: 0, offsetLeft: 0, pageTop: 0, pageLeft: 0, scale: 1 });
+    Object.defineProperty(window, 'visualViewport', { value: fake, configurable: true });
+    window.__setKeyboard = (h) => { fake.height = (window.innerHeight || 852) - h; fake.dispatchEvent(new Event('resize')); };
+  });
+  const p3 = await ctx.newPage();
+  await p3.goto(BASE, { waitUntil: 'networkidle' });
+  await p3.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
+  await p3.waitForTimeout(2500);
+  await p3.mouse.click(6, 6); // chiude un'eventuale finestra del primo avvio
+  await p3.waitForTimeout(400);
+  await p3.locator('button, [role="button"], div, span', { hasText: /^Opzioni$/ }).last().click({ force: true });
+  await p3.waitForTimeout(800);
+  await p3.getByText('+ Nuova', { exact: true }).first().click();
+  await p3.waitForTimeout(600);
+  const field = p3.locator('.modal-content input[type="text"], .modal-content input:not([type])').last();
+  await field.focus();
+  await p3.evaluate(() => window.__setKeyboard(372)); // spazio visibile 480 px
+  await p3.waitForTimeout(500);
+  const kb = await p3.evaluate(() => {
+    const ov = document.querySelector('.kb-overlay');
+    const r = document.activeElement.getBoundingClientRect();
+    const nav = document.querySelector('.app-bottom-nav');
+    return {
+      open: document.documentElement.getAttribute('data-keyboard'),
+      overlay: ov ? Math.round(ov.getBoundingClientRect().height) : null,
+      fieldTop: Math.round(r.top), fieldBottom: Math.round(r.bottom),
+      nav: nav ? getComputedStyle(nav).display : 'assente',
+      app: Math.round(document.querySelector('.app-container').getBoundingClientRect().height)
+    };
+  });
+  await p3.screenshot({ path: `${SHOTS}/17-tastiera.png`, clip: { x: 0, y: 0, width: 393, height: 480 } });
+  if (kb.open !== 'open') throw new Error('stato "tastiera aperta" non rilevato');
+  if (kb.overlay === null || Math.abs(kb.overlay - 480) > 2) throw new Error(`finestra alta ${kb.overlay} px invece di 480`);
+  if (kb.fieldTop < 0 || kb.fieldBottom > 480) throw new Error(`campo fuori dallo spazio visibile (${kb.fieldTop}–${kb.fieldBottom})`);
+  if (kb.nav !== 'none') throw new Error('la barra in basso resta visibile con la tastiera');
+  if (Math.abs(kb.app - 480) > 2) throw new Error(`app alta ${kb.app} px invece di 480`);
+  await field.blur();
+  await p3.evaluate(() => window.__setKeyboard(0));
+  await p3.waitForTimeout(400);
+  const closed = await p3.evaluate(() => ({ open: document.documentElement.getAttribute('data-keyboard'), ov: !!document.querySelector('.kb-overlay') }));
+  if (closed.open || closed.ov) throw new Error('lo stato tastiera non si chiude');
+  report(`Tastiera iOS simulata: app ${kb.app}px, finestra ${kb.overlay}px, campo a ${kb.fieldTop}–${kb.fieldBottom}px, barra nascosta`);
+  await ctx.close();
+} catch (e) {
+  problems.push(`Tastiera iOS: ${e.message}`);
+}
+
 // Versione vecchia dopo una pubblicazione: il pezzo principale dell'app non si carica una volta
 // ("Importing a module script failed"). L'app deve ripulire e ricaricarsi da sola, senza schermata vuota.
 try {

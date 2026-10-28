@@ -8564,3 +8564,29 @@ html[data-animations="off"] .emoji-picker-big { animation: none; }
     transition: transform 0.15s ease;
 }
 .emoji-field:active { transform: scale(0.94); }
+
+/* ============================================
+   TASTIERA DI iOS (#45, src/utils/keyboardAware.js)
+   Mentre si scrive l'app occupa solo lo spazio sopra la tastiera, la barra in basso si nasconde
+   e la finestra aperta si adatta a quello spazio scorrendo al suo interno.
+   ============================================ */
+html[data-keyboard="open"],
+html[data-keyboard="open"] body,
+html[data-keyboard="open"] #root,
+html[data-keyboard="open"] .app-container {
+    height: var(--kb-vvh, 100%) !important;
+    min-height: 0 !important;
+    max-height: var(--kb-vvh, 100%) !important;
+    overflow: hidden !important;
+}
+html[data-keyboard="open"] .app-bottom-nav {
+    display: none !important;
+}
+html[data-keyboard="open"] .kb-overlay {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    align-items: center !important;
+}
+html[data-keyboard="open"] .kb-overlay > * {
+    max-height: 100% !important;
+}

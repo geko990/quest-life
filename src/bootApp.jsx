@@ -6,6 +6,7 @@ import App from './App.jsx';
 import RootErrorBoundary from './components/RootErrorBoundary';
 import './index.css';
 import { initPWA } from './utils/pwaManager';
+import { initKeyboardAware } from './utils/keyboardAware';
 
 export default function bootApp() {
   ReactDOM.createRoot(document.getElementById('root')).render(
@@ -17,4 +18,6 @@ export default function bootApp() {
   );
   // Initialize PWA Service Worker & update monitoring
   initPWA();
+  // Tastiera di iOS: l'app si adatta allo spazio sopra la tastiera invece di scorrere tutta (#45)
+  initKeyboardAware();
 }
