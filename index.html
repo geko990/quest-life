@@ -69,7 +69,8 @@
        l'anello si riempie (0,5 s, 0,38 s se l'avvio è stato lungo), lampo dorato (0,15 s) e uscita (0,34 s).
        Durata minima di tutta la sequenza: 1,2 s (scelta dell'utente, solo all'avvio a freddo).
        Riapertura entro 10 minuti, Animazioni spente o "Riduci movimento": immagine ferma, nessuna animazione.
-       Colore di sfondo: quello del tema dell'app (salvato da App.jsx in ql_boot_bg), notte se manca. -->
+       Colori fissi del marchio (sfondo notte), uguali all'immagine di avvio di iOS: così dal tocco
+       sull'icona all'animazione non c'è nessuno stacco, qualunque sia il tema dell'app. -->
   <style>
     html, body { background: #0f0f1a; }
     #ql-boot {
@@ -82,7 +83,6 @@
       display: flex; align-items: center; justify-content: center;
       -webkit-user-select: none; user-select: none;
     }
-    #ql-boot.qb-light { --qb-track: rgba(124, 58, 237, 0.16); --qb-word: #3b2a6b; }
     #ql-boot .qb-stack { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 7); transform: translateY(calc(var(--u) * -2)); }
     #ql-boot .qb-emblem { position: relative; width: calc(var(--u) * 44); height: calc(var(--u) * 44); }
     #ql-boot .qb-track { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -134,12 +134,6 @@
       var QUIET_WINDOW = 10 * 60 * 1000; // riaperta entro 10 minuti: niente animazione
       var quiet = false;
       try {
-        var bg = localStorage.getItem('ql_boot_bg');
-        if (bg && /^(#|rgb)/.test(bg)) {
-          boot.style.setProperty('--qb-bg', bg);
-          document.documentElement.style.background = bg;
-          if (localStorage.getItem('ql_boot_mode') === 'light') boot.classList.add('qb-light');
-        }
         var lastSeen = parseInt(localStorage.getItem('ql_last_seen') || '0', 10);
         if (lastSeen && Date.now() - lastSeen < QUIET_WINDOW) quiet = true;
         if (localStorage.getItem('ql_anim') === 'off') quiet = true;
@@ -183,6 +177,56 @@
       };
       // Rete di sicurezza: se l'app non risponde, l'apertura non resta mai sopra lo schermo
       setTimeout(function () { window.__qlBootDone(); }, 8000);
+    })();
+  </script>
+  <script>
+    // Immagine di avvio di iOS su misura per questo schermo (#41).
+    // iOS mostra un'immagine ferma dal tocco sull'icona finché la pagina non compare, ma solo se ne trova
+    // una della misura esatta dello schermo (con lo "Zoom schermo" le misure cambiano). Qui la disegniamo
+    // al volo, identica al primo fotogramma dell'apertura, e la offriamo a iOS: la legge quando si fa
+    // "Aggiungi alla schermata Home" da Safari. Le immagini fisse in splash/ restano come riserva.
+    (function () {
+      var standalone = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      if (standalone) return; // dentro l'app installata non serve
+      var img = document.querySelector('#ql-boot .qb-tile img');
+      var src = img && img.src;
+      if (!src) return;
+      var make = function () {
+        try {
+          var dpr = window.devicePixelRatio || 1;
+          var sw = Math.min(screen.width, screen.height), sh = Math.max(screen.width, screen.height);
+          var W = Math.round(sw * dpr), H = Math.round(sh * dpr);
+          var c = document.createElement('canvas'); c.width = W; c.height = H;
+          var g = c.getContext('2d');
+          var icon = new Image();
+          icon.onload = function () {
+            // stessa geometria di #ql-boot: --u = min(1vw, 0.6vh)
+            var u = Math.min(W / 100, 0.6 * H / 100);
+            var E = 44 * u, cx = W / 2;
+            var cy = H / 2 - 2 * u - (E + 7 * u + 5.4 * u) / 2 + E / 2;
+            g.fillStyle = '#0f0f1a'; g.fillRect(0, 0, W, H);
+            g.beginPath(); g.arc(cx, cy, 0.47 * E, 0, Math.PI * 2);
+            g.lineWidth = 0.032 * E; g.strokeStyle = 'rgba(167, 139, 250, 0.14)'; g.stroke();
+            var r = 0.42 * E;
+            g.save();
+            g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 28 * dpr; g.shadowOffsetY = 10 * dpr;
+            g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#0a0915'; g.fill();
+            g.restore();
+            g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.clip();
+            g.drawImage(icon, cx - r, cy - r, 2 * r, 2 * r); g.restore();
+            g.beginPath(); g.arc(cx, cy, r - dpr / 2, 0, Math.PI * 2);
+            g.lineWidth = dpr; g.strokeStyle = 'rgba(167, 139, 250, 0.14)'; g.stroke();
+            var link = document.createElement('link');
+            link.rel = 'apple-touch-startup-image';
+            link.href = c.toDataURL('image/png');
+            document.head.appendChild(link);
+          };
+          icon.src = src;
+        } catch (e) {}
+      };
+      // dopo l'avvio, quando il telefono è libero
+      window.addEventListener('load', function () { setTimeout(make, 1500); });
     })();
   </script>
   <div id="root"></div>
