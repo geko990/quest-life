@@ -1,4 +1,4 @@
-// Tastiera di iOS (#45).
+// Tastiera di iOS (#47).
 // Nelle app web iOS non restringe lo schermo quando compare la tastiera: fa scorrere in su l'intera
 // pagina (barra in basso compresa) finché il campo non è visibile. Qui si fa come un'app nativa:
 // - mentre si scrive l'app occupa solo lo spazio sopra la tastiera (attributo data-keyboard="open"

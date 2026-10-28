@@ -348,7 +348,7 @@ for (const f of ['sw.js', 'version.json', 'manifest.json', 'icon.png']) {
 }
 report(`Versione pubblicata: ${fs.readFileSync('dist/version.json', 'utf8').replace(/\s+/g, ' ')}`);
 
-// Tastiera di iOS (#45): iOS non restringe la pagina, riduce solo lo "spazio visibile" (visualViewport).
+// Tastiera di iOS (#47): iOS non restringe la pagina, riduce solo lo "spazio visibile" (visualViewport).
 // Lo si simula con un visualViewport finto: aprendo un campo nella finestra Giornate tipo l'app deve
 // restare entro lo spazio sopra la tastiera, senza barra in basso, con il campo in vista.
 try {

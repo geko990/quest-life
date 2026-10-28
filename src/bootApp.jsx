@@ -18,6 +18,6 @@ export default function bootApp() {
   );
   // Initialize PWA Service Worker & update monitoring
   initPWA();
-  // Tastiera di iOS: l'app si adatta allo spazio sopra la tastiera invece di scorrere tutta (#45)
+  // Tastiera di iOS: l'app si adatta allo spazio sopra la tastiera invece di scorrere tutta (#47)
   initKeyboardAware();
 }

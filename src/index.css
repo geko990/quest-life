@@ -8566,7 +8566,7 @@ html[data-animations="off"] .emoji-picker-big { animation: none; }
 .emoji-field:active { transform: scale(0.94); }
 
 /* ============================================
-   TASTIERA DI iOS (#45, src/utils/keyboardAware.js)
+   TASTIERA DI iOS (#47, src/utils/keyboardAware.js)
    Mentre si scrive l'app occupa solo lo spazio sopra la tastiera, la barra in basso si nasconde
    e la finestra aperta si adatta a quello spazio scorrendo al suo interno.
    ============================================ */
