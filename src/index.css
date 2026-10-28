@@ -148,55 +148,66 @@ textarea,
     font-family: var(--font-main);
 }
 
-/* --- CYBERPUNK (Tron / Cyberdog): contorni al neon netti e luminosi --- */
+/* --- CYBERPUNK: giallo e viola come nel gioco Cyberpunk 2077, contorni netti e luminosi ---
+   --neon = colore delle linee, --neon-rgb = colore dell'alone (in chiaro le linee sono nere e l'alone viola).
+   Il colore principale è sempre il viola del tema, qualunque accento sia scelto nelle Opzioni. */
 [data-theme="futuristic"] {
-    --neon: #19e6ff;
-    --neon-2: #ff2bd6;
-    --neon-rgb: 25, 230, 255;
+    --cp-yellow: #fcee0a;
+    --cp-violet: #9d3cff;
     --neon-line: 2px;
-    --radar-ring: rgba(var(--neon-rgb), 0.4);
+}
+[data-theme="futuristic"][data-accent] {
+    --accent-primary: #9d3cff;
+    --accent-secondary: #c77dff;
+    --accent-light: #efe0ff;
+    --accent-gradient: linear-gradient(135deg, #7b2cbf 0%, #b44cff 100%);
+    --xp-bar: linear-gradient(90deg, #9d3cff 0%, #fcee0a 100%);
 }
 
 [data-theme="futuristic"][data-mode="dark"] {
-    --bg-primary: #000307;
-    --bg-secondary: #020c16;
-    --bg-card: rgba(0, 8, 16, 0.92);
-    --bg-main: #000307;
-    --text-primary: #e8fcff;
-    --text-secondary: #7fefff;
-    --text-main: #e8fcff;
-    --text-muted: #4f93a6;
-    --glass-bg: rgba(0, 6, 12, 0.94);
+    --neon: var(--cp-yellow);
+    --neon-rgb: 252, 238, 10;
+    --radar-ring: rgba(157, 60, 255, 0.55);
+    --bg-primary: #07030d;
+    --bg-secondary: #120821;
+    --bg-card: rgba(14, 6, 26, 0.92);
+    --bg-main: #07030d;
+    --text-primary: #fffbe0;
+    --text-secondary: #fcee0a;
+    --text-main: #fffbe0;
+    --text-muted: #9a86b8;
+    --glass-bg: rgba(12, 5, 22, 0.94);
     --glass-border: var(--neon);
-    --glass-shadow: 0 0 0 0.5px var(--neon), 0 0 10px rgba(var(--neon-rgb), 0.75), 0 0 26px rgba(var(--neon-rgb), 0.28), inset 0 0 16px rgba(var(--neon-rgb), 0.16);
-    --track: rgba(var(--neon-rgb), 0.16);
-    background-color: #000307;
+    --glass-shadow: 0 0 0 0.5px var(--neon), 0 0 9px rgba(var(--neon-rgb), 0.6), 0 0 24px rgba(157, 60, 255, 0.35), inset 0 0 16px rgba(157, 60, 255, 0.18);
+    --track: rgba(157, 60, 255, 0.22);
+    background-color: #07030d;
     background-size: 100% 100%, 32px 32px, 32px 32px;
     background-image:
-        radial-gradient(120% 60% at 50% 110%, rgba(var(--neon-rgb), 0.16), transparent 60%),
-        linear-gradient(to right, rgba(var(--neon-rgb), 0.09) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(var(--neon-rgb), 0.09) 1px, transparent 1px);
+        radial-gradient(120% 60% at 50% 110%, rgba(157, 60, 255, 0.28), transparent 60%),
+        linear-gradient(to right, rgba(157, 60, 255, 0.13) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(157, 60, 255, 0.13) 1px, transparent 1px);
 }
 
 [data-theme="futuristic"][data-mode="light"] {
-    --neon: #00a9cc;
-    --neon-rgb: 0, 169, 204;
-    --bg-primary: #eafbff;
-    --bg-secondary: #f6feff;
-    --bg-card: #ffffff;
-    --bg-main: #eafbff;
-    --text-primary: #031c26;
-    --text-secondary: #04637a;
-    --text-main: #031c26;
-    --text-muted: #4a8191;
-    --glass-bg: rgba(255, 255, 255, 0.96);
+    --neon: #14061f;
+    --neon-rgb: 123, 44, 191;
+    --radar-ring: rgba(20, 6, 31, 0.35);
+    --bg-primary: #fcee0a;
+    --bg-secondary: #fff7a8;
+    --bg-card: #fffbd6;
+    --bg-main: #fcee0a;
+    --text-primary: #14061f;
+    --text-secondary: #4a1d75;
+    --text-main: #14061f;
+    --text-muted: #6b5a2a;
+    --glass-bg: rgba(255, 251, 214, 0.97);
     --glass-border: var(--neon);
-    --glass-shadow: 0 0 0 0.5px var(--neon), 0 0 10px rgba(var(--neon-rgb), 0.35), 4px 4px 0 rgba(var(--neon-rgb), 0.16);
-    --track: rgba(var(--neon-rgb), 0.16);
+    --glass-shadow: 4px 4px 0 #7b2cbf;
+    --track: rgba(20, 6, 31, 0.14);
     background-size: 32px 32px;
     background-image:
-        linear-gradient(to right, rgba(var(--neon-rgb), 0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(var(--neon-rgb), 0.12) 1px, transparent 1px);
+        linear-gradient(to right, rgba(20, 6, 31, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 6, 31, 0.07) 1px, transparent 1px);
 }
 
 /* Schede e riquadri: linea più spessa e luminosa */
@@ -214,6 +225,11 @@ textarea,
     border-top: var(--neon-line) solid var(--neon) !important;
     box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.45) !important;
 }
+[data-theme="futuristic"][data-mode="dark"] .app-title {
+    background: none !important;
+    -webkit-text-fill-color: var(--cp-yellow) !important;
+    color: var(--cp-yellow) !important;
+}
 [data-theme="futuristic"][data-mode="dark"] .app-title,
 [data-theme="futuristic"][data-mode="dark"] h1,
 [data-theme="futuristic"][data-mode="dark"] h2,
@@ -224,7 +240,7 @@ textarea,
     box-shadow: 0 0 0 1px var(--neon), 0 0 14px rgba(var(--neon-rgb), 0.55) !important;
 }
 
-/* Il cerchio dell'Eroe al centro della barra: anello di luce */
+/* Avatar e serie in alto: anello di luce */
 [data-theme="futuristic"] .header-avatar-frame,
 [data-theme="futuristic"] .streak-circle {
     box-shadow: 0 0 0 2px var(--neon), 0 0 14px rgba(var(--neon-rgb), 0.7) !important;
