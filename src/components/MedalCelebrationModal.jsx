@@ -1,4 +1,5 @@
 import React from 'react';
+import { medalDisplayName } from '../utils/medalSummary';
 
 import { _t } from '../i18n';
 export default function MedalCelebrationModal({ medal: propMedal, starCounts: propStarCounts, celebrationData, onClose, onViewDetails }) {
@@ -73,7 +74,7 @@ export default function MedalCelebrationModal({ medal: propMedal, starCounts: pr
           {_t("🏆 MEDAGLIA MENSILE CONQUISTATA!")}</div>
 
         <h2 style={{ fontSize: '20px', fontWeight: '800', margin: '0 0 8px 0', color: '#ffffff' }}>
-          {medal.name}
+          {medalDisplayName(medal)}
         </h2>
 
         <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.4', marginBottom: '20px' }}>

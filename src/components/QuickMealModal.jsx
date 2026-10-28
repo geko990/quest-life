@@ -123,7 +123,7 @@ export default function QuickMealModal({
       setOnlineResults(filteredResults);
     } catch (err) {
       console.error('Online food search failed:', err);
-      setOnlineError('Ricerca online momentaneamente non disponibile.');
+      setOnlineError(_t("Ricerca online momentaneamente non disponibile."));
     } finally {
       setIsSearchingOnline(false);
     }

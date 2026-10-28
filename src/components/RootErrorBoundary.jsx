@@ -58,7 +58,7 @@ export default class RootErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      const errMsg = this.state.error?.message || String(this.state.error || 'Errore imprevisto di esecuzione');
+      const errMsg = this.state.error?.message || String(this.state.error || _t("Errore imprevisto di esecuzione"));
       const errStack = this.state.error?.stack || this.state.errorInfo?.componentStack || '';
 
       return (

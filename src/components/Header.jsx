@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES, LEVEL_CAP } from '../utils/constants';
 
-import { _t, dayShort } from '../i18n';
+import { _t, dayShort, monthLong } from '../i18n';
+import { computeMedalSummary, medalDisplayName, medalMonthYear } from '../utils/medalSummary';
 export default function Header({
   player,
   setPlayer,
@@ -38,7 +39,7 @@ export default function Header({
     for (const t of TITLES) {
       if (player.level >= t.level) title = t.title;
     }
-    return title;
+    return _t(title);
   };
 
   // Check if streak was active today
@@ -47,118 +48,23 @@ export default function Header({
 
   // Monthly challenge formatting
   const getMonthName = (monthId) => {
-    if (!monthId) return 'Mese';
+    if (!monthId) return _t("Mese");
     const [, month] = monthId.split('-');
-    const monthNames = [
-      "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-      "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
-    ];
-    return monthNames[parseInt(month) - 1] || 'Mese';
+    return monthLong(parseInt(month, 10) - 1) || _t("Mese");
   };
 
-  // Medal summary calculation helper
+  // Riepilogo della medaglia: calcolato dai dati vivi, con la copia "stampata" per ciò che è stato cancellato (#48)
   const getMedalSummaryData = (medal) => {
-    if (!medal) return null;
-
-    let monthPrefix = '';
-    if (medal.id && medal.id.includes('-') && medal.id.length === 7) {
-      monthPrefix = medal.id;
-    } else if (medal.earnedDate && medal.earnedDate.length >= 7) {
-      monthPrefix = medal.earnedDate.substring(0, 7);
-    } else {
-      const d = new Date();
-      const yr = d.getFullYear();
-      const mo = String(d.getMonth() + 1).padStart(2, '0');
-      monthPrefix = `${yr}-${mo}`;
-    }
-
-    const [yearStr, monthNumStr] = monthPrefix.split('-');
-    const monthNames = [
-      "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-      "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
-    ];
-    const monthName = monthNames[parseInt(monthNumStr || '1') - 1] || 'Mese';
-    const displayMonthYear = `${monthName} ${yearStr || ''}`.trim();
-
-    // 1. Month XP Logs & Total XP
-    const monthLogs = (xpLog || []).filter(
-      log => log.date && log.date.startsWith(monthPrefix) && log.amount > 0
-    );
-    const totalMonthXp = monthLogs.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-
-    // 2. Most Developed Attribute/Ability (Emoji & Stat Name)
-    const statXpMap = {};
-    monthLogs.forEach(log => {
-      if (log.statId) {
-        statXpMap[log.statId] = (statXpMap[log.statId] || 0) + log.amount;
-      }
-    });
-
-    let topStatId = null;
-    let maxStatXp = 0;
-    Object.entries(statXpMap).forEach(([sId, xp]) => {
-      if (xp > maxStatXp) {
-        maxStatXp = xp;
-        topStatId = sId;
-      }
-    });
-    const topStatObj = (stats || []).find(s => s.id === topStatId);
-
-    // 3. Most Respected Habit
-    const habitCountMap = {};
-    Object.keys(completionLog || {}).forEach(dateStr => {
-      if (dateStr.startsWith(monthPrefix)) {
-        const list = completionLog[dateStr]?.habits || [];
-        list.forEach(hId => {
-          habitCountMap[hId] = (habitCountMap[hId] || 0) + 1;
-        });
-      }
-    });
-
-    let topHabitId = null;
-    let maxHabitCount = 0;
-    Object.entries(habitCountMap).forEach(([hId, cnt]) => {
-      if (cnt > maxHabitCount) {
-        maxHabitCount = cnt;
-        topHabitId = hId;
-      }
-    });
-    const topHabitObj = (habits || []).find(h => h.id === topHabitId);
-
-    // 4. Top 10 Most Important Tasks (Highest Stars) Completed during Month
-    const completedOneshotIdsInMonth = new Set();
-    Object.keys(completionLog || {}).forEach(dateStr => {
-      if (dateStr.startsWith(monthPrefix)) {
-        const osList = completionLog[dateStr]?.oneshots || [];
-        osList.forEach(id => completedOneshotIdsInMonth.add(id));
-      }
-    });
-
-    const monthOneshots = (oneshots || []).filter(o => {
-      if (!o.completed) return false;
-      if (completedOneshotIdsInMonth.has(o.id)) return true;
-      if (o.dailyPlanDate && o.dailyPlanDate.startsWith(monthPrefix)) return true;
-      if (o.createdAt && o.createdAt.startsWith(monthPrefix)) return true;
-      return false;
-    });
-
-    monthOneshots.sort((a, b) => {
-      const starsA = a.difficulty !== undefined ? a.difficulty : (a.stars || 1);
-      const starsB = b.difficulty !== undefined ? b.difficulty : (b.stars || 1);
-      if (starsB !== starsA) return starsB - starsA;
-      return (a.name || '').localeCompare(b.name || '');
-    });
-
-    const top10Tasks = monthOneshots.slice(0, 10);
-
+    const sum = computeMedalSummary(medal, { xpLog, completionLog, habits, oneshots, stats });
+    if (!sum) return null;
     return {
-      displayMonthYear,
-      totalMonthXp,
-      topStatObj,
-      maxStatXp,
-      topHabitObj,
-      maxHabitCount,
-      top10Tasks
+      displayMonthYear: medalMonthYear(medal),
+      totalMonthXp: sum.totalMonthXp,
+      topStatObj: sum.topStat,
+      maxStatXp: sum.maxStatXp,
+      topHabitObj: sum.topHabit,
+      maxHabitCount: sum.maxHabitCount,
+      top10Tasks: sum.top10
     };
   };
 
@@ -188,34 +94,34 @@ export default function Header({
 
     // Determine Mood & Encouragement level based on 7-day habits completed
     let moodEmoji = '🌱';
-    let moodTitle = 'Nuovo Inizio!';
-    let moodDesc = 'Prenditi il tuo tempo. Le abitudini sono qui per aiutarti quando vuoi tu, senza alcuna ansia o pressione.';
-    let moodTag = 'Tranquillo';
+    let moodTitle = _t("Nuovo Inizio!");
+    let moodDesc = _t("Prenditi il tuo tempo. Le abitudini sono qui per aiutarti quando vuoi tu, senza alcuna ansia o pressione.");
+    let moodTag = _t("Tranquillo");
     let moodColor = '#8b5cf6';
 
     if (totalHabits7Days >= 14) {
       moodEmoji = '🥳';
-      moodTitle = 'Costanza Straordinaria!';
-      moodDesc = 'Stai mantenendo una regolarità fantastica con le tue abitudini quotidiane! Continua così!';
-      moodTag = 'Super Costante';
+      moodTitle = _t("Costanza Straordinaria!");
+      moodDesc = _t("Stai mantenendo una regolarità fantastica con le tue abitudini quotidiane! Continua così!");
+      moodTag = _t("Super Costante");
       moodColor = '#f59e0b';
     } else if (totalHabits7Days >= 7) {
       moodEmoji = '😄';
-      moodTitle = 'Ottimo Ritmo!';
-      moodDesc = 'Stai seguendo con successo le tue abitudini principali. Ottimo lavoro, stai procedendo benissimo!';
-      moodTag = 'Attivo';
+      moodTitle = _t("Ottimo Ritmo!");
+      moodDesc = _t("Stai seguendo con successo le tue abitudini principali. Ottimo lavoro, stai procedendo benissimo!");
+      moodTag = _t("Attivo");
       moodColor = '#3b82f6';
     } else if (totalHabits7Days >= 3) {
       moodEmoji = '🙂';
-      moodTitle = 'Passo Sereno!';
-      moodDesc = 'Ti stai prendendo cura delle tue abitudini con calma e senza fretta. Ogni singola abitudine conta!';
-      moodTag = 'Costante';
+      moodTitle = _t("Passo Sereno!");
+      moodDesc = _t("Ti stai prendendo cura delle tue abitudini con calma e senza fretta. Ogni singola abitudine conta!");
+      moodTag = _t("Costante");
       moodColor = '#10b981';
     } else {
       moodEmoji = '🌱';
-      moodTitle = 'Nuovo Inizio!';
-      moodDesc = 'Zero ansia né pressione. Il bello delle abitudini è riprenderle con serenità quando ti senti pronto!';
-      moodTag = 'Relax';
+      moodTitle = _t("Nuovo Inizio!");
+      moodDesc = _t("Zero ansia né pressione. Il bello delle abitudini è riprenderle con serenità quando ti senti pronto!");
+      moodTag = _t("Relax");
       moodColor = '#8b5cf6';
     }
 
@@ -456,7 +362,7 @@ export default function Header({
                     return (
                       <div
                         key={idx}
-                        title={_t("{0} - Touch per il riepilogo mensile", medal.name)}
+                        title={_t("{0} - Touch per il riepilogo mensile", medalDisplayName(medal))}
                         className="medal-item"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -665,7 +571,7 @@ export default function Header({
                     {selectedMedal.icon || '🏅'}
                   </div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    {selectedMedal.name || _t("Medaglia di {0}", summary.displayMonthYear)}
+                    {medalDisplayName(selectedMedal)}
                   </h3>
                   <div style={{ fontSize: '10px', color: 'var(--accent-gold, #f59e0b)', fontWeight: 'bold', marginTop: '1px' }}>
                     {_t("Sbloccata nel mese di {0}", summary.displayMonthYear)}
@@ -733,8 +639,8 @@ export default function Header({
                 ) : (
                   <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', minHeight: 0, paddingRight: '2px' }}>
                     {summary.top10Tasks.map((t, idx) => {
-                      const primaryStat = (stats || []).find(s => s.id === t.primaryTarget);
-                      const starsCount = t.difficulty !== undefined ? t.difficulty : (t.stars || 1);
+                      const primaryStat = t.statIcon ? { icon: t.statIcon, name: t.statName } : null;
+                      const starsCount = t.stars || 1;
 
                       return (
                         <div

@@ -348,6 +348,11 @@ try {
     sample.push(`${label}: ${(await page.locator('#root').innerText()).replace(/\s+/g, ' ').slice(0, 160)}`);
   }
   await shot('11-inglese-impostazioni');
+  // ranghi, nomi dei mesi e messaggi fissi devono essere tradotti (#48)
+  const enText = await page.locator('#root').innerText();
+  const leftover = ['Novizio', 'Recluta', 'Avventuriero', 'Esploratore', 'Veterano', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre', 'Nuovo Inizio', 'Costanza Straordinaria']
+    .filter((w) => new RegExp(`\\b${w}\\b`).test(enText));
+  if (leftover.length) throw new Error(`testi rimasti in italiano: ${leftover.join(', ')}`);
   report(`Inglese OK. ${sample.join(' || ')}`.slice(0, 900));
 } catch (e) {
   problems.push(`Gruppo 5 (inglese): ${e.message}`);

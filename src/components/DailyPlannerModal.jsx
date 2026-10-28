@@ -366,10 +366,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           gap: '8px',
           padding: isLandscape ? '0 14px 12px' : '0 14px 14px'
         }}>
-          {renderSlot('action', 'Es: Completare il report')}
-          {renderSlot('bonus', 'Es: Chiamare il medico')}
-          {renderSlot('movement', 'Es: Passeggiata 30min')}
-          {renderSlot('reaction', 'Es: Rispondere a 3 email')}
+          {renderSlot('action', _t("Es: Completare il report"))}
+          {renderSlot('bonus', _t("Es: Chiamare il medico"))}
+          {renderSlot('movement', _t("Es: Passeggiata 30min"))}
+          {renderSlot('reaction', _t("Es: Rispondere a 3 email"))}
         </div>
 
         {/* Barra in fondo come nelle altre finestre: bottone a tutta larghezza, poi risultato del dado */}

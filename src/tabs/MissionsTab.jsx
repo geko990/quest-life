@@ -500,7 +500,7 @@ export default function MissionsTab({
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {cleanName || tmpl.name}
+                          {_t(cleanName || tmpl.name)}
                         </h4>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', fontSize: '10px', color: 'var(--text-secondary)' }}>
                           <span style={{ background: 'var(--bg-secondary)', padding: '1px 6px', borderRadius: '6px', fontWeight: 'bold' }}>{_t("{0} GG", tmpl.duration)}</span>

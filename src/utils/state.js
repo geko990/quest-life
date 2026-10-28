@@ -1,5 +1,6 @@
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { calculateLevelFromXp, getXpForLevel } from './helpers.js';
+import { buildMedalSnapshot } from './medalSummary.js';
 
 export function getInitialState() {
   return {
@@ -538,6 +539,18 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       investments: [],
       customQuotesProxy: fallbackProxy
     };
+  }
+
+  // Medaglie: copia "stampata" del riepilogo per quelle che non l'hanno ancora (#48), così non perdono
+  // abitudini, task o attributi cancellati in seguito
+  const medalList = state.player?.monthlyChallenge?.medals;
+  if (Array.isArray(medalList) && medalList.some(m => m && !m.snapshot)) {
+    try {
+      const data = { xpLog: state.xpLog, completionLog: state.completionLog, habits: state.habits, oneshots: state.oneshots, stats: state.stats };
+      state.player.monthlyChallenge.medals = medalList.map(m => (m && !m.snapshot ? { ...m, snapshot: buildMedalSnapshot(m, data) } : m));
+    } catch (e) {
+      console.warn('Medal snapshot migration failed:', e);
+    }
   }
 
   return state;

@@ -4,6 +4,7 @@
 // - un piccolo "canale" di eventi a cui si abbona il livello grafico (CelebrationLayer)
 import { getXpForLevel, calculateLevelFromXp, getCumulativeXpForLevel } from './helpers';
 import { LEVEL_CAP, TITLES } from './constants';
+import { _t } from '../i18n';
 
 // Applica `amount` XP a un'abilità (livello + XP dentro il livello). Stessa regola di handleRewardXp.
 export function applyStatXp(level, xp, amount) {
@@ -37,7 +38,7 @@ export function playerProgress(totalXp) {
 export function titleForLevel(level) {
   let title = TITLES[0].title;
   for (const t of TITLES) if (level >= t.level) title = t.title;
-  return title;
+  return _t(title);
 }
 
 // Abitudini di oggi: stesse regole della scheda Abitudini (non bloccate, già create a quella data)

@@ -63,7 +63,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       }
       if (result.proteins !== null) {
         updates.baseProteins = result.proteins;
-        foundMsgParts.push(`${result.proteins}g proteine`);
+        foundMsgParts.push(_t("{0}g proteine", result.proteins));
       }
 
       if (foundMsgParts.length > 0) {
@@ -79,13 +79,13 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           }
           return updated;
         });
-        setOcrResultMsg(`✅ Estratti: ${foundMsgParts.join(' e ')} per 100g`);
+        setOcrResultMsg(_t("✅ Estratti: {0} per 100g", foundMsgParts.join(_t(" e "))));
       } else {
-        setOcrResultMsg('⚠️ Nessun valore chiaro individuato nella foto. Verifica i dati o riprova con una foto più nitida.');
+        setOcrResultMsg(_t("⚠️ Nessun valore chiaro individuato nella foto. Verifica i dati o riprova con una foto più nitida."));
       }
     } catch (err) {
       console.error('OCR Error:', err);
-      setOcrResultMsg('❌ Errore durante l\'analisi della foto. Riprova con un\'altra immagine.');
+      setOcrResultMsg(_t("❌ Errore durante l'analisi della foto. Riprova con un'altra immagine."));
     } finally {
       setOcrLoading(false);
       if (e.target) e.target.value = '';
@@ -1226,7 +1226,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 {tmpl.icon || '⚔️'}
               </div>
               <h3 style={{ margin: '0 0 6px 0', fontSize: '19px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                {cleanName || tmpl.name}
+                {_t(cleanName || tmpl.name)}
               </h3>
 
               {/* Stars, Stats & Duration */}
@@ -1408,7 +1408,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     </button>
                     {showOcrDebug && (
                       <pre className="mt-1 p-2 bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-xl text-[10px] text-text-secondary max-h-32 overflow-y-auto whitespace-pre-wrap font-mono select-all">
-                        {ocrRawText || '(Nessun testo rilevato)'}
+                        {ocrRawText || _t("(Nessun testo rilevato)")}
                       </pre>
                     )}
                   </div>
@@ -1730,9 +1730,9 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           if (log.source && log.source.trim() !== '' && log.source !== 'Azione RPG' && log.source !== 'Attività RPG') return log.source.trim();
 
           const statObj = (stats || []).find(s => s.id === log.statId);
-          if (statObj && statObj.name) return `Attività ${statObj.name}`;
+          if (statObj && statObj.name) return _t("Attività {0}", statObj.name);
 
-          return 'Attività RPG';
+          return _t("Attività RPG");
         };
 
         const lastXpEntry = (xpLog || [])
@@ -2359,7 +2359,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
   const getHeaderInfo = () => {
     const activeT = currentType || type;
-    const action = editData ? 'Modifica' : 'Crea';
+    const action = editData ? _t("Modifica") : _t("Crea");
     const names = {
       attribute: 'Attributo',
       ability: 'Abilità',
@@ -2380,7 +2380,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     if (activeT === 'health_water' || activeT === 'health_water_goal') return { emoji: '🥛', title: _t("Registro Acqua") };
     if (activeT === 'weight') return { emoji: '⚖️', title: _t("Statistiche Peso & Composizione") };
     if (activeT?.startsWith('health_')) return { emoji: '📊', title: _t("Aggiorna Dati") };
-    return { emoji: null, title: `${action} ${names[activeT] || 'Elemento'}` };
+    return { emoji: null, title: `${action} ${names[activeT] ? _t(names[activeT]) : _t("Elemento")}` };
   };
 
   const activeT = currentType || type;
@@ -2565,7 +2565,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   type="button"
                   className="modal-action-delete"
                   onClick={() => {
-                    if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                    if (confirm(_t("Sei sicuro di voler eliminare questo elemento?"))) {
                       onDelete(editData.id || editData);
                       onClose();
                     }

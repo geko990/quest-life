@@ -14,6 +14,7 @@ import FinancesTab from './tabs/FinancesTab';
 
 import { APP_VERSION } from './utils/constants';
 import { getInitialState, sanitizeState } from './utils/state';
+import { buildMedalSnapshot, snapshotMedals } from './utils/medalSummary';
 import { getGameDate, getGameDateObj, formatISO, calculateLevelFromXp, getXpForLevel, getCumulativeXpForLevel, getWeekIdentifier, getMonthIdentifier, forceUpdateApp, getMonthlyStarCounts, isMonthlyPyramidMet } from './utils/helpers';
 import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFile, saveAppStateToIndexedDB, loadAppStateFromIndexedDB, safeStringify } from './utils/storage';
 import { onUpdateAvailable } from './utils/pwaManager';
@@ -21,7 +22,7 @@ import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
 import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPrefs } from './utils/deadlines';
 
-import { setLanguage, _t } from './i18n';
+import { setLanguage, _t, monthLong } from './i18n';
 import { applyStatXp, titleForLevel, habitsProgress, dailyActionsProgress, celebrate } from './utils/celebrations';
 class TabErrorBoundary extends React.Component {
   constructor(props) {
@@ -555,12 +556,8 @@ export default function App() {
 
       // Check monthly medal milestone (50 points AND 5x 3*, 3x 4*, 2x 5*)
       if (nextMonthlyPoints >= target && pyramidMet && !medals.some(m => m.id === monthId)) {
-        const monthNames = [
-          "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-          "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
-        ];
         const [yr, moStr] = monthId.split('-');
-        const monthName = monthNames[parseInt(moStr) - 1] || 'Mese';
+        const monthName = monthLong(parseInt(moStr, 10) - 1) || _t("Mese");
 
         const monthLogs = (xpLog || []).filter(l => l.date && l.date.startsWith(monthId) && l.amount > 0);
         const statMap = {};
@@ -570,7 +567,7 @@ export default function App() {
 
         const newMedal = {
           id: monthId,
-          name: `Medaglia di ${monthName} ${yr}`,
+          name: _t("Medaglia di {0}", `${monthName} ${yr}`),
           description: _t("Obiettivo mensile e Piramide delle Difficoltà completati!"),
           icon: topStatObj?.icon || '🏅',
           topStatName: topStatObj?.name || 'Varie',
@@ -579,6 +576,7 @@ export default function App() {
           totalCompleted: nextMonthlyPoints
         };
 
+        newMedal.snapshot = buildMedalSnapshot(newMedal, { xpLog, completionLog, habits, oneshots, stats });
         medals.push(newMedal);
         setUnlockedMedalCelebration({ medal: newMedal, starCounts });
 
@@ -1482,21 +1480,41 @@ export default function App() {
     }
   };
 
+  // Prima di cancellare qualcosa le medaglie si "stampano" (nomi ed emoji di attributi, abitudini e task),
+  // così il loro riepilogo resta completo anche dopo la cancellazione (#48)
+  const freezeMedals = () => {
+    setPlayer(prev => {
+      const medals = prev?.monthlyChallenge?.medals;
+      if (!Array.isArray(medals) || medals.length === 0) return prev;
+      return {
+        ...prev,
+        monthlyChallenge: {
+          ...prev.monthlyChallenge,
+          medals: snapshotMedals(medals, { xpLog, completionLog, habits, oneshots, stats })
+        }
+      };
+    });
+  };
+
   const handleDeleteStat = (id) => {
+    freezeMedals();
     setStats(prev => prev.filter(s => s.id !== id));
   };
 
   const handleDeleteHabit = (id) => {
+    freezeMedals();
     setHabits(prev => prev.filter(h => h.id !== id));
     setDailyActions(prev => prev.filter(aId => aId !== id));
   };
 
   const handleDeleteOneshot = (id) => {
+    freezeMedals();
     setOneshots(prev => prev.filter(o => o.id !== id));
     setDailyActions(prev => prev.filter(aId => aId !== id));
   };
 
   const handleDeleteQuest = (id) => {
+    freezeMedals();
     setQuests(prev => prev.filter(q => q.id !== id));
     setDailyActions(prev => prev.filter(aId => aId !== id));
   };
@@ -1535,7 +1553,7 @@ export default function App() {
     const subquests = tmpl.generateSubquests();
     const newQuest = {
       id: 'quest_challenge_' + Date.now(),
-      name: tmpl.name,
+      name: _t(tmpl.name),
       description: tmpl.description,
       emoji: tmpl.icon || '🏆',
       difficulty: tmpl.stars || 3,

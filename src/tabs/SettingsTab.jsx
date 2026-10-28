@@ -112,7 +112,7 @@ export default function SettingsTab({
   const groupedXpLog = [];
   safeXpLog.forEach((entry) => {
     if (!entry) return;
-    const title = (entry.title || entry.reason || entry.name || entry.source || 'Attività completata').trim();
+    const title = (entry.title || entry.reason || entry.name || entry.source || _t("Attività completata")).trim();
     if (!title) return;
 
     // Filter out habits

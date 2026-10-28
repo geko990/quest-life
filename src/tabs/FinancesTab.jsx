@@ -1554,7 +1554,7 @@ export default function FinancesTab({
     if (!w.isFuture) {
       hWeekActivePointsData.push({
         id: w.id,
-        shortTitle: w.isCurrent ? `Oggi (${todayDayNumber})` : w.shortTitle,
+        shortTitle: w.isCurrent ? _t("Oggi ({0})", todayDayNumber) : w.shortTitle,
         title: w.isCurrent ? _t("Oggi ({0} {1})", todayDayNumber, formatMonthShort(selectedHistoryMonth)) : w.title,
         balance: w.balance,
         net: w.net,
