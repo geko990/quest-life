@@ -330,6 +330,14 @@ export default function App() {
     root.setAttribute('data-theme', themeName);
     root.setAttribute('data-mode', modeName);
     root.setAttribute('data-accent', activeAccent);
+    // L'apertura animata (index.html) si colora come il tema: salva lo sfondo per la prossima apertura
+    requestAnimationFrame(() => {
+      try {
+        const bg = getComputedStyle(root).getPropertyValue('--bg-primary').trim();
+        if (bg) localStorage.setItem('ql_boot_bg', bg);
+        localStorage.setItem('ql_boot_mode', modeName);
+      } catch (_) {}
+    });
     
     // Set theme color metadata
     // Il colore della barra di stato di iOS deve coincidere con quello della barra superiore dell'app,

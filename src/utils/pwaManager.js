@@ -96,7 +96,7 @@ export function initPWA() {
     }
   });
 
-  window.addEventListener('load', () => {
+  const registerSW = () => {
     // Register SW with updateViaCache: 'none' so browser never uses HTTP cache for sw.js
     navigator.serviceWorker
       .register('./sw.js', { updateViaCache: 'none' })
@@ -110,7 +110,10 @@ export function initPWA() {
       .catch((err) => {
         console.warn('[PWA] SW registration failed:', err);
       });
-  });
+  };
+  // L'app ora parte dopo la prima immagine (#41): l'evento 'load' può essere già passato
+  if (document.readyState === 'complete') registerSW();
+  else window.addEventListener('load', registerSW);
 
   // Periodic version check via version.json
   const checkVersion = async () => {

@@ -23,7 +23,7 @@ self.addEventListener('install', (event) => {
 // stanno in una cache a parte che sopravvive agli aggiornamenti, e si usano subito dal telefono.
 const STATIC_CACHE = 'ql-static-v1';
 const STATIC_MAX_ENTRIES = 60;
-const NAV_TIMEOUT_MS = 1200; // la pagina si chiede alla rete, ma senza aspettarla più di così
+const NAV_TIMEOUT_MS = 400; // la pagina si chiede alla rete, ma senza aspettarla più di così (prima 1,2 s: schermo nero)
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
