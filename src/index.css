@@ -8465,7 +8465,7 @@ html[data-animations="off"] .levelup-disc::after {
 .planner-dot { color: var(--text-muted, #6b7080); opacity: 0.6; font-size: 12px; }
 
 /* Selettore delle emoji (src/components/EmojiPickerSheet.jsx) */
-.emoji-picker-root { position: fixed; inset: 0; z-index: 100002; }
+.emoji-picker-root { position: fixed; inset: 0; z-index: 2147482000; } /* sopra a tutte le finestre dell app (alcune arrivano a 100010) */
 .emoji-picker-veil {
     position: absolute;
     inset: 0;
