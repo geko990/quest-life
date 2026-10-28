@@ -390,6 +390,12 @@ try {
   await p3.getByText('+ Nuova', { exact: true }).first().click();
   await p3.waitForTimeout(600);
   // Due prove: il primo campo (nome, in cima: era coperto dalla barra superiore) e l'ultimo (in fondo)
+  // una giornata tipo lunga (5 azioni), come quelle vere: la finestra è più alta dello spazio sopra la tastiera
+  for (let i = 0; i < 4; i++) {
+    await p3.getByText('+ Aggiungi azione', { exact: true }).first().click().catch(() => {});
+    await p3.waitForTimeout(150);
+  }
+  await p3.locator('body').click({ position: { x: 5, y: 5 }, trial: true }).catch(() => {});
   const fields = p3.locator('.modal-content input[type="text"], .modal-content input:not([type])');
   const results = [];
   const cases = [['primo', 0, false], ['ultimo', -1, false], ['primo-trattenuta', 0, true], ['ultimo-trattenuta', -1, true]];

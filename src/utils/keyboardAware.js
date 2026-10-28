@@ -23,12 +23,14 @@ function isTextField(el) {
 }
 
 // La sovrapposizione fissa a tutto schermo che contiene il campo (le finestre dell'app)
+// (su iPhone può essere trattenuta da un contenitore della pagina e quindi più bassa dello schermo:
+// conta che sia fissa e larga quanto l'app)
 function findOverlay(el) {
-  const minHeight = document.documentElement.clientHeight * 0.6;
+  const minWidth = Math.min(document.documentElement.clientWidth, 480) * 0.9;
   for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
-    if (n.classList.contains('kb-overlay')) return n; // già adattata (ora è più bassa)
+    if (n.classList.contains('kb-overlay')) return n; // già adattata
     const cs = getComputedStyle(n);
-    if (cs.position === 'fixed' && n.offsetHeight >= minHeight) return n;
+    if (cs.position === 'fixed' && n.offsetWidth >= minWidth && n.offsetHeight >= 120) return n;
   }
   return null;
 }
