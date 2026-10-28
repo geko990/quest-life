@@ -68,7 +68,25 @@ export function initKeyboardAware() {
       overlay.style.top = `${Math.round(vv.offsetTop)}px`;
       overlay.style.bottom = 'auto';
       overlay.style.height = `${Math.round(vv.height)}px`;
+      // Alcune finestre stanno sotto la barra superiore dell'app (es. Giornate tipo): in quel caso la
+      // finestra deve cominciare sotto la barra, altrimenti la sua parte alta (e il campo) resta coperta.
+      const inset = coveredTop(overlay);
+      if (inset > 0) {
+        overlay.style.top = `${Math.round(vv.offsetTop + inset)}px`;
+        overlay.style.height = `${Math.max(120, Math.round(vv.height - inset))}px`;
+      }
     }
+  };
+
+  // Altezza della barra superiore se sta SOPRA la finestra (cioè la copre), altrimenti 0
+  const coveredTop = (ov) => {
+    const header = document.querySelector('.app-header');
+    if (!header || ov.contains(header)) return 0;
+    const r = header.getBoundingClientRect();
+    if (r.height <= 0 || r.bottom <= 0) return 0;
+    const probe = document.elementFromPoint(r.left + r.width / 2, Math.max(0, r.bottom - 2));
+    if (!probe || ov.contains(probe)) return 0;
+    return Math.max(0, Math.round(r.bottom - vv.offsetTop));
   };
 
   const revealField = (el) => {
