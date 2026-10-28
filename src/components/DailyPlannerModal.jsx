@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getGameDate } from '../utils/helpers';
 
 import { _t } from '../i18n';
+import EmojiPickerSheet from './EmojiPickerSheet';
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false }) {
   const [slots, setSlots] = useState({
     action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
@@ -13,6 +14,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
   const [isRolling, setIsRolling] = useState(false);
   const [diceResult, setDiceResult] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [emojiFor, setEmojiFor] = useState(null); // slot di cui si sta scegliendo l'emoji
 
   useEffect(() => {
     if (isOpen) {
@@ -169,119 +171,77 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
     reaction: { title: _t("REAZIONE"), emoji: '🛡️', color: '#a855f7' }
   };
 
+  // Scelta di un task o di un passo di campagna già esistente per uno slot
+  const handlePickExisting = (key, val) => {
+    if (!val) return;
+    if (val.startsWith('oneshot-')) {
+      const targetId = val.replace('oneshot-', '');
+      const found = uncompletedOneshots.find(o => o.id === targetId);
+      if (found) {
+        releaseFromOtherSlots(key, { oneshotId: found.id });
+        handleSlotChange(key, 'name', found.name);
+        handleSlotChange(key, 'oneshotId', found.id);
+        handleSlotChange(key, 'questId', null);
+        handleSlotChange(key, 'subquestId', null);
+        if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
+        if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
+        if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
+      }
+    } else if (val.startsWith('quest-')) {
+      const found = activeCampaignMilestones.find(m => m.id === val);
+      if (found) {
+        releaseFromOtherSlots(key, { questId: found.questId, subquestId: found.subquestId });
+        handleSlotChange(key, 'name', found.name);
+        if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
+        handleSlotChange(key, 'oneshotId', null);
+        handleSlotChange(key, 'questId', found.questId);
+        handleSlotChange(key, 'subquestId', found.subquestId);
+        if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
+        if (found.statId) handleSlotChange(key, 'statId', found.statId);
+      }
+    }
+  };
+
+  const statLabel = (id) => {
+    const s = (stats || []).find(x => x.id === id);
+    return s ? `${s.icon} ${s.name}` : '';
+  };
+
   const renderSlot = (key, placeholder) => {
     const slot = slots[key];
     const theme = slotThemes[key];
+    const canPick = uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0;
 
+    // Tessera dell'azione: l'unico riquadro è il nome; emoji, stelle e caratteristiche sono "libere"
     return (
-      <div
-        style={{
-          padding: '6px 8px',
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--glass-border)',
-          borderRadius: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '3px'
-        }}
-      >
-        {/* Rigo 1: Categoria Colore (Senza Emoji duplicata) */}
-        <div style={{ fontSize: '10px', fontWeight: 'bold', color: theme.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          {_t(theme.title)}
-        </div>
+      <div className="planner-slot" style={{ '--c': theme.color }}>
+        <div className="planner-kind">{_t(theme.title)}</div>
 
-        {/* Rigo 2: Custom Emoji + Barra Nome + Emoji 📋 */}
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div className="planner-row">
           <button
             type="button"
-            onClick={() => {
-              const currentVal = slot.emoji || theme.emoji;
-              const chosen = window.prompt("Scegli o digita l'emoji per quest'azione:", currentVal);
-              if (chosen !== null && chosen.trim() !== '') {
-                handleSlotChange(key, 'emoji', chosen.trim());
-              }
-            }}
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--glass-border)',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-              boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
-            }}
-            title={_t("Tocca per scegliere l'emoji")}
+            className="planner-emoji"
+            onClick={() => setEmojiFor(key)}
+            aria-label={_t("Tocca per scegliere l'emoji")}
           >
             {slot.emoji || theme.emoji}
           </button>
 
           <input
             type="text"
+            className="planner-name"
             value={slot.name}
             onChange={(e) => handleSlotNameTyped(key, e.target.value)}
             placeholder={placeholder}
-            style={{
-              flex: 1,
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '8px',
-              padding: '4px 8px',
-              fontSize: '11px',
-              color: 'var(--text-primary)',
-              boxSizing: 'border-box',
-              height: '32px'
-            }}
           />
 
-          {(uncompletedOneshots.length > 0 || activeCampaignMilestones.length > 0) && (
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0, height: '32px' }}>
+          {canPick && (
+            <span className="planner-pick" title={_t("Scegli da Task esistenti o Campagne")}>
+              📋
               <select
                 value=""
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (!val) return;
-                  if (val.startsWith('oneshot-')) {
-                    const targetId = val.replace('oneshot-', '');
-                    const found = uncompletedOneshots.find(o => o.id === targetId);
-                    if (found) {
-                      releaseFromOtherSlots(key, { oneshotId: found.id });
-                      handleSlotChange(key, 'name', found.name);
-                      handleSlotChange(key, 'oneshotId', found.id);
-                      handleSlotChange(key, 'questId', null);
-                      handleSlotChange(key, 'subquestId', null);
-                      if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
-                      if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
-                      if (found.primaryTarget) handleSlotChange(key, 'statId', found.primaryTarget);
-                    }
-                  } else if (val.startsWith('quest-')) {
-                    const found = activeCampaignMilestones.find(m => m.id === val);
-                    if (found) {
-                      releaseFromOtherSlots(key, { questId: found.questId, subquestId: found.subquestId });
-                      handleSlotChange(key, 'name', found.name);
-                      if (found.emoji) handleSlotChange(key, 'emoji', found.emoji);
-                      handleSlotChange(key, 'oneshotId', null);
-                      handleSlotChange(key, 'questId', found.questId);
-                      handleSlotChange(key, 'subquestId', found.subquestId);
-                      if (found.difficulty) handleSlotChange(key, 'stars', found.difficulty);
-                      if (found.statId) handleSlotChange(key, 'statId', found.statId);
-                    }
-                  }
-                  e.target.value = "";
-                }}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  opacity: 0,
-                  cursor: 'pointer',
-                  width: '100%',
-                  height: '100%',
-                  zIndex: 2
-                }}
+                onChange={(e) => { const val = e.target.value; if (val) handlePickExisting(key, val); e.target.value = ""; }}
+                aria-label={_t("Scegli da Task esistenti o Campagne")}
               >
                 <option value="">{_t("📋 Attingi da Task o Campagne...")}</option>
                 {uncompletedOneshots.length > 0 && (
@@ -303,93 +263,45 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                   </optgroup>
                 )}
               </select>
-              <button
-                type="button"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--glass-border)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer'
-                }}
-                title={_t("Scegli da Task esistenti o Campagne")}
-              >
-                📋
-              </button>
-            </div>
+            </span>
           )}
         </div>
 
-        {/* Rigo 3: Stelline + Caratteristiche */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-          <div style={{ display: 'flex', gap: '1px', fontSize: '14px', lineHeight: 1, flexShrink: 0 }}>
+        <div className="planner-meta">
+          <div className="planner-stars">
             {[1, 2, 3, 4, 5].map(star => (
               <button
                 key={star}
                 type="button"
+                className={star <= slot.stars ? 'on' : ''}
                 onClick={() => handleSlotChange(key, 'stars', star)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  color: star <= slot.stars ? '#f59e0b' : 'var(--text-muted)'
-                }}
+                aria-label={_t("{0} stelle", star)}
               >
                 ★
               </button>
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
-            <select
-              className="planner-stat"
-              value={slot.statId}
-              onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
-              style={{
-                background: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '6px',
-                padding: '2px 4px',
-                fontSize: '9px',
-                fontWeight: 'bold',
-                height: '22px',
-                flex: '1 1 0', minWidth: 0, width: 'auto', maxWidth: '50%'
-              }}
-            >
+          <label className="planner-stat">
+            <span>{statLabel(slot.statId)}</span><i>▾</i>
+            <select value={slot.statId} onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}>
               {stats.map(s => (
                 <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
               ))}
             </select>
+          </label>
 
-            <select
-              className="planner-stat"
-              value={slot.secondaryStatId || ''}
-              onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
-              style={{
-                background: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '6px',
-                padding: '2px 4px',
-                fontSize: '9px',
-                height: '22px',
-                flex: '1 1 0', minWidth: 0, width: 'auto', maxWidth: '50%'
-              }}
-            >
+          <span className="planner-dot">·</span>
+
+          <label className="planner-stat sec">
+            <span>{slot.secondaryStatId ? statLabel(slot.secondaryStatId) : _t("+ Secondaria")}</span><i>▾</i>
+            <select value={slot.secondaryStatId || ''} onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}>
               <option value="">{_t("+ Sec (nessuno)")}</option>
               {stats.map(s => (
                 <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
               ))}
             </select>
-          </div>
+          </label>
         </div>
       </div>
     );
@@ -475,6 +387,17 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               {_t("🎲 Lancia un D10!")}</button>
           )}
         </div>
+      </div>
+
+      {/* Selettore delle emoji (fuori dalla finestra, sopra a tutto) */}
+      <div onClick={(e) => e.stopPropagation()}>
+        <EmojiPickerSheet
+          open={!!emojiFor}
+          emoji={emojiFor ? (slots[emojiFor].emoji || slotThemes[emojiFor].emoji) : ''}
+          color={emojiFor ? slotThemes[emojiFor].color : undefined}
+          onPick={(e) => { if (emojiFor) handleSlotChange(emojiFor, 'emoji', e); }}
+          onClose={() => setEmojiFor(null)}
+        />
       </div>
     </div>
   );

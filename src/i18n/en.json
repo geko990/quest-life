@@ -1334,5 +1334,10 @@
  "{0} è ora di livello {1}": "{0} is now level {1}",
  "{0} sale al livello {1}": "{0} reaches level {1}",
  "Nuovo titolo: {0}": "New title: {0}",
- "Tocca per continuare": "Tap to continue"
+ "Tocca per continuare": "Tap to continue",
+ "+ Secondaria": "+ Secondary",
+ "{0} stelle": "{0} stars",
+ "Scegli l'emoji": "Choose the emoji",
+ "Tocca per scrivere un'emoji": "Tap to type an emoji",
+ "Scrivi un'emoji": "Type an emoji"
 }
