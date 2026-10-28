@@ -8609,7 +8609,7 @@ html[data-keyboard="open"] .kb-overlay > * {
 .dt-steps-hint { font-size: 11px; font-weight: 500; color: var(--text-secondary); }
 .dt-steps { display: flex; flex-direction: column; gap: 6px; }
 .dt-step { display: flex; align-items: center; gap: 6px; border-radius: 10px; }
-.dt-time { width: 84px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
+.dt-time { width: 104px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
 .dt-title { flex: 1; min-width: 0; font-weight: 500; }
 .dt-step-delete {
   width: 28px; height: 28px; flex-shrink: 0; border: none; border-radius: 50%; cursor: pointer;

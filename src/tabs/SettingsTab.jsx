@@ -784,7 +784,7 @@ export default function SettingsTab({
             className="modal-content dt-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header dt-modal-head">
+            <div className="dt-modal-head">
               <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 {editingPreset.id ? _t("Modifica giornata tipo") : _t("Nuova giornata tipo")}
               </h3>
