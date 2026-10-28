@@ -5,6 +5,7 @@ import { useTouchReorder } from '../utils/useTouchReorder';
 import { getDueStatus, getDueLabel } from '../utils/deadlines';
 
 import { _t, getLocale } from '../i18n';
+import StatIcon from '../components/StatIcon';
 // Etichetta della scadenza (neutra: il colore è sull'intera tessera)
 function DuePill({ item, compact = false }) {
   return (
@@ -158,8 +159,8 @@ export default function MissionsTab({
                         </div>
                         <div className="card-meta">
                           <span className="card-stars">{'⭐'.repeat(starsCount)}</span>
-                          {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon}</span>}
-                          {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}>{secondaryStat.icon}</span>}
+                          {primaryStat && <span className="card-stat" title={primaryStat.name}><StatIcon stat={primaryStat} /></span>}
+                          {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}><StatIcon stat={secondaryStat} /></span>}
                           {o.dueDate && (
                             <DuePill item={o} compact />
                           )}
@@ -245,7 +246,7 @@ export default function MissionsTab({
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '10px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
                             {primaryStat && (
                               <span style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                                {primaryStat.icon} {primaryStat.name}
+                                <StatIcon stat={primaryStat} /> {primaryStat.name}
                               </span>
                             )}
                             {q.dueDate && (
@@ -504,7 +505,7 @@ export default function MissionsTab({
                         </h4>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px', fontSize: '10px', color: 'var(--text-secondary)' }}>
                           <span style={{ background: 'var(--bg-secondary)', padding: '1px 6px', borderRadius: '6px', fontWeight: 'bold' }}>{_t("{0} GG", tmpl.duration)}</span>
-                          {primaryStat && <span>• {primaryStat.icon} {primaryStat.name}</span>}
+                          {primaryStat && <span>• <StatIcon stat={primaryStat} /> {primaryStat.name}</span>}
                           <span>• {'⭐'.repeat(tmpl.stars || 3)}</span>
                         </div>
                       </div>

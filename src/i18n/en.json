@@ -1410,5 +1410,10 @@
  "Statistiche Peso": "Weight Stats",
  "Sostentamento di oggi": "Today's Nourishment",
  "Icone: Solar di 480 Design, licenza CC BY 4.0": "Icons: Solar by 480 Design, CC BY 4.0 license",
- "Crediti": "Credits"
+ "Crediti": "Credits",
+ "{0} (+{1} XP)": "{0} (+{1} XP)",
+ "Simbolo": "Symbol",
+ "Scegli il simbolo": "Choose the symbol",
+ "Lancia un D10!": "Roll a D10!",
+ "Pianifica la giornata di domani ➔": "Plan tomorrow ➔"
 }

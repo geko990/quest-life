@@ -5,6 +5,7 @@ import { useTouchReorder } from '../utils/useTouchReorder';
 import MarqueeText from '../components/MarqueeText';
 
 import { _t, dayShort } from '../i18n';
+import StatIcon from '../components/StatIcon';
 export default function HabitsTab({
   habits = [],
   setHabits,
@@ -231,8 +232,8 @@ export default function HabitsTab({
                       </div>
                       <div className="card-meta">
                         <span className="card-stars">{'⭐'.repeat(starsCount)}</span>
-                        {primaryStat && <span className="card-stat" title={primaryStat.name}>{primaryStat.icon}</span>}
-                        {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}>{secondaryStat.icon}</span>}
+                        {primaryStat && <span className="card-stat" title={primaryStat.name}><StatIcon stat={primaryStat} /></span>}
+                        {secondaryStat && <span className="card-stat" style={{ opacity: 0.6 }} title={secondaryStat.name}><StatIcon stat={secondaryStat} /></span>}
                       </div>
                     </div>
 

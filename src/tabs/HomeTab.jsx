@@ -3,6 +3,8 @@ import { getXpForLevel, getGameDate, getTomorrowGameDate } from '../utils/helper
 import MarqueeText from '../components/MarqueeText';
 
 import { _t } from '../i18n';
+import { statSolar, statEmoji, statColor } from '../utils/statIcons';
+import StatIcon from '../components/StatIcon';
 import Icon from '../components/Icon';
 const SLOT_CATEGORY_INFO = [
   { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
@@ -375,14 +377,18 @@ export default function HomeTab({
       const coords = getCoordinates(i, 1.22);
       return (
         <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={_t("{0}: {1} XP", s.name, rollingXp[s.id] || 0)}>
-          <text
-            x={coords.x}
-            y={coords.y + 9}
-            textAnchor="middle"
-            style={{ fontSize: '26px', userSelect: 'none' }}
-          >
-            {s.icon}
-          </text>
+          {statSolar(s) ? (
+            <Icon name={statSolar(s)} x={coords.x - 15} y={coords.y - 15} size="30" style={{ color: statColor(s) }} />
+          ) : (
+            <text
+              x={coords.x}
+              y={coords.y + 9}
+              textAnchor="middle"
+              style={{ fontSize: '26px', userSelect: 'none' }}
+            >
+              {statEmoji(s)}
+            </text>
+          )}
         </g>
       );
     });
@@ -695,7 +701,7 @@ export default function HomeTab({
                   >
                     {(stats || []).map(s => (
                       <option key={s.id} value={s.id} style={{ background: 'var(--bg-card)' }}>
-                        {s.icon || '⭐'} {s.name}
+                        {s.name}
                       </option>
                     ))}
                   </select>
@@ -752,7 +758,7 @@ export default function HomeTab({
             /* STANDARD TASKS LIST VIEW */
             todayActionsList.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', boxSizing: 'border-box' }}>
-                <div style={{ fontSize: '24px', marginBottom: '4px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
+                <div style={{ fontSize: '30px', marginBottom: '6px', color: 'var(--accent-primary)', display: 'flex', justifyContent: 'center' }}><Icon name="dice" /></div>
                 <button
                   type="button"
                   onClick={() => onOpenPlanner && onOpenPlanner()}
@@ -896,7 +902,8 @@ export default function HomeTab({
                   boxShadow: isTomorrowPlanned ? 'none' : '0 2px 10px rgba(124, 58, 237, 0.4)'
                 }}
               >
-                <span>{isTomorrowPlanned ? _t("✏️ Modifica pianificazione di domani") : _t("🎲 Pianifica la giornata di domani ➔")}</span>
+                {!isTomorrowPlanned && <Icon name="dice" variant="bold" size="15px" />}
+                <span>{isTomorrowPlanned ? _t("✏️ Modifica pianificazione di domani") : _t("Pianifica la giornata di domani ➔")}</span>
               </button>
             </div>
           )}
@@ -1091,7 +1098,7 @@ export default function HomeTab({
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: '10px', cursor: 'pointer', border: '1px solid var(--glass-border)' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '20px' }}>{s.icon}</span>
+                    <StatIcon stat={s} size="20px" />
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{s.name}</div>
                       <div style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{_t("{0} • Liv. {1}", s.type, s.level)}</div>

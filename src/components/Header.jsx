@@ -3,6 +3,7 @@ import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameD
 import { TITLES, LEVEL_CAP } from '../utils/constants';
 
 import { _t, dayShort, monthLong, playerDisplayName } from '../i18n';
+import StatIcon from './StatIcon';
 import { computeMedalSummary, medalDisplayName, medalMonthYear } from '../utils/medalSummary';
 export default function Header({
   player,
@@ -585,7 +586,7 @@ export default function Header({
                     <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>
                       {_t("🎯 Top Attributo")}</div>
                     <div style={{ fontSize: '24px', marginBottom: '2px' }}>
-                      {summary.topStatObj?.icon || '⭐'}
+                      {summary.topStatObj ? <StatIcon stat={summary.topStatObj} /> : '⭐'}
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {summary.topStatObj?.name || _t("Nessuno")}
@@ -669,7 +670,7 @@ export default function Header({
                             </span>
                             {primaryStat && (
                               <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }} title={primaryStat.name}>
-                                {primaryStat.icon}
+                                <StatIcon stat={primaryStat} />
                               </span>
                             )}
                           </div>

@@ -7,6 +7,7 @@ import ReminderSettings from '../components/ReminderSettings';
 import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } from '../components/settings/SettingsUI';
 
 import { _t, getLocale, playerDisplayName } from '../i18n';
+import StatIcon from '../components/StatIcon';
 import EmojiField from '../components/EmojiField';
 import { normalizeTime, sortSteps, suggestNextTime, cleanPreset } from '../utils/dayTemplates';
 export default function SettingsTab({
@@ -325,16 +326,13 @@ export default function SettingsTab({
           dateStr = '';
         }
       }
-      const statEmojis = (group.statIds || [])
-        .map(id => {
-          const s = (stats || []).find(st => st.id === id);
-          return s ? (s.icon || s.emoji) : null;
-        })
+      const groupStats = (group.statIds || [])
+        .map(id => (stats || []).find(st => st.id === id))
         .filter(Boolean);
       return (
         <SettingRow
           key={idx}
-          title={`${statEmojis.length > 0 ? statEmojis.join(' ') : '✨'} ${group.title}`}
+          title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{groupStats.map(st => <StatIcon key={st.id} stat={st} />)} {group.title}</span>}
           desc={dateStr}
         >
           <span className="opt-log-xp">{_t("+{0} XP", group.totalAmount)}</span>
