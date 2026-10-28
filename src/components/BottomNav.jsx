@@ -213,7 +213,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
         paddingTop: '4px',
         // Le etichette scendono nello spazio libero sopra la barra Home di iOS: recuperiamo qualche px
         paddingBottom: 'max(6px, calc(env(safe-area-inset-bottom, 0px) - 8px))',
-        boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
+        boxShadow: 'var(--bar-shadow-nav, 0 -4px 16px rgba(0, 0, 0, 0.08))',
         position: 'relative',
         zIndex: 50,
         flexShrink: 0,
