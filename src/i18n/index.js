@@ -50,3 +50,11 @@ const MONTHS_SHORT = {
 export const dayShort = (dayIndex) => DAYS_SHORT[currentLang][dayIndex];
 export const monthLong = (monthIndex) => MONTHS_LONG[currentLang][monthIndex];
 export const monthShort = (monthIndex) => MONTHS_SHORT[currentLang][monthIndex];
+
+// Nome del giocatore: quello predefinito ("Avventuriero", salvato nei dati di chi non l'ha cambiato)
+// si mostra nella lingua scelta; un nome scelto dall'utente resta com'è
+export const DEFAULT_PLAYER_NAME = 'Avventuriero';
+export const playerDisplayName = (name) => {
+  const n = (name || '').trim();
+  return !n || n === DEFAULT_PLAYER_NAME ? _t(DEFAULT_PLAYER_NAME) : n;
+};

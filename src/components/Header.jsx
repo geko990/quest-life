@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameDate } from '../utils/helpers';
 import { TITLES, LEVEL_CAP } from '../utils/constants';
 
-import { _t, dayShort, monthLong } from '../i18n';
+import { _t, dayShort, monthLong, playerDisplayName } from '../i18n';
 import { computeMedalSummary, medalDisplayName, medalMonthYear } from '../utils/medalSummary';
 export default function Header({
   player,
@@ -256,7 +256,7 @@ export default function Header({
                 )}
               </div>
               <div className="popup-details">
-                <h3 className="popup-name" id="popupName">{player.name}</h3>
+                <h3 className="popup-name" id="popupName">{playerDisplayName(player.name)}</h3>
                 <div className="popup-level-info">
                   <span className="popup-level">
                     {_t("Livello")}{" "}<span id="popupLevel">{player.level}</span>

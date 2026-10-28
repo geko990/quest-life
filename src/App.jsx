@@ -22,7 +22,7 @@ import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
 import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPrefs } from './utils/deadlines';
 
-import { setLanguage, _t, monthLong } from './i18n';
+import { setLanguage, _t, monthLong, playerDisplayName } from './i18n';
 import { applyStatXp, titleForLevel, habitsProgress, dailyActionsProgress, celebrate } from './utils/celebrations';
 class TabErrorBoundary extends React.Component {
   constructor(props) {
@@ -488,7 +488,7 @@ export default function App() {
       live.totalXp = (live.totalXp || 0) + amount;
       const afterLvl = calculateLevelFromXp(live.totalXp);
       if (afterLvl > beforeLvl) {
-        celebrate('levelup', { kind: 'player', icon: '🏆', name: player.name || _t("Avventuriero"), level: afterLvl, title: titleForLevel(afterLvl) });
+        celebrate('levelup', { kind: 'player', icon: '🏆', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl) });
       }
     } catch (e) { console.error(e); }
 

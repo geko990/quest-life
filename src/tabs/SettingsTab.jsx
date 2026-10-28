@@ -6,7 +6,7 @@ import UserManualModal from '../components/UserManualModal';
 import ReminderSettings from '../components/ReminderSettings';
 import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } from '../components/settings/SettingsUI';
 
-import { _t, getLocale } from '../i18n';
+import { _t, getLocale, playerDisplayName } from '../i18n';
 import EmojiField from '../components/EmojiField';
 import { normalizeTime, sortSteps, suggestNextTime, cleanPreset } from '../utils/dayTemplates';
 export default function SettingsTab({
@@ -359,12 +359,12 @@ export default function SettingsTab({
           type="button"
           className="opt-profile-name"
           onClick={() => {
-            const newName = window.prompt(_t("Modifica Nome Giocatore:"), safePlayer.name || 'Avventuriero');
+            const newName = window.prompt(_t("Modifica Nome Giocatore:"), playerDisplayName(safePlayer.name));
             if (newName !== null) updatePlayerName(newName);
           }}
           title={_t("Tocca per rinominare")}
         >
-          {safePlayer.name || _t("Avventuriero")}
+          {playerDisplayName(safePlayer.name)}
         </button>
         <button
           type="button"
