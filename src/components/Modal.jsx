@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 import { _t, getLocale } from '../i18n';
 import EmojiField from './EmojiField';
-import StatIconField from './StatIconField';
-import StatIcon from './StatIcon';
-import { statSolar } from '../utils/statIcons';
 export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge, onToggleSubquest, recentTaskTemplates = [] }) {
   if (!isOpen) return null;
 
@@ -169,7 +166,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
       // Default initial states based on currentType
       const activeT = currentType || type;
       if (activeT === 'attribute' || activeT === 'ability') {
-        setForm({ emoji: '⭐', solar: 'medal-ribbon', name: '', description: '', type: activeT, visible: true, level: 1, xp: 0 });
+        setForm({ emoji: '⭐', name: '', description: '', type: activeT, visible: true, level: 1, xp: 0 });
       } else if (activeT === 'habit') {
         setForm({
           emoji: '📜',
@@ -347,11 +344,11 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
           <div className="flex flex-col gap-4">
             <div className="flex gap-3">
               <div className="w-14">
-                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Simbolo")}</label>
-                <StatIconField
-                  value={form.solar || statSolar(form) || ''}
-                  onChange={(v) => handleChange({ target: { name: 'solar', value: v } })}
-                  className="w-full h-11 bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-2xl"
+                <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
+                <EmojiField
+                  value={form.emoji || form.icon || ''}
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl"
                 />
               </div>
               <div className="flex-1">
@@ -504,7 +501,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
                 </select>
               </div>
@@ -518,7 +515,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 >
                   <option value="">{_t("Nessuna")}</option>
                   {visibleStats.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
                 </select>
               </div>
@@ -624,7 +621,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
                 </select>
               </div>
@@ -638,7 +635,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 >
                   <option value="">{_t("Nessuna")}</option>
                   {visibleStats.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
                 </select>
               </div>
@@ -779,7 +776,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl px-5 pr-9 text-xs font-bold focus:border-accent-primary focus:outline-none"
                 >
                   {visibleStats.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
                 </select>
               </div>
@@ -793,7 +790,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 >
                   <option value="">{_t("Nessuna")}</option>
                   {visibleStats.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                   ))}
                 </select>
               </div>
@@ -917,12 +914,12 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                   {_t("+{0} XP", (currentQuest.difficulty || 3) * 35)}</span>
                 {primaryStat && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                    <StatIcon stat={primaryStat} /> {primaryStat.name}
+                    {primaryStat.icon} {primaryStat.name}
                   </span>
                 )}
                 {secondaryStat && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                    <StatIcon stat={secondaryStat} /> {secondaryStat.name}
+                    {secondaryStat.icon} {secondaryStat.name}
                   </span>
                 )}
                 {currentQuest.dueDate && (
@@ -1065,7 +1062,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🧠 Statistica Primaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    <StatIcon stat={primaryStat} /> {primaryStat.name}
+                    {primaryStat.icon} {primaryStat.name}
                   </span>
                 </div>
               )}
@@ -1073,7 +1070,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🛡️ Statistica Secondaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    <StatIcon stat={secondaryStat} /> {secondaryStat.name}
+                    {secondaryStat.icon} {secondaryStat.name}
                   </span>
                 </div>
               )}
@@ -1171,7 +1168,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🧠 Statistica Primaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                    <StatIcon stat={primaryStat} /> {primaryStat.name}
+                    {primaryStat.icon} {primaryStat.name}
                   </span>
                 </div>
               )}
@@ -1179,7 +1176,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>{_t("🛡️ Statistica Secondaria:")}</span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    <StatIcon stat={secondaryStat} /> {secondaryStat.name}
+                    {secondaryStat.icon} {secondaryStat.name}
                   </span>
                 </div>
               )}
@@ -1240,7 +1237,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 </span>
                 {primaryStat && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                    <StatIcon stat={primaryStat} /> {_t("{0} (+{1} XP)", primaryStat.name, (tmpl.stars || 3) * 35)}</span>
+                    {_t("{0} {1} (+{2} XP)", primaryStat.icon, primaryStat.name, (tmpl.stars || 3) * 35)}</span>
                 )}
                 <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
                   {_t("📅 {0} Giorni", tmpl.duration || 30)}</span>
@@ -1601,7 +1598,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
               >
                 {visibleStats.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                 ))}
               </select>
             </div>
@@ -1752,7 +1749,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, var(--bg-secondary) 100%)', padding: '28px 16px 20px 16px', borderRadius: '18px', border: '1.5px solid rgba(124, 58, 237, 0.35)', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
               {/* Emoji in alto (senza cerchio) — stessa intestazione dei dettagli di missioni e abitudini */}
               <div style={{ fontSize: '48px', lineHeight: '1', margin: '0 auto 6px auto', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.25))' }}>
-                <StatIcon stat={statData} />
+                {statData.icon || '⭐'}
               </div>
 
               {/* Nome e Descrizione */}
@@ -2323,7 +2320,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 pr-8 text-xs font-bold focus:border-accent-primary focus:outline-none"
               >
                 {visibleStats.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                 ))}
               </select>
             </div>

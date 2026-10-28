@@ -439,6 +439,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
 
   if (parsed.stats && Array.isArray(parsed.stats) && parsed.stats.length > 0) {
     state.stats = parsed.stats.map(stat => {
+      // Attributi creati dalla finestra prima della 266: l'emoji era solo in `emoji`, l'app mostra `icon`
+      if (!stat.icon && stat.emoji) stat = { ...stat, icon: stat.emoji };
       if (!stat.type) {
         return { ...stat, type: 'attribute' };
       }

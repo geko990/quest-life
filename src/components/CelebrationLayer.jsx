@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { _t } from '../i18n';
-import Icon from './Icon';
-
-// Simbolo di un attributo nelle celebrazioni (#53): icona Solar se c'è, altrimenti l'emoji
-const Sym = ({ o }) => (o && o.solar
-  ? <span style={{ display: 'inline-flex', verticalAlign: '-0.15em', color: o.color }}><Icon name={o.solar} variant="bold-duotone" /></span>
-  : (o ? o.icon : null));
 import { onCelebration, statProgress } from '../utils/celebrations';
 
 // Livello grafico delle celebrazioni, sopra tutta l'app:
@@ -154,7 +148,7 @@ export default function CelebrationLayer() {
         const i = rows.findIndex(r => r.statId === p.statId);
         if (i === -1) {
           const row = {
-            statId: p.statId, icon: p.icon, solar: p.solar, color: p.color, name: p.name,
+            statId: p.statId, icon: p.icon, name: p.name,
             fromPct: statProgress(p.fromLevel, p.fromXp), toPct, level: p.toLevel,
             levelsGained: p.toLevel - p.fromLevel, amount: p.amount, version: 1
           };
@@ -210,7 +204,7 @@ export default function CelebrationLayer() {
         <div className={`xp-toast ${xpLeaving ? 'leaving' : ''}`} aria-live="polite">
           {xpRows.map(r => (
             <div key={r.statId} className="xp-toast-row">
-              <span className="xp-toast-icon"><Sym o={r} /></span>
+              <span className="xp-toast-icon">{r.icon}</span>
               <div className="xp-toast-main">
                 <div className="xp-toast-head">
                   <span className="xp-toast-name">{_t(r.name)}</span>
@@ -234,7 +228,7 @@ export default function CelebrationLayer() {
             <div className="levelup-medal">
               <div className="levelup-rays" />
               <div className="levelup-disc">
-                <span className="levelup-icon"><Sym o={levelUp.main} /></span>
+                <span className="levelup-icon">{levelUp.main.icon}</span>
                 <span className="levelup-number">{levelUp.main.level}</span>
               </div>
             </div>
@@ -250,7 +244,7 @@ export default function CelebrationLayer() {
             {levelUp.others.length > 0 && (
               <div className="levelup-others">
                 {levelUp.others.map(o => (
-                  <span key={o.statId || 'player'} className="levelup-chip"><Sym o={o} /> {_t(o.name)} → {o.level}</span>
+                  <span key={o.statId || 'player'} className="levelup-chip">{o.icon} {_t(o.name)} → {o.level}</span>
                 ))}
               </div>
             )}

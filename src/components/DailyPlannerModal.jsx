@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { getGameDate } from '../utils/helpers';
 
 import { _t } from '../i18n';
-import Icon from './Icon';
-import StatIcon from './StatIcon';
 import EmojiPickerSheet from './EmojiPickerSheet';
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false }) {
   const [slots, setSlots] = useState({
@@ -206,7 +204,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
 
   const statLabel = (id) => {
     const s = (stats || []).find(x => x.id === id);
-    return s ? <><StatIcon stat={s} /> {s.name}</> : '';
+    return s ? `${s.icon} ${s.name}` : '';
   };
 
   const renderSlot = (key, placeholder) => {
@@ -288,7 +286,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             <span>{statLabel(slot.statId)}</span><i>▾</i>
             <select value={slot.statId} onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}>
               {stats.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
               ))}
             </select>
           </label>
@@ -300,7 +298,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             <select value={slot.secondaryStatId || ''} onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}>
               <option value="">{_t("+ Sec (nessuno)")}</option>
               {stats.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
               ))}
             </select>
           </label>
@@ -354,7 +352,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         {/* Header */}
         <div style={{ textAlign: 'center', padding: isLandscape ? '14px 16px 10px' : '20px 20px 14px' }}>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, letterSpacing: '0.2px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-flex', color: 'var(--accent-primary)' }}><Icon name="dice" /></span> {isTomorrow ? _t("PIANIFICA DOMANI") : _t("È IL TUO TURNO!")}
+            <span>🎲</span> {isTomorrow ? _t("PIANIFICA DOMANI") : _t("È IL TUO TURNO!")}
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '11px', letterSpacing: '0.6px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             {isTomorrow ? _t("Prepara le tue azioni in anticipo per domani") : _t("Pianifica le tue azioni per oggi")}
@@ -386,7 +384,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.15 }}>{diceResult}</div>
           ) : (
             <button type="button" className="modal-action-save" onClick={handleRollDice}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}><Icon name="dice" variant="bold" />{_t("Lancia un D10!")}</span></button>
+              {_t("🎲 Lancia un D10!")}</button>
           )}
         </div>
       </div>

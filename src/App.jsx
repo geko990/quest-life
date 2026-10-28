@@ -24,7 +24,6 @@ import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPref
 
 import { setLanguage, _t, monthLong, playerDisplayName } from './i18n';
 import { applyStatXp, titleForLevel, habitsProgress, dailyActionsProgress, celebrate } from './utils/celebrations';
-import { statSolar, statEmoji, statColor } from './utils/statIcons';
 class TabErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -482,14 +481,14 @@ export default function App() {
         const fromLevel = Number(st.level) || 1, fromXp = Number(st.xp) || 0;
         const res = applyStatXp(fromLevel, fromXp, amount);
         live.stats = live.stats.map(x => (x.id === statId ? { ...x, level: res.level, xp: res.xp } : x));
-        celebrate('xp', { statId, icon: statEmoji(st), solar: statSolar(st), color: statColor(st), name: st.name || '', fromLevel, fromXp, toLevel: res.level, toXp: res.xp, amount });
-        if (res.level > fromLevel) celebrate('levelup', { kind: 'stat', statId, icon: statEmoji(st), solar: statSolar(st), color: statColor(st), name: st.name || '', level: res.level });
+        celebrate('xp', { statId, icon: st.icon || '✨', name: st.name || '', fromLevel, fromXp, toLevel: res.level, toXp: res.xp, amount });
+        if (res.level > fromLevel) celebrate('levelup', { kind: 'stat', statId, icon: st.icon || '✨', name: st.name || '', level: res.level });
       }
       const beforeLvl = calculateLevelFromXp(live.totalXp || 0);
       live.totalXp = (live.totalXp || 0) + amount;
       const afterLvl = calculateLevelFromXp(live.totalXp);
       if (afterLvl > beforeLvl) {
-        celebrate('levelup', { kind: 'player', icon: '🏆', solar: 'medal-star', color: '#f59e0b', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl) });
+        celebrate('levelup', { kind: 'player', icon: '🏆', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl) });
       }
     } catch (e) { console.error(e); }
 
@@ -1276,11 +1275,13 @@ export default function App() {
     const targetType = formData._targetType || formData.type || modalType;
 
     if (targetType === 'attribute' || targetType === 'ability') {
+      // La finestra salva l'emoji in `emoji`, ma l'app mostra `icon`: si tengono allineati
+      const statData = { ...formData, icon: formData.emoji || formData.icon || '⭐' };
       if (editData) {
-        setStats(prev => prev.map(s => (s.id === editData.id ? { ...s, ...formData } : s)));
+        setStats(prev => prev.map(s => (s.id === editData.id ? { ...s, ...statData } : s)));
       } else {
         const newStat = {
-          ...formData,
+          ...statData,
           id: 'stat_' + Date.now(),
           level: 1,
           xp: 0

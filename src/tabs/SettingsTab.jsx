@@ -7,7 +7,6 @@ import ReminderSettings from '../components/ReminderSettings';
 import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } from '../components/settings/SettingsUI';
 
 import { _t, getLocale, playerDisplayName } from '../i18n';
-import StatIcon from '../components/StatIcon';
 import EmojiField from '../components/EmojiField';
 import { normalizeTime, sortSteps, suggestNextTime, cleanPreset } from '../utils/dayTemplates';
 export default function SettingsTab({
@@ -326,13 +325,16 @@ export default function SettingsTab({
           dateStr = '';
         }
       }
-      const groupStats = (group.statIds || [])
-        .map(id => (stats || []).find(st => st.id === id))
+      const statEmojis = (group.statIds || [])
+        .map(id => {
+          const s = (stats || []).find(st => st.id === id);
+          return s ? (s.icon || s.emoji) : null;
+        })
         .filter(Boolean);
       return (
         <SettingRow
           key={idx}
-          title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{groupStats.map(st => <StatIcon key={st.id} stat={st} />)} {group.title}</span>}
+          title={`${statEmojis.length > 0 ? statEmojis.join(' ') : '✨'} ${group.title}`}
           desc={dateStr}
         >
           <span className="opt-log-xp">{_t("+{0} XP", group.totalAmount)}</span>
@@ -587,7 +589,6 @@ export default function SettingsTab({
           >
             <span className="opt-select">v{APP_VERSION}</span>
           </SettingRow>
-          <SettingRow title={_t("Crediti")} desc={_t("Icone: Solar di 480 Design, licenza CC BY 4.0")} />
         </SettingsGroup>
 
         {/* Aggiorna App: compare solo quando c'è davvero una nuova versione */}

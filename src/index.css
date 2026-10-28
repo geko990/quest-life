@@ -8333,9 +8333,3 @@ html[data-keyboard="open"] .kb-overlay > * {
 }
 html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0 0 2px var(--accent-primary); }
 @media (prefers-reduced-motion: reduce) { .dt-step.is-moved { animation: none; } }
-
-/* Scelta del simbolo di attributi e abilità (#53): stesso pannello delle emoji, con le icone Solar */
-.stat-icon-big { font-size: 58px; }
-.emoji-picker-grid.stat-icon-grid { grid-template-columns: repeat(7, 1fr); max-height: 300px; padding-bottom: 8px; }
-.stat-icon-grid button { display: grid; place-items: center; font-size: 27px; padding: 9px 0; }
-.stat-icon-grid button[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 18%, transparent); }
