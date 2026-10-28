@@ -358,8 +358,16 @@ try {
     if (blocked === 0) { blocked++; return route.abort(); }
     return route.continue();
   });
+  const trail = [];
+  p2.on('console', (m) => { if (m.type() === 'error') trail.push(m.text().slice(0, 120)); });
+  p2.on('framenavigated', (f) => { if (f === p2.mainFrame()) trail.push(`→ ${f.url().replace(BASE, '/')}`); });
   await p2.goto(BASE, { waitUntil: 'load' });
-  await p2.waitForFunction(() => /[?&]v=\d+/.test(location.search) && document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
+  try {
+    await p2.waitForFunction(() => /[?&]v=\d+/.test(location.search) && document.querySelector('#root')?.children.length > 0, null, { timeout: 15000, polling: 250 });
+  } catch (e) {
+    const root = await p2.evaluate(() => document.querySelector('#root')?.children.length).catch(() => '?');
+    throw new Error(`app non ripartita (bloccati ${blocked}, url ${p2.url().replace(BASE, '/')}, root ${root}) — ${trail.join(' | ')}`);
+  }
   if (blocked !== 1) throw new Error(`il pezzo bootApp non è stato intercettato (${blocked})`);
   const logged = await p2.evaluate(() => localStorage.getItem('questlife_error_log'));
   if (logged && /Importing a module|dynamically imported module/i.test(logged)) throw new Error('il caricamento fallito è finito nel registro errori');
