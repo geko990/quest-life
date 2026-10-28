@@ -68,7 +68,7 @@
        che iOS fa girare anche quando il telefono è occupato ad avviare l'app). Quando la Home è pronta
        l'anello si riempie (0,5 s, 0,38 s se l'avvio è stato lungo), lampo dorato (0,15 s) e uscita (0,34 s).
        Durata minima di tutta la sequenza: 1,2 s (scelta dell'utente, solo all'avvio a freddo).
-       Riapertura entro 10 minuti, Animazioni spente o "Riduci movimento": immagine ferma, nessuna animazione.
+       Animazioni spente o "Riduci movimento": immagine ferma, nessuna animazione.
        Colori fissi del marchio (sfondo notte), uguali all'immagine di avvio di iOS: così dal tocco
        sull'icona all'animazione non c'è nessuno stacco, qualunque sia il tema dell'app. -->
   <style>
@@ -84,6 +84,7 @@
       -webkit-user-select: none; user-select: none;
     }
     #ql-boot .qb-stack { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 7); transform: translateY(calc(var(--u) * -2)); }
+    #ql-boot.qb-screen .qb-stack { position: absolute; left: 0; right: 0; top: var(--qb-top); transform: none; }
     #ql-boot .qb-emblem { position: relative; width: calc(var(--u) * 44); height: calc(var(--u) * 44); }
     #ql-boot .qb-track { position: absolute; inset: 0; width: 100%; height: 100%; }
     #ql-boot .qb-track circle { fill: none; stroke: var(--qb-track); stroke-width: 3.2; }
@@ -131,19 +132,29 @@
   <script>
     (function () {
       var boot = document.getElementById('ql-boot');
-      var QUIET_WINDOW = 10 * 60 * 1000; // riaperta entro 10 minuti: niente animazione
+      // Ogni avvio a freddo mostra l'apertura (se l'app è ancora aperta in memoria iOS la riprende
+      // senza ricaricarla, quindi non c'è apertura). Ferma solo con Animazioni spente o "Riduci movimento".
       var quiet = false;
-      try {
-        var lastSeen = parseInt(localStorage.getItem('ql_last_seen') || '0', 10);
-        if (lastSeen && Date.now() - lastSeen < QUIET_WINDOW) quiet = true;
-        if (localStorage.getItem('ql_anim') === 'off') quiet = true;
-      } catch (e) {}
+      try { if (localStorage.getItem('ql_anim') === 'off') quiet = true; } catch (e) {}
       try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) quiet = true; } catch (e) {}
       if (quiet) boot.classList.add('qb-quiet');
 
-      var markSeen = function () { try { localStorage.setItem('ql_last_seen', String(Date.now())); } catch (e) {} };
-      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') markSeen(); });
-      window.addEventListener('pagehide', markSeen);
+      // Nell'app installata lo scudo si posiziona con le misure dello SCHERMO, le stesse usate per
+      // l'immagine di avvio di iOS: così dall'immagine ferma all'animazione non c'è nessun salto
+      // (con le misure della finestra c'era un piccolo spostamento).
+      try {
+        var standalone = window.navigator.standalone === true ||
+          (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        if (standalone && window.screen && screen.width) {
+          var sw = Math.min(screen.width, screen.height), sh = Math.max(screen.width, screen.height);
+          if (window.innerWidth <= window.innerHeight) { // in verticale, come l'immagine di iOS
+            var u = Math.min(sw / 100, 0.6 * sh / 100);
+            boot.style.setProperty('--u', u + 'px');
+            boot.style.setProperty('--qb-top', (sh / 2 - 30.2 * u) + 'px');
+            boot.classList.add('qb-screen');
+          }
+        }
+      } catch (e) {}
 
       var finished = false;
       var shownAt = (window.performance && performance.now) ? performance.now() : 0; // quando compare l'apertura
