@@ -424,7 +424,9 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
           width: '100%',
           maxWidth: isLandscape ? '560px' : '420px',
-          padding: isLandscape ? '10px 14px' : '14px 16px',
+          // .modal ha padding 0 forzato: le spaziature stanno nelle tre fasce (intestazione, azioni, barra in fondo)
+          aspectRatio: 'auto',
+          justifyContent: 'flex-start',
           maxHeight: '96dvh',
           overflowY: 'auto',
           borderRadius: '24px',
@@ -432,11 +434,11 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+        <div style={{ textAlign: 'center', padding: isLandscape ? '14px 16px 10px' : '20px 20px 14px' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, letterSpacing: '0.2px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <span>🎲</span> {isTomorrow ? _t("PIANIFICA DOMANI") : _t("È IL TUO TURNO!")}
           </h2>
-          <p style={{ margin: '1px 0 0 0', fontSize: '9px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+          <p style={{ margin: '4px 0 0 0', fontSize: '11px', letterSpacing: '0.6px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             {isTomorrow ? _t("Prepara le tue azioni in anticipo per domani") : _t("Pianifica le tue azioni per oggi")}
           </p>
         </div>
@@ -445,8 +447,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           display: isLandscape ? 'grid' : 'flex',
           gridTemplateColumns: isLandscape ? '1fr 1fr' : undefined,
           flexDirection: isLandscape ? undefined : 'column',
-          gap: '6px',
-          marginBottom: '10px'
+          gap: '8px',
+          padding: isLandscape ? '0 14px 12px' : '0 14px 14px'
         }}>
           {renderSlot('action', 'Es: Completare il report')}
           {renderSlot('bonus', 'Es: Chiamare il medico')}
@@ -454,44 +456,21 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           {renderSlot('reaction', 'Es: Rispondere a 3 email')}
         </div>
 
-        {showResult ? (
-          <div style={{ textAlign: 'center', padding: '6px 0' }}>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-              {diceResult}
+        {/* Barra in fondo come nelle altre finestre: bottone a tutta larghezza, poi risultato del dado */}
+        <div className="modal-action-bar" style={{ justifyContent: 'center', minHeight: '78px', paddingTop: '12px', paddingBottom: isLandscape ? '14px' : '20px' }}>
+          {showResult ? (
+            <div style={{ textAlign: 'center', lineHeight: 1.15 }}>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent-primary)' }}>{diceResult}</div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e' }}>
+                {_t("+ {0}% XP Bonus! 🎉", diceResult * 10)}</div>
             </div>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#22c55e' }}>
-              {_t("+ {0}% XP Bonus! 🎉", diceResult * 10)}</div>
-          </div>
-        ) : isRolling ? (
-          <div style={{ textAlign: 'center', padding: '8px 0' }}>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {diceResult}
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
-            <button
-              type="button"
-              onClick={handleRollDice}
-              style={{
-                padding: '10px 28px',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                borderRadius: '20px',
-                border: 'none',
-                cursor: 'pointer',
-                background: 'var(--accent-gradient, linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%))',
-                color: '#ffffff',
-                boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
-            >
+          ) : isRolling ? (
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.15 }}>{diceResult}</div>
+          ) : (
+            <button type="button" className="modal-action-save" onClick={handleRollDice}>
               {_t("🎲 Lancia un D10!")}</button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
