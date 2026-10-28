@@ -8307,6 +8307,7 @@ html[data-keyboard="open"] .kb-overlay > * {
 }
 .dt-modal-head { display: flex; justify-content: center; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; }
 .dt-modal-body { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.dt-modal-body > * { flex-shrink: 0; } /* con poco spazio (tastiera aperta) le righe non si schiacciano: si scorre */
 .dt-name-row { display: flex; gap: 8px; }
 .dt-emoji {
   width: 40px; height: 32px; flex-shrink: 0; font-size: 18px; border-radius: 8px;
