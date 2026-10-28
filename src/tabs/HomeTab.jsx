@@ -347,7 +347,7 @@ export default function HomeTab({
         cy={center}
         r={radius * level}
         fill="none"
-        stroke="rgba(124, 58, 237, 0.22)"
+        stroke="var(--radar-ring, rgba(124, 58, 237, 0.22))"
         strokeWidth="1.5"
         strokeDasharray={level === 1.0 ? 'none' : '3,3'}
       />

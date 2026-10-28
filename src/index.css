@@ -138,7 +138,7 @@ textarea,
 }
 
 
-/* --- FUTURISTIC THEME (Cyberpunk / Neon) --- */
+/* --- CYBERPUNK THEME (id "futuristic") --- */
 [data-theme="futuristic"] {
     --font-main: 'Orbitron', sans-serif;
     --radius-sm: 0px;
@@ -148,39 +148,87 @@ textarea,
     font-family: var(--font-main);
 }
 
-[data-theme="futuristic"][data-mode="light"] {
-    --bg-primary: #e0f2fe;
-    --bg-secondary: #bae6fd;
-    --bg-card: #ffffff;
-    --bg-main: #e0f2fe;
-    --text-primary: #0369a1;
-    --text-secondary: #0284c7;
-    --text-main: #0369a1;
-    --text-muted: #38bdf8;
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(2, 132, 199, 0.3);
-    --glass-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+/* --- CYBERPUNK (Tron / Cyberdog): contorni al neon netti e luminosi --- */
+[data-theme="futuristic"] {
+    --neon: #19e6ff;
+    --neon-2: #ff2bd6;
+    --neon-rgb: 25, 230, 255;
+    --neon-line: 2px;
+    --radar-ring: rgba(var(--neon-rgb), 0.4);
 }
 
 [data-theme="futuristic"][data-mode="dark"] {
-    --bg-primary: #030712;
-    --bg-secondary: #0b1329;
-    --bg-card: #111c38;
-    --bg-main: #030712;
-    --text-primary: #38bdf8;
-    --text-secondary: #818cf8;
-    --text-main: #38bdf8;
-    --text-muted: #475569;
-    --glass-bg: rgba(11, 19, 41, 0.9);
-    --glass-border: rgba(56, 189, 248, 0.35);
-    --glass-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
-
-    background-size: 40px 40px;
+    --bg-primary: #000307;
+    --bg-secondary: #020c16;
+    --bg-card: rgba(0, 8, 16, 0.92);
+    --bg-main: #000307;
+    --text-primary: #e8fcff;
+    --text-secondary: #7fefff;
+    --text-main: #e8fcff;
+    --text-muted: #4f93a6;
+    --glass-bg: rgba(0, 6, 12, 0.94);
+    --glass-border: var(--neon);
+    --glass-shadow: 0 0 0 0.5px var(--neon), 0 0 10px rgba(var(--neon-rgb), 0.75), 0 0 26px rgba(var(--neon-rgb), 0.28), inset 0 0 16px rgba(var(--neon-rgb), 0.16);
+    --track: rgba(var(--neon-rgb), 0.16);
+    background-color: #000307;
+    background-size: 100% 100%, 32px 32px, 32px 32px;
     background-image:
-        linear-gradient(to right, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+        radial-gradient(120% 60% at 50% 110%, rgba(var(--neon-rgb), 0.16), transparent 60%),
+        linear-gradient(to right, rgba(var(--neon-rgb), 0.09) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--neon-rgb), 0.09) 1px, transparent 1px);
 }
 
+[data-theme="futuristic"][data-mode="light"] {
+    --neon: #00a9cc;
+    --neon-rgb: 0, 169, 204;
+    --bg-primary: #eafbff;
+    --bg-secondary: #f6feff;
+    --bg-card: #ffffff;
+    --bg-main: #eafbff;
+    --text-primary: #031c26;
+    --text-secondary: #04637a;
+    --text-main: #031c26;
+    --text-muted: #4a8191;
+    --glass-bg: rgba(255, 255, 255, 0.96);
+    --glass-border: var(--neon);
+    --glass-shadow: 0 0 0 0.5px var(--neon), 0 0 10px rgba(var(--neon-rgb), 0.35), 4px 4px 0 rgba(var(--neon-rgb), 0.16);
+    --track: rgba(var(--neon-rgb), 0.16);
+    background-size: 32px 32px;
+    background-image:
+        linear-gradient(to right, rgba(var(--neon-rgb), 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--neon-rgb), 0.12) 1px, transparent 1px);
+}
+
+/* Schede e riquadri: linea più spessa e luminosa */
+[data-theme="futuristic"] .glass-panel,
+[data-theme="futuristic"] .card {
+    border-width: var(--neon-line);
+}
+
+/* Barra in alto e barra in basso: una linea di luce che le separa dal resto */
+[data-theme="futuristic"] .app-header {
+    border-bottom: var(--neon-line) solid var(--neon) !important;
+    box-shadow: 0 0 12px rgba(var(--neon-rgb), 0.45), 0 1px 0 rgba(var(--neon-rgb), 0.6) !important;
+}
+[data-theme="futuristic"] .app-bottom-nav {
+    border-top: var(--neon-line) solid var(--neon) !important;
+    box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.45) !important;
+}
+[data-theme="futuristic"][data-mode="dark"] .app-title,
+[data-theme="futuristic"][data-mode="dark"] h1,
+[data-theme="futuristic"][data-mode="dark"] h2,
+[data-theme="futuristic"][data-mode="dark"] h3 {
+    text-shadow: 0 0 6px rgba(var(--neon-rgb), 0.75), 0 0 16px rgba(var(--neon-rgb), 0.35);
+}
+[data-theme="futuristic"] .btn-primary {
+    box-shadow: 0 0 0 1px var(--neon), 0 0 14px rgba(var(--neon-rgb), 0.55) !important;
+}
+
+/* Il cerchio dell'Eroe al centro della barra: anello di luce */
+[data-theme="futuristic"] .header-avatar-frame,
+[data-theme="futuristic"] .streak-circle {
+    box-shadow: 0 0 0 2px var(--neon), 0 0 14px rgba(var(--neon-rgb), 0.7) !important;
+}
 
 /* Base Variables (overridden by themes above) */
 :root {
