@@ -205,6 +205,27 @@ await step('10-opzioni-promemoria', async () => {
   await page.waitForTimeout(300);
 });
 
+// Giornate tipo: una nuova azione con orario precedente si sposta da sola al posto giusto
+await page.getByText('🎮 Gioco').first().click();
+await page.waitForTimeout(300);
+await step('17-giornata-tipo', async () => {
+  await page.locator('.opt-chip').first().click();
+  await page.waitForTimeout(500);
+  await page.getByText('+ Aggiungi azione').click();
+  await page.waitForTimeout(300);
+  const rows = page.locator('.dt-step');
+  const n = await rows.count();
+  const last = rows.nth(n - 1);
+  await last.locator('.dt-title').fill('Test prima di tutto');
+  await last.locator('.dt-time').fill('05:30');
+  await last.locator('.dt-title').click(); // lascia il campo dell'ora → riordino
+  await page.waitForTimeout(400);
+  const first = await page.locator('.dt-step').first().locator('.dt-title').inputValue();
+  if (first !== 'Test prima di tutto') throw new Error(`Giornate tipo: dopo il riordino la prima azione è "${first}"`);
+  report(`Giornate tipo: riordino per orario OK (${n} azioni)`);
+});
+await tapOutside();
+
 // Registro errori: voci nel vecchio formato → raggruppate, filtrate, eliminabili, segnalabili su GitHub
 try {
   await page.evaluate(() => {

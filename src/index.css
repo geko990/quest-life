@@ -8590,3 +8590,37 @@ html[data-keyboard="open"] .kb-overlay {
 html[data-keyboard="open"] .kb-overlay > * {
     max-height: 100% !important;
 }
+
+/* ===== Opzioni: finestra Giornata tipo (azioni ordinate per orario) ===== */
+.dt-modal {
+  max-width: 440px; width: 100%; max-height: 82vh; display: flex; flex-direction: column;
+  background: var(--bg-card, #22223b); border: 1px solid var(--glass-border); border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); overflow: hidden;
+}
+.dt-modal-head { display: flex; justify-content: center; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; }
+.dt-modal-body { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.dt-name-row { display: flex; gap: 8px; }
+.dt-emoji {
+  width: 40px; height: 32px; flex-shrink: 0; font-size: 18px; border-radius: 8px;
+  border: 1px solid var(--glass-border); background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+.dt-name { flex: 1; min-width: 0; }
+.dt-steps-head { display: flex; align-items: baseline; justify-content: space-between; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.dt-steps-hint { font-size: 11px; font-weight: 500; color: var(--text-secondary); }
+.dt-steps { display: flex; flex-direction: column; gap: 6px; }
+.dt-step { display: flex; align-items: center; gap: 6px; border-radius: 10px; }
+.dt-time { width: 84px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
+.dt-title { flex: 1; min-width: 0; font-weight: 500; }
+.dt-step-delete {
+  width: 28px; height: 28px; flex-shrink: 0; border: none; border-radius: 50%; cursor: pointer;
+  background: none; color: var(--text-muted, #9ca3af); font-size: 12px;
+}
+.dt-step-delete:active { color: #ef4444; }
+/* La riga che si è spostata per orario lampeggia un attimo, così si vede dove è finita */
+.dt-step.is-moved { animation: dt-moved 0.9s ease-out; }
+@keyframes dt-moved {
+  0% { box-shadow: 0 0 0 2px var(--accent-primary); background: color-mix(in srgb, var(--accent-primary) 18%, transparent); }
+  100% { box-shadow: 0 0 0 2px transparent; background: transparent; }
+}
+html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0 0 2px var(--accent-primary); }
+@media (prefers-reduced-motion: reduce) { .dt-step.is-moved { animation: none; } }

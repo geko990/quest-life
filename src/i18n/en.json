@@ -1339,5 +1339,15 @@
  "{0} stelle": "{0} stars",
  "Scegli l'emoji": "Choose the emoji",
  "Tocca per scrivere un'emoji": "Tap to type an emoji",
- "Scrivi un'emoji": "Type an emoji"
+ "Scrivi un'emoji": "Type an emoji",
+ "Modifica giornata tipo": "Edit day template",
+ "Nuova giornata tipo": "New day template",
+ "Nome (es. Giorno lavorativo)": "Name (e.g. Work day)",
+ "Descrizione facoltativa": "Optional description",
+ "Azioni della giornata": "Actions of the day",
+ "in ordine di orario": "sorted by time",
+ "Nessuna azione: aggiungi la prima": "No actions yet: add the first one",
+ "Orario": "Time",
+ "Cosa fai (es. Sveglia e idratazione)": "What you do (e.g. Wake up and hydrate)",
+ "+ Aggiungi azione": "+ Add action"
 }

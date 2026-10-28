@@ -8,6 +8,7 @@ import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } 
 
 import { _t, getLocale } from '../i18n';
 import EmojiField from '../components/EmojiField';
+import { normalizeTime, sortSteps, suggestNextTime, cleanPreset } from '../utils/dayTemplates';
 export default function SettingsTab({
   settings = {},
   setSettings,
@@ -29,6 +30,8 @@ export default function SettingsTab({
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
+  const [movedStepId, setMovedStepId] = useState(null);
+  const [focusStepId, setFocusStepId] = useState(null);
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualChapter, setManualChapter] = useState('finances');
 
@@ -196,7 +199,7 @@ export default function SettingsTab({
   // Helper to safely extract steps list from preset
   const getPresetSteps = (preset) => {
     if (Array.isArray(preset.steps) && preset.steps.length > 0) {
-      return preset.steps;
+      return sortSteps(preset.steps);
     }
     if (preset.slots) {
       const list = [];
@@ -227,47 +230,74 @@ export default function SettingsTab({
       name: '',
       emoji: '📅',
       description: '',
-      steps: [
-        { id: 'step_1', time: '07:00', title: _t("🌅 Sveglia & Idratazione") },
-        { id: 'step_2', time: '08:30', title: _t("💻 Focus & Task Principali") },
-        { id: 'step_3', time: '13:00', title: _t("🥗 Pranzo & Relax") },
-        { id: 'step_4', time: '22:00', title: _t("📖 Routine Notturna") }
-      ]
+      steps: [{ id: `step_${Date.now()}`, time: '08:00', title: '' }]
     });
+    setFocusStepId(null);
     setShowPresetModal(true);
   };
 
   const handleEditPreset = (preset) => {
     const presetCopy = JSON.parse(JSON.stringify(preset));
-    if (!Array.isArray(presetCopy.steps) || presetCopy.steps.length === 0) {
-      presetCopy.steps = getPresetSteps(presetCopy);
-    }
+    const steps = (Array.isArray(presetCopy.steps) && presetCopy.steps.length > 0) ? presetCopy.steps : getPresetSteps(presetCopy);
+    // id sempre presente (servono per riordinare senza perdere la riga che si sta scrivendo)
+    presetCopy.steps = sortSteps(steps.map((s, i) => ({ ...s, id: s.id ? String(s.id) : `step_${Date.now()}_${i}` })));
     setEditingPreset(presetCopy);
     setShowPresetModal(true);
   };
 
+  const closePresetModal = () => {
+    setShowPresetModal(false);
+    setEditingPreset(null);
+    setMovedStepId(null);
+  };
+
+  const updateStep = (stepId, patch) => {
+    setEditingPreset(prev => ({ ...prev, steps: (prev.steps || []).map(s => s.id === stepId ? { ...s, ...patch } : s) }));
+  };
+
+  // Riordino per orario quando si lascia il campo dell'ora: la riga che si sposta lampeggia un attimo.
+  const resortSteps = (stepId) => {
+    if (!editingPreset) return;
+    const steps = editingPreset.steps || [];
+    const sorted = sortSteps(steps);
+    if (sorted.findIndex(s => s.id === stepId) === steps.findIndex(s => s.id === stepId)) return;
+    setEditingPreset(prev => ({ ...prev, steps: sortSteps(prev.steps || []) }));
+    setMovedStepId(stepId);
+    setTimeout(() => setMovedStepId(cur => (cur === stepId ? null : cur)), 900);
+  };
+
+  const addStep = () => {
+    const id = `step_${Date.now()}`;
+    setEditingPreset(prev => {
+      const steps = sortSteps(prev.steps || []);
+      return { ...prev, steps: [...steps, { id, time: suggestNextTime(steps), title: '' }] };
+    });
+    setFocusStepId(id);
+  };
+
+  const removeStep = (stepId) => {
+    setEditingPreset(prev => ({ ...prev, steps: (prev.steps || []).filter(s => s.id !== stepId) }));
+  };
+
   const handleSavePreset = (presetData) => {
-    if (!presetData || !presetData.name || !presetData.name.trim()) {
+    const clean = cleanPreset(presetData);
+    if (!clean.name) {
       alert(_t("Inserisci un nome per la Giornata Tipo!"));
       return;
     }
     const existing = safePresetDays;
-    let updated = [];
-    if (presetData.id) {
-      updated = existing.map(p => p.id === presetData.id ? presetData : p);
-    } else {
-      updated = [...existing, { ...presetData, id: `preset_${Date.now()}` }];
-    }
+    const updated = clean.id
+      ? existing.map(p => p.id === clean.id ? clean : p)
+      : [...existing, { ...clean, id: `preset_${Date.now()}` }];
     if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
-    setShowPresetModal(false);
-    setEditingPreset(null);
+    closePresetModal();
   };
 
   const handleDeletePreset = (id) => {
-    if (window.confirm(_t("Vuoi davvero eliminare questo modello di giornata?"))) {
-      const updated = safePresetDays.filter(p => p && p.id !== id);
-      if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
-    }
+    if (!window.confirm(_t("Vuoi davvero eliminare questo modello di giornata?"))) return false;
+    const updated = safePresetDays.filter(p => p && p.id !== id);
+    if (setSettings) setSettings(prev => ({ ...(prev || {}), presetDays: updated }));
+    return true;
   };
 
   const accentHex = {
@@ -744,117 +774,104 @@ export default function SettingsTab({
         </div>
       </div>
 
-      {/* CREATE / EDIT DAY ROUTINE MODEL MODAL */}
+      {/* Finestra Giornata tipo: crea / modifica. Le azioni si riordinano da sole per orario. */}
       {showPresetModal && editingPreset && (
         <div
-          onClick={() => { setShowPresetModal(false); setEditingPreset(null); }}
+          onClick={closePresetModal}
           style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
         >
           <div
-            className="modal-content"
+            className="modal-content dt-modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '440px', width: '92%', maxHeight: '82vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
           >
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--glass-border)', background: 'var(--bg-card)', flexShrink: 0 }}>
-              <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🗓️</span> {editingPreset.id ? _t("Modifica Modello di Giornata") : _t("Crea Modello di Giornata")}
+            <div className="modal-header dt-modal-head">
+              <h3 className="modal-title" style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {editingPreset.id ? _t("Modifica giornata tipo") : _t("Nuova giornata tipo")}
               </h3>
             </div>
 
-            <div style={{ padding: '16px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {/* Preset Name & Emoji */}
-              <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="dt-modal-body">
+              <div className="dt-name-row">
                 <EmojiField
                   value={editingPreset.emoji || '📅'}
                   onChange={(v) => setEditingPreset(prev => ({ ...prev, emoji: v }))}
-                  style={{ width: '45px', flexShrink: 0, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', fontSize: '18px' }}
+                  className="dt-emoji"
                 />
                 <input
                   type="text"
-                  placeholder={_t("Nome Modello (es. 💼 Giorno Lavorativo)")}
+                  className="opt-input dt-name"
+                  placeholder={_t("Nome (es. Giorno lavorativo)")}
                   value={editingPreset.name}
                   onChange={(e) => setEditingPreset(prev => ({ ...prev, name: e.target.value }))}
-                  style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '12px' }}
                 />
               </div>
-
-              {/* Description */}
               <input
                 type="text"
-                placeholder={_t("Descrizione opzionale (es. Sequenza per i giorni di lavoro)")}
+                className="opt-input"
+                placeholder={_t("Descrizione facoltativa")}
                 value={editingPreset.description || ''}
                 onChange={(e) => setEditingPreset(prev => ({ ...prev, description: e.target.value }))}
-                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text-primary)', fontSize: '11px' }}
               />
 
-              {/* Sequential Steps List */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                  {_t("Sequenza Oraria delle Azioni:")}</div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const currentSteps = editingPreset.steps || [];
-                    const newStep = { id: 'step_' + Date.now(), time: '12:00', title: '' };
-                    setEditingPreset(prev => ({ ...prev, steps: [...currentSteps, newStep] }));
-                  }}
-                  style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--accent-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  {_t("➕ Aggiungi Azione")}</button>
+              <div className="dt-steps-head">
+                <span>{_t("Azioni della giornata")}</span>
+                <span className="dt-steps-hint">{_t("in ordine di orario")}</span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {(editingPreset.steps || []).map((step, idx) => (
-                  <div key={step.id || idx} style={{ background: 'var(--bg-secondary)', padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="dt-steps">
+                {(editingPreset.steps || []).length === 0 && (
+                  <div className="opt-row-desc" style={{ textAlign: 'center', padding: '8px 0' }}>{_t("Nessuna azione: aggiungi la prima")}</div>
+                )}
+                {(editingPreset.steps || []).map((step) => (
+                  <div key={step.id} className={`dt-step${movedStepId === step.id ? ' is-moved' : ''}`}>
                     <input
-                      type="text"
-                      placeholder="08:00"
-                      value={step.time || ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditingPreset(prev => ({
-                          ...prev,
-                          steps: prev.steps.map((s, i) => i === idx ? { ...s, time: val } : s)
-                        }));
-                      }}
-                      style={{ width: '55px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '6px', color: 'var(--text-primary)', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}
+                      type="time"
+                      className="opt-input dt-time"
+                      value={normalizeTime(step.time)}
+                      onChange={(e) => updateStep(step.id, { time: e.target.value })}
+                      onBlur={() => resortSteps(step.id)}
+                      aria-label={_t("Orario")}
                     />
                     <input
                       type="text"
-                      placeholder={_t("Descrizione azione (es. Sveglia & Idratazione)...")}
+                      className="opt-input dt-title"
+                      placeholder={_t("Cosa fai (es. Sveglia e idratazione)")}
                       value={step.title || ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditingPreset(prev => ({
-                          ...prev,
-                          steps: prev.steps.map((s, i) => i === idx ? { ...s, title: val } : s)
-                        }));
-                      }}
-                      style={{ flex: 1, background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '6px 10px', color: 'var(--text-primary)', fontSize: '11px' }}
+                      ref={el => { if (el && focusStepId === step.id) { el.focus(); setFocusStepId(null); } }}
+                      onChange={(e) => updateStep(step.id, { title: e.target.value })}
                     />
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingPreset(prev => ({
-                          ...prev,
-                          steps: prev.steps.filter((_, i) => i !== idx)
-                        }));
-                      }}
-                      style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', padding: '2px' }}
+                      className="dt-step-delete"
+                      onClick={() => removeStep(step.id)}
                       title={_t("Elimina azione")}
+                      aria-label={_t("Elimina azione")}
                     >
-                      🗑️
+                      ✕
                     </button>
                   </div>
                 ))}
               </div>
 
-              <button
-                onClick={() => handleSavePreset(editingPreset)}
-                className="btn-primary"
-                style={{ marginTop: '8px', width: '100%', padding: '10px', borderRadius: '10px', fontWeight: 'bold', fontSize: '12px', border: 'none', cursor: 'pointer' }}
-              >
-                {_t("💾 Salva Modello di Giornata")}</button>
+              <OptButton onClick={addStep}>{_t("+ Aggiungi azione")}</OptButton>
+            </div>
+
+            {/* Footer standard: cestino piccolo solo in modifica + Salva a tutta larghezza */}
+            <div className="modal-action-bar shrink-0">
+              {editingPreset.id && (
+                <button
+                  type="button"
+                  className="modal-action-delete"
+                  onClick={() => { if (handleDeletePreset(editingPreset.id)) closePresetModal(); }}
+                  title={_t("Elimina")}
+                  aria-label={_t("Elimina")}
+                >
+                  🗑️
+                </button>
+              )}
+              <button type="button" className="modal-action-save" onClick={() => handleSavePreset(editingPreset)}>
+                {editingPreset.id ? _t("Salva modifiche") : _t("Salva")}
+              </button>
             </div>
           </div>
         </div>
