@@ -432,11 +432,9 @@ export default function SettingsTab({
               value={safeSettings.theme || 'standard'}
               onChange={(v) => updateSetting('theme', v)}
               options={[
-                { value: 'standard', label: _t("Standard RPG") },
-                { value: 'fantasy', label: _t("Fantasy (Pergamena / Legno)"), short: _t("Fantasy") },
-                { value: 'dnd', label: _t("D&D Paper Map") },
-                { value: 'futuristic', label: _t("Cyberpunk Neon") },
-                { value: 'pirate', label: _t("7th Sea / Pirate") }
+                { value: 'standard', label: _t("Standard") },
+                { value: 'fantasy', label: _t("Pergamena") },
+                { value: 'futuristic', label: _t("Cyberpunk") }
               ]}
             />
           </SettingRow>

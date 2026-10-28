@@ -120,7 +120,7 @@ export function getInitialState() {
     },
     settings: {
       // Primo avvio: tema Standard in modalità chiara.
-      // 'theme' è il tema grafico (standard, fantasy, dnd, futuristic, pirate), 'themeMode' è chiaro/scuro/auto.
+      // 'theme' è il tema grafico (standard, fantasy = Pergamena, futuristic = Cyberpunk), 'themeMode' è chiaro/scuro/auto.
       theme: 'standard',
       themeMode: 'light',
       accent: 'violet',
@@ -185,7 +185,10 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   // l'app veniva mostrata in un misto di chiaro e scuro. Si riporta a un tema valido conservando la modalità
   // che l'utente vedeva (le Opzioni mostravano "Scuro" se themeMode mancava).
   {
-    const VALID_THEMES = ['standard', 'fantasy', 'dnd', 'futuristic', 'pirate'];
+    const VALID_THEMES = ['standard', 'fantasy', 'futuristic'];
+    // Temi tolti nella 5.9.257: D&D passa a Pergamena (fantasy), Pirata a Standard.
+    const RETIRED_THEMES = { dnd: 'fantasy', pirate: 'standard' };
+    if (RETIRED_THEMES[state.settings.theme]) state.settings.theme = RETIRED_THEMES[state.settings.theme];
     const VALID_MODES = ['light', 'dark', 'system'];
     const legacyLight = savedSettings.theme === 'light' || savedSettings.mode === 'light';
     if (!VALID_MODES.includes(savedSettings.themeMode)) {

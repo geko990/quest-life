@@ -311,7 +311,7 @@ export default function App() {
   // 5. Apply Theme & Accent attributes to root HTML element
   useEffect(() => {
     const root = document.documentElement;
-    const VALID_THEMES = ['standard', 'fantasy', 'dnd', 'futuristic', 'pirate'];
+    const VALID_THEMES = ['standard', 'fantasy', 'futuristic'];
     const themeName = VALID_THEMES.includes(settings.theme) ? settings.theme : 'standard';
     const activeAccent = settings.accent || settings.accentColor || 'violet';
 

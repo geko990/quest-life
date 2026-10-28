@@ -137,48 +137,6 @@ textarea,
     --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
-/* --- D&D THEME (Tabletop Paper Map) --- */
-[data-theme="dnd"] {
-    --font-main: 'Patrick Hand', cursive;
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    font-family: var(--font-main);
-}
-
-[data-theme="dnd"][data-mode="light"] {
-    --bg-primary: #f4efe6;
-    --bg-secondary: #e9e3d5;
-    --bg-card: #ffffff;
-    --bg-main: #f4efe6;
-    --text-primary: #121212;
-    --text-secondary: #333333;
-    --text-main: #121212;
-    --text-muted: #666666;
-    --glass-bg: rgba(255, 255, 255, 0.92);
-    --glass-border: rgba(0, 0, 0, 0.15);
-    --glass-shadow: 2px 2px 0px rgba(0, 0, 0, 0.08);
-
-    background-size: 20px 20px;
-    background-image:
-        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-}
-
-[data-theme="dnd"][data-mode="dark"] {
-    --bg-primary: #12161a;
-    --bg-secondary: #1a2026;
-    --bg-card: #232c35;
-    --bg-main: #12161a;
-    --text-primary: #f0f4f8;
-    --text-secondary: #cbd5e1;
-    --text-main: #f0f4f8;
-    --text-muted: #64748b;
-    --glass-bg: rgba(26, 32, 38, 0.9);
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --glass-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-}
 
 /* --- FUTURISTIC THEME (Cyberpunk / Neon) --- */
 [data-theme="futuristic"] {
@@ -223,39 +181,6 @@ textarea,
         linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
 }
 
-/* --- PIRATE THEME (7th Sea) --- */
-[data-theme="pirate"] {
-    --font-main: 'Crimson Text', serif;
-    font-family: var(--font-main);
-}
-
-[data-theme="pirate"][data-mode="light"] {
-    --bg-primary: #f0f7ff;
-    --bg-secondary: #dbeafe;
-    --bg-card: #ffffff;
-    --bg-main: #f0f7ff;
-    --text-primary: #0f172a;
-    --text-secondary: #1e3a8a;
-    --text-main: #0f172a;
-    --text-muted: #3b82f6;
-    --glass-bg: rgba(255, 255, 255, 0.92);
-    --glass-border: rgba(30, 58, 138, 0.18);
-    --glass-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-}
-
-[data-theme="pirate"][data-mode="dark"] {
-    --bg-primary: #071324;
-    --bg-secondary: #0f233d;
-    --bg-card: #173256;
-    --bg-main: #071324;
-    --text-primary: #f0f6fc;
-    --text-secondary: #93c5fd;
-    --text-main: #f0f6fc;
-    --text-muted: #60a5fa;
-    --glass-bg: rgba(15, 35, 61, 0.9);
-    --glass-border: rgba(147, 197, 253, 0.18);
-    --glass-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
-}
 
 /* Base Variables (overridden by themes above) */
 :root {
@@ -279,6 +204,10 @@ textarea,
     --stat-int: #3b82f6;
     --stat-wis: #a855f7;
     --stat-cha: #ec4899;
+
+    /* Binario degli anelli e delle barre di avanzamento: sempre visibile sopra la tessera,
+       anche quando --bg-secondary coincide con --bg-card (Standard chiaro) */
+    --track: color-mix(in srgb, var(--text-primary) 11%, transparent);
 
     /* Spacing */
     --nav-height: 80px;
@@ -2523,7 +2452,6 @@ input#settingName {
 }
 
 
-
 .steps-main {
     display: flex;
     align-items: center;
@@ -3961,8 +3889,6 @@ textarea {
 }
 
 
-
-
 /* ============================================
    AVATAR MODAL
    ============================================ */
@@ -3981,8 +3907,6 @@ textarea {
     gap: 8px;
     margin-bottom: 16px;
 }
-
-
 
 
 .avatar-tab-content {
@@ -4245,7 +4169,6 @@ textarea {
         filter: drop-shadow(0 0 30px #f59e0b);
     }
 }
-
 
 
 /* Quest Detail Styles - Popup Look */
@@ -4630,48 +4553,6 @@ textarea {
     font-weight: 500;
 }
 
-/* ============================================
-   THEME SPECIFIC OVERRIDES
-   ============================================ */
-
-/* D&D: Map Background & Gradients */
-[data-theme="dnd"] .app-container {
-    background-color: var(--bg-color);
-    position: relative;
-    overflow: hidden;
-}
-
-[data-theme="dnd"] .app-container::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('./assets/fantasy-map-bg.png');
-    background-size: cover;
-    background-position: center;
-    opacity: 0.40;
-    z-index: 0;
-    pointer-events: none;
-    mix-blend-mode: multiply;
-}
-
-[data-theme="dnd"][data-mode="dark"] .app-container::before {
-    opacity: 0.3;
-    mix-blend-mode: luminosity;
-    filter: sepia(0.5) brightness(0.8);
-}
-
-[data-theme="dnd"] .app-container {
-    background: radial-gradient(circle at center, var(--bg-color) 40%, #c9bca6 100%);
-    background-attachment: fixed;
-}
-
-[data-theme="dnd"][data-mode="dark"] .app-container {
-    background: linear-gradient(to top, #2b0c0c 0%, var(--bg-color) 100%);
-    background-attachment: fixed;
-}
 
 @keyframes rewardBounce {
     from {
@@ -4706,32 +4587,6 @@ textarea {
     border-color: var(--glass-border);
 }
 
-/* ============================================
-   D&D THEME UNIFICATION (v2.6.7)
-   ============================================ */
-/* Unified styling for Habits, Quests, OneShots to match Home/Settings */
-[data-theme="dnd"] .habits-list .task-card .swipe-content,
-[data-theme="dnd"] .oneshot-list .task-card .swipe-content,
-[data-theme="dnd"] .quest-list .task-card .swipe-content {
-    background: var(--bg-card);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    color: var(--text-primary);
-}
-
-[data-theme="dnd"][data-mode="dark"] .habits-list .task-card .swipe-content,
-[data-theme="dnd"][data-mode="dark"] .oneshot-list .task-card .swipe-content,
-[data-theme="dnd"][data-mode="dark"] .quest-list .task-card .swipe-content {
-    /* Keep consistency with Home transparency */
-    background: var(--bg-card);
-    border-color: var(--glass-border);
-}
-
-[data-theme="dnd"] #section-habits .habits-wrapper {
-    background: transparent !important;
-    box-shadow: none;
-    border: none;
-}
 
 /* ============================================
    MONTHLY MEDALS

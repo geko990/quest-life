@@ -1349,5 +1349,8 @@
  "Nessuna azione: aggiungi la prima": "No actions yet: add the first one",
  "Orario": "Time",
  "Cosa fai (es. Sveglia e idratazione)": "What you do (e.g. Wake up and hydrate)",
- "+ Aggiungi azione": "+ Add action"
+ "+ Aggiungi azione": "+ Add action",
+ "Standard": "Standard",
+ "Pergamena": "Parchment",
+ "Cyberpunk": "Cyberpunk"
 }

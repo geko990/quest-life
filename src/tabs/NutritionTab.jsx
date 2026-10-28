@@ -1268,7 +1268,7 @@ export default function NutritionTab({
                     cy="70"
                     r={radius}
                     fill="transparent"
-                    stroke="var(--bg-secondary)"
+                    stroke="var(--track, var(--bg-secondary))"
                     strokeWidth="9"
                   />
                   <circle
@@ -1397,7 +1397,7 @@ export default function NutritionTab({
               </div>
 
               <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '4px', background: 'var(--track, var(--bg-secondary))', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${stepsPct}%`, background: '#4ade80', transition: 'width 0.3s' }}></div>
                 </div>
               </div>
@@ -1420,7 +1420,7 @@ export default function NutritionTab({
               </div>
 
               <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '4px', background: 'var(--track, var(--bg-secondary))', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${proteinsPct}%`, background: '#eab308', transition: 'width 0.3s' }}></div>
                 </div>
               </div>
@@ -1463,7 +1463,7 @@ export default function NutritionTab({
               </div>
 
               <div>
-                <div style={{ width: '100%', height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '4px', background: 'var(--track, var(--bg-secondary))', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${waterPct}%`, background: '#06b6d4', transition: 'width 0.3s' }}></div>
                 </div>
               </div>
@@ -1505,7 +1505,7 @@ export default function NutritionTab({
             const ring = (dd) => (
               <svg width="40" height="40" viewBox="0 0 40 40" style={{ display: 'block', overflow: 'visible' }}>
                 {[0, 1, 2, 3].map(q => (
-                  <circle key={'t' + q} cx="20" cy="20" r={R} fill="none" stroke="var(--bg-secondary)" strokeWidth="4.5" strokeLinecap="round"
+                  <circle key={'t' + q} cx="20" cy="20" r={R} fill="none" stroke="var(--track, var(--bg-secondary))" strokeWidth="4.5" strokeLinecap="round"
                     strokeDasharray={`${SEG} ${C - SEG}`} strokeDashoffset={-(q * C / 4) - GAP / 2} transform="rotate(-90 20 20)" />
                 ))}
                 {dd.goals && dd.goals.map((g, q) => (
@@ -1561,7 +1561,7 @@ export default function NutritionTab({
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: 'var(--text-muted)', marginBottom: '3px' }}>
                         <span>{_t("Magra:")}</span><b style={{ color: 'var(--text-primary)' }}>{leanPct > 0 ? `${leanPct}%` : '--'}</b>
                       </div>
-                      <div style={{ height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '4px', background: 'var(--track, var(--bg-secondary))', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${Math.min(100, leanPct)}%`, background: '#38bdf8' }} />
                       </div>
                     </div>
@@ -1569,7 +1569,7 @@ export default function NutritionTab({
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: 'var(--text-muted)', marginBottom: '3px' }}>
                         <span>{_t("Grassa:")}</span><b style={{ color: 'var(--text-primary)' }}>{fatPct > 0 ? `${fatPct}%` : '--'}</b>
                       </div>
-                      <div style={{ height: '4px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '4px', background: 'var(--track, var(--bg-secondary))', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${Math.min(100, fatPct)}%`, background: '#f59e0b' }} />
                       </div>
                     </div>

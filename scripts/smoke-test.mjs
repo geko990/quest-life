@@ -356,13 +356,7 @@ try {
 // Controlli sul build
 const css = fs.readdirSync('dist/assets').filter((f) => f.endsWith('.css'))
   .map((f) => fs.readFileSync(`dist/assets/${f}`, 'utf8')).join('');
-const bg = css.match(/url\(([^)]*fantasy-map-bg[^)]*)\)/);
-if (!bg) problems.push('Sfondo D&D non referenziato nel CSS');
-else {
-  const res = await page.request.get(new URL(bg[1].replace(/['"]/g, ''), new URL('assets/x.css', BASE)).href);
-  if (res.status() !== 200) problems.push(`Sfondo D&D non raggiungibile (${res.status()})`);
-  else report('Sfondo D&D caricato correttamente');
-}
+if (!css.includes('[data-theme=')) problems.push('Temi mancanti nel CSS');
 for (const f of ['sw.js', 'version.json', 'manifest.json', 'icon.png']) {
   const res = await page.request.get(BASE + f);
   if (res.status() !== 200) problems.push(`${f} mancante nel sito (${res.status()})`);
