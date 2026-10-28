@@ -354,8 +354,11 @@ try {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, serviceWorkers: 'block' });
   const p2 = await ctx.newPage();
   let blocked = 0;
+  // come dopo una pubblicazione: il file non esiste più finché la pagina non si ricarica dalla rete
   await p2.route(/\/assets\/bootApp-[^/]+\.js$/, (route) => {
-    if (blocked === 0) { blocked++; return route.abort(); }
+    let pageUrl = '';
+    try { pageUrl = route.request().frame().url(); } catch (_) {}
+    if (!/[?&]v=\d+/.test(pageUrl)) { blocked++; return route.fulfill({ status: 404, body: 'Not found' }); }
     return route.continue();
   });
   const trail = [];
@@ -368,7 +371,7 @@ try {
     const root = await p2.evaluate(() => document.querySelector('#root')?.children.length).catch(() => '?');
     throw new Error(`app non ripartita (bloccati ${blocked}, url ${p2.url().replace(BASE, '/')}, root ${root}) — ${trail.join(' | ')}`);
   }
-  if (blocked !== 1) throw new Error(`il pezzo bootApp non è stato intercettato (${blocked})`);
+  if (blocked < 1) throw new Error('il pezzo bootApp non è stato intercettato');
   const logged = await p2.evaluate(() => localStorage.getItem('questlife_error_log'));
   if (logged && /Importing a module|dynamically imported module/i.test(logged)) throw new Error('il caricamento fallito è finito nel registro errori');
   report('Recupero da versione vecchia: caricamento fallito → pagina ricaricata, app avviata');
