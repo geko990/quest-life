@@ -328,7 +328,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
 
         {/* Rigo 3: Stelline + Caratteristiche */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-          <div style={{ display: 'flex', gap: '1px', fontSize: '14px', lineHeight: 1 }}>
+          <div style={{ display: 'flex', gap: '1px', fontSize: '14px', lineHeight: 1, flexShrink: 0 }}>
             {[1, 2, 3, 4, 5].map(star => (
               <button
                 key={star}
@@ -347,8 +347,9 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
             <select
+              className="planner-stat"
               value={slot.statId}
               onChange={(e) => handleSlotChange(key, 'statId', e.target.value)}
               style={{
@@ -359,7 +360,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                 padding: '2px 4px',
                 fontSize: '9px',
                 fontWeight: 'bold',
-                height: '22px'
+                height: '22px',
+                flex: '1 1 0', minWidth: 0, width: 'auto', maxWidth: '50%'
               }}
             >
               {stats.map(s => (
@@ -368,6 +370,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
             </select>
 
             <select
+              className="planner-stat"
               value={slot.secondaryStatId || ''}
               onChange={(e) => handleSlotChange(key, 'secondaryStatId', e.target.value)}
               style={{
@@ -377,7 +380,8 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
                 borderRadius: '6px',
                 padding: '2px 4px',
                 fontSize: '9px',
-                height: '22px'
+                height: '22px',
+                flex: '1 1 0', minWidth: 0, width: 'auto', maxWidth: '50%'
               }}
             >
               <option value="">{_t("+ Sec (nessuno)")}</option>

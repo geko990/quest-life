@@ -4949,6 +4949,12 @@ textarea {
     padding-left: 20px !important;
     padding-right: 36px !important;
 }
+/* "È il tuo turno": selettori delle caratteristiche piccoli, devono stare nella tessera dell'azione */
+.modal select.planner-stat {
+    padding-left: 8px !important;
+    padding-right: 20px !important;
+    text-overflow: ellipsis;
+}
 
 .modal input[name="emoji"] {
     padding-left: 0 !important;
