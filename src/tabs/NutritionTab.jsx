@@ -3,6 +3,7 @@ import QuickMealModal from '../components/QuickMealModal';
 import { SHOPPING_CATEGORIES, groupShoppingItems, normalizeShoppingName, categorizeShoppingItem } from '../utils/shoppingCategories';
 
 import { _t, getLocale, dayShort } from '../i18n';
+import EmojiField from '../components/EmojiField';
 import { getGameDateObj, formatISO } from '../utils/helpers';
 export default function NutritionTab({
   activeTab,
@@ -1758,10 +1759,9 @@ export default function NutritionTab({
                       style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}>
-                        <input
-                          type="text"
+                        <EmojiField
                           value={editingShopItemEmoji}
-                          onChange={(e) => setEditingShopItemEmoji(e.target.value)}
+                          onChange={setEditingShopItemEmoji}
                           style={{
                             width: '38px',
                             height: '36px',

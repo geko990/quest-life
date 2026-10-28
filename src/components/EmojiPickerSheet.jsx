@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { _t } from '../i18n';
 import { EMOJI_CATEGORIES, lastEmojiIn } from '../utils/emojiCatalog';
 
@@ -37,8 +38,9 @@ export default function EmojiPickerSheet({ open, emoji, color = '#7c3aed', onPic
     timers.current.push(setTimeout(() => { onPick && onPick(e); onClose && onClose(); }, 200));
   };
 
-  return (
-    <div className="emoji-picker-root" style={{ '--c': color }}>
+  // In un portale sopra a tutto; i clic non risalgono alle finestre sotto (che si chiuderebbero)
+  return createPortal(
+    <div className="emoji-picker-root" style={{ '--c': color }} onClick={(e) => e.stopPropagation()}>
       <div className={`emoji-picker-veil ${shown ? 'show' : ''}`} onClick={onClose} />
       <div className={`emoji-picker-sheet ${shown ? 'show' : ''}`} role="dialog" aria-label={_t("Scegli l'emoji")}>
         <div className="emoji-picker-grab" />
@@ -71,6 +73,7 @@ export default function EmojiPickerSheet({ open, emoji, color = '#7c3aed', onPic
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

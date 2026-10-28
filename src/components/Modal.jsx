@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { _t, getLocale } from '../i18n';
+import EmojiField from './EmojiField';
 export default function Modal({ isOpen, onClose, type, editData, onSave, onDelete, stats, xpLog, oneshots = [], habits = [], quests = [], settings, onEditStat, onActivateChallenge, onToggleSubquest, recentTaskTemplates = [] }) {
   if (!isOpen) return null;
 
@@ -344,12 +345,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
-                <input
-                  type="text"
-                  name="emoji"
+                <EmojiField
                   value={form.emoji || ''}
-                  onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl"
                 />
               </div>
               <div className="flex-1">
@@ -398,12 +397,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
-                <input
-                  type="text"
-                  name="emoji"
+                <EmojiField
                   value={form.emoji || ''}
-                  onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl"
                 />
               </div>
               <div className="flex-1">
@@ -533,12 +530,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
-                <input
-                  type="text"
-                  name="emoji"
+                <EmojiField
                   value={form.emoji || ''}
-                  onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl"
                 />
               </div>
               <div className="flex-1">
@@ -664,12 +659,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1.5">{_t("Emoji")}</label>
-                <input
-                  type="text"
-                  name="emoji"
+                <EmojiField
                   value={form.emoji || ''}
-                  onChange={handleChange}
-                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl focus:border-accent-primary focus:outline-none"
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-2xl text-center text-xl"
                 />
               </div>
               <div className="flex-1">
@@ -1341,12 +1334,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Emoji")}</label>
-                <input
-                  type="text"
-                  name="emoji"
+                <EmojiField
                   value={form.emoji || ''}
-                  onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg focus:border-accent-primary focus:outline-none"
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg"
                 />
               </div>
               <div className="flex-1">
@@ -1528,12 +1519,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             <div className="flex gap-3">
               <div className="w-14">
                 <label className="block text-xs text-text-secondary font-bold mb-1">{_t("Emoji")}</label>
-                <input
-                  type="text"
-                  name="emoji"
+                <EmojiField
                   value={form.emoji || ''}
-                  onChange={handleChange}
-                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg focus:border-accent-primary focus:outline-none"
+                  onChange={(v) => handleChange({ target: { name: 'emoji', value: v } })}
+                  className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl text-center text-lg"
                 />
               </div>
               <div className="flex-1">

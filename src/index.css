@@ -8432,7 +8432,8 @@ html[data-animations="off"] .levelup-disc::after {
     opacity: 0;
     cursor: pointer;
 }
-.planner-meta { display: flex; align-items: center; gap: 10px; padding-left: 4px; min-width: 0; }
+/* Colonne fisse: stelle | principale | · | secondaria, così le caratteristiche sono allineate in tutte le tessere */
+.planner-meta { display: grid; grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: 10px; padding-left: 4px; min-width: 0; }
 .planner-stars { display: flex; gap: 1px; flex-shrink: 0; }
 .planner-stars button {
     border: 0;
@@ -8454,15 +8455,17 @@ html[data-animations="off"] .levelup-disc::after {
     font-weight: 700;
     color: var(--text-primary);
     white-space: nowrap;
-    flex-shrink: 0;
+    min-width: 0;
+    overflow: hidden;
 }
-.planner-stat.sec { font-weight: 500; color: var(--text-secondary); flex-shrink: 1; min-width: 0; overflow: hidden; }
-.planner-stat span { overflow: hidden; text-overflow: ellipsis; }
+.planner-stat.sec { font-weight: 500; color: var(--text-secondary); }
+.planner-stat span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.planner-stat i { flex-shrink: 0; }
 .planner-stat i { font-style: normal; font-size: 9px; opacity: 0.55; }
 .planner-dot { color: var(--text-muted, #6b7080); opacity: 0.6; font-size: 12px; }
 
 /* Selettore delle emoji (src/components/EmojiPickerSheet.jsx) */
-.emoji-picker-root { position: fixed; inset: 0; z-index: 3000; }
+.emoji-picker-root { position: fixed; inset: 0; z-index: 100002; }
 .emoji-picker-veil {
     position: absolute;
     inset: 0;
@@ -8549,3 +8552,15 @@ html[data-animations="off"] .levelup-disc::after {
 }
 html[data-animations="off"] .emoji-picker-sheet, html[data-animations="off"] .emoji-picker-veil { transition: none; }
 html[data-animations="off"] .emoji-picker-big { animation: none; }
+/* Campo emoji (EmojiField): bottone con l'aspetto della vecchia casella */
+.emoji-field {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+}
+.emoji-field:active { transform: scale(0.94); }

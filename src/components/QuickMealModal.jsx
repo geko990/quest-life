@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { searchOnlineFood, guessFoodEmoji } from '../utils/nutritionSearch';
 
 import { _t } from '../i18n';
+import EmojiField from './EmojiField';
 export default function QuickMealModal({
   isOpen,
   onClose,
@@ -635,10 +636,9 @@ export default function QuickMealModal({
                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>
                       {_t("Nome Alimento")}</label>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <input
-                        type="text"
+                      <EmojiField
                         value={mealEmoji}
-                        onChange={(e) => setMealEmoji(e.target.value)}
+                        onChange={setMealEmoji}
                         style={{
                           width: '42px',
                           height: '38px',

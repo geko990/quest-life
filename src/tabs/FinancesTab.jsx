@@ -6,6 +6,7 @@ import { useBarInsets, overlayPadding } from '../utils/useBarInsets';
 import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getAccountCardTheme, getPeriodInterest } from '../utils/accounts';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
+import EmojiField from '../components/EmojiField';
 const EXPENSE_CATEGORIES = [
   { id: 'cibo', label: 'Cibo & Ristorante', emoji: '🍕' },
   { id: 'casa', label: 'Casa & Bollette', emoji: '🏠' },
@@ -4226,11 +4227,11 @@ export default function FinancesTab({
                 </div>
                 <div style={{ width: '70px' }}>
                   <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Emoji")}</label>
-                  <input
-                    type="text"
+                  <EmojiField
                     value={secEmoji}
-                    onChange={(e) => setSecEmoji(e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px', textAlign: 'center', marginTop: '2px', boxSizing: 'border-box' }}
+                    onChange={setSecEmoji}
+                    fallback="🏦"
+                    style={{ width: '100%', height: '35px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '18px', marginTop: '2px', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>

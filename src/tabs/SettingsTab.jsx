@@ -7,6 +7,7 @@ import ReminderSettings from '../components/ReminderSettings';
 import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } from '../components/settings/SettingsUI';
 
 import { _t, getLocale } from '../i18n';
+import EmojiField from '../components/EmojiField';
 export default function SettingsTab({
   settings = {},
   setSettings,
@@ -763,12 +764,10 @@ export default function SettingsTab({
             <div style={{ padding: '16px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Preset Name & Emoji */}
               <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
+                <EmojiField
                   value={editingPreset.emoji || '📅'}
-                  onChange={(e) => setEditingPreset(prev => ({ ...prev, emoji: e.target.value }))}
-                  style={{ width: '45px', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', fontSize: '16px' }}
-                  maxLength={2}
+                  onChange={(v) => setEditingPreset(prev => ({ ...prev, emoji: v }))}
+                  style={{ width: '45px', flexShrink: 0, background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '8px', fontSize: '18px' }}
                 />
                 <input
                   type="text"
