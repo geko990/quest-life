@@ -348,6 +348,27 @@ for (const f of ['sw.js', 'version.json', 'manifest.json', 'icon.png']) {
 }
 report(`Versione pubblicata: ${fs.readFileSync('dist/version.json', 'utf8').replace(/\s+/g, ' ')}`);
 
+// Versione vecchia dopo una pubblicazione: il pezzo principale dell'app non si carica una volta
+// ("Importing a module script failed"). L'app deve ripulire e ricaricarsi da sola, senza schermata vuota.
+try {
+  const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, serviceWorkers: 'block' });
+  const p2 = await ctx.newPage();
+  let blocked = 0;
+  await p2.route(/\/assets\/bootApp-[^/]+\.js$/, (route) => {
+    if (blocked === 0) { blocked++; return route.abort(); }
+    return route.continue();
+  });
+  await p2.goto(BASE, { waitUntil: 'load' });
+  await p2.waitForFunction(() => /[?&]v=\d+/.test(location.search) && document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
+  if (blocked !== 1) throw new Error(`il pezzo bootApp non è stato intercettato (${blocked})`);
+  const logged = await p2.evaluate(() => localStorage.getItem('questlife_error_log'));
+  if (logged && /Importing a module|dynamically imported module/i.test(logged)) throw new Error('il caricamento fallito è finito nel registro errori');
+  report('Recupero da versione vecchia: caricamento fallito → pagina ricaricata, app avviata');
+  await ctx.close();
+} catch (e) {
+  problems.push(`Recupero da versione vecchia: ${e.message}`);
+}
+
 await browser.close();
 if (problems.length) {
   for (const p of problems) console.log(`::error::${p}`);

@@ -14,6 +14,11 @@ const start = () => {
     .then((m) => m.default())
     .catch((err) => {
       console.error('[Avvio] Caricamento dell\'app non riuscito:', err);
+      // Di solito è una pagina vecchia salvata dal service worker i cui file non esistono più sul sito:
+      // si ripulisce e si ricarica una volta dalla rete (vedi __qlRecover in index.html).
+      let recovering = false;
+      try { recovering = !!(window.__qlRecover && window.__qlRecover(err && err.message)); } catch (_) {}
+      if (recovering) return; // la pagina si sta ricaricando: niente errore nel registro
       try { window.__qlBootDone && window.__qlBootDone(); } catch (_) {}
       throw err;
     });

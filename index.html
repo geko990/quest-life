@@ -14,30 +14,40 @@
   <meta name="theme-color" content="#0f0f1a">
 
   <!-- Emergency Auto-Recovery Script (Preserves localStorage user data) -->
+  <!-- Recupero da versione vecchia: se la pagina salvata dal service worker è di una versione precedente
+       e i suoi file non ci sono più sul sito (dopo una pubblicazione), il codice dell'app non si carica
+       ("Importing a module script failed" / "Script error."). Allora si tolgono service worker e copie
+       salvate e si ricarica una volta la pagina dalla rete. I dati (localStorage) restano intatti.
+       __qlRecover è usata anche da src/main.jsx quando il caricamento dell'app fallisce. -->
   <script>
     (function() {
-      window.onerror = function(msg, url, line) {
-        console.error('[Emergency Recovery] Startup Error:', msg);
-        var lastReload = localStorage.getItem('rpg_last_emergency_reload');
+      window.__qlRecover = function (reason) {
+        console.error('[Emergency Recovery] Startup Error:', reason);
+        var lastReload = 0;
+        try { lastReload = parseInt(localStorage.getItem('rpg_last_emergency_reload') || '0', 10) || 0; } catch (e) {}
         var now = Date.now();
-        if (!lastReload || (now - parseInt(lastReload, 10)) > 15000) {
-          localStorage.setItem('rpg_last_emergency_reload', now.toString());
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
-            });
-          }
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              for (var i = 0; i < names.length; i++) { caches.delete(names[i]); }
-            });
-          }
-          setTimeout(function() {
-            var search = window.location.search || '?';
-            window.location.href = window.location.pathname + search + '&v=' + Date.now();
-          }, 300);
+        if (now - lastReload <= 15000) return false; // già provato da poco: niente ricariche a catena
+        try { localStorage.setItem('rpg_last_emergency_reload', now.toString()); } catch (e) {}
+        var jobs = [];
+        if ('serviceWorker' in navigator) {
+          jobs.push(navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function (r) { return r.unregister(); }));
+          }).catch(function () {}));
         }
+        if ('caches' in window) {
+          jobs.push(caches.keys().then(function(names) {
+            return Promise.all(names.map(function (n) { return caches.delete(n); }));
+          }).catch(function () {}));
+        }
+        var go = function () {
+          var search = window.location.search || '?';
+          window.location.href = window.location.pathname + search + '&v=' + Date.now();
+        };
+        // si ricarica quando la pulizia è finita (al massimo dopo 1,5 s)
+        Promise.race([Promise.all(jobs), new Promise(function (r) { setTimeout(r, 1500); })]).then(go, go);
+        return true;
       };
+      window.onerror = function(msg) { window.__qlRecover(msg); };
     })();
   </script>
 
