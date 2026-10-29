@@ -5,14 +5,21 @@ import { createPortal } from 'react-dom';
 // Il JSX dell'app (src/jsx/) trasforma ogni <select> in questo componente: stesse props (value, onChange,
 // name, className, style, disabled, <option>, <optgroup>), così il codice delle schermate non cambia.
 // Il bottone prende gli stessi stili del select (in index.css i selettori `select` valgono anche per `.qsel`)
-// e mostra la voce scelta con le emoji Fluent; al tocco sale dal basso una rotellina come quella di iOS:
-// la voce al centro è quella scelta (cambia mentre si gira, come l'originale), un tocco su una voce la
-// sceglie e chiude, un tocco fuori chiude.
-// Misure: righe da 44 px, 5 visibili. Tempi: pannello che sale in 0,3 s, chiusura dopo un tocco 0,18 s.
+// e mostra la voce scelta con le emoji Fluent; al tocco compare **accanto al campo** (sotto, o sopra se
+// sotto non c'è spazio, come il menu di iOS) un pannello flottante con una rotellina: la voce al centro è
+// quella scelta (cambia mentre si gira, come l'originale), un tocco su una voce la sceglie e chiude,
+// un tocco fuori chiude.
+// Misure: righe da 40 px, 5 visibili, pannello largo quanto il campo (min 210 px, max schermo − 24 px),
+// 8 px dal campo e almeno 12 px dai bordi. Tempi: il pannello si apre dal campo (scala 0,9 → 1) in 0,22 s,
+// si chiude in 0,16 s; dopo un tocco su una voce chiusura dopo 0,18 s.
 // Per tenere il menu del telefono in un punto preciso: <select data-native ...>.
-const ROW = 44;
+const ROW = 40;
 const VISIBLE = 5;
 const PAD = ROW * Math.floor(VISIBLE / 2);
+const MARGIN = 12;   // distanza minima dai bordi dello schermo
+const GAP = 8;       // distanza dal campo
+const MIN_W = 210;
+const PANEL_PAD = 6; // margine interno del pannello
 
 const textOf = (children) => {
   let out = '';
@@ -50,7 +57,8 @@ export default function WheelSelect(props) {
   const choices = options.filter(o => !o.header && !o.hidden);
   // Come il select del browser: senza valore valido si vede la prima voce
   const selected = choices.find(o => o.value === raw) || choices[0];
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(null); // posizione del campo quando è aperto
+  const btnRef = useRef(null);
 
   const emit = (v) => {
     if (selected && v === selected.value) return;
@@ -67,6 +75,7 @@ export default function WheelSelect(props) {
   return (
     <>
       <button
+        ref={btnRef}
         type="button"
         {...aria}
         id={id}
@@ -76,8 +85,8 @@ export default function WheelSelect(props) {
         className={`qsel${className ? ' ' + className : ''}`}
         style={style}
         aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={(e) => { e.stopPropagation(); if (!disabled) setOpen(true); }}
+        aria-expanded={!!open}
+        onClick={(e) => { e.stopPropagation(); if (!disabled && btnRef.current) setOpen(btnRef.current.getBoundingClientRect()); }}
       >
         <span className="qsel-text">{selected ? selected.label : ''}</span>
         <svg className="qsel-chev" viewBox="0 0 10 16" aria-hidden="true"><path d="M2 6l3-3 3 3M2 10l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -88,14 +97,15 @@ export default function WheelSelect(props) {
           value={selected ? selected.value : undefined}
           label={props['aria-label'] || title}
           onChange={emit}
-          onClose={() => setOpen(false)}
+          anchor={open}
+          onClose={() => setOpen(null)}
         />
       )}
     </>
   );
 }
 
-function WheelSheet({ options, value, label, onChange, onClose }) {
+function WheelSheet({ options, value, label, anchor, onChange, onClose }) {
   const [shown, setShown] = useState(false);
   const scrollRef = useRef(null);
   const itemsRef = useRef([]);
@@ -140,7 +150,7 @@ function WheelSheet({ options, value, label, onChange, onClose }) {
     if (closing.current) return;
     closing.current = true;
     setShown(false);
-    setTimeout(onClose, 260);
+    setTimeout(onClose, 170);
   };
 
   const onScroll = () => {
@@ -171,11 +181,27 @@ function WheelSheet({ options, value, label, onChange, onClose }) {
     setTimeout(close, 180);
   };
 
+  // Posizione: sotto il campo se c'è spazio, altrimenti sopra (o dove ce n'è di più)
+  const vw = window.innerWidth; const vh = window.innerHeight;
+  const h = ROW * VISIBLE + PANEL_PAD * 2;
+  const w = Math.min(vw - MARGIN * 2, Math.max(MIN_W, anchor ? anchor.width : MIN_W));
+  const a = anchor || { left: (vw - w) / 2, right: (vw + w) / 2, top: vh / 2, bottom: vh / 2, width: w };
+  const below = vh - a.bottom - GAP - MARGIN; const above = a.top - GAP - MARGIN;
+  const down = below >= h || below >= above;
+  let top = down ? a.bottom + GAP : a.top - GAP - h;
+  top = Math.max(MARGIN, Math.min(top, vh - MARGIN - h));
+  const left = Math.max(MARGIN, Math.min(a.left + (a.width - w) / 2, vw - MARGIN - w));
+  const originX = Math.max(0, Math.min(w, a.left + a.width / 2 - left));
+
   return createPortal(
     <div className="wheel-root" onClick={(e) => e.stopPropagation()}>
       <div className={`wheel-veil ${shown ? 'show' : ''}`} onClick={close} />
-      <div className={`wheel-sheet ${shown ? 'show' : ''}`} role="listbox" aria-label={label}>
-        <div className="wheel-grab" />
+      <div
+        className={`wheel-pop ${shown ? 'show' : ''}`}
+        role="listbox"
+        aria-label={label}
+        style={{ top, left, width: w, padding: PANEL_PAD, transformOrigin: `${originX}px ${down ? 0 : h}px` }}
+      >
         <div className="wheel" style={{ height: ROW * VISIBLE }}>
           <div className="wheel-band" style={{ top: PAD, height: ROW }} />
           <div className="wheel-scroll" ref={scrollRef} onScroll={onScroll} style={{ paddingTop: PAD, paddingBottom: PAD }}>

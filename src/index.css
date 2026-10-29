@@ -8392,21 +8392,23 @@ html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0
 .qsel:disabled { cursor: default; opacity: .5; }
 .wheel-root { position: fixed; inset: 0; z-index: 2147482000; } /* sopra a tutte le finestre, come il selettore delle emoji */
 .wheel-veil {
-    position: absolute; inset: 0; background: rgba(5, 6, 10, 0.45);
-    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-    opacity: 0; transition: opacity 0.26s ease;
+    position: absolute; inset: 0; background: rgba(5, 6, 10, 0.18);
+    opacity: 0; transition: opacity 0.18s ease;
 }
 .wheel-veil.show { opacity: 1; }
-.wheel-sheet {
-    position: absolute; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto;
-    background: var(--bg-card, #262a33); border-top: 1px solid var(--glass-border);
-    border-radius: 28px 28px 0 0; padding: 10px 0 max(18px, env(safe-area-inset-bottom, 0px));
-    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.35);
-    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+/* Pannello flottante accanto al campo, come il menu di iOS: posizione e punto d'apertura da WheelSelect.jsx */
+.wheel-pop {
+    position: absolute; box-sizing: border-box;
+    background: var(--bg-card, #262a33); border: 1px solid var(--glass-border);
+    /* un filo più chiaro della finestra sotto, così si stacca anche in scuro */
+    background: color-mix(in srgb, var(--bg-card, #262a33) 93%, var(--text-primary, #fff) 7%);
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.12);
+    opacity: 0; transform: scale(0.9);
+    transition: opacity 0.16s ease, transform 0.16s ease;
 }
-.wheel-sheet.show { transform: none; }
-.wheel-grab { width: 44px; height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--text-primary) 18%, transparent); margin: 0 auto 8px; }
-.wheel { position: relative; margin: 0 16px; }
+.wheel-pop.show { opacity: 1; transform: none; transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.wheel { position: relative; }
 .wheel-band {
     position: absolute; left: 0; right: 0; border-radius: 12px; pointer-events: none;
     background: color-mix(in srgb, var(--text-primary) 8%, transparent);
@@ -8420,7 +8422,7 @@ html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0
 .wheel-scroll::-webkit-scrollbar { display: none; }
 .wheel-item {
     display: flex; align-items: center; justify-content: center; padding: 0 12px;
-    scroll-snap-align: center; font-size: 19px; color: var(--text-primary); cursor: pointer;
+    scroll-snap-align: center; font-size: 17px; color: var(--text-primary); cursor: pointer;
     white-space: nowrap; transform-origin: center; will-change: transform;
 }
 .wheel-item > span { overflow: hidden; text-overflow: ellipsis; }
@@ -8429,8 +8431,8 @@ html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0
     letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted, #8a8aa0);
 }
 .wheel-item.is-disabled { opacity: .35 !important; cursor: default; }
-@media (prefers-reduced-motion: reduce) { .wheel-sheet, .wheel-veil { transition: none; } }
-html[data-animations="off"] .wheel-sheet, html[data-animations="off"] .wheel-veil { transition: none; }
+@media (prefers-reduced-motion: reduce) { .wheel-pop, .wheel-veil { transition: none !important; } }
+html[data-animations="off"] .wheel-pop, html[data-animations="off"] .wheel-veil { transition: none !important; }
 /* Stelle della difficoltà (#57): ⭐ Fluent, quelle non raggiunte in grigio */
 .qstar-off { filter: grayscale(1); }
 .planner-stars button.qstar-off { opacity: .35; }
