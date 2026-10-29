@@ -8333,3 +8333,19 @@ html[data-keyboard="open"] .kb-overlay > * {
 }
 html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0 0 2px var(--accent-primary); }
 @media (prefers-reduced-motion: reduce) { .dt-step.is-moved { animation: none; } }
+
+/* Fluent Emoji (#54): disegni al posto delle emoji del telefono, alti quanto il testo */
+.fe-emoji {
+    display: inline-block;
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.2em;
+    object-fit: contain;
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+}
+/* Nav bar: emoji grigie a riposo, a colori (i loro) sulla scheda attiva */
+.nav-em { display: inline-flex; transition: filter 0.25s ease, opacity 0.25s ease; }
+.nav-em.is-off { filter: grayscale(1); opacity: 0.55; }
+[data-mode="light"] .nav-em.is-off { opacity: 0.6; }

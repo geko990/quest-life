@@ -1,6 +1,6 @@
 // RPG LIFE SERVICE WORKER
-const CACHE_NAME = 'rpg-life-v5.9.266-1793229544386';
-const SW_VERSION = '5.9.266';
+const CACHE_NAME = 'rpg-life-v5.9.267-1793252527605';
+const SW_VERSION = '5.9.267';
 
 // Assets to precache on install (app shell)
 const PRECACHE_ASSETS = [
@@ -23,25 +23,34 @@ self.addEventListener('install', (event) => {
 // stanno in una cache a parte che sopravvive agli aggiornamenti, e si usano subito dal telefono.
 const STATIC_CACHE = 'ql-static-v1';
 const STATIC_MAX_ENTRIES = 60;
+// Disegni Fluent Emoji (#54, public/fluent/): non cambiano mai, cache a parte che sopravvive agli aggiornamenti
+const FLUENT_CACHE = 'ql-fluent-v1';
+const FLUENT_MAX_ENTRIES = 800;
 const NAV_TIMEOUT_MS = 400; // la pagina si chiede alla rete, ma senza aspettarla più di così (prima 1,2 s: schermo nero)
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME && key !== STATIC_CACHE).map((key) => caches.delete(key))
+        keys.filter((key) => key !== CACHE_NAME && key !== STATIC_CACHE && key !== FLUENT_CACHE).map((key) => caches.delete(key))
       );
     }).then(() => trimStaticCache()).then(() => self.clients.claim())
   );
 });
 
 async function trimStaticCache() {
-  try {
-    const cache = await caches.open(STATIC_CACHE);
-    const keys = await cache.keys();
-    const extra = keys.length - STATIC_MAX_ENTRIES;
-    for (let i = 0; i < extra; i++) await cache.delete(keys[i]); // i più vecchi per primi
-  } catch (_) {}
+  for (const [name, max] of [[STATIC_CACHE, STATIC_MAX_ENTRIES], [FLUENT_CACHE, FLUENT_MAX_ENTRIES]]) {
+    try {
+      const cache = await caches.open(name);
+      const keys = await cache.keys();
+      const extra = keys.length - max;
+      for (let i = 0; i < extra; i++) await cache.delete(keys[i]); // i più vecchi per primi
+    } catch (_) {}
+  }
+}
+
+function isFluent(url) {
+  return url.origin === self.location.origin && /\/fluent\/(3d|color)\/[0-9a-f-]+\.webp$/.test(url.pathname);
 }
 
 self.addEventListener('message', (event) => {
@@ -55,8 +64,8 @@ function isImmutable(url) {
   return url.origin === self.location.origin && /\/assets\/[^/]+-[A-Za-z0-9_-]{6,}\.[a-z0-9]+$/i.test(url.pathname);
 }
 
-async function cacheFirst(request) {
-  const cache = await caches.open(STATIC_CACHE);
+async function cacheFirst(request, name = STATIC_CACHE) {
+  const cache = await caches.open(name);
   const hit = await cache.match(request);
   if (hit) return hit;
   const response = await fetch(request);
@@ -93,6 +102,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
     );
+    return;
+  }
+
+  if (isFluent(url)) {
+    event.respondWith(cacheFirst(event.request, FLUENT_CACHE).catch(() => caches.match(event.request)));
     return;
   }
 

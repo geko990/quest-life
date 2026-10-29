@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 
 import { _t } from '../i18n';
+import Emoji from './Emoji';
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome, badges = {} }) {
   const lastClicksRef = useRef({});
 
@@ -147,7 +148,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', pointerEvents: 'none', WebkitTouchCallout: 'none' }}
                   />
                 ) : (
-                  <span style={{ fontSize: '20px' }}>{avatarEmoji || '⚔️'}</span>
+                  <span style={{ fontSize: '20px' }}><Emoji e={avatarEmoji || '⚔️'} big /></span>
                 )}
               </button>
             );
@@ -185,7 +186,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                 title={_t(item.label)}
               >
                 <span style={{ fontSize: '18px', marginBottom: '2px', position: 'relative' }}>
-                  {item.icon}
+                  <span className={`nav-em${isActive ? '' : ' is-off'}`}><Emoji e={item.icon} /></span>
                   {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
                 </span>
                 <span style={{ fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '58px' }}>
@@ -256,7 +257,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', pointerEvents: 'none', WebkitTouchCallout: 'none' }}
                   />
                 ) : (
-                  <span style={{ fontSize: '22px' }}>{avatarEmoji || '⚔️'}</span>
+                  <span style={{ fontSize: '22px' }}><Emoji e={avatarEmoji || '⚔️'} big /></span>
                 )}
               </button>
             </div>
@@ -294,7 +295,7 @@ export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatar
               className={isActive ? 'nav-icon-pop' : undefined}
               style={{ fontSize: '18px', marginBottom: '8px', lineHeight: 1, position: 'relative' }}
             >
-              {item.icon}
+              <span className={`nav-em${isActive ? '' : ' is-off'}`}><Emoji e={item.icon} /></span>
               {isActive && <span className="nav-active-dot" />}
               {badges[item.id] > 0 && <span className="nav-dot">{badges[item.id] > 9 ? '9+' : badges[item.id]}</span>}
             </span>

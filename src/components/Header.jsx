@@ -3,6 +3,7 @@ import { getCumulativeXpForLevel, forceUpdateApp, getMonthlyStarCounts, getGameD
 import { TITLES, LEVEL_CAP } from '../utils/constants';
 
 import { _t, dayShort, monthLong, playerDisplayName } from '../i18n';
+import Emoji from './Emoji';
 import { computeMedalSummary, medalDisplayName, medalMonthYear } from '../utils/medalSummary';
 export default function Header({
   player,
@@ -185,7 +186,7 @@ export default function Header({
               justifyContent: 'center'
             }}
           >
-            <span className="streak-emoji" style={{ fontSize: isLandscape ? '16px' : '20px' }}>{activity7Days.moodEmoji}</span>
+            <span className="streak-emoji" style={{ fontSize: isLandscape ? '16px' : '20px' }}><Emoji e={activity7Days.moodEmoji} big /></span>
           </div>
         </div>
 
@@ -208,7 +209,7 @@ export default function Header({
               <img className="header-img" src={player.avatarImage} alt={_t("Avatar")} />
             ) : (
               <span className="header-emoji" id="headerEmoji" style={isLandscape ? { fontSize: '16px' } : undefined}>
-                {player.avatarEmoji || '⚔️'}
+                <Emoji e={player.avatarEmoji || '⚔️'} big />
               </span>
             )}
           </div>
@@ -251,7 +252,7 @@ export default function Header({
                   <img className="popup-img" src={player.avatarImage} alt={_t("Avatar")} />
                 ) : (
                   <span className="popup-emoji" id="popupEmoji">
-                    {player.avatarEmoji || '⚔️'}
+                    <Emoji e={player.avatarEmoji || '⚔️'} big />
                   </span>
                 )}
               </div>
@@ -465,7 +466,7 @@ export default function Header({
             {/* Top Info Header */}
             <div className="popup-header-info">
               <div className="popup-avatar-frame" style={{ background: activity7Days.moodColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="popup-emoji" style={{ fontSize: '24px' }}>{activity7Days.moodEmoji}</span>
+                <span className="popup-emoji" style={{ fontSize: '24px' }}><Emoji e={activity7Days.moodEmoji} big /></span>
               </div>
               <div className="popup-details">
                 <h3 className="popup-name">{activity7Days.moodTitle}</h3>

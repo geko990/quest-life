@@ -3,6 +3,8 @@ import { getXpForLevel, getGameDate, getTomorrowGameDate } from '../utils/helper
 import MarqueeText from '../components/MarqueeText';
 
 import { _t } from '../i18n';
+import Emoji, { EmojiText } from '../components/Emoji';
+import { fluentUrl, emojiCode, markMissing, leadingEmoji } from '../utils/fluent';
 const SLOT_CATEGORY_INFO = [
   { type: 'action', title: 'Azione', emoji: '🎯', color: '#ef4444' },
   { type: 'bonus', title: 'Azione Bonus', emoji: '⚡', color: '#f59e0b' },
@@ -312,7 +314,7 @@ export default function HomeTab({
     if (visibleStats.length === 0) {
       return (
         <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-secondary)', padding: '36px 0' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎯</div>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}><Emoji e="🎯" big /></div>
           <div>{_t("Nessun attributo visibile.")}</div>
           <div style={{ fontSize: '11px', color: 'var(--accent-primary)', marginTop: '4px', cursor: 'pointer' }} onClick={() => setShowVisibilityModal(true)}>
             {_t("Tieni premuto qui per selezionare cosa mostrare")}</div>
@@ -374,14 +376,7 @@ export default function HomeTab({
       const coords = getCoordinates(i, 1.22);
       return (
         <g key={`label-${s.id}`} style={{ cursor: 'pointer' }} onClick={() => onOpenStatDetail && onOpenStatDetail(s)} title={_t("{0}: {1} XP", s.name, rollingXp[s.id] || 0)}>
-          <text
-            x={coords.x}
-            y={coords.y + 9}
-            textAnchor="middle"
-            style={{ fontSize: '26px', userSelect: 'none' }}
-          >
-            {s.icon}
-          </text>
+          <RadarEmoji e={s.icon || s.emoji || '⭐'} x={coords.x} y={coords.y} />
         </g>
       );
     });
@@ -550,7 +545,7 @@ export default function HomeTab({
         <div className="glass-panel" style={{ padding: '8px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>{cardMode === 'pomodoro' ? '🍅' : '⚔️'}</span>
+            <span style={{ fontSize: '18px', display: 'flex' }}><Emoji e={cardMode === 'pomodoro' ? '🍅' : '⚔️'} /></span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
               {cardMode === 'pomodoro' ? _t("Timer Pomodoro") : _t("Azioni del Giorno")}
             </h3>
@@ -587,7 +582,7 @@ export default function HomeTab({
               }}
               title={cardMode === 'pomodoro' ? _t("Passa a Lista Task") : _t("Passa a Timer Pomodoro")}
             >
-              <span>🍅</span>
+              <span style={{ fontSize: '14px', display: 'flex' }}><Emoji e="🍅" /></span>
               {safePomodoro.status === 'running' && (
                 <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>
                   {formatPomoTime(pomoSecs)}
@@ -749,7 +744,7 @@ export default function HomeTab({
             /* STANDARD TASKS LIST VIEW */
             todayActionsList.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', boxSizing: 'border-box' }}>
-                <div style={{ fontSize: '24px', marginBottom: '4px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>🎲</div>
+                <div style={{ fontSize: '30px', marginBottom: '4px', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}><Emoji e="🎲" big /></div>
                 <button
                   type="button"
                   onClick={() => onOpenPlanner && onOpenPlanner()}
@@ -807,7 +802,7 @@ export default function HomeTab({
                       {/* Content */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontSize: '11px' }}>{info.emoji}</span>
+                          <span style={{ fontSize: '11px', display: 'flex' }}><Emoji e={info.emoji} /></span>
                           <span style={{ fontSize: '9px', fontWeight: 'bold', color: info.color, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {_t(info.title)}
                           </span>
@@ -820,7 +815,10 @@ export default function HomeTab({
                           minWidth: 0,
                           width: '100%'
                         }}>
-                          <MarqueeText text={action.name} />
+                          {(() => {
+                            const lead = leadingEmoji(action.name);
+                            return <MarqueeText text={lead.rest} prefix={lead.e ? <span style={{ marginRight: '3px', display: 'inline-flex' }}><Emoji e={lead.e} /></span> : null} />;
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -860,7 +858,7 @@ export default function HomeTab({
               {/* Header inside overlay: congratulations + status */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '14px' }}>{isTomorrowPlanned ? '🌟' : '🎉'}</span>
+                  <span style={{ fontSize: '14px', display: 'flex' }}><Emoji e={isTomorrowPlanned ? '🌟' : '🎉'} /></span>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ffffff' }}>
                     {isTomorrowPlanned ? _t("Domani già programmato!") : _t("Azioni di oggi completate!")}
                   </span>
@@ -893,7 +891,7 @@ export default function HomeTab({
                   boxShadow: isTomorrowPlanned ? 'none' : '0 2px 10px rgba(124, 58, 237, 0.4)'
                 }}
               >
-                <span>{isTomorrowPlanned ? _t("✏️ Modifica pianificazione di domani") : _t("🎲 Pianifica la giornata di domani ➔")}</span>
+                <span><EmojiText text={isTomorrowPlanned ? _t("✏️ Modifica pianificazione di domani") : _t("🎲 Pianifica la giornata di domani ➔")} /></span>
               </button>
             </div>
           )}
@@ -905,7 +903,7 @@ export default function HomeTab({
         <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {_t("🍎 Sostentamento di oggi")}</h3>
+              <EmojiText text={_t("🍎 Sostentamento di oggi")} /></h3>
             <span
               onPointerDown={() => handleHealthPressStart('consumed')}
               onPointerUp={() => handleHealthPressEnd(() => {})}
@@ -947,7 +945,7 @@ export default function HomeTab({
               }}
               title={_t("Tocca per +100 kcal bruciate • Tieni premuto per Registro Allenamenti")}
             >
-              <div style={{ fontSize: '13px' }}>🔥</div>
+              <div style={{ fontSize: '14px' }}><Emoji e="🔥" /></div>
               <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--text-primary)' }}>{health.calories?.burned || 0}</div>
               <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>{_t("Bruciate")}</div>
             </div>
@@ -970,7 +968,7 @@ export default function HomeTab({
                 touchAction: 'manipulation'
               }}
             >
-              <div style={{ fontSize: '13px' }}>💧</div>
+              <div style={{ fontSize: '14px' }}><Emoji e="💧" /></div>
               <div style={{ fontWeight: 'bold', fontSize: '10.5px', color: 'var(--accent-primary)' }}>{health.water?.consumed || 0} / {health.water?.goal || health.waterGoal || 8}</div>
               <div style={{ fontSize: '8.5px', color: 'var(--text-muted)' }}>{_t("Bicchieri")}</div>
             </div>
@@ -993,7 +991,7 @@ export default function HomeTab({
                 touchAction: 'manipulation'
               }}
             >
-              <div style={{ fontSize: '14px' }}>👟</div>
+              <div style={{ fontSize: '15px' }}><Emoji e="👟" /></div>
               <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--text-primary)' }}>{Number(health.steps?.current) || 0}</div>
               <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{_t("Passi")}</div>
             </div>
@@ -1037,8 +1035,8 @@ export default function HomeTab({
                 }}
               >
                 <span>
-                  {activeTooltip === 'water' && _t("💧 Tap rapido: aggiunge +1 bicchiere (200ml)")}
-                  {activeTooltip === 'steps' && _t("👟 Tap rapido: aggiunge +1000 passi")}
+                  {activeTooltip === 'water' && <EmojiText text={_t("💧 Tap rapido: aggiunge +1 bicchiere (200ml)")} />}
+                  {activeTooltip === 'steps' && <EmojiText text={_t("👟 Tap rapido: aggiunge +1000 passi")} />}
                 </span>
                 <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px' }}>✕</span>
               </div>
@@ -1060,7 +1058,7 @@ export default function HomeTab({
           >
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', textAlign: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                {_t("📊 Gestisci Visibilità Grafico")}</h3>
+                <EmojiText text={_t("📊 Gestisci Visibilità Grafico")} /></h3>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
@@ -1085,7 +1083,7 @@ export default function HomeTab({
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: '10px', cursor: 'pointer', border: '1px solid var(--glass-border)' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '20px' }}>{s.icon}</span>
+                    <span style={{ fontSize: '20px', display: 'flex' }}><Emoji e={s.icon || s.emoji} big /></span>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{s.name}</div>
                       <div style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{_t("{0} • Liv. {1}", s.type, s.level)}</div>
@@ -1207,5 +1205,25 @@ export default function HomeTab({
         </div>
       )}
     </section>
+  );
+}
+
+// Emoji del radar (#54): disegno Fluent 3D dentro l'SVG; se manca, l'emoji del telefono
+function RadarEmoji({ e, x, y }) {
+  const [failed, setFailed] = React.useState(false);
+  const url = !failed && fluentUrl(e, true);
+  if (!url) {
+    return <text x={x} y={y + 9} textAnchor="middle" style={{ fontSize: '26px', userSelect: 'none' }}>{e}</text>;
+  }
+  return (
+    <image
+      href={url}
+      x={x - 16}
+      y={y - 16}
+      width="32"
+      height="32"
+      style={{ userSelect: 'none' }}
+      onError={() => { markMissing(emojiCode(e)); setFailed(true); }}
+    />
   );
 }
