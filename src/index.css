@@ -7594,7 +7594,7 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
     animation: acc-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .acc-card-wrap { flex-shrink: 0; padding: 14px 14px 0; perspective: 900px; }
-/* Carta del conto (#59): pastello in tema chiaro, profonda in tema scuro, al neon in Cyberpunk.
+/* Carta del conto (#59): pastello in tema chiaro, profonda in tema scuro.
    I colori arrivano dallo style della carta (--cl-* chiaro, --cd-* scuro, da getCardColorVars). */
 .acc-card,
 .acc-tile,
@@ -7629,12 +7629,6 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
         linear-gradient(135deg, var(--cd-a, #2f4fd8) 0%, var(--cd-b, #16154a) 100%);
     --card-border: rgba(255, 255, 255, 0.14);
     --card-shadow: 0 16px 32px -14px var(--cd-glow, rgba(96, 165, 250, 0.5)), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-/* Cyberpunk: stessi colori, con il contorno al neon del tema */
-[data-theme="futuristic"] .acc-card,
-[data-theme="futuristic"] .acc-tile {
-    --card-border: var(--neon, #fcee0a);
-    --card-shadow: 0 0 0 1px var(--neon, #fcee0a), 0 0 16px color-mix(in srgb, var(--neon, #fcee0a) 45%, transparent);
 }
 
 .acc-card {
@@ -7763,8 +7757,9 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
     color: var(--card-ink);
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 6px 16px -10px var(--cl-blob, #a5b8ff), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
+[data-mode="dark"] .acc-tile { box-shadow: 0 6px 16px -10px var(--cd-glow, rgba(96, 165, 250, 0.5)), inset 0 1px 0 rgba(255, 255, 255, 0.14); }
 .acc-tile.is-note { border-radius: 10px; }
 .acc-tile .acc-note-frame { position: absolute; inset: 4px; border-radius: 7px; pointer-events: none; }
 .acc-tile > :not(.acc-note-frame) { position: relative; }
