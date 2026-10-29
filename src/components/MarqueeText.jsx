@@ -21,7 +21,8 @@ export default function MarqueeText({
   const checkOverflow = () => {
     if (!containerRef.current || !textRef.current) return;
     const containerWidth = containerRef.current.clientWidth;
-    const textWidth = textRef.current.scrollWidth;
+    const pad = parseFloat(textRef.current.style.paddingLeft) || 0; // margine della sfumatura, non è testo
+    const textWidth = textRef.current.scrollWidth - pad;
     const diff = textWidth - containerWidth;
     setOverflowDistance(diff > 2 ? diff : 0);
   };
@@ -51,18 +52,37 @@ export default function MarqueeText({
   const scrollDuration = hasOverflow ? Math.max(2.5, overflowDistance / speed) : 0;
   const totalCycleDuration = 2 + scrollDuration + 1.5; // 2s start pause + scroll + 1.5s end pause
 
+  // Il prefisso (es. un'emoji) sta fuori dalla zona che scorre: il testo non gli passa sotto e non lo copre
+  const textBox = (
+    <span
+      ref={textRef}
+      className={hasOverflow ? 'marquee-text-scrolling' : ''}
+      style={{
+        display: 'inline-block',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+        // 5 px di margine che finiscono sotto la sfumatura: da fermo la prima lettera resta piena
+        paddingLeft: hasOverflow ? '5px' : 0,
+        willChange: hasOverflow ? 'transform' : 'auto',
+        '--marquee-dist': `-${hasOverflow ? overflowDistance + 5 : 0}px`,
+        '--marquee-scroll-time': `${scrollDuration}s`,
+        '--marquee-total-time': `${totalCycleDuration}s`
+      }}
+    >
+      {text}
+    </span>
+  );
+
   return (
     <div
-      ref={containerRef}
       className={`marquee-text-container ${className}`}
       style={{
-        display: 'inline-flex',
+        display: 'flex',
         alignItems: 'center',
-        overflow: 'hidden',
         whiteSpace: 'nowrap',
         width: '100%',
         maxWidth: '100%',
-        position: 'relative',
+        minWidth: 0,
         ...style
       }}
       title={text}
@@ -72,21 +92,13 @@ export default function MarqueeText({
           {prefix}
         </span>
       )}
-      <span
-        ref={textRef}
-        className={hasOverflow ? 'marquee-text-scrolling' : ''}
-        style={{
-          display: 'inline-block',
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-          willChange: hasOverflow ? 'transform' : 'auto',
-          '--marquee-dist': `-${overflowDistance}px`,
-          '--marquee-scroll-time': `${scrollDuration}s`,
-          '--marquee-total-time': `${totalCycleDuration}s`
-        }}
-      >
-        {text}
-      </span>
+      <div ref={containerRef} style={{
+        flex: 1, minWidth: 0, overflow: 'hidden', display: 'flex', alignItems: 'center',
+        // mentre scorre, il testo sfuma anche a sinistra invece di essere tagliato di netto
+        ...(hasOverflow ? { maskImage: 'linear-gradient(to right, transparent 0, #000 5px)', WebkitMaskImage: 'linear-gradient(to right, transparent 0, #000 5px)' } : null)
+      }}>
+        {textBox}
+      </div>
     </div>
   );
 }

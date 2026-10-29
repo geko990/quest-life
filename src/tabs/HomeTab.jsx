@@ -772,7 +772,7 @@ export default function HomeTab({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
+                        gap: '8px',
                         background: isCompleted ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-secondary)',
                         border: isCompleted ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid var(--glass-border)',
                         padding: '6px 8px',
@@ -799,28 +799,28 @@ export default function HomeTab({
                         style={{ width: '18px', height: '18px', flexShrink: 0 }}
                       ></div>
 
-                      {/* Content */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontSize: '11px', display: 'flex' }}><Emoji e={info.emoji} /></span>
-                          <span style={{ fontSize: '9px', fontWeight: 'bold', color: info.color, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {_t(info.title)}
-                          </span>
-                        </div>
-                        <div style={{
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                          color: 'var(--text-primary)',
-                          textDecoration: isCompleted ? 'line-through' : 'none',
-                          minWidth: 0,
-                          width: '100%'
-                        }}>
-                          {(() => {
-                            const lead = leadingEmoji(action.name);
-                            return <MarqueeText text={lead.rest} prefix={lead.e ? <span style={{ marginRight: '3px', display: 'inline-flex' }}><Emoji e={lead.e} /></span> : null} />;
-                          })()}
-                        </div>
-                      </div>
+                      {/* Icona: quella scelta per il task (o all'inizio del nome, o della campagna), altrimenti quella del tipo di azione */}
+                      {(() => {
+                        const lead = leadingEmoji(action.name);
+                        const custom = action.emoji && action.emoji !== info.emoji ? action.emoji : null;
+                        const icon = custom || lead.e || info.emoji;
+                        const text = lead.e && icon === lead.e ? lead.rest : action.name;
+                        return (
+                          <>
+                            <span style={{ fontSize: '17px', lineHeight: 1, display: 'inline-flex', flexShrink: 0 }} title={_t(info.title)}><Emoji e={icon} /></span>
+                            <div style={{
+                              flex: 1,
+                              minWidth: 0,
+                              fontSize: '13px',
+                              fontWeight: 'bold',
+                              color: 'var(--text-primary)',
+                              textDecoration: isCompleted ? 'line-through' : 'none'
+                            }}>
+                              <MarqueeText text={text} />
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   );
                 })}
