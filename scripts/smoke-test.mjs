@@ -549,6 +549,24 @@ try {
   const tiny = rail.items.filter(i => i.iconW < 12);
   if (tiny.length) throw new Error(`icone schiacciate: ${tiny.map(i => i.label).join(', ')}`);
   report(`Orizzontale: barra a destra (${rail.left}–${rail.right}), ordine ${order}, Eroe al centro`);
+  // Eroe e Salute in orizzontale: tutto nello schermo, senza scorrere; radar quadrato; Azioni in colonna
+  const fit = async () => p4.evaluate(() => {
+    const main = document.querySelector('main.content-area');
+    const mr = main.getBoundingClientRect();
+    const panels = [...document.querySelectorAll('#root main .glass-panel')].map(el => el.getBoundingClientRect()).filter(r => r.height > 0);
+    const lowest = Math.max(...panels.map(r => r.bottom));
+    return { scroll: Math.round(main.scrollHeight - main.clientHeight), lowest: Math.round(lowest), mainBottom: Math.round(mr.bottom) };
+  });
+  const homeFit = await fit();
+  const radar = await p4.evaluate(() => { const r = document.querySelector('#section-home > .glass-panel').getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; });
+  if (homeFit.scroll > 2 || homeFit.lowest > homeFit.mainBottom + 1) throw new Error(`Eroe in orizzontale scorre (${homeFit.scroll}px, ultima tessera a ${homeFit.lowest}, fine ${homeFit.mainBottom})`);
+  if (Math.abs(radar.w - radar.h) > 3) throw new Error(`radar non quadrato (${radar.w}×${radar.h})`);
+  await p4.locator('.app-nav-rail .rail-item', { hasText: 'Salute' }).click();
+  await p4.waitForTimeout(900);
+  await p4.screenshot({ path: `${SHOTS}/18b-orizzontale-salute.png` });
+  const healthFit = await fit();
+  if (healthFit.scroll > 2 || healthFit.lowest > healthFit.mainBottom + 1) throw new Error(`Salute in orizzontale scorre (${healthFit.scroll}px, ultima tessera a ${healthFit.lowest}, fine ${healthFit.mainBottom})`);
+  report(`Orizzontale senza scorrere: Eroe (radar ${radar.w}×${radar.h}), Salute (ultima tessera a ${healthFit.lowest}/${healthFit.mainBottom})`);
   await ctx.close();
 } catch (e) {
   problems.push(`Orizzontale: ${e.message}`);

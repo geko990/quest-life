@@ -413,8 +413,6 @@ export default function HomeTab({
         style={{
           width: '100%',
           height: '100%',
-          maxWidth: isLandscape ? '300px' : undefined,
-          maxHeight: isLandscape ? '270px' : undefined,
           margin: '0 auto'
         }}
       >
@@ -489,13 +487,16 @@ export default function HomeTab({
       id="section-home"
       className={`section active ${isLandscape ? 'home-landscape' : 'home-portrait'}`}
       style={isLandscape ? {
+        // Orizzontale: radar quadrato a sinistra alto quanto lo spazio, a destra Azioni del Giorno
+        // (che riempiono l'altezza) e sotto il Sostentamento; niente scorrimento
         display: 'grid',
-        gridTemplateColumns: 'minmax(280px, 1.15fr) minmax(260px, 1fr)',
+        gridTemplateColumns: 'auto minmax(0, 1fr)',
+        gridTemplateRows: 'minmax(0, 1fr) auto',
         gap: '12px',
         height: '100%',
-        minHeight: '100%',
+        minHeight: 0,
         maxHeight: '100%',
-        overflowY: 'auto',
+        overflow: 'hidden',
         boxSizing: 'border-box'
       } : {
         display: 'flex',
@@ -519,10 +520,13 @@ export default function HomeTab({
           padding: '4px 8px',
           // In verticale la tessera è quadrata (larga quanto lo schermo); se lo schermo è basso si accorcia
           flex: isLandscape ? 'none' : '0 1 auto',
-          width: '100%',
-          aspectRatio: isLandscape ? undefined : '1 / 1',
+          width: isLandscape ? 'auto' : '100%',
+          aspectRatio: '1 / 1',
           minHeight: 0,
           height: isLandscape ? '100%' : undefined,
+          gridRow: isLandscape ? '1 / 3' : undefined,
+          gridColumn: isLandscape ? '1' : undefined,
+          maxWidth: isLandscape ? 'min(58vw, 100%)' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -540,9 +544,11 @@ export default function HomeTab({
       </div>
 
       {/* Right Column in Landscape (Azioni del Giorno + Sostentamento) */}
-      <div style={isLandscape ? { display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', justifyContent: 'space-between' } : { display: 'contents' }}>
+      <div style={isLandscape ? { gridColumn: '2', gridRow: '1', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 } : { display: 'contents' }}>
         {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
-        <div className="glass-panel" style={{ padding: '8px 12px' }}>
+        <div className="glass-panel" style={isLandscape
+          ? { padding: '8px 12px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }
+          : { padding: '8px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px', display: 'flex' }}><Emoji e={cardMode === 'pomodoro' ? '🍅' : '⚔️'} /></span>
@@ -623,7 +629,9 @@ export default function HomeTab({
         </div>
 
         {/* Content Container (Fixed Height 102px for Exact Dimension Matching) */}
-        <div style={{ height: '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+        <div style={isLandscape
+          ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }
+          : { height: '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
           {cardMode === 'pomodoro' ? (
             /* IN-CARD POMODORO WORKSTATION VIEW */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', padding: '2px 0', boxSizing: 'border-box' }}>
@@ -754,7 +762,7 @@ export default function HomeTab({
                   {_t("Pianifica la tua giornata")}</button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isLandscape ? '1fr' : '1fr 1fr', gridAutoRows: isLandscape ? 'minmax(0, 1fr)' : undefined, gap: '6px', height: '100%' }}>
                 {todayActionsList.map((action, index) => {
                   const isCompleted = !!action.completed;
                   const info = SLOT_CATEGORY_INFO.find(s => s.type === action.slotType) || SLOT_CATEGORY_INFO[index] || SLOT_CATEGORY_INFO[0];
@@ -900,7 +908,7 @@ export default function HomeTab({
 
       {/* 3. Sostentamento Summary */}
       {health && (
-        <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative' }}>
+        <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative', ...(isLandscape ? { gridColumn: '2', gridRow: '2' } : {}) }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               <EmojiText text={_t("🍎 Sostentamento di oggi")} /></h3>

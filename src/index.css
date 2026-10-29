@@ -8611,3 +8611,45 @@ button.opt-avatar { padding: 0; font: inherit; cursor: pointer; -webkit-tap-high
 button.opt-avatar:active { transform: scale(.95); }
 .opt-avatar-wrap { position: relative; flex-shrink: 0; display: inline-flex; }
 .opt-avatar-edit { pointer-events: none; position: absolute; right: -3px; top: -3px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-primary); color: #fff; font-size: 11px; display: grid; place-items: center; border: 2px solid var(--bg-card, #22223b); }
+
+/* ============================================
+   SALUTE IN ORIZZONTALE: due colonne alte quanto lo schermo, senza scorrere
+   sinistra: bilancio calorico + Storico / I miei cibi; destra: Passi/Proteine/Acqua + Peso e settimana
+   ============================================ */
+[data-orientation="landscape"] .health-main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+[data-orientation="landscape"] .health-main > .section-header { margin-bottom: 8px !important; flex-shrink: 0; }
+[data-orientation="landscape"] .health-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        "cal stats"
+        "cal weight"
+        "arch weight";
+    gap: 10px;
+    overflow: hidden;
+}
+[data-orientation="landscape"] .health-grid > * { margin: 0 !important; min-height: 0; }
+[data-orientation="landscape"] .health-cal {
+    grid-area: cal;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+[data-orientation="landscape"] .health-stats { grid-area: stats; }
+[data-orientation="landscape"] .health-weight {
+    grid-area: weight;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+[data-orientation="landscape"] .health-arch { grid-area: arch; }

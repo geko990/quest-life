@@ -2068,10 +2068,11 @@ export default function App() {
               ref={tabViewRef}
               style={{
                 width: '100%',
-                height: (activeTab === 'home' && !isLandscape) ? '100%' : 'auto',
+                // Eroe (sempre) e Salute (in orizzontale) occupano esattamente lo schermo, senza scorrere
+                height: (activeTab === 'home' || (isLandscape && activeTab === 'nutrition')) ? '100%' : 'auto',
                 minHeight: 0,
-                display: (activeTab === 'home' && !isLandscape) ? 'flex' : 'block',
-                flexDirection: (activeTab === 'home' && !isLandscape) ? 'column' : undefined,
+                display: (activeTab === 'home' || (isLandscape && activeTab === 'nutrition')) ? 'flex' : 'block',
+                flexDirection: (activeTab === 'home' || (isLandscape && activeTab === 'nutrition')) ? 'column' : undefined,
                 // L'ingresso è animato tessera per tessera (vedi effetto "Ingresso a cascata").
                 // Niente transform sul contenitore: altrimenti le finestre interne alle schede
                 // resterebbero confinate nell'area centrale invece di coprire tutto lo schermo.

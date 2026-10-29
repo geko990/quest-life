@@ -1211,7 +1211,7 @@ export default function NutritionTab({
   }
 
   return (
-    <section id="section-nutrition" className="section active">
+    <section id="section-nutrition" className={`section active${activeMainTab === 'health' ? ' health-main' : ''}`}>
       {/* Tab Header with Circle Switcher (🛒 in Health / 🍎 in Shopping) */}
       <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <h2 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1245,9 +1245,9 @@ export default function NutritionTab({
 
       {/* TAB 1: DIARIO DELLA SALUTE */}
       {activeMainTab === 'health' && (
-        <div key="health">
+        <div key="health" className="health-grid">
           {/* Main Calorie Dashboard */}
-          <div className="glass-panel" style={{ padding: '14px 16px', marginBottom: '10px' }}>
+          <div className="glass-panel health-cal" style={{ padding: '14px 16px', marginBottom: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div>
                 <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Bilancio Calorico")}</div>
@@ -1361,7 +1361,7 @@ export default function NutritionTab({
           </div>
 
           {/* Row: Steps + Protein + Water */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+          <div className="health-stats" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             {/* Steps card */}
             <div
               onClick={() => onOpenModal('health_steps', { currentSteps: stepsCurrent, goalSteps: stepsGoal })}
@@ -1522,7 +1522,7 @@ export default function NutritionTab({
             );
 
             return (
-              <div className="glass-panel weight-card" style={{ padding: '12px 14px', marginBottom: '10px' }}>
+              <div className="glass-panel weight-card health-weight" style={{ padding: '12px 14px', marginBottom: '10px' }}>
                 <div
                   onClick={() => onOpenModal('weight', {
                     current: weightCurrent,
@@ -1604,7 +1604,7 @@ export default function NutritionTab({
           })()}
 
           {/* Archivi: dei giorni (Storico Dati) e dei cibi (I miei cibi) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 0 }}>
+          <div className="health-arch" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: 0 }}>
             <div
               onClick={() => setShowHistoryModal(true)}
               className="glass-panel"
