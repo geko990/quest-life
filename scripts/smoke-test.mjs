@@ -24,6 +24,14 @@ page.on('response', (r) => {
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
 report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('#root').innerText()).length} caratteri visibili`);
+// Fluent Emoji (#54): le emoji della Home devono essere disegni (img.fe-emoji) caricati davvero
+await page.waitForTimeout(800);
+const fe = await page.evaluate(() => {
+  const imgs = [...document.querySelectorAll('img.fe-emoji')];
+  return { n: imgs.length, ok: imgs.filter(i => i.complete && i.naturalWidth > 0).length, big: imgs.filter(i => /\/3d\//.test(i.src)).length };
+});
+if (fe.n < 8 || fe.ok < fe.n) problems.push(`Fluent Emoji nella Home: ${fe.ok}/${fe.n} disegni caricati`);
+else report(`Fluent Emoji nella Home: ${fe.n} disegni (${fe.big} in 3D)`);
 
 // Primo avvio: tema Standard in modalità chiara (prima partiva con un tema inesistente, misto chiaro/scuro)
 {
@@ -198,7 +206,7 @@ await step('10a-opzioni', async () => {
   report(`Opzioni: ${m.groups} tessere, ultima finisce a ${m.lastBottom}px, nav bar a ${m.navTop}px → sporgenza ${over852}px a 852px, circa ${over852 + 93}px a 759px`);
 });
 await step('10-opzioni-promemoria', async () => {
-  const groupHeader = page.getByText('🎮 Gioco').first();
+  const groupHeader = page.getByText('Gioco', { exact: true }).first();
   await groupHeader.click();
   await page.waitForTimeout(400);
   await page.getByText('Promemoria scadenze').first().scrollIntoViewIfNeeded();
@@ -206,7 +214,7 @@ await step('10-opzioni-promemoria', async () => {
 });
 
 // Giornate tipo: una nuova azione con orario precedente si sposta da sola al posto giusto
-await page.getByText('🎮 Gioco').first().click();
+await page.getByText('Gioco', { exact: true }).first().click();
 await page.waitForTimeout(300);
 await step('17-giornata-tipo', async () => {
   await page.locator('.opt-chip').first().click();
@@ -248,11 +256,11 @@ try {
   const rootText = await page.locator('#root').innerText();
   if (!/5×/.test(rootText)) throw new Error('i 5 errori uguali non sono raggruppati');
   if (/Pasta della nonna|mario\.rossi/.test(rootText)) throw new Error('il filtro dei dati personali non ha funzionato');
-  await page.getByText('🗑️ Svuota').first().scrollIntoViewIfNeeded();
+  await page.getByText('Svuota', { exact: true }).first().scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, 140));
   await page.waitForTimeout(300);
   await shot('12-registro-errori');
-  await page.getByText('🐙 Segnala su GitHub').first().click();
+  await page.getByText('Segnala su GitHub', { exact: true }).first().click();
   const url = await page.evaluate(() => window.__openedUrl);
   if (!url || !url.startsWith('https://github.com/geko990/quest-life/issues/new?')) throw new Error(`indirizzo GitHub non valido: ${url}`);
   const body = new URL(url).searchParams.get('body') || '';
@@ -319,7 +327,7 @@ try {
   await page.waitForTimeout(300);
   await shot('15-conto-carta-fondo');
   await tapOutside();
-  await page.locator('div', { hasText: /^💳 Conto Base$/ }).last().click({ force: true });
+  await page.locator('div', { hasText: /^\s*(💳\s*)?Conto Base$/ }).last().click({ force: true });
   await page.waitForTimeout(1200);
   await checkBounds('Conto base');
   await shot('16-conto-base');

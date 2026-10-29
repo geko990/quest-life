@@ -50,4 +50,9 @@ with sync_playwright() as p:
         for code, url in pg.evaluate(JS, items):
             open(f'{OUT}/color/{code}.webp', 'wb').write(base64.b64decode(url.split(',', 1)[1]))
     b.close()
+codes = sorted(f[:-5] for f in os.listdir(f'{OUT}/color') if f.endswith('.webp'))
+with open(os.path.join(os.path.dirname(__file__), '..', 'src', 'utils', 'fluentCodes.js'), 'w') as f:
+    f.write("// File generato da scripts/make-fluent.py: emoji per cui esiste il disegno Fluent (public/fluent/).\n")
+    f.write("// Serve a non chiedere al sito disegni che non esistono (le altre restano emoji del telefono).\n")
+    f.write("export const FLUENT_CODES = new Set('" + ' '.join(codes) + "'.split(' '));\n")
 print('fatto:', len(os.listdir(f'{OUT}/3d')), '3D,', len(os.listdir(f'{OUT}/color')), 'Color')

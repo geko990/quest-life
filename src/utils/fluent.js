@@ -5,6 +5,8 @@
 // <codice> = punti di codice esadecimali uniti da "-", senza FE0F (es. 💪 → 1f4aa).
 // Solo logica, niente grafica (riusabile nell'app nativa, #24).
 
+import { FLUENT_CODES } from './fluentCodes';
+
 const BASE = (import.meta.env && import.meta.env.BASE_URL) || './';
 
 // Emoji per cui il disegno manca (file non trovato): si mostra quella del telefono
@@ -20,7 +22,7 @@ export function emojiCode(e) {
 // Indirizzo del disegno, oppure null se non c'è
 export function fluentUrl(e, big = false) {
   const code = emojiCode(e);
-  if (!code || missing.has(code)) return null;
+  if (!code || missing.has(code) || !FLUENT_CODES.has(code)) return null;
   return `${BASE}fluent/${big ? '3d' : 'color'}/${code}.webp`;
 }
 
@@ -31,12 +33,17 @@ try { segmenter = new Intl.Segmenter('it', { granularity: 'grapheme' }); } catch
 // È un'emoji da disegnare? (le cifre e i simboli come © restano testo)
 export function isEmoji(g) {
   if (!g || !PICTO.test(g)) return false;
+  if (!FLUENT_CODES.has(emojiCode(g))) return false; // senza disegno Fluent resta testo (es. ✓, ★, ➔)
   // "©", "®", "™" e simili senza FE0F restano testo
   if (g.length === 1 && g.charCodeAt(0) < 0x2190) return false;
   return true;
 }
 
 // Divide un testo in pezzi: { t: 'testo' } oppure { e: '💪' }
+export function hasEmoji(text) {
+  return typeof text === 'string' && PICTO.test(text) && splitEmoji(text).some(p => p.e);
+}
+
 export function splitEmoji(text) {
   const s = String(text == null ? '' : text);
   if (!PICTO.test(s)) return [{ t: s }];
