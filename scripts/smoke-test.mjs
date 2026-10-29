@@ -557,6 +557,31 @@ try {
     const lowest = Math.max(...panels.map(r => r.bottom));
     return { scroll: Math.round(main.scrollHeight - main.clientHeight), lowest: Math.round(lowest), mainBottom: Math.round(mr.bottom) };
   });
+  // 4 Azioni del Giorno vere per oggi: in orizzontale stanno in colonna, una per riga, dentro la tessera
+  await p4.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}');
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const names = ['Rispondere alle email', 'Preparare la presentazione', 'Camminata di 30 minuti', 'Chiamare il commercialista'];
+    const slots = ['action', 'bonus', 'movement', 'reaction'];
+    st.oneshots = [...(st.oneshots || []), ...names.map((n, i) => ({ id: `os_land_${i}`, name: n, emoji: '', completed: false, fromDailyPlan: true, dailyPlanDate: today, slotType: slots[i], difficulty: 2, primaryTarget: 'str', createdAt: today }))];
+    localStorage.setItem('questlife_state_v2', JSON.stringify(st));
+  });
+  await p4.reload({ waitUntil: 'networkidle' });
+  await p4.waitForTimeout(2500);
+  await p4.mouse.click(400, 6);
+  await p4.waitForTimeout(300);
+  const rows = await p4.evaluate(() => {
+    const card = [...document.querySelectorAll('#section-home .glass-panel')].find(el => /Azioni del Giorno|Daily Actions/.test(el.textContent));
+    if (!card) return null;
+    const cr = card.getBoundingClientRect();
+    const items = [...card.querySelectorAll('.card-checkbox')].map(c => c.parentElement.getBoundingClientRect());
+    return { n: items.length, lefts: [...new Set(items.map(r => Math.round(r.left)))].length, tops: items.map(r => Math.round(r.top)), bottom: Math.round(Math.max(...items.map(r => r.bottom))), cardBottom: Math.round(cr.bottom) };
+  });
+  await p4.screenshot({ path: `${SHOTS}/18a-orizzontale-azioni.png` });
+  if (!rows || rows.n !== 4) throw new Error(`Azioni del Giorno: attese 4 righe, trovate ${rows ? rows.n : 0}`);
+  if (rows.lefts !== 1 || !rows.tops.every((t, i) => i === 0 || t > rows.tops[i - 1])) throw new Error(`Azioni non in colonna (${JSON.stringify(rows)})`);
+  if (rows.bottom > rows.cardBottom) throw new Error(`Azioni fuori dalla tessera (${rows.bottom} > ${rows.cardBottom})`);
   const homeFit = await fit();
   const radar = await p4.evaluate(() => { const r = document.querySelector('#section-home > .glass-panel').getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; });
   if (homeFit.scroll > 2 || homeFit.lowest > homeFit.mainBottom + 1) throw new Error(`Eroe in orizzontale scorre (${homeFit.scroll}px, ultima tessera a ${homeFit.lowest}, fine ${homeFit.mainBottom})`);
@@ -566,7 +591,18 @@ try {
   await p4.screenshot({ path: `${SHOTS}/18b-orizzontale-salute.png` });
   const healthFit = await fit();
   if (healthFit.scroll > 2 || healthFit.lowest > healthFit.mainBottom + 1) throw new Error(`Salute in orizzontale scorre (${healthFit.scroll}px, ultima tessera a ${healthFit.lowest}, fine ${healthFit.mainBottom})`);
-  report(`Orizzontale senza scorrere: Eroe (radar ${radar.w}×${radar.h}), Salute (ultima tessera a ${healthFit.lowest}/${healthFit.mainBottom})`);
+  // iPhone piccolo in orizzontale (667×375)
+  await p4.setViewportSize({ width: 667, height: 375 });
+  await p4.waitForTimeout(700);
+  const smallHealth = await fit();
+  await p4.screenshot({ path: `${SHOTS}/18c-orizzontale-salute-piccolo.png` });
+  await p4.locator('.app-nav-rail .rail-hero').click();
+  await p4.waitForTimeout(900);
+  const smallHome = await fit();
+  await p4.screenshot({ path: `${SHOTS}/18d-orizzontale-eroe-piccolo.png` });
+  if (smallHome.scroll > 2 || smallHome.lowest > smallHome.mainBottom + 1) throw new Error(`Eroe su schermo piccolo scorre (${smallHome.scroll}px)`);
+  if (smallHealth.scroll > 2 || smallHealth.lowest > smallHealth.mainBottom + 1) throw new Error(`Salute su schermo piccolo scorre (${smallHealth.scroll}px)`);
+  report(`Orizzontale senza scorrere: Eroe (radar ${radar.w}×${radar.h}, 4 azioni in colonna), Salute (ultima tessera a ${healthFit.lowest}/${healthFit.mainBottom}), anche a 667×375`);
   await ctx.close();
 } catch (e) {
   problems.push(`Orizzontale: ${e.message}`);

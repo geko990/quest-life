@@ -757,7 +757,7 @@ export default function HomeTab({
                   type="button"
                   onClick={() => onOpenPlanner && onOpenPlanner()}
                   className="btn-primary"
-                  style={{ padding: '7px 16px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
+                  style={{ flex: 'none', padding: isLandscape ? '10px 20px' : '7px 16px', borderRadius: '12px', fontSize: isLandscape ? '13px' : '11px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}
                 >
                   {_t("Pianifica la tua giornata")}</button>
               </div>
