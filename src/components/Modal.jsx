@@ -480,10 +480,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       key={star}
                       onClick={() => setForm(prev => ({ ...prev, difficulty: star, stars: star }))}
                       className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
-                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
+                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'qstar-off opacity-30'
                       }`}
                     >
-                      ★
+                      ⭐
                     </span>
                   ))}
                 </div>
@@ -600,10 +600,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       key={star}
                       onClick={() => setForm(prev => ({ ...prev, difficulty: star, stars: star }))}
                       className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
-                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
+                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'qstar-off opacity-30'
                       }`}
                     >
-                      ★
+                      ⭐
                     </span>
                   ))}
                 </div>
@@ -755,10 +755,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       key={star}
                       onClick={() => setForm(prev => ({ ...prev, difficulty: star, stars: star }))}
                       className={`cursor-pointer transition-all duration-150 transform hover:scale-125 select-none ${
-                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'text-slate-600 opacity-30'
+                        star <= (form.difficulty || 3) ? 'text-yellow-400 drop-shadow' : 'qstar-off opacity-30'
                       }`}
                     >
-                      ★
+                      ⭐
                     </span>
                   ))}
                 </div>
@@ -907,8 +907,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {/* Stars, XP, Stats & Optional Due Date */}
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px', color: '#f59e0b' }}>
-                  {'★'.repeat(currentQuest.difficulty || 1)}
-                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - (currentQuest.difficulty || 1))}</span>
+                  {'⭐'.repeat(currentQuest.difficulty || 1)}
+                  <span className="qstar-off" style={{ opacity: 0.3 }}>{'⭐'.repeat(5 - (currentQuest.difficulty || 1))}</span>
                 </span>
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)', padding: '2px 8px', borderRadius: '8px' }}>
                   {_t("+{0} XP", (currentQuest.difficulty || 3) * 35)}</span>
@@ -1046,8 +1046,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 {item.name}
               </h3>
               <div style={{ fontSize: '14px', color: '#f59e0b' }}>
-                {'★'.repeat(starsCount)}
-                <span style={{ opacity: 0.25 }}>{'★'.repeat(5 - starsCount)}</span>
+                {'⭐'.repeat(starsCount)}
+                <span className="qstar-off" style={{ opacity: 0.25 }}>{'⭐'.repeat(5 - starsCount)}</span>
               </div>
             </div>
 
@@ -1140,8 +1140,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 {habit.name}
               </h3>
               <div style={{ fontSize: '14px', color: '#f59e0b' }}>
-                {'★'.repeat(starsCount)}
-                <span style={{ opacity: 0.25 }}>{'★'.repeat(5 - starsCount)}</span>
+                {'⭐'.repeat(starsCount)}
+                <span className="qstar-off" style={{ opacity: 0.25 }}>{'⭐'.repeat(5 - starsCount)}</span>
               </div>
             </div>
 
@@ -1232,8 +1232,8 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               {/* Stars, Stats & Duration */}
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px', color: '#f59e0b' }}>
-                  {'★'.repeat(tmpl.stars || 3)}
-                  <span style={{ opacity: 0.3 }}>{'★'.repeat(5 - (tmpl.stars || 3))}</span>
+                  {'⭐'.repeat(tmpl.stars || 3)}
+                  <span className="qstar-off" style={{ opacity: 0.3 }}>{'⭐'.repeat(5 - (tmpl.stars || 3))}</span>
                 </span>
                 {primaryStat && (
                   <span style={{ fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
@@ -2546,7 +2546,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                       <button key={t.kind + t.name} type="button" className="recent-template-chip" onClick={() => applyTemplate(t)}>
                         <span>{t.emoji}</span>
                         <span className="recent-template-name">{t.name}</span>
-                        <span className="recent-template-stars">{'★'.repeat(t.difficulty || 1)}</span>
+                        <span className="recent-template-stars">{'⭐'.repeat(t.difficulty || 1)}</span>
                       </button>
                     ))}
                   </div>

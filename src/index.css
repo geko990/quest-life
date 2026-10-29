@@ -1311,7 +1311,7 @@ body {
 }
 
 .settings-row input,
-.settings-row select {
+.settings-row :is(select, .qsel) {
     background: var(--bg-secondary);
     border: 1px solid var(--glass-border);
     color: var(--text-primary);
@@ -1668,7 +1668,7 @@ input#settingName {
 }
 
 .settings-row input,
-.settings-row select {
+.settings-row :is(select, .qsel) {
     text-align: center;
     text-align-last: center;
     /* Force center for Selects */
@@ -1681,7 +1681,7 @@ input#settingName {
 
 /* Standardized Heights - 44px Touch Target */
 .settings-row input,
-.settings-row select,
+.settings-row :is(select, .qsel),
 .color-select-trigger,
 .theme-select-trigger,
 .mode-toggle-large,
@@ -1857,7 +1857,7 @@ input#settingName {
 }
 
 .setting-item input,
-.setting-item select {
+.setting-item :is(select, .qsel) {
     padding: 8px 10px;
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
@@ -3320,6 +3320,7 @@ input#settingName {
 
 /* Ensure inputs respect container width */
 select,
+.qsel,
 input,
 textarea {
     max-width: 100%;
@@ -3346,7 +3347,7 @@ textarea {
 }
 
 .form-group input,
-.form-group select,
+.form-group :is(select, .qsel),
 .form-group textarea {
     padding: 10px 12px;
     border: 1px solid var(--glass-border);
@@ -4673,7 +4674,7 @@ textarea {
 .modal input[type="text"],
 .modal input[type="number"],
 .modal input:not([type]),
-.modal select,
+.modal :is(select, .qsel),
 .modal textarea {
     background: var(--bg-secondary);
     color: var(--text-primary);
@@ -4683,7 +4684,7 @@ textarea {
     box-sizing: border-box;
 }
 
-.modal select {
+.modal :is(select, .qsel) {
     padding-left: 20px !important;
     padding-right: 36px !important;
 }
@@ -7781,7 +7782,7 @@ html[data-animations="off"] .opt-toggle, html[data-animations="off"] .opt-toggle
 /* Valore + › con scelta nativa */
 .opt-select { position: relative; display: inline-flex; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 12px; font-weight: 600; max-width: 170px; }
 .opt-select-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.opt-select select { position: absolute; inset: -8px; width: calc(100% + 16px); opacity: 0; cursor: pointer; font-size: 16px; }
+.opt-select :is(select, .qsel) { position: absolute; inset: -8px; width: calc(100% + 16px); opacity: 0; cursor: pointer; font-size: 16px; }
 
 /* Pulsanti: principale, secondario, pericoloso */
 .opt-btn {
@@ -8132,7 +8133,7 @@ html[data-animations="off"] .levelup-disc::after {
     font-size: 18px;
     opacity: 0.75;
 }
-.planner-pick select, .planner-stat select {
+.planner-pick :is(select, .qsel), .planner-stat :is(select, .qsel) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -8229,12 +8230,14 @@ html[data-animations="off"] .levelup-disc::after {
     outline: none;
 }
 .emoji-picker-field input:focus { border-color: color-mix(in srgb, var(--c) 70%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
-.emoji-picker-tabs { display: flex; justify-content: space-between; gap: 2px; padding: 0 12px 6px; }
+.emoji-picker-tabs { display: flex; justify-content: space-between; gap: 2px; padding: 0 12px 6px; overflow-x: auto; scrollbar-width: none; }
+.emoji-picker-tabs::-webkit-scrollbar { display: none; }
 .emoji-picker-tabs button {
     flex: 1;
     border: 0;
     background: none;
     font-size: 22px;
+    min-width: 38px;
     padding: 6px 0;
     border-radius: 12px;
     cursor: pointer;
@@ -8242,7 +8245,22 @@ html[data-animations="off"] .levelup-disc::after {
     -webkit-tap-highlight-color: transparent;
 }
 .emoji-picker-tabs button[aria-pressed="true"] { opacity: 1; background: color-mix(in srgb, var(--text-primary) 8%, transparent); }
-.emoji-picker-grid { display: grid; grid-template-columns: repeat(8, 1fr); padding: 0 10px; max-height: 150px; overflow-y: auto; }
+.emoji-picker-grid {
+    display: grid; grid-template-columns: repeat(8, 1fr); padding: 0 10px; align-content: start;
+    max-height: 168px; /* 3 righe e mezza: la mezza riga dice che si può scorrere */
+    overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; /* lo swipe orizzontale cambia scheda (#56) */
+}
+.emoji-picker-results { max-height: 230px; }
+.emoji-picker-sheet.is-typing .emoji-picker-hero { display: none; } /* mentre si cerca la tastiera toglie spazio */
+.emoji-picker-sep, .emoji-picker-note {
+    grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-muted, #8a8aa0); padding: 10px 6px 4px;
+}
+.emoji-picker-note { text-align: center; text-transform: none; letter-spacing: 0; font-weight: 600; padding: 18px 0; }
+.emoji-picker-grid.slide-next { animation: emojiSlideNext .2s ease-out; }
+.emoji-picker-grid.slide-prev { animation: emojiSlidePrev .2s ease-out; }
+@keyframes emojiSlideNext { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes emojiSlidePrev { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
 .emoji-picker-grid button {
     border: 0;
     background: none;
@@ -8256,10 +8274,10 @@ html[data-animations="off"] .levelup-disc::after {
 .emoji-picker-grid button:active { background: color-mix(in srgb, var(--text-primary) 8%, transparent); }
 @media (prefers-reduced-motion: reduce) {
     .emoji-picker-sheet, .emoji-picker-veil { transition: none; }
-    .emoji-picker-big { animation: none; }
+    .emoji-picker-big, .emoji-picker-grid { animation: none !important; }
 }
 html[data-animations="off"] .emoji-picker-sheet, html[data-animations="off"] .emoji-picker-veil { transition: none; }
-html[data-animations="off"] .emoji-picker-big { animation: none; }
+html[data-animations="off"] .emoji-picker-big, html[data-animations="off"] .emoji-picker-grid { animation: none !important; }
 /* Campo emoji (EmojiField): bottone con l'aspetto della vecchia casella */
 .emoji-field {
     display: inline-flex;
@@ -8349,3 +8367,72 @@ html[data-animations="off"] .dt-step.is-moved { animation: none; box-shadow: 0 0
 .nav-em { display: inline-flex; transition: filter 0.25s ease, opacity 0.25s ease; }
 .nav-em.is-off { filter: grayscale(1); opacity: 0.55; }
 [data-mode="light"] .nav-em.is-off { opacity: 0.6; }
+
+/* ============================================
+   MENU A TENDINA DELL'APP (#57, src/components/WheelSelect.jsx)
+   Ogni <select> è un bottone .qsel con gli stessi stili (nei selettori qui sopra `select` vale anche
+   per `.qsel`) che apre una rotellina dal basso. Stile base in @layer base: le classi Tailwind
+   e le regole delle schermate restano più forti.
+   ============================================ */
+@layer base {
+    .qsel {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        font: inherit;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+.qsel-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qsel-chev { width: 8px; height: 13px; flex-shrink: 0; opacity: .55; }
+.qsel:disabled { cursor: default; opacity: .5; }
+.wheel-root { position: fixed; inset: 0; z-index: 2147482000; } /* sopra a tutte le finestre, come il selettore delle emoji */
+.wheel-veil {
+    position: absolute; inset: 0; background: rgba(5, 6, 10, 0.45);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    opacity: 0; transition: opacity 0.26s ease;
+}
+.wheel-veil.show { opacity: 1; }
+.wheel-sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto;
+    background: var(--bg-card, #262a33); border-top: 1px solid var(--glass-border);
+    border-radius: 28px 28px 0 0; padding: 10px 0 max(18px, env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.35);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wheel-sheet.show { transform: none; }
+.wheel-grab { width: 44px; height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--text-primary) 18%, transparent); margin: 0 auto 8px; }
+.wheel { position: relative; margin: 0 16px; }
+.wheel-band {
+    position: absolute; left: 0; right: 0; border-radius: 12px; pointer-events: none;
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+.wheel-scroll {
+    position: relative; height: 100%; overflow-y: auto; scroll-snap-type: y mandatory;
+    overscroll-behavior: contain; scrollbar-width: none; perspective: 700px;
+    -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+    mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+}
+.wheel-scroll::-webkit-scrollbar { display: none; }
+.wheel-item {
+    display: flex; align-items: center; justify-content: center; padding: 0 12px;
+    scroll-snap-align: center; font-size: 19px; color: var(--text-primary); cursor: pointer;
+    white-space: nowrap; transform-origin: center; will-change: transform;
+}
+.wheel-item > span { overflow: hidden; text-overflow: ellipsis; }
+.wheel-item.is-header {
+    scroll-snap-align: none; cursor: default; font-size: 12px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted, #8a8aa0);
+}
+.wheel-item.is-disabled { opacity: .35 !important; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .wheel-sheet, .wheel-veil { transition: none; } }
+html[data-animations="off"] .wheel-sheet, html[data-animations="off"] .wheel-veil { transition: none; }
+/* Stelle della difficoltà (#57): ⭐ Fluent, quelle non raggiunte in grigio */
+.qstar-off { filter: grayscale(1); }
+.planner-stars button.qstar-off { opacity: .35; }
+/* Nelle finestre il select aveva 36 px a destra per la freccia di iOS: la freccia del bottone è più piccola */
+.modal .qsel { padding-left: 14px !important; padding-right: 12px !important; }

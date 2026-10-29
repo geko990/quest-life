@@ -1407,5 +1407,9 @@
  "Campagna": "Campaign",
  "Alimento nel database": "Food in database",
  "Esercizio nel database": "Exercise in database",
- "Statistiche Peso": "Weight Stats"
+ "Statistiche Peso": "Weight Stats",
+ "Cerca o scrivi un'emoji": "Search or type an emoji",
+ "Caricamento…": "Loading…",
+ "Nessuna emoji trovata": "No emoji found",
+ "Tutte": "All"
 }

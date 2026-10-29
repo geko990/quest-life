@@ -273,11 +273,11 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
               <button
                 key={star}
                 type="button"
-                className={star <= slot.stars ? 'on' : ''}
+                className={star <= slot.stars ? 'on' : 'qstar-off'}
                 onClick={() => handleSlotChange(key, 'stars', star)}
                 aria-label={_t("{0} stelle", star)}
               >
-                ★
+                ⭐
               </button>
             ))}
           </div>

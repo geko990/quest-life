@@ -251,7 +251,7 @@ export default function MissionsTab({
                             {q.dueDate && (
                               <DuePill item={q} />
                             )}
-                            <span style={{ color: '#f59e0b' }}>{'★'.repeat(q.difficulty || 1)}</span>
+                            <span>{'⭐'.repeat(q.difficulty || 1)}</span>
                             <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("{0}/{1} sotto-obiettivi", completedSub, totalSub)}</span>
                           </div>
 

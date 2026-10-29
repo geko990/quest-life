@@ -34,6 +34,7 @@ export default function Emoji({ e, big, className, style, title }) {
       title={title}
       draggable={false}
       decoding="async"
+      loading="lazy"
       className={`fe-emoji${className ? ' ' + className : ''}`}
       style={style}
       onError={() => { markMissing(emojiCode(e)); setFailed(true); }}

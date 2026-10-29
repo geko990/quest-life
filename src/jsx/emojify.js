@@ -1,6 +1,7 @@
 import { jsx } from 'react/jsx-runtime';
 import { EmojiText } from '../components/Emoji';
 import { hasEmoji } from '../utils/fluent';
+import WheelSelect from '../components/WheelSelect';
 
 // Fluent Emoji in tutta l'app (#54): il JSX dell'app passa da qui (vite.config.js, `jsxImportSource`).
 // Quando un elemento HTML ha come figlio un testo con emoji (scritto nel codice, tradotto con _t()
@@ -32,4 +33,10 @@ export function emojifyProps(type, props) {
     return changed ? { ...props, children: out } : props;
   }
   return props;
+}
+
+// Menu a tendina dell'app al posto di quello del telefono (#57): ogni <select> diventa WheelSelect,
+// che ha le stesse props. Per tenere il menu del telefono: <select data-native ...>.
+export function appType(type, props) {
+  return type === 'select' && !(props && props['data-native'] !== undefined) ? WheelSelect : type;
 }

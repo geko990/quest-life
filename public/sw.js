@@ -1,6 +1,6 @@
 // RPG LIFE SERVICE WORKER
-const CACHE_NAME = 'rpg-life-v5.9.269-1793267224653';
-const SW_VERSION = '5.9.269';
+const CACHE_NAME = 'rpg-life-v5.9.270-1793270097367';
+const SW_VERSION = '5.9.270';
 
 // Assets to precache on install (app shell)
 const PRECACHE_ASSETS = [
@@ -25,7 +25,7 @@ const STATIC_CACHE = 'ql-static-v1';
 const STATIC_MAX_ENTRIES = 60;
 // Disegni Fluent Emoji (#54, public/fluent/): non cambiano mai, cache a parte che sopravvive agli aggiornamenti
 const FLUENT_CACHE = 'ql-fluent-v1';
-const FLUENT_MAX_ENTRIES = 800;
+const FLUENT_MAX_ENTRIES = 3200; // tutte (3D + Color, ~15 MB): il selettore può mostrarle tutte (#56)
 const NAV_TIMEOUT_MS = 400; // la pagina si chiede alla rete, ma senza aspettarla più di così (prima 1,2 s: schermo nero)
 
 self.addEventListener('activate', (event) => {
