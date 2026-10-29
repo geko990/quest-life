@@ -1,6 +1,7 @@
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { calculateLevelFromXp, getXpForLevel } from './helpers.js';
 import { buildMedalSnapshot } from './medalSummary.js';
+import { sanitizeCardColors } from './accounts.js';
 
 export function getInitialState() {
   return {
@@ -528,7 +529,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
             notes: inv.notes || ''
           }))
         : [],
-      customQuotesProxy: proxyVal
+      customQuotesProxy: proxyVal,
+      cardColors: sanitizeCardColors(parsed.finances.cardColors) // colore delle carte dei conti (#59)
     };
   } else {
     let fallbackProxy = '';
@@ -547,7 +549,8 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       secondaryAccounts: [],
       recurringTransactions: [],
       investments: [],
-      customQuotesProxy: fallbackProxy
+      customQuotesProxy: fallbackProxy,
+      cardColors: {}
     };
   }
 

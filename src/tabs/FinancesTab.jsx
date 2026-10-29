@@ -3,7 +3,9 @@ import { getGameDate } from '../utils/helpers';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 import UserManualModal from '../components/UserManualModal';
 import { useBarInsets, overlayPadding } from '../utils/useBarInsets';
-import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getAccountCardTheme, getPeriodInterest } from '../utils/accounts';
+import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getPeriodInterest, getAccountCardColor, getCardColorVars, suggestCardColor } from '../utils/accounts';
+import BanknoteArt from '../components/BanknoteArt';
+import CardColorPicker from '../components/CardColorPicker';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
 import EmojiField from '../components/EmojiField';
@@ -110,7 +112,9 @@ export default function FinancesTab({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedAccountDetail, setSelectedAccountDetail] = useState(null); // 'base' | 'cash' | accId
   const [accMovLimit, setAccMovLimit] = useState(20); // movimenti mostrati nella scheda del conto
-  useEffect(() => { setAccMovLimit(20); }, [selectedAccountDetail]);
+  const [showCardColors, setShowCardColors] = useState(false); // fila dei colori sotto la carta (#59)
+  useEffect(() => { setAccMovLimit(20); setShowCardColors(false); }, [selectedAccountDetail]);
+  const setCardColor = (accId, colorId) => setFinances(prev => ({ ...prev, cardColors: { ...(prev.cardColors || {}), [accId]: colorId } }));
   const [showRenameBaseModal, setShowRenameBaseModal] = useState(false);
   const [baseNameInput, setBaseNameInput] = useState('');
 
@@ -154,6 +158,7 @@ export default function FinancesTab({
   // Secondary Account Form States
   const [secName, setSecName] = useState('');
   const [secEmoji, setSecEmoji] = useState('🛡️');
+  const [secColor, setSecColor] = useState('lavender'); // colore della carta del nuovo conto (#59)
   const [secBalance, setSecBalance] = useState('');
   const [secRate, setSecRate] = useState('3.5');
   const [secLockMonths, setSecLockMonths] = useState('0'); // '0', '6', '12', '24'
@@ -970,7 +975,8 @@ export default function FinancesTab({
 
     setFinances(prev => ({
       ...prev,
-      secondaryAccounts: [...(prev.secondaryAccounts || []), newAcc]
+      secondaryAccounts: [...(prev.secondaryAccounts || []), newAcc],
+      cardColors: { ...(prev.cardColors || {}), [newAcc.id]: secColor }
     }));
 
     setSecName('');
@@ -1026,7 +1032,8 @@ export default function FinancesTab({
     if (window.confirm(_t("Sei sicuro di voler eliminare questo conto secondario?"))) {
       setFinances(prev => ({
         ...prev,
-        secondaryAccounts: (prev.secondaryAccounts || []).filter(a => a.id !== accId)
+        secondaryAccounts: (prev.secondaryAccounts || []).filter(a => a.id !== accId),
+        cardColors: Object.fromEntries(Object.entries(prev.cardColors || {}).filter(([k]) => k !== accId))
       }));
     }
   };
@@ -2297,95 +2304,49 @@ export default function FinancesTab({
 
       {/* 3. Tessere Contanti e Conto Base */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-        {/* Tessera Contanti */}
+        {/* Tessera Contanti: piccola banconota (#59) */}
         <div
+          className="acc-tile is-note"
           onClick={() => setSelectedAccountDetail('cash')}
-          style={{
-            background: 'linear-gradient(135deg, rgba(20, 83, 45, 0.85), rgba(15, 23, 42, 0.95))',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-            borderRadius: '14px',
-            padding: '12px 14px',
-            color: '#fff',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            minHeight: '75px'
-          }}
+          style={getCardColorVars(getAccountCardColor('cash', finances.cardColors))}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {_t("💵 Contanti")}</span>
+          <div className="acc-note-frame" aria-hidden="true" />
+          <div className="acc-tile-head">
+            <span className="acc-tile-name">{_t("💵 Contanti")}</span>
             {cashRecurringCount > 0 && (
               <span
+                className="acc-tile-pill"
                 onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
-                style={{
-                  background: 'rgba(34, 197, 94, 0.25)',
-                  border: '1px solid rgba(34, 197, 94, 0.4)',
-                  color: '#86efac',
-                  padding: '2px 6px',
-                  borderRadius: '5px',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px'
-                }}
                 title={_t("Ricorrenti Contanti")}
               >
                 🔄 {cashRecurringCount}
               </span>
             )}
           </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: (finances.cashBalance || 0) >= 0 ? '#4ade80' : '#ef4444', marginTop: '6px' }}>
+          <div className={`acc-tile-balance${(finances.cashBalance || 0) < 0 ? ' is-negative' : ''}`}>
             {fmtCurrency(finances.cashBalance || 0)}
           </div>
         </div>
 
-        {/* Tessera Conto Base */}
+        {/* Tessera Conto Base: piccola carta (#59) */}
         <div
+          className="acc-tile"
           onClick={() => setSelectedAccountDetail('base')}
-          style={{
-            background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: '14px',
-            padding: '12px 14px',
-            color: '#fff',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            minHeight: '75px'
-          }}
+          style={getCardColorVars(getAccountCardColor('base', finances.cardColors))}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              💳 {finances.baseAccountName || _t("Conto Base")}
-            </span>
+          <div className="acc-tile-head">
+            <span className="acc-tile-name">💳 {finances.baseAccountName || _t("Conto Base")}</span>
             {baseRecurringCount > 0 && (
               <span
+                className="acc-tile-pill"
                 onClick={(e) => { e.stopPropagation(); setShowRecurringModal(true); }}
-                style={{
-                  background: 'rgba(59, 130, 246, 0.25)',
-                  border: '1px solid rgba(59, 130, 246, 0.4)',
-                  color: '#60a5fa',
-                  padding: '2px 6px',
-                  borderRadius: '5px',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px'
-                }}
                 title={_t("Ricorrenti Conto Base")}
               >
                 🔄 {baseRecurringCount}
               </span>
             )}
           </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: finances.balance >= 0 ? '#38bdf8' : '#ef4444', marginTop: '6px' }}>
+          <div className={`acc-tile-balance${finances.balance < 0 ? ' is-negative' : ''}`}>
             {fmtCurrency(finances.balance)}
           </div>
         </div>
@@ -2398,7 +2359,7 @@ export default function FinancesTab({
             {_t("🏦 Conti Secondari & Risparmi")}</h3>
           <button
             type="button"
-            onClick={() => setShowAddSecModal(true)}
+            onClick={() => { setSecColor(suggestCardColor(['base', 'cash', ...(finances.secondaryAccounts || []).map(a => a.id)], finances.cardColors)); setShowAddSecModal(true); }}
             style={{ background: 'var(--accent-primary)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}
           >
             {_t("+ Nuovo Conto")}</button>
@@ -2427,7 +2388,7 @@ export default function FinancesTab({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                    <span style={{ fontSize: '18px', flexShrink: 0 }}>{acc.emoji || '🏦'}</span>
+                    <span className="acc-dot" style={getCardColorVars(getAccountCardColor(acc.id, finances.cardColors))}>{acc.emoji || '🏦'}</span>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {acc.name}
@@ -3633,8 +3594,8 @@ export default function FinancesTab({
         const accName = isBase ? (finances.baseAccountName || _t("Conto Base")) : (isCash ? _t("Contanti") : (secAccount?.name || _t("Conto Secondario")));
         const accEmoji = isBase ? '💳' : (isCash ? '💵' : (secAccount?.emoji || '🏦'));
         const accBalance = isBase ? finances.balance : (isCash ? (finances.cashBalance || 0) : (secAccount?.balance || 0));
-        const accKind = isBase ? _t("Conto principale") : (isCash ? _t("Portafoglio") : _t("Risparmio"));
-        const theme = getAccountCardTheme(accId);
+        const accKind = isBase ? _t("Conto principale") : (isCash ? _t("Banca dell'Eroe") : _t("Risparmio"));
+        const cardColorId = getAccountCardColor(accId, finances.cardColors);
 
         const movements = getAccountMovements(finances.transactions, accId);
         const monthStats = getAccountMonthStats(movements, currentMonthPrefix);
@@ -3698,13 +3659,20 @@ export default function FinancesTab({
               className="acc-sheet"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* La carta (fissa in alto) */}
+              {/* La carta (fissa in alto): carta pastello, o banconota inventata per i Contanti (#59) */}
               <div className="acc-card-wrap">
                 <div
-                  className="acc-card"
-                  style={{ '--card-from': theme.from, '--card-via': theme.via, '--card-to': theme.to, '--card-glow': theme.glow, '--card-accent': theme.accent }}
+                  className={`acc-card${isCash ? ' is-note' : ''}`}
+                  style={getCardColorVars(cardColorId)}
                 >
-                  <div className="acc-card-pattern" aria-hidden="true" />
+                  {isCash ? (
+                    <>
+                      <BanknoteArt />
+                      <div className="acc-note-frame" aria-hidden="true" />
+                    </>
+                  ) : (
+                    <div className="acc-card-pattern" aria-hidden="true" />
+                  )}
                   <div className="acc-card-shine" aria-hidden="true" />
 
                   <div className="acc-card-top">
@@ -3713,34 +3681,49 @@ export default function FinancesTab({
                       <div className="acc-card-name">{accName}</div>
                       <div className="acc-card-kind">{accKind}</div>
                     </div>
-                    {isBase && (
+                    <div className="acc-card-tools">
                       <button
                         type="button"
-                        className="acc-card-edit"
-                        onClick={() => { setBaseNameInput(finances.baseAccountName || 'Conto Base'); setShowRenameBaseModal(true); }}
-                        title={_t("Rinomina conto")}
-                        aria-label={_t("Rinomina conto")}
+                        className={`acc-card-edit${showCardColors ? ' is-active' : ''}`}
+                        onClick={() => setShowCardColors(v => !v)}
+                        title={_t("Colore della carta")}
+                        aria-label={_t("Colore della carta")}
+                        aria-expanded={showCardColors}
                       >
-                        ✏️
+                        🎨
                       </button>
-                    )}
+                      {isBase && (
+                        <button
+                          type="button"
+                          className="acc-card-edit"
+                          onClick={() => { setBaseNameInput(finances.baseAccountName || 'Conto Base'); setShowRenameBaseModal(true); }}
+                          title={_t("Rinomina conto")}
+                          aria-label={_t("Rinomina conto")}
+                        >
+                          ✏️
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="acc-card-chiprow" aria-hidden="true">
-                    <svg className="acc-card-chip" viewBox="0 0 40 30">
-                      <rect x="0.5" y="0.5" width="39" height="29" rx="6" />
-                      <path d="M0.5 10.5h12M0.5 19.5h12M27.5 10.5h12M27.5 19.5h12M12.5 0.5v29M27.5 0.5v29M12.5 15h15" />
-                    </svg>
-                    <svg className="acc-card-wave" viewBox="0 0 24 24">
-                      <path d="M8.5 7.5a6.5 6.5 0 0 1 0 9M12 5a10 10 0 0 1 0 14M15.5 2.5a13.5 13.5 0 0 1 0 19" />
-                    </svg>
-                  </div>
+                  {!isCash && (
+                    <div className="acc-card-chiprow" aria-hidden="true">
+                      <svg className="acc-card-chip" viewBox="0 0 40 30">
+                        <rect x="0.5" y="0.5" width="39" height="29" rx="6" />
+                        <path d="M0.5 10.5h12M0.5 19.5h12M27.5 10.5h12M27.5 19.5h12M12.5 0.5v29M27.5 0.5v29M12.5 15h15" />
+                      </svg>
+                      <svg className="acc-card-wave" viewBox="0 0 24 24">
+                        <path d="M8.5 7.5a6.5 6.5 0 0 1 0 9M12 5a10 10 0 0 1 0 14M15.5 2.5a13.5 13.5 0 0 1 0 19" />
+                      </svg>
+                    </div>
+                  )}
 
                   <div className="acc-card-balance-label">{_t("Saldo")}</div>
                   <div className={`acc-card-balance${accBalance < 0 ? ' is-negative' : ''}`}>{fmtCurrency(accBalance)}</div>
 
                   <div className="acc-card-bottom">
                     <div className="acc-card-badges">
+                      {isCash && <span className="acc-note-serial">№ QL·0001·⚔</span>}
                       {secAccount && secAccount.interestRate > 0 && (
                         <span className="acc-card-badge">+{secAccount.interestRate}% · {freqLabel(secAccount.interestFrequency)}</span>
                       )}
@@ -3762,6 +3745,13 @@ export default function FinancesTab({
                     </button>
                   </div>
                 </div>
+
+                {showCardColors && (
+                  <div className="acc-color-row">
+                    <span className="acc-color-label">{isCash ? _t("Colore della banconota") : _t("Colore della carta")}</span>
+                    <CardColorPicker value={cardColorId} onChange={(id) => setCardColor(accId, id)} />
+                  </div>
+                )}
               </div>
 
               {/* Corpo scorrevole */}
@@ -4234,6 +4224,11 @@ export default function FinancesTab({
                     style={{ width: '100%', height: '35px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '18px', marginTop: '2px', boxSizing: 'border-box' }}
                   />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>{_t("Colore della carta")}</label>
+                <CardColorPicker value={secColor} onChange={setSecColor} className="is-form" />
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>

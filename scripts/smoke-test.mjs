@@ -368,12 +368,28 @@ try {
   await page.waitForTimeout(300);
   await shot('15-conto-carta-fondo');
   await tapOutside();
-  await page.locator('div', { hasText: /^\s*(💳\s*)?Conto Base$/ }).last().click({ force: true });
+  await page.locator('.acc-tile:not(.is-note)').first().click({ force: true });
   await page.waitForTimeout(1200);
   await checkBounds('Conto base');
   await shot('16-conto-base');
+  // Colore della carta (#59): 🎨 → Pesca → salvato in finances.cardColors.base
+  await page.locator('.acc-card-edit[aria-expanded]').click();
+  await page.waitForTimeout(300);
+  await page.locator('.acc-swatch[aria-label="Pesca"]').click();
+  await page.waitForTimeout(300);
+  const chosen = await page.evaluate(() => JSON.parse(localStorage.getItem('questlife_state_v2') || '{}').finances?.cardColors?.base);
+  if (chosen !== 'peach') throw new Error(`colore della carta non salvato (${chosen})`);
+  await shot('16a-conto-colore');
   await tapOutside();
-  report(`Tesoro: schede dei conti entro le barre (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti e trasferimenti OK`);
+  // Contanti: banconota inventata
+  await page.locator('.acc-tile.is-note').first().click({ force: true });
+  await page.waitForTimeout(1200);
+  if (!(await page.locator('.acc-card.is-note .acc-note-art').count())) throw new Error('la banconota dei Contanti non compare');
+  await checkBounds('Contanti');
+  await shot('16b-contanti-banconota');
+  await tapOutside();
+  await shot('13a-tesoro-tessere');
+  report(`Tesoro: schede dei conti entro le barre (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti, trasferimenti, colore della carta e banconota OK`);
 } catch (e) {
   problems.push(`Gruppo 6 (Tesoro): ${e.message}`);
 }
