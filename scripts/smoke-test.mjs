@@ -599,7 +599,8 @@ try {
     const bad = [];
     if (cal && ring && (ring.top < cal.top - 1 || ring.bottom > cal.bottom + 1)) bad.push('anello del bilancio tagliato');
     if (cal && rows && (rows.top < cal.top - 1 || rows.bottom > cal.bottom + 1)) bad.push('righe del bilancio tagliate');
-    if (weight && labels.length && labels.some(l => l.bottom > weight.bottom + 1)) bad.push('giorni della settimana tagliati');
+    if (weight && labels.length && labels.some(l => l.bottom > weight.bottom + 1)) bad.push('giorni della settimana tagliati in basso');
+    if (weight && labels.length && labels.some(l => l.right > weight.right + 1)) bad.push('giorni della settimana fuori a destra');
     if (!labels.length) bad.push('settimana non trovata');
     return bad;
   });

@@ -8673,6 +8673,10 @@ button.opt-avatar:active { transform: scale(.95); }
 [data-orientation="landscape"] .health-weight .hl-week { margin-top: 5px !important; padding-top: 6px !important; }
 [data-orientation="landscape"] .health-weight .hl-week-head { margin-bottom: 3px !important; }
 [data-orientation="landscape"] .health-arch > .glass-panel { padding: 8px 10px !important; }
+/* settimana: sette colonne che possono stringersi; gli anelli si riducono fino a stare nella tessera (max 40 px) */
+[data-orientation="landscape"] .health-weight .hl-week > div:last-child { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; }
+[data-orientation="landscape"] .health-weight .week-day { min-width: 0; max-width: 100%; padding: 3px 1px 2px; box-sizing: border-box; }
+[data-orientation="landscape"] .health-weight .week-day svg { width: min(40px, 100%); height: auto; }
 /* schermi molto bassi (iPhone piccoli): via le barre Magra/Grassa, così la settimana resta intera */
 @media (max-height: 385px) {
     [data-orientation="landscape"] .health-weight .hl-comp { display: none !important; }
