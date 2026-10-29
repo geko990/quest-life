@@ -1,5 +1,5 @@
-export const BUILD_TIME = '2026-10-29T23:57:00.271Z';
-export const APP_VERSION = '5.9.275';
+export const BUILD_TIME = '2026-10-29T23:58:11.956Z';
+export const APP_VERSION = '5.9.276';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
