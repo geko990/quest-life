@@ -591,11 +591,27 @@ try {
   await p4.waitForTimeout(900);
   await p4.screenshot({ path: `${SHOTS}/18b-orizzontale-salute.png` });
   const healthFit = await fit();
+  // dentro le tessere niente tagliato: anello e righe del bilancio, nomi dei giorni della settimana
+  const healthInner = async () => p4.evaluate(() => {
+    const box = (sel) => { const el = document.querySelector(sel); return el ? el.getBoundingClientRect() : null; };
+    const cal = box('.health-cal'), ring = box('.health-cal .hl-ring'), rows = box('.health-cal .hl-rows'), weight = box('.health-weight');
+    const labels = [...document.querySelectorAll('.health-weight .week-day-label')].map(e => e.getBoundingClientRect());
+    const bad = [];
+    if (cal && ring && (ring.top < cal.top - 1 || ring.bottom > cal.bottom + 1)) bad.push('anello del bilancio tagliato');
+    if (cal && rows && (rows.top < cal.top - 1 || rows.bottom > cal.bottom + 1)) bad.push('righe del bilancio tagliate');
+    if (weight && labels.length && labels.some(l => l.bottom > weight.bottom + 1)) bad.push('giorni della settimana tagliati');
+    if (!labels.length) bad.push('settimana non trovata');
+    return bad;
+  });
+  const inner1 = await healthInner();
+  if (inner1.length) throw new Error(`Salute in orizzontale: ${inner1.join(', ')}`);
   if (healthFit.scroll > 2 || healthFit.lowest > healthFit.mainBottom + 1) throw new Error(`Salute in orizzontale scorre (${healthFit.scroll}px, ultima tessera a ${healthFit.lowest}, fine ${healthFit.mainBottom})`);
   // iPhone piccolo in orizzontale (667×375)
   await p4.setViewportSize({ width: 667, height: 375 });
   await p4.waitForTimeout(700);
   const smallHealth = await fit();
+  const inner2 = await healthInner();
+  if (inner2.length) throw new Error(`Salute su schermo piccolo: ${inner2.join(', ')}`);
   await p4.screenshot({ path: `${SHOTS}/18c-orizzontale-salute-piccolo.png` });
   await p4.locator('.app-nav-rail .rail-hero').click();
   await p4.waitForTimeout(900);

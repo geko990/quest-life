@@ -1251,14 +1251,15 @@ export default function NutritionTab({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div>
                 <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Bilancio Calorico")}</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{_t("Obiettivo - Cibo + Allenamento = Rimaste")}</div>
+                <div className="hl-sub" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{_t("Obiettivo - Cibo + Allenamento = Rimaste")}</div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="hl-calrow" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap' }}>
               {/* Calorie Progress Ring (Tap to open Quick Meal & Online Search Modal) */}
               <div
                 onClick={() => setShowQuickMealModal(true)}
+                className="hl-ring"
                 style={{ position: 'relative', width: '118px', height: '118px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                 title={_t("Tocca per inserire pasto rapido o cercare online")}
               >
@@ -1294,7 +1295,7 @@ export default function NutritionTab({
               </div>
 
               {/* Calorie Stats Info & Goal Launcher */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: '150px' }}>
+              <div className="hl-rows" style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: '150px' }}>
                 {/* 1) Obiettivo Card (Clean layout, no extra configure text) */}
                 <div
                   onClick={handleOpenGoalsModal}
@@ -1556,7 +1557,7 @@ export default function NutritionTab({
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '6px' }}>
+                  <div className="hl-comp" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '6px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: 'var(--text-muted)', marginBottom: '3px' }}>
                         <span>{_t("Magra:")}</span><b style={{ color: 'var(--text-primary)' }}>{leanPct > 0 ? `${leanPct}%` : '--'}</b>
@@ -1577,8 +1578,8 @@ export default function NutritionTab({
                 </div>
 
                 {/* La tua settimana */}
-                <div onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '8px', paddingTop: '9px', borderTop: '1px solid var(--glass-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', gap: '6px' }}>
+                <div className="hl-week" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '8px', paddingTop: '9px', borderTop: '1px solid var(--glass-border)' }}>
+                  <div className="hl-week-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', gap: '6px' }}>
                     <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                       {_t("La tua settimana")}
                       {perfectDays > 0 && <span className="week-perfect-count" title={_t("Giornate perfette: tutti e 4 gli obiettivi")}>⭐ {perfectDays}</span>}

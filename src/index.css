@@ -8653,3 +8653,27 @@ button.opt-avatar:active { transform: scale(.95); }
     overflow: hidden;
 }
 [data-orientation="landscape"] .health-arch { grid-area: arch; }
+/* Versione compatta (solo orizzontale): l'altezza è poca, la larghezza tanta */
+[data-orientation="landscape"] .health-main > .section-header { min-height: 0 !important; }
+[data-orientation="landscape"] .health-main > .section-header h2 { font-size: 18px !important; }
+[data-orientation="landscape"] .health-main > .section-header button { width: 32px !important; height: 32px !important; font-size: 15px !important; }
+[data-orientation="landscape"] .health-cal { padding: 10px 12px !important; }
+[data-orientation="landscape"] .health-cal .hl-sub { display: none; }
+[data-orientation="landscape"] .health-cal .hl-calrow { flex-wrap: nowrap !important; gap: 10px !important; justify-content: space-between !important; }
+[data-orientation="landscape"] .health-cal .hl-ring { width: 100px !important; height: 100px !important; flex-shrink: 0; }
+[data-orientation="landscape"] .health-cal .hl-ring svg { width: 100px; height: 100px; }
+[data-orientation="landscape"] .health-cal .hl-rows { min-width: 0 !important; gap: 5px !important; }
+[data-orientation="landscape"] .health-cal .hl-rows > div { padding: 6px 8px !important; }
+[data-orientation="landscape"] .health-stats { gap: 8px !important; }
+[data-orientation="landscape"] .health-stats > .glass-panel { padding: 7px 10px !important; }
+[data-orientation="landscape"] .health-stats > .glass-panel > div:first-child > div:nth-child(2) { margin: 3px 0 1px !important; }
+[data-orientation="landscape"] .health-stats > .glass-panel > div:first-child > div:nth-child(3) { margin-bottom: 4px !important; }
+[data-orientation="landscape"] .health-weight { padding: 8px 12px !important; }
+[data-orientation="landscape"] .health-weight .hl-comp { margin-top: 3px !important; }
+[data-orientation="landscape"] .health-weight .hl-week { margin-top: 5px !important; padding-top: 6px !important; }
+[data-orientation="landscape"] .health-weight .hl-week-head { margin-bottom: 3px !important; }
+[data-orientation="landscape"] .health-arch > .glass-panel { padding: 8px 10px !important; }
+/* schermi molto bassi (iPhone piccoli): via le barre Magra/Grassa, così la settimana resta intera */
+@media (max-height: 385px) {
+    [data-orientation="landscape"] .health-weight .hl-comp { display: none !important; }
+}
