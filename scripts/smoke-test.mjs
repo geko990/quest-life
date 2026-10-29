@@ -564,6 +564,7 @@ try {
     const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const names = ['Rispondere alle email', 'Preparare la presentazione', 'Camminata di 30 minuti', 'Chiamare il commercialista'];
     const slots = ['action', 'bonus', 'movement', 'reaction'];
+    st.settings = { ...(st.settings || {}), onboardingDone: true, plannerIntroSeen: true }; // niente benvenuto (#58)
     st.oneshots = [...(st.oneshots || []), ...names.map((n, i) => ({ id: `os_land_${i}`, name: n, emoji: '', completed: false, fromDailyPlan: true, dailyPlanDate: today, slotType: slots[i], difficulty: 2, primaryTarget: 'str', createdAt: today }))];
     localStorage.setItem('questlife_state_v2', JSON.stringify(st));
   });
