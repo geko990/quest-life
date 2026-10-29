@@ -451,6 +451,45 @@ try {
   problems.push(`Tastiera iOS: ${e.message}`);
 }
 
+// Orizzontale: barra laterale a destra, stesso ordine della barra in basso ruotata (Eroe al centro), icone visibili
+try {
+  const ctx = await browser.newContext({ viewport: { width: 852, height: 393 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  const p4 = await ctx.newPage();
+  await p4.goto(BASE, { waitUntil: 'networkidle' });
+  await p4.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
+  await p4.waitForTimeout(2500);
+  await p4.mouse.click(400, 6);
+  await p4.waitForTimeout(300);
+  const rail = await p4.evaluate(() => {
+    const nav = document.querySelector('.app-nav-rail');
+    if (!nav) return null;
+    const r = nav.getBoundingClientRect();
+    const main = document.querySelector('main.content-area').getBoundingClientRect();
+    const items = [...nav.children].map((el) => {
+      const b = el.getBoundingClientRect();
+      const label = el.classList.contains('rail-center') ? 'EROE' : (el.querySelector('.rail-label')?.textContent || '?');
+      const icon = el.querySelector('.nav-em, img, .rail-hero');
+      const ib = icon ? icon.getBoundingClientRect() : { width: 0 };
+      return { label, mid: Math.round(b.top + b.height / 2), iconW: Math.round(ib.width) };
+    });
+    return { left: Math.round(r.left), right: Math.round(r.right), mainRight: Math.round(main.right), top: Math.round(r.top), bottom: Math.round(r.bottom), items };
+  });
+  await p4.screenshot({ path: `${SHOTS}/18-orizzontale.png` });
+  if (!rail) throw new Error('barra laterale non trovata');
+  if (rail.right < 852 - 1 || rail.left < rail.mainRight - 1) throw new Error(`barra non a destra (barra ${rail.left}–${rail.right}, contenuto fino a ${rail.mainRight})`);
+  const order = rail.items.map(i => i.label).join(',');
+  if (order !== 'Abitudini,Missioni,EROE,Salute,Opzioni') throw new Error(`ordine sbagliato: ${order}`);
+  const hero = rail.items[2];
+  const centre = (rail.top + rail.bottom) / 2;
+  if (Math.abs(hero.mid - centre) > 24) throw new Error(`Eroe non al centro (a ${hero.mid}, centro ${Math.round(centre)})`);
+  const tiny = rail.items.filter(i => i.iconW < 12);
+  if (tiny.length) throw new Error(`icone schiacciate: ${tiny.map(i => i.label).join(', ')}`);
+  report(`Orizzontale: barra a destra (${rail.left}–${rail.right}), ordine ${order}, Eroe al centro`);
+  await ctx.close();
+} catch (e) {
+  problems.push(`Orizzontale: ${e.message}`);
+}
+
 // Versione vecchia dopo una pubblicazione: il pezzo principale dell'app non si carica una volta
 // ("Importing a module script failed"). L'app deve ripulire e ricaricarsi da sola, senza schermata vuota.
 try {

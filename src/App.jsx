@@ -2012,20 +2012,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Landscape Navigation Rail (Left side dock) */}
-      {isLandscape && (
-        <BottomNav
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          avatarEmoji={player.avatarEmoji}
-          avatarImage={player.avatarImage}
-          avatarType={player.avatarType}
-          isLandscape={true}
-          badges={{ missions: urgentMissionsCount }}
-          onLongPressHome={() => handleOpenModal('oneshot')}
-        />
-      )}
-
       {/* Main Content Pane (Right column in landscape, full screen in portrait) */}
       <div
         style={{
@@ -2110,6 +2096,20 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Barra laterale in orizzontale: a destra, a portata di pollice */}
+      {isLandscape && (
+        <BottomNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          avatarEmoji={player.avatarEmoji}
+          avatarImage={player.avatarImage}
+          avatarType={player.avatarType}
+          isLandscape={true}
+          badges={{ missions: urgentMissionsCount }}
+          onLongPressHome={() => handleOpenModal('oneshot')}
+        />
+      )}
 
       {/* Global generic Modal creator */}
       <Modal
