@@ -8,6 +8,7 @@ import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } 
 
 import { _t, getLocale, playerDisplayName } from '../i18n';
 import EmojiField from '../components/EmojiField';
+import AvatarSheet from '../components/AvatarSheet';
 import { normalizeTime, sortSteps, suggestNextTime, cleanPreset } from '../utils/dayTemplates';
 export default function SettingsTab({
   settings = {},
@@ -220,6 +221,18 @@ export default function SettingsTab({
     if (setSettings) setSettings(prev => ({ ...(prev || {}), [key]: value }));
   };
 
+  // Icona del profilo (#58): emoji o foto, dallo stesso pannello del benvenuto
+  const [avatarSheet, setAvatarSheet] = useState(false);
+  const updateAvatar = (v) => {
+    if (!setPlayer) return;
+    setPlayer(prev => ({
+      ...(prev || {}),
+      avatarType: v.type,
+      avatarEmoji: v.type === 'emoji' ? v.emoji : (prev || {}).avatarEmoji,
+      avatarImage: v.type === 'image' ? v.image : (prev || {}).avatarImage,
+    }));
+  };
+
   const updatePlayerName = (name) => {
     if (setPlayer) setPlayer(prev => ({ ...(prev || {}), name: (name || '').trim() || 'Avventuriero' }));
   };
@@ -347,14 +360,18 @@ export default function SettingsTab({
     <section id="section-settings" className="section active">
       {/* Profilo compatto: avatar, nome (tocca per rinominare) e Modifica avanzata discreta */}
       <div className="opt-profile">
-        <div className="opt-avatar">
+        <span className="opt-avatar-wrap">
+        <button type="button" className="opt-avatar" onClick={() => setAvatarSheet(true)} title={_t("Cambia icona")} aria-label={_t("Cambia icona")}>
           {safePlayer.avatarType === 'image' && safePlayer.avatarImage ? (
             <img src={safePlayer.avatarImage} alt={_t("Avatar")} />
           ) : (
             <span className="opt-avatar-emoji">{safePlayer.avatarEmoji || '⚔️'}</span>
           )}
           <div className="opt-avatar-level">{_t("Lvl {0}", safePlayer.level || 1)}</div>
-        </div>
+        </button>
+          <span className="opt-avatar-edit" aria-hidden="true">✎</span>
+        </span>
+        <AvatarSheet open={avatarSheet} onPick={updateAvatar} onClose={() => setAvatarSheet(false)} />
         <button
           type="button"
           className="opt-profile-name"

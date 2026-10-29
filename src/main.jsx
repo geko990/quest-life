@@ -6,6 +6,14 @@ import { setupGlobalErrorHandlers } from './utils/errorLogger';
 // Initialize global error & promise rejection monitoring
 setupGlobalErrorHandlers();
 
+// Android/Chrome: la richiesta di installazione arriva presto, prima che il benvenuto sia disegnato.
+// Si tiene da parte per il bottone "Installa Quest Life" (#58, Onboarding.jsx).
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  window.__qlInstallPrompt = e;
+  window.dispatchEvent(new Event('ql-installable'));
+});
+
 let started = false;
 const start = () => {
   if (started) return;

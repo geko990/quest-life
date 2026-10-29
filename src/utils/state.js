@@ -124,6 +124,10 @@ export function getInitialState() {
       // 'theme' è il tema grafico: dalla 5.9.261 esiste solo 'standard' (chiaro/scuro in themeMode), 'themeMode' è chiaro/scuro/auto.
       theme: 'standard',
       themeMode: 'light',
+      // Benvenuto (#58): false solo su un'app nuova; chi ha già dati non lo vede (vedi sanitizeState)
+      onboardingDone: false,
+      onboardingDate: null,
+      plannerIntroSeen: false,
       accent: 'violet',
       dayStartTime: 0,
       weekStart: 'sunday',
@@ -200,6 +204,9 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
       state.settings.theme = 'standard';
     }
   }
+  // Benvenuto (#58): chi aveva già dati salvati prima della 272 l'app la conosce già
+  if (savedSettings.onboardingDone === undefined) state.settings.onboardingDone = true;
+  if (savedSettings.plannerIntroSeen === undefined) state.settings.plannerIntroSeen = savedSettings.onboardingDone === undefined;
   if (state.settings.animatedBackground === undefined) state.settings.animatedBackground = true;
   if (state.settings.dayStartTime === undefined) state.settings.dayStartTime = 0;
   if (state.settings.enableDailyPenalties === undefined) state.settings.enableDailyPenalties = true;

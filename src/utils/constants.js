@@ -1,5 +1,5 @@
-export const BUILD_TIME = '2026-10-29T12:37:43.795Z';
-export const APP_VERSION = '5.9.272';
+export const BUILD_TIME = '2026-10-29T12:49:19.846Z';
+export const APP_VERSION = '5.9.273';
 
 export const DEFAULT_ATTRIBUTES = [
     { id: 'str', name: 'Forza', icon: '💪', description: 'Forza fisica e mentale. Esercizio, resistenza, disciplina e capacità di affrontare sfide difficili.', type: 'attribute', visible: true, level: 1, xp: 0 },
@@ -49,27 +49,14 @@ export const XP_CONFIG = {
     maxLevel: LEVEL_CAP
 };
 
+// Ranghi del giocatore a fasce di livello (#58): pochi, validi per chiunque, senza guerra.
+// Il titolo è quello dell'ultima fascia raggiunta (Header, titleForLevel); il 20 è il livello massimo.
 export const TITLES = [
-    { level: 1, title: 'Novizio' },
-    { level: 2, title: 'Recluta' },
-    { level: 3, title: 'Avventuriero' },
-    { level: 4, title: 'Esploratore' },
-    { level: 5, title: 'Eroe Locale' },
-    { level: 6, title: 'Difensore' },
-    { level: 7, title: 'Cavaliere' },
-    { level: 8, title: 'Veterano' },
-    { level: 9, title: 'Campione del Regno' },
-    { level: 10, title: 'Eroe del Regno' },
-    { level: 11, title: 'Signore della Guerra' },
-    { level: 12, title: 'Comandante' },
-    { level: 13, title: 'Eroe Continentale' },
-    { level: 14, title: 'Gran Maestro' },
-    { level: 15, title: 'Guardiano del Reame' },
-    { level: 16, title: 'Leggenda del Mondo' },
-    { level: 17, title: 'Semidio' },
-    { level: 18, title: 'Arconte Epico' },
-    { level: 19, title: 'Titano delle Leggende' },
-    { level: 20, title: 'Divinità Vivente' }
+    { level: 1, title: 'Esordiente' },
+    { level: 2, title: 'Apprendista' },
+    { level: 5, title: 'Viandante' },
+    { level: 10, title: 'Guida' },
+    { level: 20, title: 'Leggenda' }
 ];
 
 export const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];

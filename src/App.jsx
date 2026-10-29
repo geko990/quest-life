@@ -3,6 +3,7 @@ import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import Modal from './components/Modal';
 import DailyPlannerModal from './components/DailyPlannerModal';
+import Onboarding from './components/Onboarding';
 import MedalCelebrationModal from './components/MedalCelebrationModal';
 import CelebrationLayer from './components/CelebrationLayer';
 import HomeTab from './tabs/HomeTab';
@@ -370,7 +371,8 @@ export default function App() {
     // Handle first login setup
     if (!player.lastAccessDate) {
       setPlayer(prev => ({ ...prev, lastAccessDate: todayStr }));
-      if (settings.enableDailyPlanner !== false) {
+      // Chi comincia dal benvenuto (#58) vede "È il tuo turno!" dal giorno dopo
+      if (settings.enableDailyPlanner !== false && settings.onboardingDone !== false) {
         setShowPlannerModal(true);
       }
       return;
@@ -2218,14 +2220,32 @@ export default function App() {
         onClose={() => {
           setShowPlannerModal(false);
           setPlannerTargetDate(null);
+          if (!settings.plannerIntroSeen) setSettings(prev => ({ ...prev, plannerIntroSeen: true }));
         }}
         onSave={handleSaveDailyPlan}
+        showIntro={!settings.plannerIntroSeen}
         stats={stats}
         oneshots={oneshots}
         quests={quests}
         targetDate={plannerTargetDate}
         isTomorrow={!!plannerTargetDate && plannerTargetDate !== getGameDate(settings?.dayStartTime || 0)}
       />
+
+      {/* Benvenuto per chi apre l'app la prima volta (#58) */}
+      {settings.onboardingDone === false && (
+        <Onboarding
+          settings={settings}
+          setSettings={setSettings}
+          player={player}
+          setPlayer={setPlayer}
+          stats={stats}
+          setStats={setStats}
+          setHabits={setHabits}
+          setOneshots={setOneshots}
+          onToggleOneshot={handleToggleOneshot}
+          todayStr={getGameDate(settings.dayStartTime)}
+        />
+      )}
 
       {/* Celebrazioni: barra XP, coriandoli, medaglia di livello (#35) */}
       <CelebrationLayer />

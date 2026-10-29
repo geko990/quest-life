@@ -24,6 +24,47 @@ page.on('response', (r) => {
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
 report(`App avviata: "${(await page.title())}", Home con ${(await page.locator('#root').innerText()).length} caratteri visibili`);
+
+// Benvenuto (#58): al primo avvio (sul computer, quindi senza la schermata "Aggiungi alla Home") si fa
+// tutto il percorso e si controlla che crei dati veri: nome, abilità nel radar, abitudini, prima missione con XP
+try {
+  await page.waitForSelector('.ob-root', { timeout: 6000 });
+  await page.waitForTimeout(600);
+  await shot('00-benvenuto-1');
+  await page.locator('.ob-name').fill('Prova');
+  await page.locator('.ob-step').nth(0).locator('.ob-cta').click();
+  await page.waitForTimeout(500);
+  for (const i of [0, 3, 4]) await page.locator('.ob-area').nth(i).click();
+  await page.waitForTimeout(400);
+  await shot('00-benvenuto-2');
+  await page.locator('.ob-step').nth(1).locator('.ob-cta').click();
+  await page.waitForTimeout(500);
+  await page.locator('.ob-habit').nth(0).click();
+  await page.locator('.ob-habit').nth(2).click();
+  await shot('00-benvenuto-3');
+  await page.locator('.ob-step').nth(2).locator('.ob-cta').click();
+  await page.waitForTimeout(600);
+  await page.locator('.ob-chk').click();
+  await page.waitForTimeout(2600);
+  await shot('00-benvenuto-4');
+  await page.locator('.ob-step').nth(3).locator('.ob-cta').click();
+  await page.waitForTimeout(900);
+  if (await page.locator('.ob-root').count()) throw new Error('il benvenuto non si chiude');
+  const ob = await page.evaluate(() => {
+    const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}');
+    return {
+      done: st.settings && st.settings.onboardingDone, name: st.player && st.player.name, xp: st.player && st.player.totalXp,
+      habits: (st.habits || []).length, visible: (st.stats || []).filter(x => x.visible).map(x => x.name).join(', '),
+      mission: (st.oneshots || []).some(o => o.welcome && o.completed),
+    };
+  });
+  if (!ob.done || ob.name !== 'Prova' || ob.habits !== 2 || !ob.mission || !(ob.xp > 0) || ob.visible.split(', ').length !== 3) {
+    throw new Error(`dati non creati come previsto: ${JSON.stringify(ob)}`);
+  }
+  report(`Benvenuto: ${ob.name}, abilità ${ob.visible}, ${ob.habits} abitudini, prima missione fatta (+${ob.xp} XP)`);
+} catch (e) {
+  problems.push(`Benvenuto: ${e.message}`);
+}
 // Fluent Emoji (#54): le emoji della Home devono essere disegni (img.fe-emoji) caricati davvero
 await page.waitForTimeout(800);
 const fe = await page.evaluate(() => {
@@ -170,7 +211,7 @@ await step('05b-dettaglio-attributo', async () => {
   const hero = page.locator('button[title*="tieni premuto"]').last();
   await hero.click();
   await page.waitForTimeout(500);
-  await page.getByText('Forza').first().click();
+  await page.getByText('Forma fisica').first().click();
   await page.waitForTimeout(600);
 });
 await tapOutside();
@@ -358,12 +399,33 @@ try {
   await shot('11-inglese-impostazioni');
   // ranghi, nomi dei mesi e messaggi fissi devono essere tradotti (#51)
   const enText = await page.locator('#root').innerText();
-  const leftover = ['Novizio', 'Recluta', 'Avventuriero', 'Esploratore', 'Veterano', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre', 'Nuovo Inizio', 'Costanza Straordinaria']
+  const leftover = ['Esordiente', 'Apprendista', 'Ospite', 'Novizio', 'Recluta', 'Avventuriero', 'Esploratore', 'Veterano', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre', 'Nuovo Inizio', 'Costanza Straordinaria']
     .filter((w) => new RegExp(`\\b${w}\\b`).test(enText));
   if (leftover.length) throw new Error(`testi rimasti in italiano: ${leftover.join(', ')}`);
   report(`Inglese OK. ${sample.join(' || ')}`.slice(0, 900));
 } catch (e) {
   problems.push(`Gruppo 5 (inglese): ${e.message}`);
+}
+
+// Aperta nel browser di un iPhone (non dalla Home): prima compare solo "Aggiungi alla Home" (#58)
+try {
+  const ctx = await browser.newContext({
+    viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+  });
+  const p2 = await ctx.newPage();
+  p2.on('pageerror', (e) => problems.push(`Errore JS (iPhone): ${e.message}`));
+  await p2.goto(BASE, { waitUntil: 'networkidle' });
+  await p2.waitForSelector('.ob-install', { timeout: 8000 });
+  const steps = await p2.locator('.ob-steps li').count();
+  await p2.waitForTimeout(500);
+  await p2.screenshot({ path: `${SHOTS}/00-aggiungi-home.png` }).catch(() => {});
+  await p2.locator('.ob-later').click();
+  await p2.waitForSelector('.ob-name', { timeout: 4000 });
+  report(`iPhone nel browser: schermata "Aggiungi alla Home" con ${steps} passi, poi "Continua nel browser" porta al benvenuto`);
+  await ctx.close();
+} catch (e) {
+  problems.push(`Aggiungi alla Home: ${e.message}`);
 }
 
 // Controlli sul build
@@ -391,6 +453,8 @@ try {
   await p3.goto(BASE, { waitUntil: 'networkidle' });
   await p3.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
   await p3.waitForTimeout(2500);
+  // App nuova: si salta il benvenuto (#58)
+  if (await p3.locator('.ob-skip').count()) { await p3.locator('.ob-skip').first().click(); await p3.waitForTimeout(700); }
   await p3.mouse.click(6, 6); // chiude un'eventuale finestra del primo avvio
   await p3.waitForTimeout(400);
   await p3.locator('button, [role="button"], div, span', { hasText: /^Opzioni$/ }).last().click({ force: true });

@@ -225,7 +225,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                 <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <b style={{ color: '#38bdf8', fontSize: '13px' }}>{_t("📈 Livelli & Rango")}</b>
                   <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                    {_t("Accumulando XP sblocchi nuovi livelli e titoli onorifici (da")}{" "}<i>{_t("Novizio")}</i> {" "}{_t("fino a")}{" "}<i>{_t("Paladino")}</i> e <i>{_t("Leggenda")}</i>{_t("). La barra XP misura la tua evoluzione nel tempo.")}</div>
+                    {_t("Accumulando XP sblocchi nuovi livelli e titoli onorifici (da")}{" "}<i>{_t("Esordiente")}</i>{" "}{_t("fino a")}{" "}<i>{_t("Leggenda")}</i>{_t("). La barra XP misura la tua evoluzione nel tempo.")}</div>
                 </div>
                 <div style={{ background: 'rgba(30, 41, 59, 0.55)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <b style={{ color: '#f59e0b', fontSize: '13px' }}>{_t("🔥 Streak & Moltiplicatore")}</b>

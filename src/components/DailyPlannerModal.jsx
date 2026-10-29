@@ -3,7 +3,7 @@ import { getGameDate } from '../utils/helpers';
 
 import { _t } from '../i18n';
 import EmojiPickerSheet from './EmojiPickerSheet';
-export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false }) {
+export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false, showIntro = false }) {
   const [slots, setSlots] = useState({
     action: { emoji: '🎯', name: '', stars: 3, statId: 'int', secondaryStatId: '', oneshotId: null },
     bonus: { emoji: '⚡', name: '', stars: 2, statId: 'int', secondaryStatId: '', oneshotId: null },
@@ -357,6 +357,10 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           <p style={{ margin: '4px 0 0 0', fontSize: '11px', letterSpacing: '0.6px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             {isTomorrow ? _t("Prepara le tue azioni in anticipo per domani") : _t("Pianifica le tue azioni per oggi")}
           </p>
+          {/* La prima volta (#58): una riga per capire a cosa serve */}
+          {showIntro && (
+            <p className="planner-intro">{_t("Ogni giorno scegli 4 azioni, come i turni di un gioco di ruolo. Poi tira il D10 per un bonus di XP.")}</p>
+          )}
         </div>
 
         <div style={{
