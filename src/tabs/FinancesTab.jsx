@@ -112,7 +112,7 @@ export default function FinancesTab({
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedAccountDetail, setSelectedAccountDetail] = useState(null); // 'base' | 'cash' | accId
   const [accMovLimit, setAccMovLimit] = useState(20); // movimenti mostrati nella scheda del conto
-  const [showCardColors, setShowCardColors] = useState(false); // fila dei colori sotto la carta (#59)
+  const [showCardColors, setShowCardColors] = useState(false); // fila dei colori sotto la carta (#61)
   useEffect(() => { setAccMovLimit(20); setShowCardColors(false); }, [selectedAccountDetail]);
   const setCardColor = (accId, colorId) => setFinances(prev => ({ ...prev, cardColors: { ...(prev.cardColors || {}), [accId]: colorId } }));
   const [showRenameBaseModal, setShowRenameBaseModal] = useState(false);
@@ -158,7 +158,7 @@ export default function FinancesTab({
   // Secondary Account Form States
   const [secName, setSecName] = useState('');
   const [secEmoji, setSecEmoji] = useState('🛡️');
-  const [secColor, setSecColor] = useState('lavender'); // colore della carta del nuovo conto (#59)
+  const [secColor, setSecColor] = useState('lavender'); // colore della carta del nuovo conto (#61)
   const [secBalance, setSecBalance] = useState('');
   const [secRate, setSecRate] = useState('3.5');
   const [secLockMonths, setSecLockMonths] = useState('0'); // '0', '6', '12', '24'
@@ -2304,7 +2304,7 @@ export default function FinancesTab({
 
       {/* 3. Tessere Contanti e Conto Base */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-        {/* Tessera Contanti: piccola banconota (#59) */}
+        {/* Tessera Contanti: piccola banconota (#61) */}
         <div
           className="acc-tile is-note"
           onClick={() => setSelectedAccountDetail('cash')}
@@ -2328,7 +2328,7 @@ export default function FinancesTab({
           </div>
         </div>
 
-        {/* Tessera Conto Base: piccola carta (#59) */}
+        {/* Tessera Conto Base: piccola carta (#61) */}
         <div
           className="acc-tile"
           onClick={() => setSelectedAccountDetail('base')}
@@ -3659,7 +3659,7 @@ export default function FinancesTab({
               className="acc-sheet"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* La carta (fissa in alto): carta pastello, o banconota inventata per i Contanti (#59) */}
+              {/* La carta (fissa in alto): carta pastello, o banconota inventata per i Contanti (#61) */}
               <div className="acc-card-wrap">
                 <div
                   className={`acc-card${isCash ? ' is-note' : ''}`}

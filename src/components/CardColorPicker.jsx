@@ -2,7 +2,7 @@ import React from 'react';
 import { _t } from '../i18n';
 import { CARD_COLORS, getCardColorVars } from '../utils/accounts';
 
-// Fila di colori per le carte dei conti (#59). Ogni pallino usa le stesse variabili della carta,
+// Fila di colori per le carte dei conti (#61). Ogni pallino usa le stesse variabili della carta,
 // così in tema chiaro mostra il pastello e in tema scuro la versione profonda.
 const NAMES = {
   sky: () => _t("Azzurro"),

@@ -530,7 +530,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
           }))
         : [],
       customQuotesProxy: proxyVal,
-      cardColors: sanitizeCardColors(parsed.finances.cardColors) // colore delle carte dei conti (#59)
+      cardColors: sanitizeCardColors(parsed.finances.cardColors) // colore delle carte dei conti (#61)
     };
   } else {
     let fallbackProxy = '';

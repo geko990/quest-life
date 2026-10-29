@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Decorazioni della "banconota" dei Contanti (#59): una banconota inventata, non una copia di
+// Decorazioni della "banconota" dei Contanti (#61): una banconota inventata, non una copia di
 // banconote vere. Onde di sicurezza (guilloche) e rosone a destra; la cornice doppia è in CSS (`.acc-note-frame`).
 // Tutto in `currentColor`: il colore viene dalla carta (inchiostro del colore scelto).
 

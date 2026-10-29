@@ -372,7 +372,7 @@ try {
   await page.waitForTimeout(1200);
   await checkBounds('Conto base');
   await shot('16-conto-base');
-  // Colore della carta (#59): 🎨 → Pesca → salvato in finances.cardColors.base
+  // Colore della carta (#61): 🎨 → Pesca → salvato in finances.cardColors.base
   await page.locator('.acc-card-edit[aria-expanded]').click();
   await page.waitForTimeout(300);
   await page.locator('.acc-swatch[aria-label="Pesca"]').click();

@@ -53,7 +53,7 @@ export function groupMovementsByDay(movements) {
   return groups;
 }
 
-// Colori delle "carte" (#59). Ogni colore ha una versione pastello per il tema chiaro
+// Colori delle "carte" (#61). Ogni colore ha una versione pastello per il tema chiaro
 // [da, a, macchia di luce, inchiostro] e una profonda per il tema scuro [da, a, alone, testo tenue].
 // Il conto sceglie il colore in `finances.cardColors[accId]`; senza scelta: base azzurro,
 // contanti menta, conti secondari un colore stabile ricavato dall'id.
