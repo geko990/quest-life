@@ -17,6 +17,15 @@ import { onCelebration, statProgress } from '../utils/celebrations';
 const XP_HOLD_MS = 1600;
 const LEVELUP_DELAY_MS = 650;
 const LEVELUP_AUTOCLOSE_MS = 4000;
+const motionAllowed = () => {
+  try {
+    if (document.documentElement.getAttribute('data-animations') === 'off') return false;
+    return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (_) { return true; }
+};
+
+const buzz = (pattern) => { try { if (navigator.vibrate && motionAllowed()) navigator.vibrate(pattern); } catch (_) {} };
+
 // ---------------- Coriandoli (canvas, nessuna libreria) ----------------
 function launchConfetti(mode = 'cannons') {
   if (!motionAllowed()) return;
