@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { _t, getLocale } from '../i18n';
 import StepsTrail from './StepsTrail';
-import { QUICK_STEPS, GOAL_STEP, recommendedSteps, stepsToKm, stepsToKcal, stepsStatus } from '../utils/steps';
+import { QUICK_STEPS, GOAL_STEP, fmtSteps, recommendedSteps, stepsToKm, stepsToKcal, stepsStatus } from '../utils/steps';
 
 // Contenuto della finestra "Registro Passi": sentiero di montagna a sinistra, numeri e pulsanti a destra,
 // obiettivo giornaliero modificabile con il consiglio (età e obiettivo dai dati degli Obiettivi di Salute).
 // Stessa struttura e classi della finestra dell'acqua (.wp-*), con i colori dei passi (.wp.is-steps).
 
-const fmt = (n) => Math.round(Number(n) || 0).toLocaleString(getLocale());
+const fmt = (n) => fmtSteps(n);
 
 export default function StepsPanel({ steps, goal, profile = {}, onSteps, onGoal }) {
   const s = Math.max(0, Math.round(Number(steps) || 0));

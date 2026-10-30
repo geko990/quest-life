@@ -37,6 +37,14 @@ export function stepsToKcal(steps, weightKg) {
   return Math.round((Number(steps) || 0) / 1000 * 0.5 * w);
 }
 
+// Numero di passi con il separatore delle migliaia anche sotto 10.000 (in italiano Intl scrive "8000" ma "12.750")
+export function fmtSteps(n) {
+  let lang = 'it';
+  try { lang = (document.documentElement.lang || 'it').slice(0, 2); } catch (_) {}
+  const sep = lang === 'en' ? ',' : '.';
+  return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
+
 export function stepsStatus(steps, goal) {
   const s = Number(steps) || 0;
   const g = Math.max(1, Number(goal) || 1);

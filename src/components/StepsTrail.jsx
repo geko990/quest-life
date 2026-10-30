@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { _t, getLocale } from '../i18n';
-import { STEP_SNAP, trailCapacity, stepsStatus } from '../utils/steps';
+import { _t } from '../i18n';
+import { STEP_SNAP, trailCapacity, stepsStatus, fmtSteps } from '../utils/steps';
 
 // Finestra "Registro Passi": un sentiero di montagna. I passi di oggi portano l'escursionista su per i
 // tornanti fino alla vetta con la bandierina (= obiettivo); oltre l'obiettivo si prosegue sulla cresta
@@ -8,7 +8,7 @@ import { STEP_SNAP, trailCapacity, stepsStatus } from '../utils/steps';
 
 const VB_W = 150, VB_H = 240;
 const FRONT = [[14, 228], [100, 212], [34, 184], [94, 160], [42, 132], [86, 108], [64, 74]];
-const RIDGE = [[64, 74], [82, 62], [98, 56], [122, 28]];
+const RIDGE = [[64, 74], [80, 62], [94, 56], [112, 28]];
 
 const segLens = (poly) => poly.slice(1).map((p, i) => Math.hypot(p[0] - poly[i][0], p[1] - poly[i][1]));
 const FRONT_L = segLens(FRONT), RIDGE_L = segLens(RIDGE);
@@ -116,7 +116,7 @@ export default function StepsTrail({ steps, goal, onChange }) {
   };
 
   const pct = (p) => ({ left: `${(p[0] / VB_W) * 100}%`, top: `${(p[1] / VB_H) * 100}%` });
-  const fmt = (n) => Math.round(n).toLocaleString(getLocale());
+  const fmt = (n) => fmtSteps(n);
 
   return (
     <div className={`st-wrap${status.kind !== 'below' ? ' is-goal' : ''}${atTop ? ' is-top' : ''}`}>
@@ -150,8 +150,8 @@ export default function StepsTrail({ steps, goal, onChange }) {
         <circle className="st-sun" cx="28" cy="40" r="12" fill="url(#stSun)" />
 
         {/* Montagne: dietro la cima più alta con la neve, davanti quella dell'obiettivo */}
-        <polygon points="58,236 122,20 150,72 150,236" fill="var(--st-mount-back)" />
-        <polygon points="113,40 122,20 131,38 126,35 122,40 117,36" fill="var(--st-snow)" />
+        <polygon points="44,236 112,20 152,236" fill="var(--st-mount-back)" />
+        <polygon points="104,46 112,20 120,46 116,42 112,47 108,42" fill="var(--st-snow)" />
         <polygon points="-4,236 64,66 146,236" fill="url(#stFront)" />
 
         {/* Sentiero da fare (tratteggiato) e fatto (pieno) */}
@@ -169,7 +169,7 @@ export default function StepsTrail({ steps, goal, onChange }) {
       {/* Bandierina della vetta (obiettivo), stella sulla cima più alta, escursionista */}
       <div className="st-flag" style={pct([64, 74])}>🚩</div>
       <div className="st-goal-tag" style={pct([64, 74])}>{fmt(g)}</div>
-      {atTop && <div className="st-star" style={pct([122, 22])}>⭐</div>}
+      {atTop && <div className="st-star" style={pct([112, 22])}>⭐</div>}
       <div className={`st-walker${dragging ? ' is-dragging' : ''}`} style={pct(walker)}>🚶</div>
     </div>
   );
