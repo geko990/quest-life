@@ -27,6 +27,7 @@ import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPref
 
 import { setLanguage, _t, monthLong, playerDisplayName } from './i18n';
 import { applyStatXp, titleForLevel, habitsProgress, dailyActionsProgress, celebrate } from './utils/celebrations';
+import { buildCampaignRecap } from './utils/campaignRecap';
 class TabErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -403,7 +404,9 @@ export default function App() {
       else if (f === 'dailyActions') { setActiveTab('home'); markLandSeen('dailyActions'); setPlannerTargetDate(null); setShowPlannerModal(true); }
     };
     window.addEventListener('ql-land-go', onGo);
-    return () => window.removeEventListener('ql-land-go', onGo);
+    const onNewQuest = () => handleOpenModal('quest');
+    window.addEventListener('ql-new-quest', onNewQuest);
+    return () => { window.removeEventListener('ql-land-go', onGo); window.removeEventListener('ql-new-quest', onNewQuest); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 6. Rollover check (Check if day rolled over)
@@ -940,9 +943,10 @@ export default function App() {
         if (!list.includes(questId)) list.push(questId);
         return { ...prev, [todayStr]: { ...dayLog, quests: list } };
       });
-      setTimeout(() => {
-        alert(_t("🏆 CAMPAGNA COMPLETATA! \"{0}\" è finita! Hai guadagnato +{1} XP!", targetQuest.name, xpReward));
-      }, 50);
+      // Schermata di campagna completata (#67) al posto dell'avviso del telefono: percorso, giorni, XP, premio
+      const recapSubs = updatedSubs.map((sq, idx) => (idx === targetIndex ? { ...sq, justDone: true } : sq));
+      celebrate('campaign', buildCampaignRecap(targetQuest, recapSubs, completionLog, todayStr,
+        xpReward + 10 + (targetQuest.secondaryTarget ? Math.round(xpReward * 0.33) : 0)));
     } else if (!allDone && wasDone) {
       // Deduct Campaign Completion XP if uncompleted
       const xpReward = questDifficulty * 35;

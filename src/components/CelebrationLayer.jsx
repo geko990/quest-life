@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { _t } from '../i18n';
 import { onCelebration, statProgress } from '../utils/celebrations';
+import CampaignComplete from './CampaignComplete';
 
 // Livello grafico delle celebrazioni, sopra tutta l'app:
 // 1. barra XP: piccola tessera in alto che mostra per un attimo le abilità che crescono.
 //    Non intercetta i tocchi e accumula le spunte fatte in fila (niente attese tra una e l'altra).
 // 2. coriandoli: abitudini di oggi tutte fatte, Azioni del Giorno tutte fatte.
 // 3. medaglia di livello: abilità o personaggio che sale di livello (tocco per chiudere).
+// 4. campagna completata (#67): percorso, giorni, XP e premio (CampaignComplete.jsx). Se nello stesso momento
+//    sale anche un livello, la medaglia aspetta che la campagna si chiuda.
 //
 // Tempi (utili anche per rifarle nell'app nativa):
 // - barra XP: entra in 220 ms, la barra si riempie in 480 ms (con salto di livello: fino al 100% in 380 ms,
@@ -137,6 +140,10 @@ export default function CelebrationLayer() {
   const levelTimer = useRef(null);
   const closeTimer = useRef(null);
   const bannerTimer = useRef(null);
+  const [campaign, setCampaign] = useState(null);   // riepilogo di campaignRecap.js
+  const campaignOpen = useRef(false);
+  const heldLevelUp = useRef(null);
+  const campaignTimer = useRef(null);
 
   useEffect(() => onCelebration((type, p) => {
     if (type === 'xp') {
@@ -176,13 +183,25 @@ export default function CelebrationLayer() {
         q.forEach(x => byKey.set(x.kind === 'player' ? 'player' : x.statId, x)); // tiene il livello più alto
         const list = [...byKey.values()];
         const main = list.find(x => x.kind === 'player') || list[0];
-        setLevelUp({ main, others: list.filter(x => x !== main), key: Date.now() });
-        launchConfetti('burst');
-        buzz([30, 60, 30, 60, 80]);
-        clearTimeout(closeTimer.current);
-        // Con un'area appena aperta (#64) la medaglia resta finché non si tocca: c'è da leggere
-        if (!(main.lands && main.lands.length)) closeTimer.current = setTimeout(() => setLevelUp(null), LEVELUP_AUTOCLOSE_MS);
+        const show = () => {
+          setLevelUp({ main, others: list.filter(x => x !== main), key: Date.now() });
+          launchConfetti('burst');
+          buzz([30, 60, 30, 60, 80]);
+          clearTimeout(closeTimer.current);
+          // Con un'area appena aperta (#64) la medaglia resta finché non si tocca: c'è da leggere
+          if (!(main.lands && main.lands.length)) closeTimer.current = setTimeout(() => setLevelUp(null), LEVELUP_AUTOCLOSE_MS);
+        };
+        if (campaignOpen.current) heldLevelUp.current = show; else show();
       }, LEVELUP_DELAY_MS);
+    } else if (type === 'campaign') {
+      // dopo la barra XP del passo appena spuntato, così si vede crescere l'abilità
+      campaignOpen.current = true;
+      clearTimeout(campaignTimer.current);
+      campaignTimer.current = setTimeout(() => {
+        setCampaign({ ...p, key: Date.now() });
+        launchConfetti('cannons');
+        buzz([25, 50, 25, 50, 90]);
+      }, 520);
     } else if (type === 'confetti') {
       launchConfetti('cannons');
       buzz([20, 40, 20]);
@@ -193,10 +212,16 @@ export default function CelebrationLayer() {
   }), []);
 
   useEffect(() => () => {
-    [hideTimer, leaveTimer, levelTimer, closeTimer, bannerTimer].forEach(t => clearTimeout(t.current));
+    [hideTimer, leaveTimer, levelTimer, closeTimer, bannerTimer, campaignTimer].forEach(t => clearTimeout(t.current));
   }, []);
 
   const closeLevelUp = () => { clearTimeout(closeTimer.current); setLevelUp(null); };
+  const closeCampaign = () => {
+    setCampaign(null);
+    campaignOpen.current = false;
+    const held = heldLevelUp.current; heldLevelUp.current = null;
+    if (held) setTimeout(held, 250);
+  };
 
   return (
     <>
@@ -221,6 +246,8 @@ export default function CelebrationLayer() {
       {banner && (
         <div className="celebration-banner" key={banner.key}>{banner.message}</div>
       )}
+
+      {campaign && <CampaignComplete key={campaign.key} recap={campaign} onClose={closeCampaign} />}
 
       {levelUp && (
         <div className="levelup-overlay" key={levelUp.key} onClick={closeLevelUp} role="dialog" aria-label={_t("Livello superiore!")}>
