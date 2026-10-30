@@ -1,4 +1,4 @@
-export const BUILD_TIME = '2026-10-30T07:29:45.323Z';
+export const BUILD_TIME = '2026-10-30T07:37:11.156Z';
 export const APP_VERSION = '5.9.283';
 
 export const DEFAULT_ATTRIBUTES = [
@@ -18,6 +18,10 @@ export const ACCENT_COLORS = ['violet', 'blue', 'indigo', 'cyan', 'teal', 'emera
 
 export const LEVEL_CAP = 20;
 
+// XP per salire di un livello: per le abilità getXpForLevel(livello + 1) = LEVEL_XP_REQUIREMENTS[livello + 1]
+// (dal 1 al 2 servono 300). Per il personaggio il totale è getCumulativeXpForLevel (helpers.js): livelli
+// 2-5 a 150 / 450 / 1.000 / 1.800 XP (#66), dal 6 la somma dall'indice 2 (4.500, 6.800, 9.800…).
+// I "cumul" scritti accanto ai valori sono quelli originari e non corrispondono al calcolo.
 export const LEVEL_XP_REQUIREMENTS = [
     0,      // Level 1
     150,    // Level 2  (cumul 150)
