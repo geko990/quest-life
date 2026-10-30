@@ -129,7 +129,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
       return;
     }
 
-    // Lancio del dado (#62, richiesta dell'utente): il 🎲 cade dall'alto nella finestra, rimbalza e rotola
+    // Lancio del dado (#64, richiesta dell'utente): il 🎲 cade dall'alto nella finestra, rimbalza e rotola
     // rallentando; intanto il bonus scorre e si ferma su un valore tra 10% e 100% (D10 × 10).
     // Tempi: caduta e rotolamento 1,45 s (animazione .dice-fall in index.css), numeri sempre più lenti,
     // poi il risultato resta 1,6 s e la giornata si salva. Animazioni spente: niente movimento, stessi tempi.

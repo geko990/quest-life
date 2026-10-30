@@ -1,4 +1,4 @@
-// L'app che cresce con il giocatore (#62): quali aree si vedono a ogni livello. Un solo posto che decide,
+// L'app che cresce con il giocatore (#64): quali aree si vedono a ogni livello. Un solo posto che decide,
 // usato da barra in basso, Home, Missioni, Opzioni e celebrazioni. Solo dati e regole, niente grafica
 // (riusabile nell'app nativa, #24). Le aree non ancora aperte sono solo nascoste: i dati restano.
 //   Lv 1: Eroe (le missioni singole stanno nella Home, sotto il radar), Abitudini, Opzioni

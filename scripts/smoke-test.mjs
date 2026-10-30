@@ -66,7 +66,7 @@ try {
   problems.push(`Benvenuto: ${e.message}`);
 }
 
-// L'app che cresce (#62): un utente nuovo al livello 1 vede solo Abitudini, Eroe e Opzioni, e le missioni
+// L'app che cresce (#64): un utente nuovo al livello 1 vede solo Abitudini, Eroe e Opzioni, e le missioni
 // nella Home; al livello 3 compaiono Salute e Missioni e il doppio tocco su Opzioni apre il Tesoro con la sua
 // prima missione. Poi "Sblocca tutto" per il resto del test.
 const editState = async (fn) => {
@@ -527,7 +527,7 @@ try {
   await p3.waitForTimeout(2500);
   // App nuova: si salta il benvenuto (#58)
   if (await p3.locator('.ob-skip').count()) { await p3.locator('.ob-skip').first().click(); await p3.waitForTimeout(700); }
-  // e si sblocca tutto (#62): la finestra Giornate tipo si apre dal livello 4
+  // e si sblocca tutto (#64): la finestra Giornate tipo si apre dal livello 4
   await p3.waitForTimeout(800);
   await p3.evaluate(() => { const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}'); st.settings.unlockAll = true; localStorage.setItem('questlife_state_v2', JSON.stringify(st)); });
   await p3.reload({ waitUntil: 'networkidle' });
@@ -598,7 +598,7 @@ try {
   const p4 = await ctx.newPage();
   await p4.goto(BASE, { waitUntil: 'networkidle' });
   await p4.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
-  // App nuova: senza benvenuto e con tutte le aree (#58, #62), per vedere la barra completa
+  // App nuova: senza benvenuto e con tutte le aree (#58, #64), per vedere la barra completa
   await p4.waitForTimeout(1200);
   await p4.evaluate(() => { const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}'); st.settings = { ...(st.settings || {}), onboardingDone: true, unlockAll: true }; localStorage.setItem('questlife_state_v2', JSON.stringify(st)); });
   await p4.reload({ waitUntil: 'networkidle' });

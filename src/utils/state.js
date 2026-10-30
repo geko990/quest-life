@@ -129,7 +129,7 @@ export function getInitialState() {
       onboardingDone: false,
       onboardingDate: null,
       plannerIntroSeen: false,
-      // L'app che cresce con il livello (#62, src/utils/unlocks.js): spento = le aree si aprono salendo di livello
+      // L'app che cresce con il livello (#64, src/utils/unlocks.js): spento = le aree si aprono salendo di livello
       unlockAll: false,
       seenLands: {},
       accent: 'violet',
@@ -211,7 +211,7 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   // Benvenuto (#58): chi aveva già dati salvati prima della 272 l'app la conosce già
   if (savedSettings.onboardingDone === undefined) state.settings.onboardingDone = true;
   if (savedSettings.plannerIntroSeen === undefined) state.settings.plannerIntroSeen = savedSettings.onboardingDone === undefined;
-  // L'app che cresce (#62): chi aveva già dati prima della 278 continua a vedere tutto (e ha già visto tutto)
+  // L'app che cresce (#64): chi aveva già dati prima della 278 continua a vedere tutto (e ha già visto tutto)
   if (savedSettings.unlockAll === undefined) {
     state.settings.unlockAll = true;
     state.settings.seenLands = { missions: true, nutrition: true, shopping: true, finances: true, dailyActions: true, quests: true };

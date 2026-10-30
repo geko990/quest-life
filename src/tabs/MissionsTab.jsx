@@ -52,7 +52,7 @@ export default function MissionsTab({
       setSubTab('oneshot');
     }
   }, [activeTab]);
-  // Campagne e Sfide si aprono al livello 5 (#62): prima c'è solo la lista delle missioni singole
+  // Campagne e Sfide si aprono al livello 5 (#64): prima c'è solo la lista delle missioni singole
   useEffect(() => { if (!showQuests && subTab !== 'oneshot') setSubTab('oneshot'); }, [showQuests, subTab]);
   const [showCompletedOneshots, setShowCompletedOneshots] = useState(false);
   const [expandedQuestId, setExpandedQuestId] = useState(null);

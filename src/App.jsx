@@ -138,7 +138,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('home');
 
-  // --- L'app che cresce con il livello (#62, src/utils/unlocks.js) ---
+  // --- L'app che cresce con il livello (#64, src/utils/unlocks.js) ---
   const playerLevel = player.level || 1;
   const allowed = {
     missions: canUse('missions', playerLevel, settings),
@@ -383,7 +383,7 @@ export default function App() {
     return () => window.removeEventListener('contextmenu', handleContextMenu, { capture: true });
   }, []);
 
-  // L'app che cresce (#62): una scheda non ancora aperta riporta all'Eroe; la prima visita di un'area
+  // L'app che cresce (#64): una scheda non ancora aperta riporta all'Eroe; la prima visita di un'area
   // appena aperta mostra la sua prima missione. "Andiamo a vedere" della medaglia porta lì.
   useEffect(() => {
     const f = TAB_FEATURE[activeTab];
@@ -468,7 +468,7 @@ export default function App() {
       setPomodoro(prev => ({ ...prev, sessionsToday: 0 }));
     }
 
-    // Trigger daily planner on new day if enabled (solo quando le Azioni del Giorno sono aperte, #62)
+    // Trigger daily planner on new day if enabled (solo quando le Azioni del Giorno sono aperte, #64)
     if (settings.enableDailyPlanner && canUse('dailyActions', player.level || 1, settings)) {
       const hasPrePlannedSlots = (oneshots || []).some(o => o.fromDailyPlan && o.dailyPlanDate === todayStr) ||
         (quests || []).some(q => (q.subquests || []).some(sq => sq.fromDailyPlan && sq.dailyPlanDate === todayStr));
@@ -2283,7 +2283,7 @@ export default function App() {
         isTomorrow={!!plannerTargetDate && plannerTargetDate !== getGameDate(settings?.dayStartTime || 0)}
       />
 
-      {/* Prima missione di un'area appena aperta (#62) */}
+      {/* Prima missione di un'area appena aperta (#64) */}
       {landIntro && (
         <LandIntro
           kind={landIntro}

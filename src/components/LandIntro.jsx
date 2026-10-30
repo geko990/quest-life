@@ -4,7 +4,7 @@ import { _t } from '../i18n';
 import Emoji from './Emoji';
 import { CHALLENGE_TEMPLATES } from '../utils/constants';
 
-// Prima missione di un'area appena aperta (#62), come nel benvenuto: una domanda, una risposta che crea
+// Prima missione di un'area appena aperta (#64), come nel benvenuto: una domanda, una risposta che crea
 // dati veri, un po' di XP. Salute: i bicchieri d'acqua di oggi. Tesoro: il saldo del conto base.
 // Campagne: la prima sfida tra tre proposte. (Le Azioni del Giorno usano "È il tuo turno!" con la sua riga
 // di spiegazione.) Stesso aspetto dei pannelli dal basso (classi .emoji-picker-*), tempi uguali.

@@ -44,7 +44,7 @@ export default function HomeTab({
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [cardModeState, setCardMode] = useState('tasks'); // 'tasks' or 'pomodoro'
-  // L'app che cresce (#62): al livello 1 la tessera sotto il radar mostra le Missioni; dal 2 la Concentrazione
+  // L'app che cresce (#64): al livello 1 la tessera sotto il radar mostra le Missioni; dal 2 la Concentrazione
   // (timer Pomodoro); dal 4 le Azioni del Giorno con il Pomodoro dentro, come prima
   const homeMode = !unlock.missions ? 'missions' : !unlock.dailyActions ? 'focus' : 'actions';
   const cardMode = homeMode === 'focus' ? 'pomodoro' : homeMode === 'missions' ? 'missions' : cardModeState;
@@ -1244,7 +1244,7 @@ function RadarEmoji({ e, x, y }) {
   );
 }
 
-// Livello 1 (#62): le missioni singole stanno nella Home, sotto il radar. Prima quelle da fare, poi quelle
+// Livello 1 (#64): le missioni singole stanno nella Home, sotto il radar. Prima quelle da fare, poi quelle
 // fatte oggi; la spunta dà l'XP come nella scheda Missioni.
 function HomeMissions({ oneshots = [], completionLog = {}, todayStr, onToggle, onOpenModal }) {
   const doneToday = new Set((completionLog[todayStr] && completionLog[todayStr].oneshots) || []);

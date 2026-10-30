@@ -397,7 +397,7 @@ export default function SettingsTab({
       </div>
 
       <div className="opt-stack">
-        {/* Giornate tipo: in evidenza, con le routine visibili anche a tessera chiusa (dal livello 4, con le Azioni del Giorno, #62) */}
+        {/* Giornate tipo: in evidenza, con le routine visibili anche a tessera chiusa (dal livello 4, con le Azioni del Giorno, #64) */}
         {unlock.dailyActions !== false && (<>
         <SettingsGroup
           title={_t("🗓️ Giornate tipo")}
@@ -536,7 +536,7 @@ export default function SettingsTab({
 
         {/* Gioco */}
         <SettingsGroup title={_t("🎮 Gioco")} open={expandedGroup === 'gameplay'} onToggle={() => toggleGroup('gameplay')}>
-          {/* L'app che cresce con il livello (#62): togliendolo si torna alle aree del proprio livello */}
+          {/* L'app che cresce con il livello (#64): togliendolo si torna alle aree del proprio livello */}
           <SettingRow title={_t("Sblocca tutto")} desc={_t("Mostra subito tutte le aree; spento, l'app cresce con il tuo livello")}>
             <Toggle checked={safeSettings.unlockAll !== false} onChange={(v) => updateSetting('unlockAll', v)} label={_t("Sblocca tutto")} />
           </SettingRow>

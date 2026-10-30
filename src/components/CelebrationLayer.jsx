@@ -215,7 +215,7 @@ export default function CelebrationLayer() {
         launchConfetti('burst');
         buzz([30, 60, 30, 60, 80]);
         clearTimeout(closeTimer.current);
-        // Con un'area appena aperta (#62) la medaglia resta finché non si tocca: c'è da leggere
+        // Con un'area appena aperta (#64) la medaglia resta finché non si tocca: c'è da leggere
         if (!(main.lands && main.lands.length)) closeTimer.current = setTimeout(() => setLevelUp(null), LEVELUP_AUTOCLOSE_MS);
       }, LEVELUP_DELAY_MS);
     } else if (type === 'money') {

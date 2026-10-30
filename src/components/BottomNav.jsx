@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { _t } from '../i18n';
 import Emoji from './Emoji';
 export default function BottomNav({ activeTab, setActiveTab, avatarEmoji, avatarImage, avatarType, isLandscape = false, onLongPressHome, badges = {}, allowed = null, fresh = {}, hints = {} }) {
-  // L'app che cresce (#62): `allowed` dice quali aree si vedono (null = tutte), `fresh` le aree appena aperte
+  // L'app che cresce (#64): `allowed` dice quali aree si vedono (null = tutte), `fresh` le aree appena aperte
   // (pallino e comparsa animata), `hints` un suggerimento sopra una voce (es. "Tocca due volte" per il Tesoro)
   const can = (f) => !allowed || allowed[f] !== false;
   const lastClicksRef = useRef({});
