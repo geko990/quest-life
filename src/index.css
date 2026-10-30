@@ -7580,6 +7580,31 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
 .week-perfect-count { margin-left: 6px; color: #facc15; font-weight: 800; text-transform: none; }
 
 /* ===== Tesoro: scheda del singolo conto (carta + corpo scorrevole) ===== */
+/* In primo piano sopra barra superiore e nav bar (portale su body), alta al massimo l'82% dello schermo:
+   sopra e sotto resta una fascia scura da toccare per chiudere. */
+.acc-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    animation: acc-overlay-in 0.22s ease both;
+}
+.acc-drag {
+    width: 100%; max-width: 380px;
+    max-height: min(100%, 82dvh);
+    display: flex; flex-direction: column;
+    will-change: transform;
+}
+.acc-grabber {
+    flex-shrink: 0; align-self: center;
+    width: 100%; height: 18px; padding: 0; margin-bottom: -6px;
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: grab;
+}
+.acc-grabber span { width: 38px; height: 5px; border-radius: 999px; background: var(--text-muted, #94a3b8); opacity: 0.45; }
+@keyframes acc-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+html[data-animations="off"] .acc-overlay { animation: none; }
 .acc-sheet {
     width: 100%;
     max-width: 380px;
@@ -7593,7 +7618,7 @@ html[data-animations="off"] .week-ring-arc { transition: none; }
     overflow: hidden;
     animation: acc-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.acc-card-wrap { flex-shrink: 0; padding: 14px 14px 0; perspective: 900px; }
+.acc-card-wrap { flex-shrink: 0; padding: 8px 14px 0; perspective: 900px; touch-action: none; }
 /* Carta del conto (#61): pastello in tema chiaro, profonda in tema scuro.
    I colori arrivano dallo style della carta (--cl-* chiaro, --cd-* scuro, da getCardColorVars). */
 .acc-card,

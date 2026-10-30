@@ -398,18 +398,25 @@ try {
   await navTo('Opzioni');
   await page.waitForTimeout(500);
   await shot('13-tesoro');
+  // La scheda del conto sta in primo piano sopra le barre, ma non è più alta dell'82% dello schermo:
+  // sopra e sotto resta una fascia scura da toccare per chiuderla
   const checkBounds = async (label) => {
     const r = await page.evaluate(() => {
       const sheet = document.querySelector('.acc-sheet')?.getBoundingClientRect();
       const visible = (sel) => [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.height > 0);
       const header = visible('header')[0];
       const nav = visible('nav').pop();
-      return sheet ? { top: sheet.top, bottom: sheet.bottom, headerBottom: header ? header.bottom : 0, navTop: nav ? nav.top : innerHeight } : null;
+      const hb = header || { left: 0, width: innerWidth, top: 0, height: 0 };
+      const over = document.elementFromPoint(hb.left + hb.width / 2, Math.max(2, hb.top + hb.height / 2));
+      return sheet ? {
+        top: sheet.top, bottom: sheet.bottom, headerBottom: header ? header.bottom : 0, navTop: nav ? nav.top : innerHeight,
+        free: innerHeight - sheet.height, vh: innerHeight, coversHeader: !!(over && over.closest('.acc-overlay'))
+      } : null;
     });
     if (!r) throw new Error(`${label}: la scheda del conto non si è aperta`);
-    if (r.top < r.headerBottom - 1 || r.bottom > r.navTop + 1) {
-      throw new Error(`${label}: la scheda esce dalle barre (scheda ${Math.round(r.top)}–${Math.round(r.bottom)}, barre ${Math.round(r.headerBottom)}–${Math.round(r.navTop)})`);
-    }
+    if (r.top < 0 || r.bottom > r.vh) throw new Error(`${label}: la scheda esce dallo schermo (${Math.round(r.top)}–${Math.round(r.bottom)})`);
+    if (r.free < r.vh * 0.15) throw new Error(`${label}: la scheda è troppo alta, resta poco spazio per chiuderla (${Math.round(r.free)} px liberi)`);
+    if (!r.coversHeader) throw new Error(`${label}: la scheda non sta in primo piano sopra la barra superiore`);
     return r;
   };
   await page.getByText('Conto Risparmi').first().click();
@@ -427,6 +434,19 @@ try {
   await page.waitForTimeout(1200);
   await checkBounds('Conto base');
   await shot('16-conto-base');
+  // Chiusura trascinando in giù dalla maniglia (dito vero, via CDP)
+  {
+    const cdp = await page.context().newCDPSession(page);
+    const g = await page.locator('.acc-grabber').boundingBox();
+    const x = g.x + g.width / 2, y = g.y + g.height / 2;
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    for (let k = 1; k <= 8; k++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y + k * 22 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(500);
+    if (await page.locator('.acc-sheet').count()) throw new Error('trascinando in giù la scheda del conto non si chiude');
+    await page.locator('.acc-tile:not(.is-note)').first().click({ force: true });
+    await page.waitForTimeout(1200);
+  }
   // Colore della carta (#61): 🎨 → Pesca → salvato in finances.cardColors.base
   await page.locator('.acc-card-edit[aria-expanded]').click();
   await page.waitForTimeout(300);
@@ -484,7 +504,7 @@ try {
   if (!(x2 > x1)) throw new Error(`grafico: trascinando la selezione non segue il dito (${x1} → ${x2})`);
   await page.locator('text=/Torna a Oggi/').first().click();
   await page.waitForTimeout(300);
-  report(`Tesoro: schede dei conti entro le barre (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti, trasferimenti, colore della carta, banconota e saldi che scorrono OK`);
+  report(`Tesoro: schede dei conti in primo piano e chiudibili trascinando (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti, trasferimenti, colore della carta, banconota e saldi che scorrono OK`);
 } catch (e) {
   problems.push(`Gruppo 6 (Tesoro): ${e.message}`);
 }

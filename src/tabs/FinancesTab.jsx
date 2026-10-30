@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { getGameDate } from '../utils/helpers';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
 import UserManualModal from '../components/UserManualModal';
@@ -7,6 +8,7 @@ import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getPeri
 import BanknoteArt from '../components/BanknoteArt';
 import CardColorPicker from '../components/CardColorPicker';
 import CountUpMoney from '../components/CountUpMoney';
+import { makeSheetDrag } from '../utils/sheetDrag';
 import ScrubSvg from '../components/ScrubSvg';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
@@ -117,6 +119,11 @@ export default function FinancesTab({
   const [showCardColors, setShowCardColors] = useState(false); // fila dei colori sotto la carta (#61)
   useEffect(() => { setAccMovLimit(20); setShowCardColors(false); }, [selectedAccountDetail]);
   const setCardColor = (accId, colorId) => setFinances(prev => ({ ...prev, cardColors: { ...(prev.cardColors || {}), [accId]: colorId } }));
+  // Scheda del conto: trascinandola in giù dalla carta (o dalla maniglia) si chiude, come i fogli di iOS.
+  // Oltre 90 px (o un colpo veloce oltre 40 px) scivola via; altrimenti torna su. Logica: sheetDrag.js.
+  const accDragRef = useRef(null);
+  const accOverlayRef = useRef(null);
+  const accSheetDrag = (onClose) => makeSheetDrag({ sheet: () => accDragRef.current, overlay: () => accOverlayRef.current, onClose });
   const [showRenameBaseModal, setShowRenameBaseModal] = useState(false);
   const [baseNameInput, setBaseNameInput] = useState('');
 
@@ -3666,17 +3673,23 @@ export default function FinancesTab({
           actions.push({ id: 'bal', icon: '🔓', label: _t("Saldo"), tone: '#eab308', run: openEditBalance });
         }
 
-        return (
+        // La scheda sta in primo piano sopra barra superiore e nav bar (portale su body: dentro la scheda
+        // del Tesoro iOS la tratterrebbe tra le barre), alta al massimo l'82% dello schermo: sopra e sotto
+        // resta una fascia scura da toccare per chiudere. Si chiude anche trascinando in giù la carta.
+        return createPortal(
           <div
+            ref={accOverlayRef}
+            className="acc-overlay"
             onClick={close}
-            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: TREASURE_OVERLAY_PAD }}
           >
+            <div className="acc-drag" ref={accDragRef} {...accSheetDrag(close)}>
             <div
               className="acc-sheet"
               onClick={(e) => e.stopPropagation()}
             >
+              <button type="button" className="acc-grabber" data-sheet-handle onClick={close} aria-label={_t("Chiudi")} title={_t("Chiudi")}><span /></button>
               {/* La carta (fissa in alto): carta pastello, o banconota inventata per i Contanti (#61) */}
-              <div className="acc-card-wrap">
+              <div className="acc-card-wrap" data-sheet-handle>
                 <div
                   className={`acc-card${isCash ? ' is-note' : ''}`}
                   style={getCardColorVars(cardColorId)}
@@ -3921,7 +3934,9 @@ export default function FinancesTab({
                 )}
               </div>
             </div>
-          </div>
+            </div>
+          </div>,
+          document.body
         );
       })()}
 
