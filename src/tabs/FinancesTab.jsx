@@ -6,6 +6,8 @@ import { useBarInsets, overlayPadding } from '../utils/useBarInsets';
 import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getPeriodInterest, getAccountCardColor, getCardColorVars, suggestCardColor } from '../utils/accounts';
 import BanknoteArt from '../components/BanknoteArt';
 import CardColorPicker from '../components/CardColorPicker';
+import CountUpMoney from '../components/CountUpMoney';
+import { celebrate } from '../utils/celebrations';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
 import EmojiField from '../components/EmojiField';
@@ -631,6 +633,14 @@ export default function FinancesTab({
 
     setEditingTxId(null);
     setShowAddTxModal(false);
+    // Animazione: monete che entrano nella tessera del conto o ne escono (CelebrationLayer)
+    const isIncome = txModalMode === 'income';
+    celebrate('money', {
+      kind: isIncome ? 'in' : 'out',
+      accId: txAccountInput,
+      label: `${isIncome ? '+' : '−'}${fmtCurrency(val)}`,
+      emoji: getCategoryObj(categoryInput).emoji
+    });
   };
 
   const handleDeleteTransaction = (txId) => {
@@ -2012,7 +2022,7 @@ export default function FinancesTab({
               {totalIncludesInvestments ? _t("📈 Patrimonio Totale") : _t("🏦 Totale Conti")}
             </div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
-              {fmtCurrency(activePoint.value)}
+              <CountUpMoney value={activePoint.value} format={fmtCurrency} animate={Boolean(activePoint.isCurrent)} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', fontSize: '11px', flexWrap: 'wrap' }}>
               <span style={{
@@ -2307,6 +2317,7 @@ export default function FinancesTab({
         {/* Tessera Contanti: piccola banconota (#61) */}
         <div
           className="acc-tile is-note"
+          data-acc-target="cash"
           onClick={() => setSelectedAccountDetail('cash')}
           style={getCardColorVars(getAccountCardColor('cash', finances.cardColors))}
         >
@@ -2324,13 +2335,14 @@ export default function FinancesTab({
             )}
           </div>
           <div className={`acc-tile-balance${(finances.cashBalance || 0) < 0 ? ' is-negative' : ''}`}>
-            {fmtCurrency(finances.cashBalance || 0)}
+            <CountUpMoney value={finances.cashBalance || 0} format={fmtCurrency} />
           </div>
         </div>
 
         {/* Tessera Conto Base: piccola carta (#61) */}
         <div
           className="acc-tile"
+          data-acc-target="base"
           onClick={() => setSelectedAccountDetail('base')}
           style={getCardColorVars(getAccountCardColor('base', finances.cardColors))}
         >
@@ -2347,7 +2359,7 @@ export default function FinancesTab({
             )}
           </div>
           <div className={`acc-tile-balance${finances.balance < 0 ? ' is-negative' : ''}`}>
-            {fmtCurrency(finances.balance)}
+            <CountUpMoney value={finances.balance} format={fmtCurrency} />
           </div>
         </div>
       </div>
@@ -2375,6 +2387,7 @@ export default function FinancesTab({
               return (
                 <div
                   key={acc.id}
+                  data-acc-target={acc.id}
                   onClick={() => setSelectedAccountDetail(acc.id)}
                   style={{
                     background: 'var(--bg-primary)',
@@ -2427,7 +2440,7 @@ export default function FinancesTab({
                       </button>
                     )}
                     <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-gold, #f59e0b)' }}>
-                      {fmtCurrency(acc.balance)}
+                      <CountUpMoney value={acc.balance} format={fmtCurrency} />
                     </div>
                   </div>
                 </div>

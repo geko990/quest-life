@@ -389,6 +389,24 @@ try {
   await shot('16b-contanti-banconota');
   await tapOutside();
   await shot('13a-tesoro-tessere');
+  // Entrata e uscita: monete verso/da la tessera, importo che sale, saldo che conta
+  const moneyTest = async (label, shotName) => {
+    await page.locator('button', { hasText: new RegExp(`^\\s*\\S*\\s*${label}\\s*$`) }).first().click({ force: true });
+    await page.waitForTimeout(400);
+    await page.locator('input[placeholder="0.00"]').first().fill('12.5');
+    const before = await page.evaluate(() => JSON.parse(localStorage.getItem('questlife_state_v2') || '{}').finances?.balance);
+    await page.locator('button[type="submit"]', { hasText: /^Salva$/ }).first().click();
+    await page.waitForTimeout(label === 'Entrata' ? 520 : 260);
+    if (!(await page.locator('.money-fx .money-coin-x').count())) throw new Error(`${label}: le monete non compaiono`);
+    await shot(shotName);
+    await page.waitForTimeout(1600);
+    if (await page.locator('.money-fx').count()) throw new Error(`${label}: l'animazione non si chiude`);
+    const after = await page.evaluate(() => JSON.parse(localStorage.getItem('questlife_state_v2') || '{}').finances?.balance);
+    return Math.round((after - before) * 100) / 100;
+  };
+  const dIn = await moneyTest('Entrata', '13b-tesoro-entrata');
+  const dOut = await moneyTest('Uscita', '13c-tesoro-uscita');
+  if (dIn !== 12.5 || dOut !== -12.5) throw new Error(`saldo del Conto base non aggiornato (${dIn}, ${dOut})`);
   report(`Tesoro: schede dei conti entro le barre (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti, trasferimenti, colore della carta e banconota OK`);
 } catch (e) {
   problems.push(`Gruppo 6 (Tesoro): ${e.message}`);
