@@ -31,6 +31,16 @@ export default function NutritionTab({
     return () => clearTimeout(t);
   }, [activeTab]);
 
+  // Riepilogo di un giorno della settimana (tocco su un anello di "La tua settimana")
+  const [selectedDayIso, setSelectedDayIso] = useState(null);
+  const [dayRingReady, setDayRingReady] = useState(false);
+  useEffect(() => {
+    if (!selectedDayIso) { setDayRingReady(false); return; }
+    setDayRingReady(false);
+    const t = setTimeout(() => setDayRingReady(true), 80);
+    return () => clearTimeout(t);
+  }, [selectedDayIso]);
+
   const [activeMainTab, setActiveMainTab] = useState(() => (activeTab === 'shopping' ? 'shopping' : 'health')); // 'health' | 'shopping'
 
   // Update active main sub-tab whenever activeTab changes (single tap -> health, double tap -> shopping)
@@ -825,6 +835,53 @@ export default function NutritionTab({
   // History stats averages (excluding 0 / unlogged days)
   const historyList = health.history || [];
 
+  // Un giorno di gioco con i suoi 4 obiettivi (kcal, proteine, acqua, passi), confrontati con gli obiettivi attuali.
+  // Oggi usa i valori dal vivo; i giorni passati quelli salvati nello storico (nessun dato in più da conservare).
+  const getHealthDay = (d, isToday) => {
+    const iso = formatISO(d);
+    const saved = historyList.find(h => h && h.date === iso);
+    const rec = isToday
+      ? { consumed: caloriesConsumed, burned: caloriesBurned, proteins: proteinsCurrent, water: waterCurrent, steps: stepsCurrent, weight: weightCurrent }
+      : saved;
+    const consumed = rec ? (Number(rec.consumed) || 0) : 0;
+    const burned = rec ? (Number(rec.burned) || 0) : 0;
+    const net = consumed - burned;
+    const kcalRatio = calorieGoal > 0 ? net / calorieGoal : 0;
+    const goals = rec ? [
+      { key: 'kcal', color: '#3b82f6', pct: Math.min(1, Math.max(0, kcalRatio)), met: kcalRatio >= 0.9 && kcalRatio <= 1.1, over: kcalRatio > 1.1 },
+      { key: 'prot', color: '#eab308', pct: Math.min(1, (Number(rec.proteins) || 0) / Math.max(1, proteinsGoal)) },
+      { key: 'water', color: '#06b6d4', pct: Math.min(1, (Number(rec.water) || 0) / Math.max(1, waterGoal)) },
+      { key: 'steps', color: '#4ade80', pct: Math.min(1, (Number(rec.steps) || 0) / Math.max(1, stepsGoal)) }
+    ].map(g => ({ ...g, met: g.met !== undefined ? g.met : g.pct >= 1 })) : null;
+    return {
+      iso, d, isToday, rec, goals, consumed, burned, net, kcalRatio,
+      metCount: goals ? goals.filter(g => g.met).length : 0
+    };
+  };
+
+  // Anello a 4 spicchi (uno per obiettivo), usato nella settimana e, più grande, nel riepilogo del giorno
+  const renderGoalRing = (dd, size, ready, baseDelay = 0) => {
+    const c = size / 2;
+    const stroke = size * 0.1125;
+    const R = c - stroke / 2 - size * 0.0375;
+    const C = 2 * Math.PI * R, GAP = size * 0.1375, SEG = C / 4 - GAP;
+    const glow = Math.max(3, size / 13);
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', overflow: 'visible' }}>
+        {[0, 1, 2, 3].map(q => (
+          <circle key={'t' + q} cx={c} cy={c} r={R} fill="none" stroke="var(--track, var(--bg-secondary))" strokeWidth={stroke} strokeLinecap="round"
+            strokeDasharray={`${SEG} ${C - SEG}`} strokeDashoffset={-(q * C / 4) - GAP / 2} transform={`rotate(-90 ${c} ${c})`} />
+        ))}
+        {dd.goals && dd.goals.map((g, q) => (
+          <circle key={g.key} cx={c} cy={c} r={R} fill="none" stroke={g.over ? '#ef4444' : g.color} strokeWidth={stroke} strokeLinecap="round"
+            strokeDasharray={`${ready ? Math.max(0.01, SEG * g.pct) : 0.01} ${C}`} strokeDashoffset={-(q * C / 4) - GAP / 2}
+            transform={`rotate(-90 ${c} ${c})`} opacity={g.pct > 0 ? 1 : 0}
+            className="week-ring-arc" style={{ transitionDelay: `${baseDelay + q * 40}ms`, filter: g.met ? `drop-shadow(0 0 ${glow}px ${g.color})` : 'none' }} />
+        ))}
+      </svg>
+    );
+  };
+
   const validStepDays = historyList.filter(h => Number(h.steps) > 0);
   const avgSteps = validStepDays.length > 0
     ? Math.round(validStepDays.reduce((acc, curr) => acc + Number(curr.steps), 0) / validStepDays.length)
@@ -1480,46 +1537,19 @@ export default function NutritionTab({
 
             // Ultimi 7 giorni di gioco, oggi compreso (oggi si riempie dal vivo)
             const todayObj = getGameDateObj(settings?.dayStartTime);
-            const byDate = {};
-            (historyList || []).forEach(h => { if (h && h.date) byDate[h.date] = h; });
             const days = [];
             for (let i = 6; i >= 0; i--) {
-              const d = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate() - i);
-              const iso = formatISO(d);
-              const rec = i === 0
-                ? { consumed: caloriesConsumed, burned: caloriesBurned, proteins: proteinsCurrent, water: waterCurrent, steps: stepsCurrent }
-                : byDate[iso];
-              const net = rec ? (Number(rec.consumed) || 0) - (Number(rec.burned) || 0) : 0;
-              const kcalRatio = calorieGoal > 0 ? net / calorieGoal : 0;
-              const goals = rec ? [
-                { key: 'kcal', color: '#3b82f6', pct: Math.min(1, Math.max(0, kcalRatio)), met: kcalRatio >= 0.9 && kcalRatio <= 1.1, over: kcalRatio > 1.1 },
-                { key: 'prot', color: '#eab308', pct: Math.min(1, (Number(rec.proteins) || 0) / Math.max(1, proteinsGoal)) },
-                { key: 'water', color: '#06b6d4', pct: Math.min(1, (Number(rec.water) || 0) / Math.max(1, waterGoal)) },
-                { key: 'steps', color: '#4ade80', pct: Math.min(1, (Number(rec.steps) || 0) / Math.max(1, stepsGoal)) }
-              ].map(g => ({ ...g, met: g.met !== undefined ? g.met : g.pct >= 1 })) : null;
-              days.push({ iso, d, isToday: i === 0, goals, metCount: goals ? goals.filter(g => g.met).length : 0 });
+              days.push(getHealthDay(new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate() - i), i === 0));
             }
             const perfectDays = days.filter(dd => dd.metCount === 4).length;
 
-            // Anello a 4 spicchi (uno per obiettivo)
-            const R = 15.5, C = 2 * Math.PI * R, GAP = 5.5, SEG = C / 4 - GAP;
             const ring = (dd) => (
-              <svg width="40" height="40" viewBox="0 0 40 40" style={{ display: 'block', overflow: 'visible' }}>
-                {[0, 1, 2, 3].map(q => (
-                  <circle key={'t' + q} cx="20" cy="20" r={R} fill="none" stroke="var(--track, var(--bg-secondary))" strokeWidth="4.5" strokeLinecap="round"
-                    strokeDasharray={`${SEG} ${C - SEG}`} strokeDashoffset={-(q * C / 4) - GAP / 2} transform="rotate(-90 20 20)" />
-                ))}
-                {dd.goals && dd.goals.map((g, q) => (
-                  <circle key={g.key} cx="20" cy="20" r={R} fill="none" stroke={g.over ? '#ef4444' : g.color} strokeWidth="4.5" strokeLinecap="round"
-                    strokeDasharray={`${weekRingsReady ? Math.max(0.01, SEG * g.pct) : 0.01} ${C}`} strokeDashoffset={-(q * C / 4) - GAP / 2}
-                    transform="rotate(-90 20 20)" opacity={g.pct > 0 ? 1 : 0}
-                    className="week-ring-arc" style={{ transitionDelay: `${days.indexOf(dd) * 60 + q * 40}ms`, filter: g.met ? `drop-shadow(0 0 3px ${g.color})` : 'none' }} />
-                ))}
-                {dd.metCount === 4 && <text x="20" y="24.5" textAnchor="middle" fontSize="13">⭐</text>}
-                {dd.metCount > 0 && dd.metCount < 4 && (
-                  <text x="20" y="24" textAnchor="middle" fontSize="11" fontWeight="800" fill="var(--text-secondary)">{dd.metCount}</text>
-                )}
-              </svg>
+              <div style={{ position: 'relative', width: 40, maxWidth: '100%' }}>
+                {renderGoalRing(dd, 40, weekRingsReady, days.indexOf(dd) * 60)}
+                <div className="week-ring-center">
+                  {dd.metCount === 4 ? <span style={{ fontSize: '13px' }}>⭐</span> : dd.metCount > 0 ? <b>{dd.metCount}</b> : null}
+                </div>
+              </div>
             );
 
             return (
@@ -1578,7 +1608,7 @@ export default function NutritionTab({
                 </div>
 
                 {/* La tua settimana */}
-                <div className="hl-week" onClick={() => setShowHistoryModal(true)} style={{ cursor: 'pointer', marginTop: '8px', paddingTop: '9px', borderTop: '1px solid var(--glass-border)' }}>
+                <div className="hl-week" style={{ marginTop: '8px', paddingTop: '9px', borderTop: '1px solid var(--glass-border)' }}>
                   <div className="hl-week-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', gap: '6px' }}>
                     <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                       {_t("La tua settimana")}
@@ -1593,7 +1623,13 @@ export default function NutritionTab({
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', justifyItems: 'center' }}>
                     {days.map(dd => (
-                      <div key={dd.iso} className={`week-day${dd.isToday ? ' is-today' : ''}${dd.metCount === 4 ? ' is-perfect' : ''}`}>
+                      <div
+                        key={dd.iso}
+                        className={`week-day${dd.isToday ? ' is-today' : ''}${dd.metCount === 4 ? ' is-perfect' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); setSelectedDayIso(dd.iso); }}
+                        role="button"
+                        title={_t("Riepilogo del giorno")}
+                      >
                         {ring(dd)}
                         <span className="week-day-label">{dd.isToday ? _t("Oggi") : dayShort(dd.d.getDay())}</span>
                       </div>
@@ -2546,6 +2582,121 @@ export default function NutritionTab({
       )}
 
       {/* HISTORY STATS MODAL (RICH ENHANCED VIEW) */}
+      {/* RIEPILOGO DEL GIORNO: anello grande e dettagli dei 4 obiettivi */}
+      {selectedDayIso && (() => {
+        const todayObj = getGameDateObj(settings?.dayStartTime);
+        const offsets = [6, 5, 4, 3, 2, 1, 0];
+        const weekDates = offsets.map(i => new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate() - i));
+        const idx = Math.max(0, weekDates.findIndex(d => formatISO(d) === selectedDayIso));
+        const dd = getHealthDay(weekDates[idx], idx === 6);
+        const dateLabel = dd.d.toLocaleDateString(getLocale(), { weekday: 'long', day: 'numeric', month: 'long' });
+        const fmt = (n, dec = 0) => Number(n || 0).toLocaleString(getLocale(), { maximumFractionDigits: dec });
+        const rows = dd.goals ? [
+          {
+            g: dd.goals[0], icon: '🍽️', name: _t("Calorie nette"),
+            value: _t("{0} kcal", fmt(dd.net)), goal: _t("obiettivo {0} kcal", fmt(calorieGoal)),
+            sub: dd.goals[0].over
+              ? _t("Oltre l'obiettivo di {0} kcal", fmt(dd.net - calorieGoal))
+              : _t("{0} mangiate • {1} bruciate", fmt(dd.consumed), fmt(dd.burned))
+          },
+          {
+            g: dd.goals[1], icon: '🍗', name: _t("Proteine"),
+            value: `${fmt(dd.rec.proteins, 1)} g`, goal: _t("obiettivo {0} g", fmt(proteinsGoal))
+          },
+          {
+            g: dd.goals[2], icon: '🥛', name: _t("Acqua"),
+            value: `${fmt((Number(dd.rec.water) || 0) * 0.2, 1)} L`, goal: _t("{0}/{1} bicchieri", fmt(dd.rec.water), fmt(waterGoal))
+          },
+          {
+            g: dd.goals[3], icon: '👟', name: _t("Passi"),
+            value: fmt(dd.rec.steps), goal: _t("obiettivo {0}", fmt(stepsGoal))
+          }
+        ] : [];
+        const dayWeight = dd.rec && Number(dd.rec.weight) > 0 ? Number(dd.rec.weight) : null;
+        return (
+          <div
+            onClick={() => setSelectedDayIso(null)}
+            style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          >
+            <div
+              className="modal-content day-recap"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '360px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
+            >
+              <div style={{ padding: '18px 16px 20px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
+                {/* Data con frecce per scorrere la settimana */}
+                <div className="day-recap-nav">
+                  <button type="button" disabled={idx === 0} onClick={() => setSelectedDayIso(formatISO(weekDates[idx - 1]))} aria-label={_t("Giorno precedente")}>‹</button>
+                  <div style={{ textAlign: 'center', minWidth: 0 }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{dateLabel}</div>
+                    {dd.isToday && <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--accent-primary)', marginTop: '1px' }}>{_t("Oggi • si aggiorna mentre registri")}</div>}
+                  </div>
+                  <button type="button" disabled={idx === 6} onClick={() => setSelectedDayIso(formatISO(weekDates[idx + 1]))} aria-label={_t("Giorno successivo")}>›</button>
+                </div>
+
+                {/* Anello grande */}
+                <div style={{ position: 'relative', width: 150, height: 150, margin: '14px auto 8px auto' }}>
+                  {renderGoalRing(dd, 150, dayRingReady, 0)}
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    {dd.metCount === 4
+                      ? <span className="day-recap-star">⭐</span>
+                      : <span style={{ fontSize: '30px', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{dd.goals ? `${dd.metCount}/4` : '–'}</span>}
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>{_t("obiettivi")}</span>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center', fontSize: '13px', fontWeight: 800, color: dd.metCount === 4 ? '#facc15' : 'var(--text-primary)', marginBottom: '14px' }}>
+                  {!dd.goals
+                    ? _t("Nessun dato registrato per questo giorno")
+                    : dd.metCount === 4
+                      ? _t("Giornata perfetta! ⭐")
+                      : dd.metCount === 0
+                        ? _t("Nessun obiettivo raggiunto")
+                        : dd.metCount === 1 ? _t("1 obiettivo su 4 raggiunto") : _t("{0} obiettivi su 4 raggiunti", dd.metCount)}
+                </div>
+
+                {/* Dettagli dei 4 obiettivi */}
+                {rows.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {rows.map(r => (
+                      <div key={r.g.key} className={`day-recap-row${r.g.met ? ' is-met' : ''}`} style={{ '--goal-color': r.g.over ? '#ef4444' : r.g.color }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '18px' }}>{r.icon}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{r.name}</span>
+                              <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--goal-color)', whiteSpace: 'nowrap' }}>{r.value}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px', fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '1px' }}>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub || ''}</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>{r.goal}</span>
+                            </div>
+                          </div>
+                          <span className="day-recap-check">{r.g.met ? '✓' : ''}</span>
+                        </div>
+                        <div style={{ height: '5px', background: 'var(--track, var(--bg-secondary))', borderRadius: '5px', overflow: 'hidden', marginTop: '6px' }}>
+                          <div className="day-recap-bar" style={{ height: '100%', width: `${dayRingReady ? Math.round(r.g.pct * 100) : 0}%`, background: 'var(--goal-color)', borderRadius: '5px' }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {dayWeight !== null && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>⚖️ {_t("Peso")}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--text-primary)' }}>{fmt(dayWeight, 1)} {_t("kg")}</span>
+                  </div>
+                )}
+
+                <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', fontStyle: 'italic' }}>
+                  {_t("Confronto con gli obiettivi attuali. Kcal raggiunte tra il 90% e il 110% dell'obiettivo.")}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {showHistoryModal && (
         <div
           onClick={() => setShowHistoryModal(false)}
