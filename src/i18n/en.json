@@ -1695,9 +1695,6 @@
  "Non avevi scelto un premio, ma te ne sei guadagnato uno: concediti qualcosa che ti fa piacere.": "You hadn't picked a reward, but you've earned one: treat yourself to something you enjoy.",
  "Prepara la prossima campagna con un premio ›": "Plan your next campaign with a reward ›",
  "Trascina per riempire la caraffa": "Drag to fill the jug",
- "Ancora 1 bicchiere": "1 more glass",
- "Ancora {0} bicchieri": "{0} more glasses",
- "+{0} L oltre l'obiettivo 💧": "+{0} L over goal 💧",
  "Per {0} kg, {1} anni, {2} cm": "For {0} kg, {1} years, {2} cm",
  "Idratazione di oggi": "Today's hydration",
  "di {0} L • {1}/{2} bicchieri": "of {0} L • {1}/{2} glasses",
@@ -1710,5 +1707,9 @@
  "Consigliato per te: almeno {0} bicchieri ({1} L)": "Suggested for you: at least {0} glasses ({1} L)",
  "Età e altezza si impostano negli Obiettivi di Salute": "Set age and height in Health Goals",
  "indicazione di massima": "rough guide",
- "Usa": "Use"
+ "Usa": "Use",
+ "Manca 1 bicchiere": "1 glass to go",
+ "Mancano {0} bicchieri": "{0} glasses to go",
+ "Obiettivo raggiunto 🎯": "Goal reached 🎯",
+ "+{0} L extra 💧": "+{0} L extra 💧"
 }

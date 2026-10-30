@@ -23,10 +23,10 @@ export default function WaterPanel({ glasses, goal, profile = {}, onGlasses, onG
   }, [g, t]);
 
   const statusText = status.kind === 'below'
-    ? (status.missing === 1 ? _t("Ancora 1 bicchiere") : _t("Ancora {0} bicchieri", status.missing))
+    ? (status.missing === 1 ? _t("Manca 1 bicchiere") : _t("Mancano {0} bicchieri", status.missing))
     : status.kind === 'goal'
-      ? _t("Obiettivo raggiunto! 🎯")
-      : _t("+{0} L oltre l'obiettivo 💧", fmtL(glassesToLiters(status.extra)));
+      ? _t("Obiettivo raggiunto 🎯")
+      : _t("+{0} L extra 💧", fmtL(glassesToLiters(status.extra)));
 
   const hasProfile = profile && (profile.age || profile.height);
   const profileLine = _t("Per {0} kg, {1} anni, {2} cm", fmtNum(profile.weight || 75), fmtNum(profile.age || 28), fmtNum(profile.height || 175));

@@ -112,9 +112,9 @@ export default function WaterCarafe({ glasses, goal, onChange }) {
         {/* Acqua */}
         <g clipPath="url(#wcBody)">
           <g className="wc-water" style={{ transform: `translateY(${drawY}px)` }}>
-            <rect x="0" y="3" width={VB_W} height={VB_H} fill="url(#wcWater)" />
-            <path className="wc-wave wc-wave-back" d="M -150 4 q 18.75 -6 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 V 30 H -150 Z" fill="#67e8f9" opacity="0.55" />
-            <path className="wc-wave" d="M -150 5 q 18.75 5 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 V 30 H -150 Z" fill="#22d3ee" />
+            <rect x="0" y="4" width={VB_W} height={VB_H} fill="url(#wcWater)" />
+            <path className="wc-wave wc-wave-back" d="M -150 4 q 18.75 -6 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 V 9 H -150 Z" fill="#a5f3fc" opacity="0.5" />
+            <path className="wc-wave" d="M -150 5 q 18.75 5 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 t 37.5 0 V 9 H -150 Z" fill="#67e8f9" />
             {g > 0 && [28, 52, 74, 96].map((x, i) => (
               <circle key={x} className="wc-bubble" cx={x} cy={Y_BOTTOM - drawY - 8} r={i % 2 ? 2 : 2.8}
                 style={{ animationDelay: `${i * 0.7}s`, '--rise': `${-Math.max(10, Y_BOTTOM - drawY - 14)}px` }} />
@@ -142,7 +142,7 @@ export default function WaterCarafe({ glasses, goal, onChange }) {
       </svg>
 
       {/* Etichetta dell'obiettivo accanto alla linea */}
-      <div className="wc-goal-tag" style={{ top: `${(goalY / VB_H) * 100}%` }}>🎯 {fmtL(glassesToLiters(goal))} L</div>
+      <div className="wc-goal-tag" style={{ top: `${(goalY / VB_H) * 100}%`, left: `${(72 / VB_W) * 100}%` }}>🎯 {fmtL(glassesToLiters(goal))} L</div>
     </div>
   );
 }
