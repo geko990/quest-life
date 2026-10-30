@@ -7,7 +7,6 @@ import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getPeri
 import BanknoteArt from '../components/BanknoteArt';
 import CardColorPicker from '../components/CardColorPicker';
 import CountUpMoney from '../components/CountUpMoney';
-import { celebrate } from '../utils/celebrations';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
 import EmojiField from '../components/EmojiField';
@@ -633,14 +632,6 @@ export default function FinancesTab({
 
     setEditingTxId(null);
     setShowAddTxModal(false);
-    // Animazione: monete che entrano nella tessera del conto o ne escono (CelebrationLayer)
-    const isIncome = txModalMode === 'income';
-    celebrate('money', {
-      kind: isIncome ? 'in' : 'out',
-      accId: txAccountInput,
-      label: `${isIncome ? '+' : '−'}${fmtCurrency(val)}`,
-      emoji: getCategoryObj(categoryInput).emoji
-    });
   };
 
   const handleDeleteTransaction = (txId) => {
@@ -2203,7 +2194,7 @@ export default function FinancesTab({
                 height: '100%',
                 background: budgetPct > 100 ? '#ef4444' : budgetPct > 80 ? '#f59e0b' : '#3b82f6',
                 borderRadius: '4px',
-                transition: 'width 0.3s'
+                transition: 'width 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.18s, background-color 0.4s ease'
               }}
             />
           </div>

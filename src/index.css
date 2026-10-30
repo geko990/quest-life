@@ -8782,78 +8782,13 @@ button.opt-avatar:active { transform: scale(.95); }
     [data-orientation="landscape"] .health-weight .hl-comp { display: none !important; }
 }
 
-/* ===== Tesoro: animazione di entrate e uscite (monete, colpo sulla tessera, importo) ===== */
-.money-fx { position: fixed; inset: 0; z-index: 99995; pointer-events: none; overflow: hidden; }
-.money-coin-x, .money-coin-y { position: absolute; display: block; line-height: 1; }
-.money-coin-x { margin: -0.5em 0 0 -0.5em; opacity: 0; }
-.money-coin-y { position: relative; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.18)); }
-/* Entrata: in orizzontale si va dritti al bersaglio, in verticale prima si sale e poi si scende (arco) */
-.money-fx.is-in .money-coin-x { animation: money-in-x 600ms linear both; }
-.money-fx.is-in .money-coin-y { animation: money-in-y 600ms cubic-bezier(0.45, -0.9, 0.8, 1) both; }
-@keyframes money-in-x {
-    0% { opacity: 0; transform: translateX(0); }
-    12% { opacity: 1; }
-    88% { opacity: 1; }
-    100% { opacity: 0; transform: translateX(var(--dx)); }
-}
-@keyframes money-in-y {
-    0% { transform: translateY(0) scale(0.6) rotate(-20deg); }
-    25% { transform: translateY(calc(var(--dy) * 0.25)) scale(1.1) rotate(0deg); }
-    100% { transform: translateY(var(--dy)) scale(0.7) rotate(25deg); }
-}
-/* Uscita: a ventaglio verso l'alto, rimpicciolendo */
-.money-fx.is-out .money-coin-x { animation: money-out-x 700ms cubic-bezier(0.2, 0.7, 0.3, 1) both; }
-.money-fx.is-out .money-coin-y { animation: money-out-y 700ms cubic-bezier(0.2, 0.8, 0.4, 1) both; }
-@keyframes money-out-x {
-    0% { opacity: 0; transform: translateX(0); }
-    10% { opacity: 1; }
-    70% { opacity: 1; }
-    100% { opacity: 0; transform: translateX(var(--dx)); }
-}
-@keyframes money-out-y {
-    0% { transform: translateY(0) scale(0.7) rotate(0deg); }
-    30% { transform: translateY(calc(var(--dy) * 0.45)) scale(1.1) rotate(-10deg); }
-    100% { transform: translateY(var(--dy)) scale(0.5) rotate(18deg); }
-}
-/* Importo che sale dalla tessera */
-.money-amount {
-    position: absolute;
-    transform: translate(-50%, -100%);
-    padding: 5px 12px; border-radius: 999px;
-    font-size: 15px; font-weight: 900; white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    animation: money-amount 1.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.money-fx.is-in .money-amount { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.money-fx.is-out .money-amount { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-[data-mode="dark"] .money-fx.is-in .money-amount { background: #052e1c; color: #4ade80; border-color: #14532d; }
-[data-mode="dark"] .money-fx.is-out .money-amount { background: #3b0a0a; color: #fca5a5; border-color: #7f1d1d; }
-@keyframes money-amount {
-    0% { opacity: 0; transform: translate(-50%, -60%) scale(0.8); }
-    15% { opacity: 1; transform: translate(-50%, -110%) scale(1.06); }
-    30% { transform: translate(-50%, -115%) scale(1); }
-    75% { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, calc(-115% - 30px)) scale(1); }
-}
-.money-amount.is-still { animation-name: money-amount-still; }
-@keyframes money-amount-still { 0%, 100% { opacity: 0; } 12%, 80% { opacity: 1; } }
-/* Colpo sulla tessera del conto */
-.acc-hit-in { animation: acc-hit-in 420ms cubic-bezier(0.34, 1.5, 0.64, 1); }
-.acc-hit-out { animation: acc-hit-out 320ms ease-out; }
-@keyframes acc-hit-in {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35), 0 10px 26px -8px rgba(34, 197, 94, 0.55); }
-    100% { transform: scale(1); }
-}
-@keyframes acc-hit-out {
-    0% { transform: scale(1); }
-    35% { transform: scale(0.96); }
-    100% { transform: scale(1); }
-}
-html[data-animations="off"] .acc-hit-in, html[data-animations="off"] .acc-hit-out { animation: none; }
-@media (prefers-reduced-motion: reduce) { .acc-hit-in, .acc-hit-out { animation: none; } }
+/* ===== Tesoro: saldi che scorrono al nuovo valore (CountUpMoney) =====
+   Mentre conta il numero si tinge appena: verde se sale, rosso se scende; poi torna al suo colore. */
+.cum { transition: color 0.5s ease; }
+.cum.is-up { color: #16a34a; }
+.cum.is-down { color: #dc2626; }
+[data-mode="dark"] .cum.is-up { color: #4ade80; }
+[data-mode="dark"] .cum.is-down { color: #f87171; }
 
 /* ============================================
    L'APP CHE CRESCE (#64, src/utils/unlocks.js)

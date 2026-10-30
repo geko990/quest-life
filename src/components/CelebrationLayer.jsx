@@ -7,59 +7,16 @@ import { onCelebration, statProgress } from '../utils/celebrations';
 //    Non intercetta i tocchi e accumula le spunte fatte in fila (niente attese tra una e l'altra).
 // 2. coriandoli: abitudini di oggi tutte fatte, Azioni del Giorno tutte fatte.
 // 3. medaglia di livello: abilità o personaggio che sale di livello (tocco per chiudere).
-// 4. denaro (Tesoro): entrata = monete che volano ad arco dentro la tessera del conto;
-//    uscita = monete (e l'emoji della categoria) che escono dalla tessera e svaniscono in alto.
-//    La tessera ha `data-acc-target="<id conto>"`; il saldo conta da solo (CountUpMoney).
 //
 // Tempi (utili anche per rifarle nell'app nativa):
 // - barra XP: entra in 220 ms, la barra si riempie in 480 ms (con salto di livello: fino al 100% in 380 ms,
 //   poi riparte da 0 fino al nuovo valore), resta 1,6 s dopo l'ultima spunta, esce in 220 ms.
 // - coriandoli: 2,6 s, due "cannoni" dagli angoli in basso; scritta al centro per 2,2 s.
 // - medaglia: compare 650 ms dopo l'XP (il tempo di vedere la barra piena), si chiude da sola dopo 4 s.
-// - denaro, entrata: 7 monete partono 120 ms dopo la conferma, una ogni 55 ms, volo di 600 ms
-//   (orizzontale lineare, verticale che sale e poi scende: un arco); alla prima moneta arrivata la
-//   tessera fa un rimbalzo (scala 1 → 1,05 → 1, 420 ms) con bagliore verde e compare "+importo"
-//   che sale di 30 px e svanisce in 1,3 s. Vibrazione [8, 40, 8].
-// - denaro, uscita: la tessera si stringe (1 → 0,96 → 1, 320 ms); 5 monete + l'emoji della categoria
-//   escono dal centro della tessera verso l'alto a ventaglio (700 ms, svaniscono rimpicciolendo);
-//   "−importo" come sopra. Vibrazione 14 ms.
-// Con Animazioni spente: nessun volo né rimbalzo, solo l'importo che compare e svanisce.
 
 const XP_HOLD_MS = 1600;
 const LEVELUP_DELAY_MS = 650;
 const LEVELUP_AUTOCLOSE_MS = 4000;
-const MONEY_FX_MS = 1500;
-
-// Centro della tessera del conto, se è visibile sullo schermo; altrimenti un punto in alto al centro
-function moneyTarget(accId) {
-  const W = window.innerWidth, H = window.innerHeight;
-  const el = accId ? [...document.querySelectorAll('[data-acc-target]')].find(e => e.getAttribute('data-acc-target') === accId) : null;
-  const r = el ? el.getBoundingClientRect() : null;
-  if (r && r.width > 0 && r.bottom > 40 && r.top < H - 40) {
-    return { el, x: r.left + r.width / 2, y: r.top + r.height / 2, top: r.top };
-  }
-  return { el: null, x: W / 2, y: H * 0.3, top: H * 0.3 - 20 };
-}
-
-// Riavvia una classe d'animazione su un elemento (la toglie alla fine)
-function hit(el, cls) {
-  if (!el) return;
-  el.classList.remove('acc-hit-in', 'acc-hit-out');
-  void el.offsetWidth;
-  el.classList.add(cls);
-  const done = (e) => { if (e.target !== el) return; el.classList.remove(cls); el.removeEventListener('animationend', done); };
-  el.addEventListener('animationend', done);
-}
-
-const motionAllowed = () => {
-  try {
-    if (document.documentElement.getAttribute('data-animations') === 'off') return false;
-    return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  } catch (_) { return true; }
-};
-
-const buzz = (pattern) => { try { if (navigator.vibrate && motionAllowed()) navigator.vibrate(pattern); } catch (_) {} };
-
 // ---------------- Coriandoli (canvas, nessuna libreria) ----------------
 function launchConfetti(mode = 'cannons') {
   if (!motionAllowed()) return;
@@ -171,7 +128,6 @@ export default function CelebrationLayer() {
   const levelTimer = useRef(null);
   const closeTimer = useRef(null);
   const bannerTimer = useRef(null);
-  const [moneyFx, setMoneyFx] = useState([]);       // [{ key, kind, label, x, y, top, coins: [...] }]
 
   useEffect(() => onCelebration((type, p) => {
     if (type === 'xp') {
@@ -218,32 +174,6 @@ export default function CelebrationLayer() {
         // Con un'area appena aperta (#64) la medaglia resta finché non si tocca: c'è da leggere
         if (!(main.lands && main.lands.length)) closeTimer.current = setTimeout(() => setLevelUp(null), LEVELUP_AUTOCLOSE_MS);
       }, LEVELUP_DELAY_MS);
-    } else if (type === 'money') {
-      const key = `${Date.now()}_${Math.random()}`;
-      const motion = motionAllowed();
-      const t = moneyTarget(p.accId);
-      const W = window.innerWidth, H = window.innerHeight;
-      const coins = [];
-      if (motion && p.kind === 'in') {
-        for (let i = 0; i < 7; i++) {
-          const sx = W / 2 + (Math.random() - 0.5) * 140;
-          const sy = Math.min(H * 0.42, t.y - 140) + (Math.random() - 0.5) * 60;
-          coins.push({ e: '🪙', dx: t.x - sx, dy: t.y - sy, x: sx, y: sy, delay: 120 + i * 55, size: 24 + Math.round(Math.random() * 6) });
-        }
-        setTimeout(() => hit(t.el, 'acc-hit-in'), 120 + 600);
-        buzz([8, 40, 8]);
-      } else if (motion) {
-        const list = ['🪙', '🪙', p.emoji || '💸', '🪙', '🪙', '🪙'];
-        list.forEach((e, i) => {
-          const spread = (i - (list.length - 1) / 2) / ((list.length - 1) / 2); // -1 … 1
-          coins.push({ e, dx: spread * (50 + Math.random() * 30), dy: -(110 + Math.random() * 60), x: t.x, y: t.y, delay: i * 45, size: e === '🪙' ? 24 : 30 });
-        });
-        hit(t.el, 'acc-hit-out');
-        buzz(14);
-      }
-      const fx = { key, kind: p.kind, label: p.label, x: t.x, y: t.top, coins, motion };
-      setMoneyFx(list => [...list.slice(-2), fx]);
-      setTimeout(() => setMoneyFx(list => list.filter(f => f.key !== key)), MONEY_FX_MS);
     } else if (type === 'confetti') {
       launchConfetti('cannons');
       buzz([20, 40, 20]);
@@ -278,26 +208,6 @@ export default function CelebrationLayer() {
           ))}
         </div>
       )}
-
-      {moneyFx.map(fx => (
-        <div key={fx.key} className={`money-fx is-${fx.kind}`} aria-hidden="true">
-          {fx.coins.map((c, i) => (
-            <span
-              key={i}
-              className="money-coin-x"
-              style={{ left: `${c.x}px`, top: `${c.y}px`, '--dx': `${c.dx}px`, '--dy': `${c.dy}px`, animationDelay: `${c.delay}ms`, fontSize: `${c.size}px` }}
-            >
-              <span className="money-coin-y" style={{ animationDelay: `${c.delay}ms` }}>{c.e}</span>
-            </span>
-          ))}
-          <span
-            className={`money-amount${fx.motion ? '' : ' is-still'}`}
-            style={{ left: `${fx.x}px`, top: `${fx.y}px`, animationDelay: fx.kind === 'in' && fx.motion ? '700ms' : '60ms' }}
-          >
-            {fx.label}
-          </span>
-        </div>
-      ))}
 
       {banner && (
         <div className="celebration-banner" key={banner.key}>{banner.message}</div>

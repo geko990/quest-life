@@ -63,7 +63,6 @@ export function dailyActionsProgress(oneshots, quests, dateStr) {
 // tipi: 'xp' { statId, icon, name, fromLevel, fromXp, toLevel, toXp, amount }
 //       'levelup' { kind: 'player'|'stat', icon, name, level, title? }
 //       'confetti' { reason: 'habits'|'actions', message }
-//       'money' { kind: 'in'|'out', accId, label: '+12,50 €', emoji? } — entrata/uscita nel Tesoro
 const listeners = new Set();
 export function onCelebration(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 export function celebrate(type, payload) {
