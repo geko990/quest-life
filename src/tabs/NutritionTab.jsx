@@ -1486,7 +1486,17 @@ export default function NutritionTab({
 
             {/* Water card */}
             <div
-              onClick={() => onOpenModal('health_water', { waterCurrent, waterGoal })}
+              onClick={() => onOpenModal('health_water', {
+                waterCurrent,
+                waterGoal,
+                profile: {
+                  weight: weightCurrent,
+                  height: health.calcHeight,
+                  age: health.calcAge,
+                  gender: health.calcGender,
+                  activity: health.calcActivity
+                }
+              })}
               className="glass-panel"
               style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >

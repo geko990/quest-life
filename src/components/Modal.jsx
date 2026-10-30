@@ -1,3 +1,4 @@
+import WaterPanel from './WaterPanel';
 import React, { useState, useEffect } from 'react';
 
 import { _t, getLocale } from '../i18n';
@@ -2229,61 +2230,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             );
           }
 
-          // 3) Acqua Modal (health_water / health_water_goal)
+          // 3) Acqua Modal (health_water / health_water_goal): caraffa che si riempie + obiettivo con consiglio
           if (field === 'water' || field === 'water_goal') {
-            const currentGlasses = form.value !== undefined ? form.value : (editData?.waterCurrent !== undefined ? editData.waterCurrent : 0);
-            const goalGlasses = editData?.waterGoal || 8;
-            const currentLiters = (currentGlasses * 0.2).toFixed(1);
-            const goalLiters = (goalGlasses * 0.2).toFixed(1);
-
+            const currentGlasses = Number(form.value !== undefined ? form.value : (editData?.waterCurrent ?? 0)) || 0;
+            const goalGlasses = Number(form.waterGoal !== undefined ? form.waterGoal : (editData?.waterGoal || 8)) || 8;
             return (
-              <div className="flex flex-col gap-4">
-                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 items-center text-center">
-                  <span className="text-[10px] text-text-muted font-bold uppercase">{_t("Idratazione Giornaliera")}</span>
-                  <div className="text-xl font-bold text-cyan-400">
-                    {currentLiters}L / {goalLiters}L
-                  </div>
-                  <span className="text-xs text-text-secondary font-semibold">
-                    {_t("({0} di {1} bicchieri da 0.2L)", currentGlasses, goalGlasses)}</span>
-                </div>
-
-                {/* Inline -1 and +1 glass buttons inside popup (taller & tactile) */}
-                <div className="flex items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const nextVal = Math.max(0, Number(currentGlasses) - 1);
-                      setForm(prev => ({ ...prev, value: nextVal }));
-                    }}
-                    className="flex-1 min-h-[58px] py-3.5 px-3 bg-[var(--bg-secondary)] border border-cyan-500/30 text-cyan-400 rounded-2xl font-bold text-xs hover:bg-cyan-500/10 active:scale-95 cursor-pointer transition-all flex flex-col items-center justify-center gap-0.5 shadow-sm"
-                  >
-                    <span className="text-base font-extrabold leading-none">− 1</span>
-                    <span className="text-[11px] font-semibold opacity-90">{_t("Bicchiere (-0.2L)")}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const nextVal = Number(currentGlasses) + 1;
-                      setForm(prev => ({ ...prev, value: nextVal }));
-                    }}
-                    className="flex-1 min-h-[58px] py-3.5 px-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-2xl font-bold text-xs hover:brightness-110 active:scale-95 cursor-pointer shadow-lg shadow-cyan-500/20 transition-all flex flex-col items-center justify-center gap-0.5"
-                  >
-                    <span className="text-base font-extrabold leading-none">+ 1</span>
-                    <span className="text-[11px] font-semibold opacity-95">{_t("Bicchiere (+0.2L)")}</span>
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-1.5 mt-1">
-                  <label className="block text-xs text-text-secondary font-bold">{_t("Oppure modifica manualmente i bicchieri (0.2L l'uno):")}</label>
-                  <input
-                    type="number"
-                    name="value"
-                    value={currentGlasses}
-                    onChange={handleNumberChange}
-                    className="w-full h-10 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-xs font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-              </div>
+              <WaterPanel
+                glasses={currentGlasses}
+                goal={goalGlasses}
+                profile={editData?.profile || {}}
+                onGlasses={(v) => setForm(prev => ({ ...prev, value: v }))}
+                onGoal={(v) => setForm(prev => ({ ...prev, waterGoal: v }))}
+              />
             );
           }
 

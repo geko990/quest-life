@@ -9170,3 +9170,62 @@ html[data-animations="off"] .gm-overlay, html[data-animations="off"] .gm-sheet {
 html[data-animations="off"] :is(.cc-overlay, .cc-card, .cc-seal-ring, .cc-seal-emoji, .cc-spark, .cc-dot, .cc-step-name,
     .cc-step-day, .cc-reward, .cc-reward-gift, .cc-noreward),
 html[data-animations="off"] .cc-path::after { animation: none !important; }
+
+/* Salute: Registro Acqua con la caraffa (WaterPanel.jsx, WaterCarafe.jsx) */
+.wp { --wc-stroke: rgba(200, 235, 255, 0.55); --wc-glass-a: rgba(180, 230, 255, 0.10); --wc-glass-b: rgba(180, 230, 255, 0.03); --wc-tick: rgba(200, 235, 255, 0.35);
+  display: flex; flex-direction: column; gap: 14px; }
+[data-mode="light"] .wp { --wc-stroke: rgba(40, 90, 130, 0.45); --wc-glass-a: rgba(120, 190, 230, 0.16); --wc-glass-b: rgba(120, 190, 230, 0.05); --wc-tick: rgba(40, 90, 130, 0.3); }
+.wp-top { display: grid; grid-template-columns: 46% 1fr; gap: 12px; align-items: center; }
+.wc-wrap { position: relative; width: 100%; max-width: 170px; justify-self: center; }
+.wc-svg { display: block; width: 100%; height: auto; touch-action: none; cursor: ns-resize; overflow: visible; }
+.wc-water { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.wc-wrap.is-dragging .wc-water { transition: transform 0.12s ease-out; }
+.wc-wave { animation: wcWave 2.6s linear infinite; }
+.wc-wave-back { animation-duration: 3.8s; animation-direction: reverse; }
+@keyframes wcWave { from { transform: translateX(0); } to { transform: translateX(75px); } }
+.wc-bubble { fill: rgba(255, 255, 255, 0.55); opacity: 0; animation: wcBubble 3s ease-in infinite; }
+@keyframes wcBubble { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 0.8; } 100% { transform: translateY(var(--rise, -60px)); opacity: 0; } }
+.wc-extra { animation: wcShimmer 1.6s ease-in-out infinite alternate; }
+@keyframes wcShimmer { from { opacity: 0.35; } to { opacity: 0.7; } }
+.wc-goal-line { transition: all 0.4s ease; }
+.wc-wrap.is-goal .wc-goal-line { stroke: #4ade80; }
+.wc-drop { animation: wcDrop 1.3s ease-in infinite; opacity: 0; }
+@keyframes wcDrop { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(-6px, 70px); opacity: 0; } }
+.wc-goal-tag { position: absolute; left: 100%; transform: translate(-30%, -50%); font-size: 10px; font-weight: 800; color: #fbbf24; white-space: nowrap; pointer-events: none; background: var(--bg-card); padding: 1px 6px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.35); transition: top 0.4s ease; }
+.wc-wrap.is-goal .wc-goal-tag { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
+.wp-side { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; padding-left: 10px; }
+.wp-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; }
+.wp-big { font-size: 34px; font-weight: 900; color: #06b6d4; line-height: 1; letter-spacing: -1px; }
+.wp-big span { font-size: 16px; letter-spacing: 0; }
+.wp-of { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.wp-status { align-self: flex-start; font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 999px; background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--glass-border); }
+.wp-status.is-goal { background: rgba(74, 222, 128, 0.15); color: #4ade80; border-color: rgba(74, 222, 128, 0.35); }
+.wp-status.is-extra { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border-color: rgba(6, 182, 212, 0.35); }
+[data-mode="light"] .wp-status.is-goal { color: #15803d; }
+[data-mode="light"] .wp-status.is-extra { color: #0e7490; }
+.wp-status.cheer { animation: wpCheer 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes wpCheer { 0% { transform: scale(0.6); } 100% { transform: scale(1); } }
+.wp-add { margin-top: 4px; border: none; border-radius: 16px; padding: 10px 8px; background: linear-gradient(135deg, #22d3ee, #0891b2); color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; box-shadow: 0 6px 16px -6px rgba(6, 182, 212, 0.6); transition: transform 0.12s ease; }
+.wp-add:active { transform: scale(0.95); }
+.wp-add-main { font-size: 14px; font-weight: 900; }
+.wp-add-sub { font-size: 10px; font-weight: 700; opacity: 0.85; }
+.wp-remove { border-radius: 12px; padding: 7px 8px; background: var(--bg-secondary); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); font-size: 12px; font-weight: 800; cursor: pointer; transition: transform 0.12s ease; }
+.wp-remove:active { transform: scale(0.95); }
+.wp-remove:disabled { opacity: 0.4; cursor: default; }
+.wp-hint { font-size: 9.5px; color: var(--text-muted); text-align: center; font-style: italic; }
+.wp-goal { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.wp-goal-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.wp-goal-val { font-size: 15px; font-weight: 900; color: var(--text-primary); margin-top: 2px; }
+.wp-goal-val span { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.wp-stepper { display: flex; gap: 6px; }
+.wp-stepper button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--bg-card); color: var(--text-primary); font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.wp-stepper button:active { transform: scale(0.92); }
+.wp-stepper button:disabled { opacity: 0.35; }
+.wp-rec { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--glass-border); }
+.wp-rec-main { font-size: 11.5px; font-weight: 800; color: var(--text-primary); }
+.wp-rec-sub { font-size: 9.5px; color: var(--text-muted); margin-top: 2px; }
+.wp-rec-use { margin-left: auto; flex-shrink: 0; border: none; border-radius: 999px; padding: 7px 14px; background: rgba(6, 182, 212, 0.15); color: #22d3ee; font-size: 12px; font-weight: 900; cursor: pointer; }
+[data-mode="light"] .wp-rec-use { color: #0e7490; }
+html[data-animations="off"] .wc-wave, html[data-animations="off"] .wc-bubble, html[data-animations="off"] .wc-extra,
+html[data-animations="off"] .wc-drop, html[data-animations="off"] .wp-status.cheer { animation: none; }
+html[data-animations="off"] .wc-water { transition: none; }

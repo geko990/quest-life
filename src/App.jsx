@@ -1525,7 +1525,14 @@ export default function App() {
       } else if (field === 'proteins') {
         setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, consumed: formData.value } }));
       } else if (field === 'water' || field === 'water_goal') {
-        setHealth(prev => ({ ...prev, water: { ...prev.water, consumed: Number(formData.value !== undefined ? formData.value : prev.water.consumed) } }));
+        setHealth(prev => ({
+          ...prev,
+          water: {
+            ...prev.water,
+            consumed: Number(formData.value !== undefined ? formData.value : prev.water.consumed),
+            goal: formData.waterGoal !== undefined ? Math.max(1, Math.round(Number(formData.waterGoal)) || prev.water.goal) : prev.water.goal
+          }
+        }));
       }
     }
   };
