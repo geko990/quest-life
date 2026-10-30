@@ -1,4 +1,5 @@
 import WaterPanel from './WaterPanel';
+import StepsPanel from './StepsPanel';
 import React, { useState, useEffect } from 'react';
 
 import { _t, getLocale } from '../i18n';
@@ -2143,31 +2144,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
         if (type?.startsWith('health_')) {
           const field = type.split('_')[1];
 
-          // 1) Passi Modal (health_steps)
+          // 1) Passi Modal (health_steps): sentiero di montagna + obiettivo con consiglio
           if (field === 'steps') {
-            const goalSteps = editData?.goalSteps || 10000;
-            const currentVal = form.value !== undefined ? form.value : (editData?.currentSteps !== undefined ? editData.currentSteps : 0);
+            const currentVal = Number(form.value !== undefined ? form.value : (editData?.currentSteps ?? 0)) || 0;
+            const goalSteps = Number(form.stepGoal !== undefined ? form.stepGoal : (editData?.goalSteps || 8000)) || 8000;
             return (
-              <div className="flex flex-col gap-4">
-                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex flex-col gap-1 text-center">
-                  <span className="text-[10px] text-text-muted font-bold uppercase">{_t("Obiettivo Passi Giornalieri")}</span>
-                  <span className="text-base font-bold text-accent-primary">
-                    {_t("{0} passi", goalSteps.toLocaleString())}</span>
-                  <span className="text-[9px] text-text-muted italic mt-0.5">{_t("🔒 Gli obiettivi sono modificabili solo dalla finestra \"Obiettivi\"")}</span>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="block text-xs text-text-secondary font-bold">{_t("Passi Fatti Finora Oggi:")}</label>
-                  <input
-                    type="number"
-                    name="value"
-                    value={currentVal}
-                    onChange={handleNumberChange}
-                    placeholder={_t("Es: 6500")}
-                    className="w-full h-11 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--glass-border)] rounded-xl px-4 text-sm font-bold focus:border-accent-primary focus:outline-none"
-                  />
-                </div>
-              </div>
+              <StepsPanel
+                steps={currentVal}
+                goal={goalSteps}
+                profile={editData?.profile || {}}
+                onSteps={(v) => setForm(prev => ({ ...prev, value: v }))}
+                onGoal={(v) => setForm(prev => ({ ...prev, stepGoal: v }))}
+              />
             );
           }
 

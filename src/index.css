@@ -9229,3 +9229,37 @@ html[data-animations="off"] .cc-path::after { animation: none !important; }
 html[data-animations="off"] .wc-wave, html[data-animations="off"] .wc-bubble, html[data-animations="off"] .wc-extra,
 html[data-animations="off"] .wc-drop, html[data-animations="off"] .wp-status.cheer { animation: none; }
 html[data-animations="off"] .wc-water { transition: none; }
+
+/* Salute: Registro Passi con il sentiero di montagna (StepsPanel.jsx, StepsTrail.jsx; struttura .wp-* dell'acqua) */
+.wp.is-steps { --st-mount-top: #3b3a63; --st-mount-bottom: #23223d; --st-mount-back: #2b2a48; --st-snow: rgba(235, 240, 255, 0.85); --st-trail: rgba(220, 225, 255, 0.45); }
+[data-mode="light"] .wp.is-steps { --st-mount-top: #c9c3ea; --st-mount-bottom: #e4e0f5; --st-mount-back: #d8d3ef; --st-snow: #ffffff; --st-trail: rgba(60, 50, 110, 0.45); }
+.wp.is-steps .wp-big { color: #4ade80; }
+[data-mode="light"] .wp.is-steps .wp-big { color: #16a34a; }
+.wp.is-steps .wp-status.is-extra { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); }
+[data-mode="light"] .wp.is-steps .wp-status.is-extra { color: #b45309; }
+.wp.is-steps .wp-add { background: linear-gradient(135deg, #4ade80, #16a34a); box-shadow: 0 6px 16px -6px rgba(34, 197, 94, 0.6); padding: 13px 8px; }
+.wp.is-steps .wp-remove { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+[data-mode="light"] .wp.is-steps .wp-remove { color: #16a34a; }
+.wp.is-steps .wp-rec-use { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+[data-mode="light"] .wp.is-steps .wp-rec-use { color: #15803d; }
+.wp-big-btn { background: none; border: none; padding: 0; text-align: left; cursor: text; font-family: inherit; text-decoration: underline dotted rgba(127, 127, 127, 0.4); text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.wp-big-input { width: 100%; font-size: 30px; font-weight: 900; color: #4ade80; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 10px; padding: 2px 8px; outline: none; font-family: inherit; }
+.st-wrap { position: relative; width: 100%; max-width: 170px; justify-self: center; }
+.st-svg { display: block; width: 100%; height: auto; touch-action: none; cursor: pointer; overflow: visible; }
+.st-sun { opacity: 0.45; transition: opacity 0.6s ease; }
+.st-sun-glow { opacity: 0; transition: opacity 0.6s ease; }
+.st-wrap.is-goal .st-sun { opacity: 1; }
+.st-wrap.is-goal .st-sun-glow { opacity: 0.25; animation: stGlow 2.4s ease-in-out infinite alternate; }
+@keyframes stGlow { from { opacity: 0.15; } to { opacity: 0.35; } }
+.st-walked-extra { filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.7)); }
+.st-flag, .st-star, .st-walker, .st-goal-tag { position: absolute; pointer-events: none; line-height: 1; }
+.st-flag { font-size: 20px; transform: translate(-25%, -95%); }
+.st-wrap.is-goal .st-flag { animation: stFlag 1.2s ease-in-out infinite alternate; transform-origin: 25% 95%; }
+@keyframes stFlag { from { transform: translate(-25%, -95%) rotate(-4deg); } to { transform: translate(-25%, -95%) rotate(4deg); } }
+.st-goal-tag { transform: translate(-115%, -50%); font-size: 10px; font-weight: 800; color: #fbbf24; white-space: nowrap; background: var(--bg-card); padding: 1px 6px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.35); }
+.st-wrap.is-goal .st-goal-tag { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
+.st-star { font-size: 20px; transform: translate(-50%, -60%); animation: stStar 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes stStar { from { transform: translate(-50%, -60%) scale(0); } to { transform: translate(-50%, -60%) scale(1); } }
+.st-walker { font-size: 24px; transform: translate(-50%, -88%); filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); }
+.st-walker.is-dragging { transform: translate(-50%, -88%) scale(1.15); }
+html[data-animations="off"] .st-wrap.is-goal .st-flag, html[data-animations="off"] .st-wrap.is-goal .st-sun-glow, html[data-animations="off"] .st-star { animation: none; }

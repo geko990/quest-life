@@ -1519,7 +1519,14 @@ export default function App() {
       } else if (field === 'burned') {
         setHealth(prev => ({ ...prev, calories: { ...prev.calories, burned: (prev.calories.burned || 0) + (Number(formData.value) || 0) } }));
       } else if (field === 'steps') {
-        setHealth(prev => ({ ...prev, steps: { ...prev.steps, current: formData.value } }));
+        setHealth(prev => ({
+          ...prev,
+          steps: {
+            ...prev.steps,
+            current: formData.value !== undefined ? Math.max(0, Math.round(Number(formData.value)) || 0) : prev.steps.current,
+            goal: formData.stepGoal !== undefined ? Math.max(500, Math.round(Number(formData.stepGoal)) || prev.steps.goal) : prev.steps.goal
+          }
+        }));
       } else if (field === 'protein') {
         setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, goal: formData.value } }));
       } else if (field === 'proteins') {

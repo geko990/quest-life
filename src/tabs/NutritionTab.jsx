@@ -1422,7 +1422,11 @@ export default function NutritionTab({
           <div className="health-stats" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             {/* Steps card */}
             <div
-              onClick={() => onOpenModal('health_steps', { currentSteps: stepsCurrent, goalSteps: stepsGoal })}
+              onClick={() => onOpenModal('health_steps', {
+                currentSteps: stepsCurrent,
+                goalSteps: stepsGoal,
+                profile: { weight: weightCurrent, height: health.calcHeight, age: health.calcAge, goalType: health.calcGoalType }
+              })}
               className="glass-panel"
               style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
