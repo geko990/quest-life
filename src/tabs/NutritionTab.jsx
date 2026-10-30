@@ -2589,7 +2589,8 @@ export default function NutritionTab({
         const weekDates = offsets.map(i => new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate() - i));
         const idx = Math.max(0, weekDates.findIndex(d => formatISO(d) === selectedDayIso));
         const dd = getHealthDay(weekDates[idx], idx === 6);
-        const dateLabel = dd.d.toLocaleDateString(getLocale(), { weekday: 'long', day: 'numeric', month: 'long' });
+        const rawDate = dd.d.toLocaleDateString(getLocale(), { weekday: 'long', day: 'numeric', month: 'long' });
+        const dateLabel = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
         const fmt = (n, dec = 0) => Number(n || 0).toLocaleString(getLocale(), { maximumFractionDigits: dec });
         const rows = dd.goals ? [
           {
@@ -2623,20 +2624,20 @@ export default function NutritionTab({
               onClick={(e) => e.stopPropagation()}
               style={{ maxWidth: '360px', width: '92%', maxHeight: 'min(640px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 170px))', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '24px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}
             >
-              <div style={{ padding: '18px 16px 20px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
+              <div style={{ padding: '16px 16px 18px 16px', flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
                 {/* Data con frecce per scorrere la settimana */}
                 <div className="day-recap-nav">
                   <button type="button" disabled={idx === 0} onClick={() => setSelectedDayIso(formatISO(weekDates[idx - 1]))} aria-label={_t("Giorno precedente")}>‹</button>
                   <div style={{ textAlign: 'center', minWidth: 0 }}>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{dateLabel}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>{dateLabel}</div>
                     {dd.isToday && <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--accent-primary)', marginTop: '1px' }}>{_t("Oggi • si aggiorna mentre registri")}</div>}
                   </div>
                   <button type="button" disabled={idx === 6} onClick={() => setSelectedDayIso(formatISO(weekDates[idx + 1]))} aria-label={_t("Giorno successivo")}>›</button>
                 </div>
 
                 {/* Anello grande */}
-                <div style={{ position: 'relative', width: 150, height: 150, margin: '14px auto 8px auto' }}>
-                  {renderGoalRing(dd, 150, dayRingReady, 0)}
+                <div style={{ position: 'relative', width: 128, height: 128, margin: '10px auto 6px auto' }}>
+                  {renderGoalRing(dd, 128, dayRingReady, 0)}
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     {dd.metCount === 4
                       ? <span className="day-recap-star">⭐</span>
@@ -2644,7 +2645,7 @@ export default function NutritionTab({
                     <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>{_t("obiettivi")}</span>
                   </div>
                 </div>
-                <div style={{ textAlign: 'center', fontSize: '13px', fontWeight: 800, color: dd.metCount === 4 ? '#facc15' : 'var(--text-primary)', marginBottom: '14px' }}>
+                <div style={{ textAlign: 'center', fontSize: '13px', fontWeight: 800, color: dd.metCount === 4 ? '#facc15' : 'var(--text-primary)', marginBottom: '12px' }}>
                   {!dd.goals
                     ? _t("Nessun dato registrato per questo giorno")
                     : dd.metCount === 4
@@ -2656,7 +2657,7 @@ export default function NutritionTab({
 
                 {/* Dettagli dei 4 obiettivi */}
                 {rows.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
                     {rows.map(r => (
                       <div key={r.g.key} className={`day-recap-row${r.g.met ? ' is-met' : ''}`} style={{ '--goal-color': r.g.over ? '#ef4444' : r.g.color }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2673,7 +2674,7 @@ export default function NutritionTab({
                           </div>
                           <span className="day-recap-check">{r.g.met ? '✓' : ''}</span>
                         </div>
-                        <div style={{ height: '5px', background: 'var(--track, var(--bg-secondary))', borderRadius: '5px', overflow: 'hidden', marginTop: '6px' }}>
+                        <div style={{ height: '5px', background: 'var(--track, var(--bg-secondary))', borderRadius: '5px', overflow: 'hidden', marginTop: '5px' }}>
                           <div className="day-recap-bar" style={{ height: '100%', width: `${dayRingReady ? Math.round(r.g.pct * 100) : 0}%`, background: 'var(--goal-color)', borderRadius: '5px' }} />
                         </div>
                       </div>
@@ -2682,7 +2683,7 @@ export default function NutritionTab({
                 )}
 
                 {dayWeight !== null && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '7px', padding: '8px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>⚖️ {_t("Peso")}</span>
                     <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--text-primary)' }}>{fmt(dayWeight, 1)} {_t("kg")}</span>
                   </div>
