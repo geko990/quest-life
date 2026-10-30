@@ -313,6 +313,23 @@ await step('17-giornata-tipo', async () => {
 });
 await tapOutside();
 
+// Guida (Grimorio): in primo piano sopra barra superiore e nav bar
+await step('18-guida', async () => {
+  await page.getByText('📖 Guida e info').first().click();
+  await page.waitForTimeout(300);
+  await page.getByText('Manuale e guide').first().click();
+  await page.waitForTimeout(600);
+  const r = await page.evaluate(() => {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const inGuide = (x, y) => !!document.elementFromPoint(x, y)?.closest('.gm-overlay');
+    return { top: inGuide(vw / 2, 20), bottom: inGuide(vw / 2, vh - 20), chapters: document.querySelectorAll('.gm-tab').length };
+  });
+  if (!r.top || !r.bottom) throw new Error(`Guida sotto le barre (sopra: ${r.top}, sotto: ${r.bottom})`);
+  report(`Guida in primo piano sopra le barre, ${r.chapters} capitoli`);
+});
+await page.getByText("Torna all'avventura").click().catch(() => {});
+await page.waitForTimeout(300);
+
 // Registro errori: voci nel vecchio formato → raggruppate, filtrate, eliminabili, segnalabili su GitHub
 try {
   await page.evaluate(() => {
