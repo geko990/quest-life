@@ -9263,3 +9263,11 @@ html[data-animations="off"] .wc-water { transition: none; }
 .st-walker { font-size: 24px; transform: translate(-50%, -88%); filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); }
 .st-walker.is-dragging { transform: translate(-50%, -88%) scale(1.15); }
 html[data-animations="off"] .st-wrap.is-goal .st-flag, html[data-animations="off"] .st-wrap.is-goal .st-sun-glow, html[data-animations="off"] .st-star { animation: none; }
+/* Inserimento manuale preciso nelle finestre della Salute (passi) */
+.wp-manual { display: flex; align-items: center; gap: 8px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 14px; padding: 8px 8px 8px 12px; }
+.wp-manual label { font-size: 11px; font-weight: 800; color: var(--text-secondary); white-space: nowrap; }
+.wp-manual input { flex: 1; min-width: 0; height: 36px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--bg-card); color: var(--text-primary); font-size: 16px; font-weight: 800; padding: 0 10px; outline: none; font-family: inherit; }
+.wp-manual input:focus { border-color: #4ade80; }
+.wp-manual button { height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: rgba(74, 222, 128, 0.18); color: #4ade80; font-size: 13px; font-weight: 900; cursor: pointer; }
+[data-mode="light"] .wp-manual button { color: #15803d; }
+.wp-manual button:disabled { opacity: 0.4; cursor: default; }

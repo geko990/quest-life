@@ -1720,9 +1720,12 @@
  "Tocca per scrivere i passi esatti": "Tap to type the exact steps",
  "di {0} • ≈ {1} km • ≈ {2} kcal": "of {0} • ≈ {1} km • ≈ {2} kcal",
  "− {0}": "− {0}",
- "Trascina sul sentiero o tocca il numero per scriverlo": "Drag on the trail or tap the number to type it",
  "Consigliato per te: almeno {0} passi": "Suggested for you: at least {0} steps",
  "Per {0} anni": "For {0} years old",
  "L'età si imposta negli Obiettivi di Salute": "Set your age in Health Goals",
- "obiettivo dimagrimento": "weight-loss goal"
+ "obiettivo dimagrimento": "weight-loss goal",
+ "Oppure trascina il dito sul sentiero": "Or drag your finger along the trail",
+ "Passi esatti": "Exact steps",
+ "Es. {0}": "E.g. {0}",
+ "Imposta": "Set"
 }
