@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { CLOUDFLARE_WORKER_CODE } from '../utils/constants';
+import { AREAS } from '../utils/onboarding';
+import { LANDS } from '../utils/unlocks';
 import { _t } from '../i18n';
 
 // Grimorio di Quest Life (guida). Si apre in primo piano, in un portale sopra a tutto
@@ -119,18 +121,25 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               />
 
               <div className="gm-section">
-                <h4 className="gm-h4">🛡️ {_t("I 6 Attributi Primari del Personaggio")}</h4>
-                <div className="gm-text">{_t("Completando abitudini e missioni guadagni punti XP che sviluppano specifici tratti del tuo profilo:")}</div>
+                <h4 className="gm-h4">🧭 {_t("Le Tue Abilità")}</h4>
+                <div className="gm-text">{_t("Sono le aree della tua vita che vuoi far crescere: le scegli nel benvenuto, da 3 a 5. Ogni impresa dà XP all'abilità che allena e il radar dell'Eroe ne disegna la forma:")}</div>
                 <Pair>
-                  <Attr label={_t("💪 STR (Forza):")} color="#ef4444">{_t("Allenamento con i pesi, calisthenics, resistenza fisica e docce fredde.")}</Attr>
-                  <Attr label={_t("⚡ DEX (Destrezza):")} color="#38bdf8">{_t("Zero procrastinazione, agilità, produttività chirurgica e velocità d'azione.")}</Attr>
-                  <Attr label={_t("🛡️ CON (Costituzione):")} color="#22c55e">{_t("Sonno ristoratore, idratazione corretta, postura e recupero fisiologico.")}</Attr>
-                  <Attr label={_t("🧠 INT (Intelligenza):")} color="#818cf8">{_t("Studio, lettura vorace di saggi, coding, corsi e apprendimento continuo.")}</Attr>
-                  <Attr label={_t("✨ WIS (Saggezza):")} color="#f59e0b">{_t("Meditazione quotidiana, mindfulness, riflessione serale e gestione dello stress.")}</Attr>
-                  <Attr label={_t("👑 CHA (Carisma):")} color="#ec4899">{_t("Relazioni autentiche, public speaking, gentilezza, networking ed empatia.")}</Attr>
+                  {AREAS.map(a => (
+                    <Attr key={a.id} label={`${a.emoji} ${_t(a.name)}:`} color={a.color}>{_t(a.desc)}</Attr>
+                  ))}
                 </Pair>
-                <div className="gm-text">{_t("Oltre agli attributi puoi creare le tue abilità (come 🎨 Creatività) dalla schermata Eroe: anche loro salgono di livello con le tue imprese.")}</div>
+                <div className="gm-text">{_t("Giochi da prima del benvenuto? I tuoi attributi classici (Forza, Destrezza, Costituzione, Intelligenza, Saggezza, Carisma) funzionano allo stesso modo. Dalla schermata Eroe scegli quali mostrare nel radar.")}</div>
               </div>
+
+              <Card title={_t("🗺️ Un Mondo che si Apre con Te")} color="#22c55e" highlight>
+                {_t("Quest Life cresce insieme a te: all'inizio trovi Eroe, Abitudini e Opzioni, poi ogni livello apre una nuova terra, festeggiata dalla medaglia «Hai sbloccato».")}
+                <ul className="gm-list">
+                  {LANDS.map(l => (
+                    <li key={l.feature}><b>{_t("Livello {0}:", l.level)}</b>{' '}{l.emoji} {_t(l.name)}</li>
+                  ))}
+                </ul>
+                {_t("Vuoi vedere tutto subito? In Opzioni → 🎮 Gioco accendi «Sblocca tutto».")}
+              </Card>
 
               <Card title={_t("⭐ Quanto Vale un'Impresa")} color="#fbbf24">
                 {_t("Ogni abitudine, missione e azione ha da 1 a 5 stelle: più è impegnativa, più ti premia. Un'abitudine vale 4 XP per stella (da 4 a 20 XP) per la caratteristica principale, e un terzo in più va alla secondaria. Sii onesto con le stelle: è il tuo eroe a guadagnarci.")}
@@ -167,7 +176,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               />
 
               <Card title={_t("🎯 Le 4 Azioni del Giorno")} color="#ef4444">
-                {_t("Nella finestra «È il tuo turno!» scegli le quattro mosse della giornata, come nel turno di un gioco di ruolo:")}
+                {_t("Dal livello 4, nella finestra «È il tuo turno!» scegli le quattro mosse della giornata, come nel turno di un gioco di ruolo:")}
                 <ul className="gm-list">
                   <li><b>{_t("🎯 Azione:")}</b>{' '}{_t("l'impresa principale, quella che conta di più.")}</li>
                   <li><b>{_t("⚡ Azione bonus:")}</b>{' '}{_t("un passo in più, piccolo ma prezioso.")}</li>
@@ -183,7 +192,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
 
               <Pair>
                 <Mini title={_t("🍅 Timer Pomodoro")} color="#ef4444">
-                  {_t("Avvia una sessione di concentrazione (25 minuti, ma puoi cambiarla): ogni sessione completata ti fa guadagnare XP.")}
+                  {_t("Dal livello 2 avvii una sessione di concentrazione (25 minuti, ma puoi cambiarla): ogni sessione completata ti fa guadagnare XP.")}
                 </Mini>
                 <Mini title={_t("🕸️ Il Radar dell'Eroe")} color="#38bdf8">
                   {_t("Mostra a colpo d'occhio dove sei forte e dove puoi crescere: guardalo allargarsi giorno dopo giorno.")}
@@ -217,7 +226,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               </Card>
 
               <Card title={_t("🗓️ Giornate Tipo: il Tuo Copilota Quotidiano")} color="#38bdf8" highlight>
-                {_t("In Opzioni → 🗓️ Giornate tipo puoi creare i tuoi modelli di giornata (es. «Giorno lavorativo» o «Domenica di ricarica»): una scaletta oraria che azzera la stanchezza decisionale e ti tiene sulla rotta. Le azioni si mettono da sole in ordine di orario: aggiungi pure un'attività più mattutina, finirà al suo posto.")}
+                {_t("Dal livello 4, in Opzioni → 🗓️ Giornate tipo puoi creare i tuoi modelli di giornata (es. «Giorno lavorativo» o «Domenica di ricarica»): una scaletta oraria che azzera la stanchezza decisionale e ti tiene sulla rotta. Le azioni si mettono da sole in ordine di orario: aggiungi pure un'attività più mattutina, finirà al suo posto.")}
               </Card>
 
               <Tip color="#22c55e">{_t("Associa sempre una nuova abitudine a un'azione che fai già in automatico (es.")}{' '}<i>{_t("\"Subito dopo il caffè del mattino, berrò un bicchiere d'acqua ed eseguirò 2 minuti di stretching\"")}</i>{_t("). È il principio del concatenamento delle abitudini atomiche.")}</Tip>
@@ -239,6 +248,10 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
                   <li><b>{_t("Abitudini (Habits):")}</b>{' '}{_t("Riti ciclici infiniti che ripeti ogni giorno (es. bere 2L d'acqua, camminare 8.000 passi, meditare 10 min).")}</li>
                   <li><b>{_t("Missioni (Quests):")}</b>{' '}{_t("Obiettivi specifici con un inizio e una conclusione definita (es.")}{' '}<i>{_t("\"Rinnovare il passaporto\"")}</i>, <i>{_t("\"Riparare la bici\"")}</i>, <i>{_t("\"Consegnare il report\"")}</i>).</li>
                 </ul>
+              </Card>
+
+              <Card title={_t("🏠 Dove Trovi le Missioni")} color="#a78bfa">
+                {_t("All'inizio le missioni vivono nella schermata Eroe, sotto il radar. Dal livello 2 hanno una scheda tutta loro nella nav bar, e dal livello 5 arrivano le Campagne.")}
               </Card>
 
               <Card title={_t("⏰ Scadenze e Promemoria")} color="#f97316">
@@ -332,7 +345,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               </Card>
 
               <Card title={_t("🎭 Il Tuo Eroe, a Modo Tuo")} color="#f59e0b">
-                {_t("In Opzioni tocca il tuo nome per rinominare l'eroe, e scegli tema, modalità chiara o scura e colore dei dettagli in 🎨 Aspetto. Ovunque vedi un'emoji, toccala per sceglierne un'altra.")}
+                {_t("In Opzioni tocca la tua icona per cambiarla (anche con una foto) e il tuo nome per rinominare l'eroe; in 🎨 Aspetto scegli tema, modalità chiara o scura e colore dei dettagli. Ovunque vedi un'emoji, toccala per sceglierne un'altra.")}
               </Card>
 
               <Tip color="#a78bfa">{_t("Preferisci un'app più quieta? In Opzioni → 🎨 Aspetto puoi spegnere le animazioni: XP e medaglie restano, senza movimento.")}</Tip>

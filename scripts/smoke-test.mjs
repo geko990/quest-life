@@ -315,7 +315,7 @@ await tapOutside();
 
 // Guida (Grimorio): in primo piano sopra barra superiore e nav bar
 await step('18-guida', async () => {
-  await page.getByText('📖 Guida e info').first().click();
+  await page.getByText('Guida e info', { exact: true }).first().click();
   await page.waitForTimeout(300);
   await page.getByText('Manuale e guide').first().click();
   await page.waitForTimeout(600);
