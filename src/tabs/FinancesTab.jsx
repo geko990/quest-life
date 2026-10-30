@@ -7,6 +7,7 @@ import { getAccountMovements, getAccountMonthStats, groupMovementsByDay, getPeri
 import BanknoteArt from '../components/BanknoteArt';
 import CardColorPicker from '../components/CardColorPicker';
 import CountUpMoney from '../components/CountUpMoney';
+import ScrubSvg from '../components/ScrubSvg';
 
 import { _t, getLocale, monthLong, monthShort } from '../i18n';
 import EmojiField from '../components/EmojiField';
@@ -235,6 +236,8 @@ export default function FinancesTab({
 
   // Stock Chart Interactive Point State
   const [selectedChartPointIndex, setSelectedChartPointIndex] = useState(null);
+  const [chartScrubbing, setChartScrubbing] = useState(false); // dito sul grafico del patrimonio
+  const weekTapWasSel = useRef(false); // Storico: un tocco sulla settimana già scelta la deseleziona
 
   // Super User Recurring Edit States
   const [showEditRecurringModal, setShowEditRecurringModal] = useState(false);
@@ -1917,6 +1920,9 @@ export default function FinancesTab({
   const isOverallChartPositive = totalChartDelta >= 0;
   const chartStrokeColor = isOverallChartPositive ? '#38bdf8' : '#f87171';
 
+  // Grafico che si sfoglia col dito: l'ultimo punto è "oggi" (nessuna selezione, niente "Torna a Oggi")
+  const pickChartPoint = (i) => setSelectedChartPointIndex(i >= plottedPoints.length - 1 ? null : i);
+
   const activeChartIndex = (selectedChartPointIndex !== null && selectedChartPointIndex >= 0 && selectedChartPointIndex < plottedPoints.length)
     ? selectedChartPointIndex
     : plottedPoints.length - 1;
@@ -2013,7 +2019,7 @@ export default function FinancesTab({
               {totalIncludesInvestments ? _t("📈 Patrimonio Totale") : _t("🏦 Totale Conti")}
             </div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: activePoint.value >= 0 ? 'var(--text-primary)' : '#ef4444', marginTop: '2px', letterSpacing: '-0.5px' }}>
-              <CountUpMoney value={activePoint.value} format={fmtCurrency} animate={Boolean(activePoint.isCurrent)} />
+              <CountUpMoney value={activePoint.value} format={fmtCurrency} animate={Boolean(activePoint.isCurrent) && !chartScrubbing} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', fontSize: '11px', flexWrap: 'wrap' }}>
               <span style={{
@@ -2054,7 +2060,15 @@ export default function FinancesTab({
 
         {/* Grafico SVG Continuo Andamento Borsa */}
         <div style={{ background: 'var(--bg-primary, rgba(0,0,0,0.25))', borderRadius: '12px', padding: '8px 4px 6px 4px', border: '1px solid var(--glass-border, rgba(255,255,255,0.06))', position: 'relative' }}>
-          <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+          <ScrubSvg
+            viewBox={`0 0 ${svgW} ${svgH}`}
+            style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
+            xs={plottedPoints.map(p => p.x)}
+            viewW={svgW}
+            onStart={pickChartPoint}
+            onMove={pickChartPoint}
+            onScrubChange={setChartScrubbing}
+          >
             <defs>
               <linearGradient id="patrimonioStockGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={chartStrokeColor} stopOpacity="0.32" />
@@ -2111,11 +2125,7 @@ export default function FinancesTab({
               const isSelected = idx === activeChartIndex;
               const showDot = plottedPoints.length <= 25 || isSelected || (pt.net !== 0);
               return (
-                <g
-                  key={pt.key}
-                  onClick={() => setSelectedChartPointIndex(idx)}
-                  style={{ cursor: 'pointer' }}
-                >
+                <g key={pt.key}>
                   {/* Invisible larger touch target */}
                   <circle cx={pt.x} cy={pt.y} r={plottedPoints.length > 25 ? "8" : "14"} fill="transparent" />
                   {/* Outer halo when selected */}
@@ -2142,7 +2152,7 @@ export default function FinancesTab({
                 </g>
               );
             })}
-          </svg>
+          </ScrubSvg>
 
           {/* Etichette lungo l'asse X */}
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${pLeft - 10}px`, paddingRight: `${pRight - 6}px`, marginTop: '2px' }}>
@@ -3134,7 +3144,15 @@ export default function FinancesTab({
               {historyRange === 'short' && (
                 <div>
                   {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
-                  <svg viewBox={`0 0 ${histSvgW} ${histSvgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                  <ScrubSvg
+                    viewBox={`0 0 ${histSvgW} ${histSvgH}`}
+                    style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
+                    xs={hWeekPoints.filter(pt => pt.id !== 0).map(pt => pt.x)}
+                    viewW={histSvgW}
+                    onStart={(i) => { const pt = hWeekPoints.filter(q => q.id !== 0)[i]; if (!pt) return; weekTapWasSel.current = pt.id === selectedHistoryWeek; setSelectedHistoryWeek(pt.id); }}
+                    onMove={(i) => { const pt = hWeekPoints.filter(q => q.id !== 0)[i]; if (pt) setSelectedHistoryWeek(pt.id); }}
+                    onTap={() => { if (weekTapWasSel.current) setSelectedHistoryWeek(null); }}
+                  >
                     <defs>
                       <linearGradient id="histWeekGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={hWeekStrokeColor} stopOpacity="0.35" />
@@ -3173,13 +3191,7 @@ export default function FinancesTab({
                     {hWeekPoints.map(pt => {
                       const isSel = pt.id !== 0 && pt.id === selectedHistoryWeek;
                       return (
-                        <g
-                          key={pt.id}
-                          onClick={() => {
-                            if (pt.id !== 0) setSelectedHistoryWeek(isSel ? null : pt.id);
-                          }}
-                          style={{ cursor: pt.id !== 0 ? 'pointer' : 'default' }}
-                        >
+                        <g key={pt.id}>
                           <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
                           {isSel && <circle cx={pt.x} cy={pt.y} r="7" fill="#38bdf8" fillOpacity="0.3" />}
                           <circle
@@ -3193,7 +3205,7 @@ export default function FinancesTab({
                         </g>
                       );
                     })}
-                  </svg>
+                  </ScrubSvg>
 
                   {/* Settimane labels & Saldi sotto il grafico */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 10}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>
@@ -3290,7 +3302,14 @@ export default function FinancesTab({
               {historyRange === 'long' && (
                 <div>
                   {/* Continuous SVG Line Chart (Revolut / Stocks Style) */}
-                  <svg viewBox={`0 0 ${histSvgW} ${histSvgH}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                  <ScrubSvg
+                    viewBox={`0 0 ${histSvgW} ${histSvgH}`}
+                    style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
+                    xs={hLongPoints.map(pt => pt.x)}
+                    viewW={histSvgW}
+                    onStart={(i) => { const pt = hLongPoints[i]; if (pt) { setSelectedHistoryMonth(pt.monthKey); setSelectedHistoryWeek(null); } }}
+                    onMove={(i) => { const pt = hLongPoints[i]; if (pt) { setSelectedHistoryMonth(pt.monthKey); setSelectedHistoryWeek(null); } }}
+                  >
                     <defs>
                       <linearGradient id="histLongGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={hLongStrokeColor} stopOpacity="0.35" />
@@ -3345,14 +3364,7 @@ export default function FinancesTab({
                     {hLongPoints.map(pt => {
                       const isSel = pt.monthKey === selectedHistoryMonth;
                       return (
-                        <g
-                          key={pt.monthKey}
-                          onClick={() => {
-                            setSelectedHistoryMonth(pt.monthKey);
-                            setSelectedHistoryWeek(null);
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        >
+                        <g key={pt.monthKey}>
                           <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
                           {isSel && <circle cx={pt.x} cy={pt.y} r="7" fill="#38bdf8" fillOpacity="0.3" />}
                           <circle
@@ -3366,7 +3378,7 @@ export default function FinancesTab({
                         </g>
                       );
                     })}
-                  </svg>
+                  </ScrubSvg>
 
                   {/* Mesi labels & Saldi sotto il grafico */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: `${hPadL - 8}px`, paddingRight: `${hPadR - 6}px`, marginTop: '4px' }}>

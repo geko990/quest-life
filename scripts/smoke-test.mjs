@@ -446,6 +446,27 @@ try {
   const dIn = await moneyTest('Entrata', '13b-tesoro-entrata');
   const dOut = await moneyTest('Uscita', '13c-tesoro-uscita');
   if (dIn !== 12.5 || dOut !== -12.5) throw new Error(`saldo del Conto base non aggiornato (${dIn}, ${dOut})`);
+  // Grafico del patrimonio che si sfoglia col dito: tocco a sinistra, trascino verso destra, la selezione segue
+  const chart = page.locator('svg[style*="pan-y"]').first();
+  await chart.scrollIntoViewIfNeeded();
+  const cb = await chart.boundingBox();
+  const readHead = () => page.locator('text=/Torna a Oggi/').count();
+  await page.mouse.move(cb.x + cb.width * 0.15, cb.y + cb.height * 0.5);
+  await page.mouse.down();
+  await page.waitForTimeout(120);
+  if (!(await readHead())) throw new Error('grafico: il tocco non sceglie un punto');
+  const lineAt = () => page.evaluate(() => {
+    const l = [...document.querySelectorAll('svg[style*="pan-y"] line[stroke-dasharray="2 2"]')][0];
+    return l ? Number(l.getAttribute('x1')) : null;
+  });
+  const x1 = await lineAt();
+  for (let k = 1; k <= 6; k++) { await page.mouse.move(cb.x + cb.width * (0.15 + k * 0.08), cb.y + cb.height * 0.5); await page.waitForTimeout(40); }
+  const x2 = await lineAt();
+  await shot('13d-tesoro-grafico-dito');
+  await page.mouse.up();
+  if (!(x2 > x1)) throw new Error(`grafico: trascinando la selezione non segue il dito (${x1} → ${x2})`);
+  await page.locator('text=/Torna a Oggi/').first().click();
+  await page.waitForTimeout(300);
   report(`Tesoro: schede dei conti entro le barre (scheda ${Math.round(r1.top)}–${Math.round(r1.bottom)}, barre ${Math.round(r1.headerBottom)}–${Math.round(r1.navTop)}), ricorrenti, trasferimenti, colore della carta, banconota e saldi che scorrono OK`);
 } catch (e) {
   problems.push(`Gruppo 6 (Tesoro): ${e.message}`);
