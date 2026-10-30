@@ -38,7 +38,8 @@ export default function MissionsTab({
   stats,
   settings,
   onOpenDailyPlanner,
-  onActivateChallenge
+  onActivateChallenge,
+  showQuests = true
 }) {
   const { getDragProps: getOneshotDragProps } = useTouchReorder(oneshots, setOneshots);
   const { getDragProps: getQuestDragProps } = useTouchReorder(quests, setQuests);
@@ -51,6 +52,8 @@ export default function MissionsTab({
       setSubTab('oneshot');
     }
   }, [activeTab]);
+  // Campagne e Sfide si aprono al livello 5 (#62): prima c'è solo la lista delle missioni singole
+  useEffect(() => { if (!showQuests && subTab !== 'oneshot') setSubTab('oneshot'); }, [showQuests, subTab]);
   const [showCompletedOneshots, setShowCompletedOneshots] = useState(false);
   const [expandedQuestId, setExpandedQuestId] = useState(null);
 
@@ -99,7 +102,7 @@ export default function MissionsTab({
       </div>
 
       {/* Main Sub-Tab Switcher Bar (v3.3.0 style) */}
-      <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
+      {showQuests && <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--glass-border)', marginBottom: '16px', gap: '4px' }}>
         <button
           onClick={() => setSubTab('oneshot')}
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'oneshot' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'oneshot' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -115,7 +118,7 @@ export default function MissionsTab({
           style={{ flex: 1, padding: '8px', border: 'none', background: subTab === 'catalog' ? 'var(--accent-gradient, #7c3aed)' : 'transparent', color: subTab === 'catalog' ? '#fff' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}
         >
           {_t("⚔️ Sfide")}</button>
-      </div>
+      </div>}
 
       {/* SUB-TAB 1: MISSIONI SINGOLE (ONE-SHOTS) */}
       {subTab === 'oneshot' && (

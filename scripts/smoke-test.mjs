@@ -65,6 +65,44 @@ try {
 } catch (e) {
   problems.push(`Benvenuto: ${e.message}`);
 }
+
+// L'app che cresce (#62): un utente nuovo al livello 1 vede solo Abitudini, Eroe e Opzioni, e le missioni
+// nella Home; al livello 3 compaiono Salute e Missioni e il doppio tocco su Opzioni apre il Tesoro con la sua
+// prima missione. Poi "Sblocca tutto" per il resto del test.
+const editState = async (fn) => {
+  await page.waitForTimeout(800); // il salvataggio dei dati è leggermente ritardato
+  await page.evaluate((src) => {
+    const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}');
+    // eslint-disable-next-line no-new-func
+    new Function('st', src)(st);
+    localStorage.setItem('questlife_state_v2', JSON.stringify(st));
+  }, fn);
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(1500);
+};
+try {
+  const navText = async () => (await page.locator('nav').last().innerText()).replace(/\s+/g, ' ');
+  const n1 = await navText();
+  if (/Salute|Missioni/.test(n1)) throw new Error(`al livello 1 la barra mostra già: ${n1}`);
+  if (await page.locator('.home-missions, .home-missions-empty').count() === 0) throw new Error('al livello 1 le missioni non sono nella Home');
+  await shot('00-livello-1');
+  await editState("st.player.totalXp = 900;"); // livello 3 (soglie vere: 300 / 800 / 1600 / 2800 XP)
+  const n3 = await navText();
+  if (!/Salute/.test(n3) || !/Missioni/.test(n3)) throw new Error(`al livello 3 mancano Salute o Missioni: ${n3}`);
+  const opt = page.locator('button, [role="button"], div, span', { hasText: /^Opzioni$/ }).last();
+  await opt.click({ force: true }); await page.waitForTimeout(150); await opt.click({ force: true });
+  await page.waitForSelector('.land-sheet', { timeout: 4000 });
+  await shot('00-livello-3-tesoro');
+  await page.locator('.land-money input').fill('1200');
+  await page.locator('.land-sheet .ob-cta').click();
+  await page.waitForTimeout(800);
+  report(`Livelli: Lv1 barra "${n1}", Lv3 barra "${n3}", Tesoro con la prima missione`);
+} catch (e) {
+  problems.push(`Livelli: ${e.message}`);
+}
+await editState("st.settings.unlockAll = true; st.player.totalXp = 8;");
+await page.locator('button, [role="button"], div, span', { hasText: /^Eroe$/ }).last().click({ force: true }).catch(() => {});
+await page.waitForTimeout(600);
 // Fluent Emoji (#54): le emoji della Home devono essere disegni (img.fe-emoji) caricati davvero
 await page.waitForTimeout(800);
 const fe = await page.evaluate(() => {
@@ -489,6 +527,11 @@ try {
   await p3.waitForTimeout(2500);
   // App nuova: si salta il benvenuto (#58)
   if (await p3.locator('.ob-skip').count()) { await p3.locator('.ob-skip').first().click(); await p3.waitForTimeout(700); }
+  // e si sblocca tutto (#62): la finestra Giornate tipo si apre dal livello 4
+  await p3.waitForTimeout(800);
+  await p3.evaluate(() => { const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}'); st.settings.unlockAll = true; localStorage.setItem('questlife_state_v2', JSON.stringify(st)); });
+  await p3.reload({ waitUntil: 'networkidle' });
+  await p3.waitForTimeout(1500);
   await p3.mouse.click(6, 6); // chiude un'eventuale finestra del primo avvio
   await p3.waitForTimeout(400);
   await p3.locator('button, [role="button"], div, span', { hasText: /^Opzioni$/ }).last().click({ force: true });
@@ -555,6 +598,10 @@ try {
   const p4 = await ctx.newPage();
   await p4.goto(BASE, { waitUntil: 'networkidle' });
   await p4.waitForFunction(() => document.querySelector('#root')?.children.length > 0, null, { timeout: 15000 });
+  // App nuova: senza benvenuto e con tutte le aree (#58, #62), per vedere la barra completa
+  await p4.waitForTimeout(1200);
+  await p4.evaluate(() => { const st = JSON.parse(localStorage.getItem('questlife_state_v2') || '{}'); st.settings = { ...(st.settings || {}), onboardingDone: true, unlockAll: true }; localStorage.setItem('questlife_state_v2', JSON.stringify(st)); });
+  await p4.reload({ waitUntil: 'networkidle' });
   await p4.waitForTimeout(2500);
   await p4.mouse.click(400, 6);
   await p4.waitForTimeout(300);

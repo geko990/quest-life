@@ -26,7 +26,8 @@ export default function SettingsTab({
   onFixData,
   onRepairStreaks,
   onReset,
-  onApplyPresetDay
+  onApplyPresetDay,
+  unlock = {}
 }) {
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [showPresetModal, setShowPresetModal] = useState(false);
@@ -396,7 +397,8 @@ export default function SettingsTab({
       </div>
 
       <div className="opt-stack">
-        {/* Giornate tipo: in evidenza, con le routine visibili anche a tessera chiusa */}
+        {/* Giornate tipo: in evidenza, con le routine visibili anche a tessera chiusa (dal livello 4, con le Azioni del Giorno, #62) */}
+        {unlock.dailyActions !== false && (<>
         <SettingsGroup
           title={_t("🗓️ Giornate tipo")}
           highlight
@@ -440,6 +442,7 @@ export default function SettingsTab({
             <OptButton variant="primary" onClick={handleOpenNewPreset}>{_t("+ Nuova giornata tipo")}</OptButton>
           </div>
         </SettingsGroup>
+        </>)}
 
         {/* Aspetto */}
         <SettingsGroup title={_t("🎨 Aspetto")} open={expandedGroup === 'theme'} onToggle={() => toggleGroup('theme')}>
@@ -533,15 +536,19 @@ export default function SettingsTab({
 
         {/* Gioco */}
         <SettingsGroup title={_t("🎮 Gioco")} open={expandedGroup === 'gameplay'} onToggle={() => toggleGroup('gameplay')}>
+          {/* L'app che cresce con il livello (#62): togliendolo si torna alle aree del proprio livello */}
+          <SettingRow title={_t("Sblocca tutto")} desc={_t("Mostra subito tutte le aree; spento, l'app cresce con il tuo livello")}>
+            <Toggle checked={safeSettings.unlockAll !== false} onChange={(v) => updateSetting('unlockAll', v)} label={_t("Sblocca tutto")} />
+          </SettingRow>
           <SettingRow title={_t("Penalità giornaliere")} desc={_t("Sottrai XP per abitudini quotidiane saltate")}>
             <Toggle checked={safeSettings.enablePenalties !== false} onChange={(v) => updateSetting('enablePenalties', v)} label={_t("Penalità giornaliere")} />
           </SettingRow>
           <SettingRow title={_t("Modifica avanzata")} desc={_t("Saldi del Tesoro, lista della spesa, cibi e storico")}>
             <Toggle checked={superUser} onChange={(v) => updateSetting('allowPastEdits', v)} label={_t("Modifica avanzata")} />
           </SettingRow>
-          <SettingRow title={_t("Tesoro: totale con investimenti")} desc={_t("Se spento, il totale mostra solo i conti")}>
+          {unlock.finances !== false && <SettingRow title={_t("Tesoro: totale con investimenti")} desc={_t("Se spento, il totale mostra solo i conti")}>
             <Toggle checked={safeSettings.financeTotalIncludesInvestments !== false} onChange={(v) => updateSetting('financeTotalIncludesInvestments', v)} label={_t("Tesoro: totale con investimenti")} />
-          </SettingRow>
+          </SettingRow>}
           <ReminderSettings
             prefs={safeSettings.deadlineReminders || {}}
             onChange={(next) => updateSetting('deadlineReminders', next)}

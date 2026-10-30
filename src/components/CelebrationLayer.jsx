@@ -215,7 +215,8 @@ export default function CelebrationLayer() {
         launchConfetti('burst');
         buzz([30, 60, 30, 60, 80]);
         clearTimeout(closeTimer.current);
-        closeTimer.current = setTimeout(() => setLevelUp(null), LEVELUP_AUTOCLOSE_MS);
+        // Con un'area appena aperta (#62) la medaglia resta finché non si tocca: c'è da leggere
+        if (!(main.lands && main.lands.length)) closeTimer.current = setTimeout(() => setLevelUp(null), LEVELUP_AUTOCLOSE_MS);
       }, LEVELUP_DELAY_MS);
     } else if (type === 'money') {
       const key = `${Date.now()}_${Math.random()}`;
@@ -321,6 +322,12 @@ export default function CelebrationLayer() {
             {levelUp.main.kind === 'player' && levelUp.main.title && (
               <div className="levelup-rank">{_t("Nuovo titolo: {0}", _t(levelUp.main.title))}</div>
             )}
+            {levelUp.main.kind === 'player' && (levelUp.main.lands || []).map(l => (
+              <div key={l.feature} className="levelup-land">
+                <span className="levelup-land-emoji">{l.emoji}</span>
+                <span><small>{_t("Hai sbloccato")}</small><b>{_t(l.name)}</b><span className="txt">{_t(l.text)}</span></span>
+              </div>
+            ))}
             {levelUp.others.length > 0 && (
               <div className="levelup-others">
                 {levelUp.others.map(o => (
@@ -328,7 +335,19 @@ export default function CelebrationLayer() {
                 ))}
               </div>
             )}
-            <div className="levelup-hint">{_t("Tocca per continuare")}</div>
+            {levelUp.main.kind === 'player' && (levelUp.main.lands || []).length > 0 ? (
+              <button
+                type="button"
+                className="levelup-go"
+                onClick={(e) => {
+                  e.stopPropagation(); closeLevelUp();
+                  const l = levelUp.main.lands[levelUp.main.lands.length - 1];
+                  try { window.dispatchEvent(new CustomEvent('ql-land-go', { detail: { feature: l.feature } })); } catch (_) { /* niente */ }
+                }}
+              >{_t("Andiamo a vedere")}</button>
+            ) : (
+              <div className="levelup-hint">{_t("Tocca per continuare")}</div>
+            )}
           </div>
         </div>
       )}

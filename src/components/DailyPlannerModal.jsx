@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getGameDate } from '../utils/helpers';
 
 import { _t } from '../i18n';
+import Emoji from './Emoji';
 import EmojiPickerSheet from './EmojiPickerSheet';
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false, showIntro = false }) {
   const [slots, setSlots] = useState({
@@ -128,40 +129,41 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
       return;
     }
 
+    // Lancio del dado (#62, richiesta dell'utente): il 🎲 cade dall'alto nella finestra, rimbalza e rotola
+    // rallentando; intanto il bonus scorre e si ferma su un valore tra 10% e 100% (D10 × 10).
+    // Tempi: caduta e rotolamento 1,45 s (animazione .dice-fall in index.css), numeri sempre più lenti,
+    // poi il risultato resta 1,6 s e la giornata si salva. Animazioni spente: niente movimento, stessi tempi.
     setIsRolling(true);
-    let rollCount = 0;
-    const maxRolls = 15;
-
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-      osc.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.1);
-    } catch (e) {}
-
-    const interval = setInterval(() => {
-      setDiceResult(Math.floor(Math.random() * 10) + 1);
-      rollCount++;
-
-      if (rollCount >= maxRolls) {
-        clearInterval(interval);
-        const finalRoll = Math.floor(Math.random() * 10) + 1;
-        setDiceResult(finalRoll);
-        setIsRolling(false);
-        setShowResult(true);
-
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-        setTimeout(() => {
-          const safeTargetDate = (typeof targetDate === 'string' && targetDate.length === 10) ? targetDate : null;
-          onSave(slots, finalRoll, safeTargetDate);
-          onClose();
-        }, 1500);
-      }
-    }, 100);
+    setShowResult(false);
+    const finalRoll = Math.floor(Math.random() * 10) + 1;
+    let audio = null;
+    try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; }
+    const tick = (freq, vol = 0.05) => {
+      if (!audio) return;
+      try {
+        const osc = audio.createOscillator(); const g = audio.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, audio.currentTime);
+        g.gain.setValueAtTime(vol, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.06);
+        osc.connect(g); g.connect(audio.destination); osc.start(); osc.stop(audio.currentTime + 0.07);
+      } catch (e) { /* niente suono */ }
+    };
+    let t = 0;
+    [60, 60, 65, 70, 75, 85, 95, 105, 120, 135, 150, 170].forEach((d) => {
+      t += d;
+      setTimeout(() => { setDiceResult(Math.floor(Math.random() * 10) + 1); tick(520 + Math.random() * 160); }, t);
+    });
+    setTimeout(() => {
+      setDiceResult(finalRoll);
+      setIsRolling(false);
+      setShowResult(true);
+      tick(880, 0.09);
+      if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
+      setTimeout(() => {
+        const safeTargetDate = (typeof targetDate === 'string' && targetDate.length === 10) ? targetDate : null;
+        onSave(slots, finalRoll, safeTargetDate);
+        onClose();
+      }, 1600);
+    }, 1450);
   };
 
   const slotThemes = {
@@ -380,18 +382,29 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
         <div className="modal-action-bar" style={{ justifyContent: 'center', minHeight: '78px', paddingTop: '12px', paddingBottom: isLandscape ? '14px' : '20px' }}>
           {showResult ? (
             <div style={{ textAlign: 'center', lineHeight: 1.15 }}>
-              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent-primary)' }}>{diceResult}</div>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e' }}>
                 {_t("+ {0}% XP Bonus! 🎉", diceResult * 10)}</div>
             </div>
           ) : isRolling ? (
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.15 }}>{diceResult}</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)' }}>{_t("Il dado rotola…")}</div>
           ) : (
             <button type="button" className="modal-action-save" onClick={handleRollDice}>
               {_t("🎲 Lancia un D10!")}</button>
           )}
         </div>
       </div>
+
+      {/* Lancio del dado: il 🎲 cade dall'alto e rotola, il bonus si ferma su un valore tra 10% e 100% */}
+      {(isRolling || showResult) && (
+        <div className={`dice-stage${showResult ? ' landed' : ''}`} aria-live="polite">
+          <div className="dice-number" key={showResult ? 'final' : 'roll'}>{diceResult ? `${diceResult * 10}%` : ''}</div>
+          <div className="dice-label">{showResult ? _t("Bonus XP di oggi") : '\u00a0'}</div>
+          <div className="dice-floor">
+            <span className="dice-fall"><Emoji e="🎲" big /></span>
+            <span className="dice-shadow" />
+          </div>
+        </div>
+      )}
 
       {/* Selettore delle emoji (fuori dalla finestra, sopra a tutto) */}
       <div onClick={(e) => e.stopPropagation()}>

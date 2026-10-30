@@ -4,6 +4,8 @@ import BottomNav from './components/BottomNav';
 import Modal from './components/Modal';
 import DailyPlannerModal from './components/DailyPlannerModal';
 import Onboarding from './components/Onboarding';
+import LandIntro from './components/LandIntro';
+import { canUse, landsBetween, isFresh } from './utils/unlocks';
 import MedalCelebrationModal from './components/MedalCelebrationModal';
 import CelebrationLayer from './components/CelebrationLayer';
 import HomeTab from './tabs/HomeTab';
@@ -135,6 +137,23 @@ export default function App() {
   };
 
   const [activeTab, setActiveTab] = useState('home');
+
+  // --- L'app che cresce con il livello (#62, src/utils/unlocks.js) ---
+  const playerLevel = player.level || 1;
+  const allowed = {
+    missions: canUse('missions', playerLevel, settings),
+    nutrition: canUse('nutrition', playerLevel, settings),
+    shopping: canUse('shopping', playerLevel, settings),
+    finances: canUse('finances', playerLevel, settings),
+    dailyActions: canUse('dailyActions', playerLevel, settings),
+    quests: canUse('quests', playerLevel, settings),
+  };
+  const freshLand = (f) => isFresh(f, playerLevel, settings);
+  const navFresh = { nutrition: freshLand('nutrition'), missions: freshLand('missions') || freshLand('quests'), settings: freshLand('finances') };
+  const navHints = freshLand('finances') ? { settings: _t("Tocca due volte") } : {};
+  const markLandSeen = (f) => setSettings(prev => ({ ...prev, seenLands: { ...(prev.seenLands || {}), [f]: true } }));
+  const [landIntro, setLandIntro] = useState(null); // 'nutrition' | 'finances' | 'quests'
+  const TAB_FEATURE = { missions: 'missions', oneshots: 'missions', quests: 'quests', nutrition: 'nutrition', shopping: 'shopping', finances: 'finances' };
   const [fileHandle, setFileHandle] = useState(null);
 
   // Modal control states
@@ -364,6 +383,29 @@ export default function App() {
     return () => window.removeEventListener('contextmenu', handleContextMenu, { capture: true });
   }, []);
 
+  // L'app che cresce (#62): una scheda non ancora aperta riporta all'Eroe; la prima visita di un'area
+  // appena aperta mostra la sua prima missione. "Andiamo a vedere" della medaglia porta lì.
+  useEffect(() => {
+    const f = TAB_FEATURE[activeTab];
+    if (f && !allowed[f]) { setActiveTab('home'); return; }
+    if (f === 'missions' && freshLand('missions')) markLandSeen('missions');
+    if (['nutrition', 'finances', 'quests'].includes(f) && freshLand(f) && settings.onboardingDone !== false) {
+      const t = setTimeout(() => setLandIntro(f), 450);
+      return () => clearTimeout(t);
+    }
+  }, [activeTab, allowed.missions, allowed.nutrition, allowed.shopping, allowed.finances, allowed.quests]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const onGo = (e) => {
+      const f = e.detail && e.detail.feature;
+      if (f === 'nutrition') setActiveTab('nutrition');
+      else if (f === 'finances') setActiveTab('finances');
+      else if (f === 'quests') setActiveTab('quests');
+      else if (f === 'dailyActions') { setActiveTab('home'); markLandSeen('dailyActions'); setPlannerTargetDate(null); setShowPlannerModal(true); }
+    };
+    window.addEventListener('ql-land-go', onGo);
+    return () => window.removeEventListener('ql-land-go', onGo);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // 6. Rollover check (Check if day rolled over)
   useEffect(() => {
     const todayStr = getGameDate(settings.dayStartTime);
@@ -426,8 +468,8 @@ export default function App() {
       setPomodoro(prev => ({ ...prev, sessionsToday: 0 }));
     }
 
-    // Trigger daily planner on new day if enabled
-    if (settings.enableDailyPlanner) {
+    // Trigger daily planner on new day if enabled (solo quando le Azioni del Giorno sono aperte, #62)
+    if (settings.enableDailyPlanner && canUse('dailyActions', player.level || 1, settings)) {
       const hasPrePlannedSlots = (oneshots || []).some(o => o.fromDailyPlan && o.dailyPlanDate === todayStr) ||
         (quests || []).some(q => (q.subquests || []).some(sq => sq.fromDailyPlan && sq.dailyPlanDate === todayStr));
       if (!hasPrePlannedSlots) {
@@ -490,7 +532,7 @@ export default function App() {
       live.totalXp = (live.totalXp || 0) + amount;
       const afterLvl = calculateLevelFromXp(live.totalXp);
       if (afterLvl > beforeLvl) {
-        celebrate('levelup', { kind: 'player', icon: '🏆', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl) });
+        celebrate('levelup', { kind: 'player', icon: '🏆', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl), lands: landsBetween(beforeLvl, afterLvl, settings) });
       }
     } catch (e) { console.error(e); }
 
@@ -1553,7 +1595,7 @@ export default function App() {
   };
 
   // 10. Preset Challenge Activation
-  const handleActivateChallenge = (tmpl) => {
+  const handleActivateChallenge = (tmpl, silent = false) => {
     const subquests = tmpl.generateSubquests();
     const newQuest = {
       id: 'quest_challenge_' + Date.now(),
@@ -1568,7 +1610,7 @@ export default function App() {
       subquests
     };
     setQuests(prev => [...prev, newQuest]);
-    alert(_t("⚔️ CAMPAGNA SFIDA ATTIVATA! \"{0}\" è stata aggiunta alla scheda Campagne.", tmpl.name));
+    if (!silent) alert(_t("⚔️ CAMPAGNA SFIDA ATTIVATA! \"{0}\" è stata aggiunta alla scheda Campagne.", tmpl.name));
   };
 
   // 11. Database Actions (FileSystem API bindings)
@@ -1822,6 +1864,7 @@ export default function App() {
       case 'home':
         return (
           <HomeTab
+            unlock={allowed}
             stats={stats}
             setStats={setStats}
             xpLog={xpLog}
@@ -1882,6 +1925,7 @@ export default function App() {
         return (
           <MissionsTab
             activeTab={activeTab}
+            showQuests={allowed.quests}
             habits={habits}
             setHabits={setHabits}
             oneshots={oneshots}
@@ -1925,6 +1969,7 @@ export default function App() {
       case 'settings':
         return (
           <SettingsTab
+            unlock={allowed}
             settings={settings}
             setSettings={setSettings}
             player={player}
@@ -2094,6 +2139,9 @@ export default function App() {
               avatarType={player.avatarType}
               isLandscape={false}
               badges={{ missions: urgentMissionsCount }}
+              allowed={allowed}
+              fresh={navFresh}
+              hints={navHints}
               onLongPressHome={() => handleOpenModal('oneshot')}
             />
           </div>
@@ -2110,6 +2158,9 @@ export default function App() {
           avatarType={player.avatarType}
           isLandscape={true}
           badges={{ missions: urgentMissionsCount }}
+          allowed={allowed}
+          fresh={navFresh}
+          hints={navHints}
           onLongPressHome={() => handleOpenModal('oneshot')}
         />
       )}
@@ -2231,6 +2282,23 @@ export default function App() {
         targetDate={plannerTargetDate}
         isTomorrow={!!plannerTargetDate && plannerTargetDate !== getGameDate(settings?.dayStartTime || 0)}
       />
+
+      {/* Prima missione di un'area appena aperta (#62) */}
+      {landIntro && (
+        <LandIntro
+          kind={landIntro}
+          water={health?.water?.consumed || 0}
+          onWater={(n) => setHealth(prev => ({ ...prev, water: { ...(prev.water || {}), consumed: n } }))}
+          onBalance={(v) => setFinances(prev => ({ ...prev, balance: v }))}
+          onChallenge={(t) => t && handleActivateChallenge(t, true)}
+          onDone={() => {
+            const kind = landIntro; setLandIntro(null); markLandSeen(kind);
+            const statId = kind === 'nutrition' ? 'str' : kind === 'finances' ? (stats.some(x => x.id === 'mon') ? 'mon' : 'wis') : 'wis';
+            handleRewardXp(statId, 10, false, _t("Prima missione"), null, 1, 'task');
+          }}
+          onClose={() => { const kind = landIntro; setLandIntro(null); markLandSeen(kind); }}
+        />
+      )}
 
       {/* Benvenuto per chi apre l'app la prima volta (#58) */}
       {settings.onboardingDone === false && (

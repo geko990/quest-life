@@ -38,11 +38,16 @@ export default function HomeTab({
   onOpenWorkoutsLog,
   onOpenMealsLog,
   settings = {},
-  isLandscape = false
+  isLandscape = false,
+  unlock = { missions: true, nutrition: true, dailyActions: true }
 }) {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
-  const [cardMode, setCardMode] = useState('tasks'); // 'tasks' or 'pomodoro'
+  const [cardModeState, setCardMode] = useState('tasks'); // 'tasks' or 'pomodoro'
+  // L'app che cresce (#62): al livello 1 la tessera sotto il radar mostra le Missioni; dal 2 la Concentrazione
+  // (timer Pomodoro); dal 4 le Azioni del Giorno con il Pomodoro dentro, come prima
+  const homeMode = !unlock.missions ? 'missions' : !unlock.dailyActions ? 'focus' : 'actions';
+  const cardMode = homeMode === 'focus' ? 'pomodoro' : homeMode === 'missions' ? 'missions' : cardModeState;
   const [selectedTaskId, setSelectedTaskId] = useState('');
   const [pomoSecs, setPomoSecs] = useState(0);
   const [showPomoWheelModal, setShowPomoWheelModal] = useState(false);
@@ -544,7 +549,7 @@ export default function HomeTab({
       </div>
 
       {/* Right Column in Landscape (Azioni del Giorno + Sostentamento) */}
-      <div style={isLandscape ? { gridColumn: '2', gridRow: '1', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 } : { display: 'contents' }}>
+      <div style={isLandscape ? { gridColumn: '2', gridRow: unlock.nutrition ? '1' : '1 / 3', display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 } : { display: 'contents' }}>
         {/* 2. Tessera "Azioni del Giorno" (con Switch In-Place Pomodoro Timer) */}
         <div className="glass-panel" style={isLandscape
           ? { padding: '8px 12px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }
@@ -553,9 +558,9 @@ export default function HomeTab({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px', display: 'flex' }}><Emoji e={cardMode === 'pomodoro' ? '🍅' : '⚔️'} /></span>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', letterSpacing: '0.2px' }}>
-              {cardMode === 'pomodoro' ? _t("Timer Pomodoro") : _t("Azioni del Giorno")}
+              {cardMode === 'pomodoro' ? (homeMode === 'focus' ? _t("Concentrazione") : _t("Timer Pomodoro")) : cardMode === 'missions' ? _t("Missioni") : _t("Azioni del Giorno")}
             </h3>
-            {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
+            {isAllTodayActionsCompleted && cardMode === 'tasks' && (
               <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '10px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontWeight: 'bold', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
                 ✓ {todayActionsList.length}/{todayActionsList.length}
               </span>
@@ -563,8 +568,8 @@ export default function HomeTab({
           </div>
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            {/* Pomodoro Switch Button */}
-            <button
+            {/* Pomodoro Switch Button (solo con le Azioni del Giorno: prima il Pomodoro ha la tessera tutta per sé) */}
+            {homeMode === 'actions' && <button
               type="button"
               onClick={() => setCardMode(prev => prev === 'tasks' ? 'pomodoro' : 'tasks')}
               style={{
@@ -598,7 +603,7 @@ export default function HomeTab({
                 <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 'bold' }}>
                   {_t("Pausa ({0})", formatPomoTime(pomoSecs))}</span>
               )}
-            </button>
+            </button>}
 
             {/* Plus Button */}
             <button
@@ -631,7 +636,7 @@ export default function HomeTab({
         {/* Content Container (Fixed Height 102px for Exact Dimension Matching) */}
         <div style={isLandscape
           ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }
-          : { height: '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+          : { height: homeMode === 'missions' ? '212px' : '102px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
           {cardMode === 'pomodoro' ? (
             /* IN-CARD POMODORO WORKSTATION VIEW */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', padding: '2px 0', boxSizing: 'border-box' }}>
@@ -749,6 +754,9 @@ export default function HomeTab({
               </div>
             </div>
           ) : (
+            cardMode === 'missions' ? (
+              <HomeMissions oneshots={oneshots} completionLog={completionLog} todayStr={todayStr} onToggle={onToggleOneshot} onOpenModal={onOpenModal} />
+            ) :
             /* STANDARD TASKS LIST VIEW */
             todayActionsList.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '14px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', boxSizing: 'border-box' }}>
@@ -837,7 +845,7 @@ export default function HomeTab({
           )}
 
           {/* Banner di pianificazione per domani in sovrapposizione alle 4 azioni completate (Zero scrolling, altezza fissa) */}
-          {isAllTodayActionsCompleted && cardMode !== 'pomodoro' && (
+          {isAllTodayActionsCompleted && cardMode === 'tasks' && (
             <div
               style={{
                 position: 'absolute',
@@ -906,8 +914,8 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* 3. Sostentamento Summary */}
-      {health && (
+      {/* 3. Sostentamento Summary (dal livello 2, con la Salute) */}
+      {health && unlock.nutrition && (
         <div className="glass-panel" style={{ padding: '6px 10px', position: 'relative', ...(isLandscape ? { gridColumn: '2', gridRow: '2' } : {}) }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <h3 style={{ margin: 0, fontSize: '11px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
@@ -1233,5 +1241,39 @@ function RadarEmoji({ e, x, y }) {
       style={{ userSelect: 'none' }}
       onError={() => { markMissing(emojiCode(e)); setFailed(true); }}
     />
+  );
+}
+
+// Livello 1 (#62): le missioni singole stanno nella Home, sotto il radar. Prima quelle da fare, poi quelle
+// fatte oggi; la spunta dà l'XP come nella scheda Missioni.
+function HomeMissions({ oneshots = [], completionLog = {}, todayStr, onToggle, onOpenModal }) {
+  const doneToday = new Set((completionLog[todayStr] && completionLog[todayStr].oneshots) || []);
+  const open = oneshots.filter(o => !o.locked && !o.completed && !doneToday.has(o.id));
+  const done = oneshots.filter(o => !o.locked && (doneToday.has(o.id) || (o.completed && o.welcome)));
+  const list = [...open, ...done.filter(o => !open.includes(o))];
+  if (!list.length) {
+    return (
+      <div className="home-missions-empty">
+        <span className="home-missions-big"><Emoji e="🗺️" big /></span>
+        <p>{_t("Nessuna missione per ora. Cosa vuoi portare a termine?")}</p>
+        <button type="button" className="btn-primary" onClick={() => onOpenModal && onOpenModal('oneshot')}>{_t("+ Nuova missione")}</button>
+      </div>
+    );
+  }
+  return (
+    <div className="home-missions">
+      {list.map(o => {
+        const isDone = doneToday.has(o.id) || o.completed;
+        const stars = o.difficulty || o.stars || 1;
+        return (
+          <div key={o.id} className={`home-mission${isDone ? ' done' : ''}`}>
+            <button type="button" className={`card-checkbox ${isDone ? 'checked' : ''}`} aria-label={_t("Completa")} onClick={() => onToggle && onToggle(o.id)} style={{ width: '22px', height: '22px', flexShrink: 0 }} />
+            <span className="home-mission-emoji"><Emoji e={o.emoji || '💥'} /></span>
+            <span className="home-mission-name">{o.name}</span>
+            <span className="home-mission-stars">{'⭐'.repeat(Math.min(5, stars))}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
