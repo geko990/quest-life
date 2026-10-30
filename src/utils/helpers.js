@@ -74,8 +74,16 @@ export function getXpForLevel(level) {
     return LEVEL_XP_REQUIREMENTS[level] || LEVEL_XP_REQUIREMENTS[LEVEL_CAP];
 }
 
+// XP totali per raggiungere un livello del personaggio. I primi livelli sono più rapidi (#66), perché
+// le aree dell'app si aprono con il livello (#64): con 40-70 XP al giorno di un utente nuovo il 2 arriva
+// in 2-3 giorni, il 3 in circa una settimana, il 4 in 2-3 settimane, il 5 in circa un mese.
+// Dal livello 6 in su le soglie restano quelle di sempre (somma di LEVEL_XP_REQUIREMENTS dall'indice 2),
+// così chi aveva già 2.800 XP o più non cambia livello.
+export const EARLY_PLAYER_XP = { 2: 150, 3: 450, 4: 1000, 5: 1800 };
+
 export function getCumulativeXpForLevel(targetLevel) {
     if (targetLevel <= 1) return 0;
+    if (EARLY_PLAYER_XP[targetLevel] !== undefined) return EARLY_PLAYER_XP[targetLevel];
     const effectiveLevel = Math.min(targetLevel, LEVEL_CAP);
     let total = 0;
     for (let i = 2; i <= effectiveLevel; i++) {

@@ -86,7 +86,7 @@ try {
   if (/Salute|Missioni/.test(n1)) throw new Error(`al livello 1 la barra mostra già: ${n1}`);
   if (await page.locator('.home-missions, .home-missions-empty').count() === 0) throw new Error('al livello 1 le missioni non sono nella Home');
   await shot('00-livello-1');
-  await editState("st.player.totalXp = 900;"); // livello 3 (soglie vere: 300 / 800 / 1600 / 2800 XP)
+  await editState("st.player.totalXp = 900;"); // livello 3 (soglie del personaggio: 150 / 450 / 1000 / 1800 XP, #66)
   const n3 = await navText();
   if (!/Salute/.test(n3) || !/Missioni/.test(n3)) throw new Error(`al livello 3 mancano Salute o Missioni: ${n3}`);
   const opt = page.locator('button, [role="button"], div, span', { hasText: /^Opzioni$/ }).last();
