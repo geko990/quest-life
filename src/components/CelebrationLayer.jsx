@@ -8,7 +8,7 @@ import CampaignComplete from './CampaignComplete';
 //    Non intercetta i tocchi e accumula le spunte fatte in fila (niente attese tra una e l'altra).
 // 2. coriandoli: abitudini di oggi tutte fatte, Azioni del Giorno tutte fatte.
 // 3. medaglia di livello: abilità o personaggio che sale di livello (tocco per chiudere).
-// 4. campagna completata (#67): percorso, giorni, XP e premio (CampaignComplete.jsx). Se nello stesso momento
+// 4. campagna completata (#69): percorso, giorni, XP e premio (CampaignComplete.jsx). Se nello stesso momento
 //    sale anche un livello, la medaglia aspetta che la campagna si chiuda.
 //
 // Tempi (utili anche per rifarle nell'app nativa):

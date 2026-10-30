@@ -943,7 +943,7 @@ export default function App() {
         if (!list.includes(questId)) list.push(questId);
         return { ...prev, [todayStr]: { ...dayLog, quests: list } };
       });
-      // Schermata di campagna completata (#67) al posto dell'avviso del telefono: percorso, giorni, XP, premio
+      // Schermata di campagna completata (#69) al posto dell'avviso del telefono: percorso, giorni, XP, premio
       const recapSubs = updatedSubs.map((sq, idx) => (idx === targetIndex ? { ...sq, justDone: true } : sq));
       celebrate('campaign', buildCampaignRecap(targetQuest, recapSubs, completionLog, todayStr,
         xpReward + 10 + (targetQuest.secondaryTarget ? Math.round(xpReward * 0.33) : 0)));

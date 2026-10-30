@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { _t, getLocale } from '../i18n';
 import { visibleSteps } from '../utils/campaignRecap';
 
-// Campagna completata (#67): al posto dell'avviso del telefono, una tessera nello stile dell'app (colori del
+// Campagna completata (#69): al posto dell'avviso del telefono, una tessera nello stile dell'app (colori del
 // tema, emoji Fluent) che racconta il percorso e mette in risalto il premio scelto dall'utente.
 // Tempi: la tessera entra in 0,45 s; i passi si accendono uno dopo l'altro (90 ms l'uno, da 0,45 s);
 // il traguardo e poi il premio arrivano subito dopo l'ultimo passo. Con Animazioni spente tutto fermo.

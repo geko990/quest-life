@@ -1,4 +1,4 @@
-// Riepilogo di una campagna appena completata (#67), per la schermata di celebrazione.
+// Riepilogo di una campagna appena completata (#69), per la schermata di celebrazione.
 // Solo dati e calcoli, niente grafica (riusabile nell'app nativa, #24).
 //   - i passi (sotto-obiettivi) con il giorno in cui sono stati spuntati, presi dal registro delle giornate
 //     (completionLog[data].subquests contiene "idCampagna:idPasso");

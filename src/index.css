@@ -9050,7 +9050,7 @@ html[data-animations="off"] .gm-overlay, html[data-animations="off"] .gm-sheet {
 .gm-close:active { transform: scale(0.97); }
 
 /* ============================================================
-   CAMPAGNA COMPLETATA (#67): tessera nei colori del tema (CampaignComplete.jsx)
+   CAMPAGNA COMPLETATA (#69): tessera nei colori del tema (CampaignComplete.jsx)
    ============================================================ */
 .cc-overlay {
     position: fixed; inset: 0; z-index: 99994;
