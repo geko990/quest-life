@@ -1681,5 +1681,17 @@
  "Dal livello 4, in Opzioni → 🗓️ Giornate tipo puoi creare i tuoi modelli di giornata (es. «Giorno lavorativo» o «Domenica di ricarica»): una scaletta oraria che azzera la stanchezza decisionale e ti tiene sulla rotta. Le azioni si mettono da sole in ordine di orario: aggiungi pure un'attività più mattutina, finirà al suo posto.": "From level 4, in Options → 🗓️ Day templates you can create your own day models (e.g. «Work day» or «Recharge Sunday»): a timed schedule that removes decision fatigue and keeps you on course. Actions sort themselves by time: feel free to add an earlier activity, it will land in its place.",
  "🏠 Dove Trovi le Missioni": "🏠 Where to Find Your Quests",
  "All'inizio le missioni vivono nella schermata Eroe, sotto il radar. Dal livello 2 hanno una scheda tutta loro nella nav bar, e dal livello 5 arrivano le Campagne.": "At the start quests live on the Hero screen, below the radar. From level 2 they get their own tab in the nav bar, and from level 5 Campaigns arrive.",
- "In Opzioni tocca la tua icona per cambiarla (anche con una foto) e il tuo nome per rinominare l'eroe; in 🎨 Aspetto scegli tema, modalità chiara o scura e colore dei dettagli. Ovunque vedi un'emoji, toccala per sceglierne un'altra.": "In Options tap your icon to change it (even with a photo) and your name to rename the hero; in 🎨 Appearance choose theme, light or dark mode and accent color. Wherever you see an emoji, tap it to pick another one."
+ "In Opzioni tocca la tua icona per cambiarla (anche con una foto) e il tuo nome per rinominare l'eroe; in 🎨 Aspetto scegli tema, modalità chiara o scura e colore dei dettagli. Ovunque vedi un'emoji, toccala per sceglierne un'altra.": "In Options tap your icon to change it (even with a photo) and your name to rename the hero; in 🎨 Appearance choose theme, light or dark mode and accent color. Wherever you see an emoji, tap it to pick another one.",
+ "Campagna completata": "Campaign complete",
+ "1 passo": "1 step",
+ "in un giorno": "in one day",
+ "in {0} giorni": "in {0} days",
+ "Il tuo percorso": "Your journey",
+ "+ 1 passo": "+ 1 step",
+ "+ {0} passi": "+ {0} steps",
+ "Traguardo": "Finish line",
+ "Il tuo premio": "Your reward",
+ "Te lo sei guadagnato: ora goditelo.": "You earned it: now enjoy it.",
+ "Non avevi scelto un premio, ma te ne sei guadagnato uno: concediti qualcosa che ti fa piacere.": "You hadn't picked a reward, but you've earned one: treat yourself to something you enjoy.",
+ "Prepara la prossima campagna con un premio ›": "Plan your next campaign with a reward ›"
 }
