@@ -540,9 +540,6 @@ export default function SettingsTab({
           <SettingRow title={_t("Sblocca tutto")} desc={_t("Mostra subito tutte le aree; spento, l'app cresce con il tuo livello")}>
             <Toggle checked={safeSettings.unlockAll !== false} onChange={(v) => updateSetting('unlockAll', v)} label={_t("Sblocca tutto")} />
           </SettingRow>
-          <SettingRow title={_t("Penalità giornaliere")} desc={_t("Sottrai XP per abitudini quotidiane saltate")}>
-            <Toggle checked={safeSettings.enablePenalties !== false} onChange={(v) => updateSetting('enablePenalties', v)} label={_t("Penalità giornaliere")} />
-          </SettingRow>
           <SettingRow title={_t("Modifica avanzata")} desc={_t("Saldi del Tesoro, lista della spesa, cibi e storico")}>
             <Toggle checked={superUser} onChange={(v) => updateSetting('allowPastEdits', v)} label={_t("Modifica avanzata")} />
           </SettingRow>
