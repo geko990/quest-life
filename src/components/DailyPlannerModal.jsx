@@ -3,6 +3,7 @@ import { getGameDate } from '../utils/helpers';
 
 import { _t } from '../i18n';
 import Emoji from './Emoji';
+import D10Die from './D10Die';
 import EmojiPickerSheet from './EmojiPickerSheet';
 export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, oneshots = [], quests = [], targetDate = null, isTomorrow = false, showIntro = false }) {
   const [slots, setSlots] = useState({
@@ -129,7 +130,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
       return;
     }
 
-    // Lancio del dado (#64, richiesta dell'utente): il 🎲 cade dall'alto nella finestra, rimbalza e rotola
+    // Lancio del dado (#64, richiesta dell'utente): il D10 (D10Die.jsx, la 🎲 ha 6 facce) cade dall'alto nella finestra, rimbalza e rotola
     // rallentando; intanto il bonus scorre e si ferma su un valore tra 10% e 100% (D10 × 10).
     // Tempi: caduta e rotolamento 1,45 s (animazione .dice-fall in index.css), numeri sempre più lenti,
     // poi il risultato resta 1,6 s e la giornata si salva. Animazioni spente: niente movimento, stessi tempi.
@@ -400,7 +401,7 @@ export default function DailyPlannerModal({ isOpen, onClose, onSave, stats, ones
           <div className="dice-number" key={showResult ? 'final' : 'roll'}>{diceResult ? `${diceResult * 10}%` : ''}</div>
           <div className="dice-label">{showResult ? _t("Bonus XP di oggi") : '\u00a0'}</div>
           <div className="dice-floor">
-            <span className="dice-fall"><Emoji e="🎲" big /></span>
+            <span className="dice-fall"><D10Die value={diceResult ? diceResult * 10 : ''} size={92} /></span>
             <span className="dice-shadow" />
           </div>
         </div>

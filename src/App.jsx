@@ -532,7 +532,7 @@ export default function App() {
       live.totalXp = (live.totalXp || 0) + amount;
       const afterLvl = calculateLevelFromXp(live.totalXp);
       if (afterLvl > beforeLvl) {
-        celebrate('levelup', { kind: 'player', icon: '🏆', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl), lands: landsBetween(beforeLvl, afterLvl, settings) });
+        celebrate('levelup', { kind: 'player', icon: '🏆', name: playerDisplayName(player.name), level: afterLvl, title: titleForLevel(afterLvl), newTitle: titleForLevel(afterLvl) !== titleForLevel(beforeLvl), lands: landsBetween(beforeLvl, afterLvl, settings) });
       }
     } catch (e) { console.error(e); }
 

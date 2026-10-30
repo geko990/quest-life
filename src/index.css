@@ -8845,7 +8845,7 @@ html[data-animations="off"] .nav-new-dot, html[data-animations="off"] .nav-hint,
 .dice-label { font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.9); min-height: 16px; }
 .dice-floor { position: relative; width: 200px; height: 130px; margin-top: 8px; }
 .dice-fall { position: absolute; left: 50%; bottom: 14px; width: 92px; height: 92px; margin-left: -46px; font-size: 80px; line-height: 1; display: grid; place-items: center; animation: diceFall 1.45s both; filter: drop-shadow(0 10px 14px rgba(0,0,0,.35)); }
-.dice-fall img { width: 92px; height: 92px; }
+.dice-fall img, .dice-fall svg { width: 92px; height: auto; overflow: visible; }
 /* caduta da fuori dalla finestra, impatto, due rimbalzi sempre più bassi, rotolamento che rallenta */
 @keyframes diceFall {
   0%   { transform: translate(-70px, -420px) rotate(-30deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
@@ -8853,8 +8853,8 @@ html[data-animations="off"] .nav-new-dot, html[data-animations="off"] .nav-hint,
   55%  { transform: translate(6px, -58px) rotate(520deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
   70%  { transform: translate(22px, 0) rotate(610deg) scale(1.04, .95); animation-timing-function: cubic-bezier(0, .55, .45, 1); }
   80%  { transform: translate(30px, -16px) rotate(660deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
-  88%  { transform: translate(36px, 0) rotate(700deg); animation-timing-function: ease-out; }
-  100% { transform: translate(40px, 0) rotate(728deg); }
+  88%  { transform: translate(36px, 0) rotate(712deg); animation-timing-function: ease-out; }
+  100% { transform: translate(40px, 0) rotate(720deg); }
 }
 .dice-shadow { position: absolute; left: 50%; bottom: 6px; width: 84px; height: 14px; margin-left: -42px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.45), transparent 70%); animation: diceShadow 1.45s both; }
 @keyframes diceShadow {
@@ -8865,7 +8865,7 @@ html[data-animations="off"] .nav-new-dot, html[data-animations="off"] .nav-hint,
   80% { transform: translateX(30px) scale(.9); }
   100% { transform: translateX(40px) scale(1); opacity: 1; }
 }
-.dice-stage.landed .dice-fall { animation: none; transform: translate(40px, 0) rotate(728deg); }
+.dice-stage.landed .dice-fall { animation: none; transform: translate(40px, 0) rotate(720deg); }
 .dice-stage.landed .dice-shadow { animation: none; transform: translateX(40px); }
 @media (prefers-reduced-motion: reduce) { .dice-fall, .dice-shadow, .dice-number { animation: none !important; } .dice-fall { transform: none !important; } .dice-shadow { transform: none !important; } }
 html[data-animations="off"] .dice-fall, html[data-animations="off"] .dice-shadow, html[data-animations="off"] .dice-number { animation: none !important; }
@@ -8888,3 +8888,14 @@ html[data-animations="off"] .dice-fall, html[data-animations="off"] .dice-shadow
 @keyframes dayStarPop { from { transform: scale(0) rotate(-40deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
 html[data-animations="off"] .day-recap-bar { transition: none; }
 html[data-animations="off"] .day-recap-star { animation: none; }
+
+/* Medaglia del livello (#64): niente trofeo né "Livello superiore!", dentro la sfera solo "Liv. N";
+   sotto il titolo; la tessera "Hai sbloccato" è centrata */
+.levelup-number { display: inline-flex; align-items: baseline; gap: 5px; }
+.levelup-liv { font-size: 0.48em; font-weight: 800; letter-spacing: 0.02em; }
+.levelup-disc.is-player .levelup-number { font-size: 64px; margin-top: 0; }
+.levelup-title { font-size: 26px; margin-top: 4px; }
+.levelup-rank { margin-top: 4px; }
+.levelup-land { flex-direction: column; align-items: center; text-align: center; gap: 3px; padding: 14px 16px; }
+.levelup-land-emoji { font-size: 40px; margin-bottom: 4px; }
+.levelup-land span.txt { display: block; }

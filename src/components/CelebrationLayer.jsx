@@ -227,24 +227,27 @@ export default function CelebrationLayer() {
           <div className="levelup-card">
             <div className="levelup-medal">
               <div className="levelup-rays" />
-              <div className="levelup-disc">
-                <span className="levelup-icon">{levelUp.main.icon}</span>
-                <span className="levelup-number">{levelUp.main.level}</span>
+              {/* Medaglia (richiesta dell'utente, #64): per il personaggio solo "Liv. N", la sfera dorata basta;
+                  per un'abilità resta la sua icona, che dice quale abilità è salita */}
+              <div className={`levelup-disc${levelUp.main.kind === 'player' ? ' is-player' : ''}`}>
+                {levelUp.main.kind !== 'player' && <span className="levelup-icon">{levelUp.main.icon}</span>}
+                <span className="levelup-number"><span className="levelup-liv">{_t("Liv.")}</span>{levelUp.main.level}</span>
               </div>
             </div>
-            <div className="levelup-kicker">{_t("Livello superiore!")}</div>
-            <div className="levelup-title">
-              {levelUp.main.kind === 'player'
-                ? _t("{0} è ora di livello {1}", levelUp.main.name, levelUp.main.level)
-                : _t("{0} sale al livello {1}", _t(levelUp.main.name), levelUp.main.level)}
-            </div>
-            {levelUp.main.kind === 'player' && levelUp.main.title && (
-              <div className="levelup-rank">{_t("Nuovo titolo: {0}", _t(levelUp.main.title))}</div>
+            {levelUp.main.kind === 'player' ? (
+              <>
+                <div className="levelup-title">{_t(levelUp.main.title || '')}</div>
+                <div className="levelup-rank">{levelUp.main.newTitle ? _t("Nuovo titolo!") : levelUp.main.name}</div>
+              </>
+            ) : (
+              <div className="levelup-title">{_t(levelUp.main.name)}</div>
             )}
             {levelUp.main.kind === 'player' && (levelUp.main.lands || []).map(l => (
               <div key={l.feature} className="levelup-land">
                 <span className="levelup-land-emoji">{l.emoji}</span>
-                <span><small>{_t("Hai sbloccato")}</small><b>{_t(l.name)}</b><span className="txt">{_t(l.text)}</span></span>
+                <small>{_t("Hai sbloccato")}</small>
+                <b>{_t(l.name)}</b>
+                <span className="txt">{_t(l.text)}</span>
               </div>
             ))}
             {levelUp.others.length > 0 && (
