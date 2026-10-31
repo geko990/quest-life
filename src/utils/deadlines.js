@@ -73,7 +73,7 @@ export function getDueStatus(item, now = new Date(), prefs = currentPrefs) {
   return 'later';
 }
 
-// Posto delle missioni in scadenza nell'elenco (#72). Si spostano UNA volta per stato e poi restano
+// Posto delle missioni in scadenza nell'elenco (#73). Si spostano UNA volta per stato e poi restano
 // dove sono: se l'utente le trascina altrove, non si rimettono in cima.
 // - arancione (dal primo promemoria): in cima, appena sotto le missioni del giorno (e le rosse);
 // - rossa (dal giorno prima della scadenza): sopra tutto, anche sopra le missioni del giorno.

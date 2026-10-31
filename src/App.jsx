@@ -1258,7 +1258,7 @@ export default function App() {
     updateAppBadge(settings.deadlineReminders?.badge === false ? 0 : urgentMissionsCount);
     checkDeadlineReminders(oneshots, quests, settings.deadlineReminders);
   }, [urgentMissionsCount, oneshots, quests, settings.deadlineReminders, deadlineTick]);
-  // Missioni in scadenza (#72): arancioni in cima sotto le missioni del giorno, rosse sopra tutto.
+  // Missioni in scadenza (#73): arancioni in cima sotto le missioni del giorno, rosse sopra tutto.
   // Si spostano una volta sola per stato; poi l'utente può riordinarle come vuole.
   useEffect(() => {
     const todayStr = getGameDate(settings.dayStartTime);
