@@ -43,21 +43,23 @@ function getBites(diet) {
   }
   const near = (x, y) => [[0, 0], [7, 0], [-7, 0], [0, 7], [0, -7]].some(([dx, dy]) => inside(x + dx, y + dy));
   const r = rng(diet === 'vegetarian' ? 11 : 5);
-  const out = [];
+  // Griglia sfalsata che copre tutto il cibo; i morsi partono dal bordo (in punti diversi, un po' a caso)
+  // e vanno verso il centro, come si mangia davvero: alla fine resta l'osso / il portauovo.
+  const pts = [];
   const [y0, y1] = diet === 'vegetarian' ? [40, 152] : [10, 158];
+  const [cx, cy] = diet === 'vegetarian' ? [75, 100] : [75, 88];
   let row = 0;
-  for (let y = y0; y <= y1; y += 14, row++) {
-    const pts = [];
-    for (let x = 18 + (row % 2) * 7; x <= 134; x += 14) {
-      const jx = x + (r() - 0.5) * 5, jy = y + (r() - 0.5) * 5;
-      if (near(jx, jy)) pts.push([jx, jy]);
+  for (let y = y0; y <= y1; y += 13, row++) {
+    for (let x = 18 + (row % 2) * 6.5; x <= 134; x += 13) {
+      const jx = x + (r() - 0.5) * 4, jy = y + (r() - 0.5) * 4;
+      if (near(jx, jy)) {
+        const dist = Math.hypot((jx - cx) * 1.15, jy - cy);
+        pts.push({ p: [jx, jy], score: -dist + r() * 22 });
+      }
     }
-    // in ogni fila si morde dai bordi verso il centro, alternando sinistra e destra
-    const ordered = [];
-    let a = 0, b = pts.length - 1, left = row % 2 === 0;
-    while (a <= b) { ordered.push(left ? pts[a++] : pts[b--]); left = !left; }
-    out.push(...ordered);
   }
+  pts.sort((a2, b2) => a2.score - b2.score);
+  const out = pts.map(o => o.p);
   biteCache[diet] = out;
   return out;
 }
@@ -155,9 +157,13 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', foods = []
   const partial = exact - n;
   const done = frac >= 0.999;
   const rot = (i) => (i * 47) % 360;
-  const biteList = (scale) => bites.slice(0, n + 1).map(([x, y], i) => (
-    <Bite key={i} x={x} y={y} rot={rot(i)} s={(i < n ? 1 : partial) * scale} />
-  ));
+  // I morsi vecchi si allargano un po' (niente briciole sospese tra un morso e l'altro), gli ultimi restano
+  // a misura di dente così si vede il bordo del morso
+  const biteList = (scale) => bites.slice(0, n + 1).map(([x, y], i) => {
+    const age = n - i;
+    const grow = i < n ? (age > 3 ? 1.35 : 1) : partial;
+    return <Bite key={i} x={x} y={y} rot={rot(i)} s={grow * scale} />;
+  });
 
   // Ciotola: il mucchio di legumi si abbassa a cucchiaiate mantenendo la forma a cupola
   const cutY = 62 + (142 - 62) * frac;
