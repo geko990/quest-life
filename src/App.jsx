@@ -23,7 +23,7 @@ import { loadFileHandleOnStart, saveDataToFile, verifyPermission, linkDatabaseFi
 import { onUpdateAvailable } from './utils/pwaManager';
 import { useLayoutMode } from './utils/useLayoutMode';
 import { logAppError } from './utils/errorLogger';
-import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPrefs } from './utils/deadlines';
+import { getUrgentItems, updateAppBadge, checkDeadlineReminders, setReminderPrefs, promoteDueItems } from './utils/deadlines';
 
 import { setLanguage, _t, monthLong, playerDisplayName } from './i18n';
 import { applyStatXp, titleForLevel, habitsProgress, dailyActionsProgress, celebrate } from './utils/celebrations';
@@ -1258,6 +1258,12 @@ export default function App() {
     updateAppBadge(settings.deadlineReminders?.badge === false ? 0 : urgentMissionsCount);
     checkDeadlineReminders(oneshots, quests, settings.deadlineReminders);
   }, [urgentMissionsCount, oneshots, quests, settings.deadlineReminders, deadlineTick]);
+  // Missioni in scadenza (#72): arancioni in cima sotto le missioni del giorno, rosse sopra tutto.
+  // Si spostano una volta sola per stato; poi l'utente può riordinarle come vuole.
+  useEffect(() => {
+    const todayStr = getGameDate(settings.dayStartTime);
+    setOneshots(prev => promoteDueItems(prev, { todayStr }));
+  }, [oneshots, settings.deadlineReminders, settings.dayStartTime, deadlineTick]);
 
   // --- Missioni recenti (ultimi 15 giorni): per ricreare al volo task e campagne ripetitive ---
   const RECENT_TEMPLATE_DAYS = 15;

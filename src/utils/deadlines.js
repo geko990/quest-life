@@ -1,7 +1,7 @@
 import { _t, getLocale } from '../i18n';
 // Scadenze di task e campagne.
 // - Promemoria scelti dall'utente (quanti vuole): es. 1 settimana, 1 giorno e 3 ore prima.
-// - Stato: 'attention' (arancione) dal primo promemoria, 'due' (rosso) dal giorno della scadenza,
+// - Stato: 'attention' (arancione) dal primo promemoria, 'due' (rosso) dal giorno prima della scadenza,
 //   'overdue' (rosso) dopo la scadenza. Pallino rosso e numero sull'icona seguono lo stesso stato.
 // Limite di una PWA: le notifiche partono solo mentre l'app è aperta o in background da poco.
 
@@ -60,17 +60,69 @@ export function getDueAt(item) {
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
-// 'overdue' | 'due' (giorno della scadenza) | 'attention' (dal primo promemoria) | 'later' | null
+// 'overdue' | 'due' (dal giorno prima della scadenza) | 'attention' (dal primo promemoria) | 'later' | null
 export function getDueStatus(item, now = new Date(), prefs = currentPrefs) {
   if (!item || item.completed) return null;
   const dueAt = getDueAt(item);
   if (!dueAt) return null;
   const nowMs = now.getTime();
   if (nowMs > dueAt.getTime()) return 'overdue';
-  if (startOfDay(now) >= startOfDay(dueAt)) return 'due';
+  if (startOfDay(dueAt) - startOfDay(now) <= DAY) return 'due';
   const earliest = Math.max(0, ...getReminderOffsets(prefs).map(offsetMs));
   if (nowMs >= dueAt.getTime() - earliest) return 'attention';
   return 'later';
+}
+
+// Posto delle missioni in scadenza nell'elenco (#72). Si spostano UNA volta per stato e poi restano
+// dove sono: se l'utente le trascina altrove, non si rimettono in cima.
+// - arancione (dal primo promemoria): in cima, appena sotto le missioni del giorno (e le rosse);
+// - rossa (dal giorno prima della scadenza): sopra tutto, anche sopra le missioni del giorno.
+// Tra più missioni spostate, prima quella che scade prima. Il segno sta in `dueBump`
+// ({ level, due }): se la scadenza cambia, il segno non vale più e la missione può risalire.
+// Restituisce lo stesso array se non c'è niente da spostare.
+const BUMP_RANK = { attention: 1, urgent: 2 };
+const bumpLevel = (item, now, prefs) => {
+  const st = getDueStatus(item, now, prefs);
+  if (st === 'overdue' || st === 'due') return 'urgent';
+  if (st === 'attention') return 'attention';
+  return null;
+};
+const dueKey = (item) => `${item.dueDate || ''}T${item.dueTime || ''}`;
+
+export function promoteDueItems(list = [], { todayStr, now = new Date(), prefs = currentPrefs } = {}) {
+  if (!Array.isArray(list) || !list.length) return list;
+  const isOpen = (o) => o && !o.completed && !o.locked;
+  const isToday = (o) => !!todayStr && o.fromDailyPlan && o.dailyPlanDate === todayStr;
+  const dueMs = (o) => getDueAt(o)?.getTime() ?? Infinity;
+  const levelOf = (o) => (isOpen(o) ? bumpLevel(o, now, prefs) : null);
+  const bumpedRank = (o) => (o.dueBump && o.dueBump.due === dueKey(o) ? BUMP_RANK[o.dueBump.level] || 0 : 0);
+
+  let items = list;
+  let changed = false;
+  // Prima le rosse, poi le arancioni; a parità, chi scade prima
+  const toMove = list
+    .filter(o => { const lv = levelOf(o); return lv && BUMP_RANK[lv] > bumpedRank(o); })
+    .sort((a, b) => BUMP_RANK[levelOf(b)] - BUMP_RANK[levelOf(a)] || dueMs(a) - dueMs(b));
+
+  for (const target of toMove) {
+    const level = levelOf(target);
+    const rest = items.filter(o => o.id !== target.id);
+    // Si scorre dall'alto finché si trovano elementi che devono restare sopra
+    let at = 0;
+    while (at < rest.length) {
+      const o = rest[at];
+      if (!isOpen(o)) { at++; continue; }
+      const lv = levelOf(o);
+      const placedAbove = lv === 'urgent' && bumpedRank(o) >= 2 ? dueMs(o) <= dueMs(target)
+        : level === 'attention' && (lv === 'urgent' || isToday(o) || (lv === 'attention' && bumpedRank(o) >= 1 && dueMs(o) <= dueMs(target)));
+      if (!placedAbove) break;
+      at++;
+    }
+    const moved = { ...target, dueBump: { level, due: dueKey(target) } };
+    items = [...rest.slice(0, at), moved, ...rest.slice(at)];
+    changed = true;
+  }
+  return changed ? items : list;
 }
 
 // Etichetta breve per la data: Scaduta / Oggi / Domani / data

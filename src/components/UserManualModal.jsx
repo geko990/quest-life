@@ -255,7 +255,7 @@ export default function UserManualModal({ isOpen, onClose, initialChapter = 'rpg
               </Card>
 
               <Card title={_t("⏰ Scadenze e Promemoria")} color="#f97316">
-                {_t("Dai una scadenza alle missioni importanti (l'ora è facoltativa) e scegli in Opzioni → 🎮 Gioco quanti promemoria vuoi e quanto prima. Dal primo promemoria la tessera diventa arancione e sulla nav bar compare il pallino rosso; dal giorno della scadenza la tessera diventa rossa. Nessuna sorpresa, nessuna scadenza dimenticata.")}
+                {_t("Dai una scadenza alle missioni importanti (l'ora è facoltativa) e scegli in Opzioni → 🎮 Gioco quanti promemoria vuoi e quanto prima. Dal primo promemoria la tessera diventa arancione, sale in cima appena sotto le missioni del giorno e sulla nav bar compare il pallino rosso; dal giorno prima della scadenza diventa rossa e sale sopra tutte. Se poi la sposti tu, resta dove l'hai messa. Nessuna sorpresa, nessuna scadenza dimenticata.")}
               </Card>
 
               <Card title={_t("🏔️ Campagne a Tappe (Sfide di Lungo Periodo)")} color="#38bdf8">
