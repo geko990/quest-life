@@ -2140,7 +2140,6 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                 goal={goalG}
                 profile={editData?.profile || {}}
                 meals={editData?.meals || {}}
-                onGrams={(v) => setForm(prev => ({ ...prev, value: v }))}
                 onGoal={(v) => setForm(prev => ({ ...prev, proteinGoal: v }))}
               />
             );

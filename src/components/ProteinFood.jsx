@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { _t } from '../i18n';
-import { PROTEIN_SNAP, proteinStatus, fmtGrams } from '../utils/proteins';
+import { proteinStatus, fmtGrams } from '../utils/proteins';
 
 // Finestra "Apporto Proteico": il cibo si consuma man mano che si registrano proteine.
 //   onnivora → coscia di pollo mangiata a morsi fino all'osso
 //   vegetariana → uovo sodo nel portauovo, mangiato a morsi (si vede il tuorlo) fino al portauovo vuoto
 //   vegana → ciotola di legumi che si svuota fino alla ciotola pulita
 // L'obiettivo è il cibo finito; oltre compare un boccone extra dorato con i grammi in più.
-// Trascinando il dito dall'alto verso il basso si "mangia" (blocchi da 5 g).
+// Non si modifica a mano: segue i grammi dei cibi registrati in "Mangiato oggi".
 
 const VB_W = 150, VB_H = 240;
 const MEAT = 'M 75 14 C 122 14 130 68 120 104 C 112 132 94 148 82 154 L 68 154 C 56 148 38 132 30 104 C 20 68 28 14 75 14 Z';
@@ -40,9 +40,7 @@ const BEANS = (() => {
   return out.sort((a, b) => a.y - b.y);
 })();
 
-export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }) {
-  const svgRef = useRef(null);
-  const [dragging, setDragging] = useState(false);
+export default function ProteinFood({ grams, goal, diet = 'omnivore' }) {
   const gr = Math.max(0, Number(grams) || 0);
   const t = Math.max(1, Number(goal) || 100);
   const status = proteinStatus(gr, t);
@@ -53,7 +51,7 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
   const [shown, setShown] = useState(0);
   const shownRef = useRef(0);
   useEffect(() => {
-    if (dragging || !animOn()) { shownRef.current = gr; setShown(gr); return; }
+    if (!animOn()) { shownRef.current = gr; setShown(gr); return; }
     const from = shownRef.current, to = gr, t0 = performance.now(), dur = from === 0 ? 1000 : 550;
     let raf;
     const tick = (now) => {
@@ -64,41 +62,10 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [gr, dragging]);
+  }, [gr]);
 
   const frac = Math.min(1, shown / t);
   const cutY = top + (bottom - top) * frac;
-
-  const gramsAt = (clientY) => {
-    const svg = svgRef.current;
-    if (!svg) return gr;
-    const r = svg.getBoundingClientRect();
-    const y = (clientY - r.top) * (VB_H / r.height);
-    const f = Math.max(0, Math.min(1, (y - top) / (bottom - top)));
-    return Math.round((f * t) / PROTEIN_SNAP) * PROTEIN_SNAP;
-  };
-  const lastRef = useRef(gr);
-  const setFromPointer = (e) => {
-    let v = Math.min(t, gramsAt(e.clientY));
-    if (gr > t && v === t) return; // oltre l'obiettivo resta il valore finché il dito non risale
-    if (v !== lastRef.current) {
-      lastRef.current = v;
-      try { if (navigator.vibrate) navigator.vibrate(5); } catch (_) {}
-      onChange(v);
-    }
-  };
-  const onDown = (e) => {
-    e.preventDefault();
-    lastRef.current = gr;
-    setDragging(true);
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
-    setFromPointer(e);
-  };
-  const onMove = (e) => { if (dragging) setFromPointer(e); };
-  const onUp = (e) => {
-    setDragging(false);
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
-  };
 
   // Maschera del morso: resta solo ciò che sta sotto il taglio, con il bordo a morsi (tranne la ciotola)
   const bites = diet === 'vegan' ? [] : Array.from({ length: 9 }, (_, i) => 22 + i * 13.5);
@@ -118,18 +85,10 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
   return (
     <div className={`pf-wrap is-${diet}${status.kind !== 'below' ? ' is-goal' : ''}`}>
       <svg
-        ref={svgRef}
         viewBox={`0 0 ${VB_W} ${VB_H}`}
         className="pf-svg"
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onUp}
-        role="slider"
-        aria-valuemin={0}
-        aria-valuemax={t}
-        aria-valuenow={gr}
-        aria-label={_t("Trascina in giù per mangiare")}
+        role="img"
+        aria-label={_t("Proteine di oggi")}
       >
         <defs>
           {mask}

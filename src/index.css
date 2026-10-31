@@ -9308,3 +9308,21 @@ html[data-animations="off"] .st-wrap.is-goal .st-flag, html[data-animations="off
 .wp-food-prot { font-size: 12.5px; font-weight: 900; color: #eab308; white-space: nowrap; }
 [data-mode="light"] .wp-food-prot { color: #a16207; }
 html[data-animations="off"] .pf-done, html[data-animations="off"] .pf-extra { animation: none; }
+/* Finestre della Salute (acqua, passi, proteine) alla stessa altezza: le proteine hanno la lista scorrevole (#74) */
+.wp { min-height: 414px; }
+.wp.is-steps .wp-goal, .wp:not(.is-protein) .wp-goal { margin-top: auto; }
+.wp.is-protein { height: 414px; }
+.wp.is-protein .wp-top { grid-template-columns: 40% 1fr; align-items: center; }
+.wp.is-protein .pf-wrap { max-width: 112px; }
+.wp.is-protein .pf-done { font-size: 18px; }
+.wp.is-protein .pf-extra { right: -18px; }
+.wp.is-protein .pf-extra-emoji { width: 32px; height: 32px; font-size: 18px; }
+.wp.is-protein .wp-goal { padding: 10px 12px; gap: 8px; }
+.wp.is-protein .wp-rec { padding-top: 8px; }
+.wp-hint-left { text-align: left; margin-top: 2px; }
+.wp-foods { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 16px; padding: 10px 10px 8px; }
+.wp-foods-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; }
+.wp-foods-list > * { flex-shrink: 0; }
+.wp-foods .wp-food { background: var(--bg-card); padding: 7px 10px; border-radius: 11px; }
+.wp-foods .wp-food-emoji { font-size: 18px; }
+.wp-foods .wp-foods-empty { background: transparent; border: none; padding: 4px 2px; }
