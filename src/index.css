@@ -9326,3 +9326,10 @@ html[data-animations="off"] .pf-done, html[data-animations="off"] .pf-extra { an
 .wp-foods .wp-food { background: var(--bg-card); padding: 7px 10px; border-radius: 11px; }
 .wp-foods .wp-food-emoji { font-size: 18px; }
 .wp-foods .wp-foods-empty { background: transparent; border: none; padding: 4px 2px; }
+.wp.is-protein .pf-wrap { max-width: 96px; }
+.wp.is-protein .wp-big { font-size: 30px; }
+.wp.is-protein .wp-goal-val { font-size: 14px; margin-top: 1px; }
+.wp.is-protein .wp-stepper button { width: 32px; height: 32px; font-size: 18px; }
+.wp.is-protein .wp-rec-main { font-size: 11px; }
+.wp.is-protein .wp-rec-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wp.is-protein .wp-rec-use { padding: 6px 12px; }
