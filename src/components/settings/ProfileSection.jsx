@@ -2,7 +2,6 @@ import React from 'react';
 import { _t } from '../../i18n';
 import { SettingsGroup, SettingRow, Segmented, SelectValue, OptButton, NumberValue } from './SettingsUI';
 import { DIETS, SEXES, ACTIVITY_LEVELS, GOAL_TYPES, getProfile, applyProfileField, computeGoals } from '../../utils/profile';
-import { glassesToLiters } from '../../utils/hydration';
 import { fmtSteps } from '../../utils/steps';
 
 // Opzioni → "Il tuo profilo": dati di base del giocatore e obiettivi fisici, con i valori consigliati.
@@ -83,7 +82,7 @@ export default function ProfileSection({ health, setHealth, open, onToggle, show
         <SettingRow title={_t("Proteine")} desc={recDesc(`${rec.proteins} g`, cur.proteins === rec.proteins)}>
           <NumberValue value={cur.proteins} unit="g" min={10} max={400} onChange={(v) => setGoal('proteins', v)} label={_t("Proteine")} />
         </SettingRow>
-        <SettingRow title={_t("Acqua")} desc={recDesc(_t("{0} bicchieri", rec.water), cur.water === rec.water) + ` • ${String(glassesToLiters(cur.water)).replace('.', ',')} L`}>
+        <SettingRow title={_t("Acqua")} desc={recDesc(_t("{0} bicchieri", rec.water), cur.water === rec.water) + ` • ${_t("0,2 L l'uno")}`}>
           <NumberValue value={cur.water} unit={_t("bicch.")} min={1} max={40} onChange={(v) => setGoal('water', v)} label={_t("Acqua")} />
         </SettingRow>
         <SettingRow title={_t("Passi")} desc={recDesc(fmtSteps(rec.steps), cur.steps === rec.steps)}>

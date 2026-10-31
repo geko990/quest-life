@@ -198,6 +198,7 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
 
         {diet === 'vegan' && (
           <g>
+            <ellipse cx="75" cy="144" rx="52" ry="11" fill="var(--pf-cup-in)" />
             {/* Legumi nella ciotola: il mucchio si abbassa */}
             <g>
               <g clipPath={`url(#${uid}-mound)`}>
@@ -207,8 +208,7 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
                 ))}
               </g>
             </g>
-            {/* Ciotola */}
-            <ellipse cx="75" cy="144" rx="52" ry="11" fill="var(--pf-cup-in)" />
+            {/* Ciotola (il fondo interno è disegnato prima dei legumi) */}
             <path d="M 23 144 C 25 182 48 204 75 204 C 102 204 125 182 127 144 C 118 152 100 156 75 156 C 50 156 32 152 23 144 Z" fill={`url(#${uid}-cup)`} />
             <ellipse cx="75" cy="208" rx="24" ry="5" fill={`url(#${uid}-cup)`} />
             <path d="M 30 160 C 36 182 52 194 70 197" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" strokeLinecap="round" />
