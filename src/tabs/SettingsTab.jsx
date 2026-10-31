@@ -5,6 +5,7 @@ import { getAppErrors, clearAppErrors, removeAppError, formatErrorsForClipboard,
 import UserManualModal from '../components/UserManualModal';
 import ReminderSettings from '../components/ReminderSettings';
 import { SettingsGroup, SettingRow, Toggle, Segmented, SelectValue, OptButton } from '../components/settings/SettingsUI';
+import ProfileSection from '../components/settings/ProfileSection';
 
 import { _t, getLocale, playerDisplayName } from '../i18n';
 import EmojiField from '../components/EmojiField';
@@ -27,7 +28,9 @@ export default function SettingsTab({
   onRepairStreaks,
   onReset,
   onApplyPresetDay,
-  unlock = {}
+  unlock = {},
+  health,
+  setHealth
 }) {
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [showPresetModal, setShowPresetModal] = useState(false);
@@ -397,6 +400,15 @@ export default function SettingsTab({
       </div>
 
       <div className="opt-stack">
+        {/* Il tuo profilo: dati di base e obiettivi fisici (linea Salute, src/components/settings/ProfileSection.jsx) */}
+        <ProfileSection
+          health={health}
+          setHealth={setHealth}
+          open={expandedGroup === 'profile'}
+          onToggle={() => toggleGroup('profile')}
+          showPhysical={unlock.nutrition !== false}
+        />
+
         {/* Giornate tipo: in evidenza, con le routine visibili anche a tessera chiusa (dal livello 4, con le Azioni del Giorno, #64) */}
         {unlock.dailyActions !== false && (<>
         <SettingsGroup

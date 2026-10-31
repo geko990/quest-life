@@ -1,5 +1,7 @@
 import WaterPanel from './WaterPanel';
 import StepsPanel from './StepsPanel';
+import ProteinPanel from './ProteinPanel';
+import { computeGoals } from '../utils/profile';
 import React, { useState, useEffect } from 'react';
 
 import { _t, getLocale } from '../i18n';
@@ -1879,47 +1881,15 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
             const activity = parseFloat(form.calcActivity || 1.375) || 1.375;
             const goalType = form.calcGoalType || 'lose';
 
-            let bmr = 0;
-            let methodUsed = '';
-
-            // If Fat % is provided (> 0 and < 60), use Katch-McArdle Formula based on Lean Body Mass
-            if (fatPct > 0 && fatPct < 60) {
-              const lbm = currentWeight * (1 - fatPct / 100);
-              bmr = 370 + (21.6 * lbm);
-              methodUsed = `Katch-McArdle (Massa Magra ${lbm.toFixed(1)}kg)`;
-            } else {
-              // Otherwise use Mifflin-St Jeor Formula
-              bmr = (10 * currentWeight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
-              methodUsed = 'Mifflin-St Jeor';
-            }
-
-            const tdee = Math.round(bmr * activity);
-
-            let targetCalories = tdee;
-            let targetProtein = Math.round(currentWeight * 1.6);
-            let targetWater = 8;
-            let targetSteps = 10000;
-            let goalDescription = '';
-
-            if (goalType === 'lose') {
-              targetCalories = Math.round(tdee * 0.82);
-              targetProtein = Math.round(currentWeight * 2.0);
-              targetWater = 10;
-              targetSteps = 10000;
-              goalDescription = `📉 Dimagrimento: TDEE ${tdee} kcal (${methodUsed}) → Target ${targetCalories} kcal (Deficit 18%) • ${targetProtein}g Proteine (2.0g/kg)`;
-            } else if (goalType === 'gain') {
-              targetCalories = Math.round(tdee * 1.12);
-              targetProtein = Math.round(currentWeight * 2.0);
-              targetWater = 9;
-              targetSteps = 8000;
-              goalDescription = `🏋️ Massa Muscolare: TDEE ${tdee} kcal (${methodUsed}) → Target ${targetCalories} kcal (Surplus +12%) • ${targetProtein}g Proteine (2.0g/kg)`;
-            } else {
-              targetCalories = tdee;
-              targetProtein = Math.round(currentWeight * 1.6);
-              targetWater = 8;
-              targetSteps = 10000;
-              goalDescription = `⚖️ Tonificazione: Target ${targetCalories} kcal (${methodUsed}) • ${targetProtein}g Proteine (1.6g/kg)`;
-            }
+            // Stesso calcolo del profilo in Opzioni (src/utils/profile.js): un solo posto per i consigli
+            const g = computeGoals({ sex: gender, age, height, weight: currentWeight, fatPct, activity, goalType });
+            const targetCalories = g.calories, targetProtein = g.proteins, targetWater = g.water, targetSteps = g.steps;
+            const perKg = (targetProtein / currentWeight).toFixed(1);
+            const goalDescription = goalType === 'lose'
+              ? `📉 ${_t("Dimagrimento")}: TDEE ${g.tdee} kcal (${g.method}) → ${targetCalories} kcal (-18%) • ${targetProtein}g ${_t("Proteine")} (${perKg} g/kg)`
+              : goalType === 'gain'
+                ? `🏋️ ${_t("Massa")}: TDEE ${g.tdee} kcal (${g.method}) → ${targetCalories} kcal (+12%) • ${targetProtein}g ${_t("Proteine")} (${perKg} g/kg)`
+                : `⚖️ ${_t("Mantenere")}: ${targetCalories} kcal (${g.method}) • ${targetProtein}g ${_t("Proteine")} (${perKg} g/kg)`;
 
             setForm(prev => ({
               ...prev,
@@ -2161,60 +2131,18 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
 
           // 2) Proteine Modal (health_protein / health_proteins)
           if (field === 'protein' || field === 'proteins') {
-            const mealsObj = editData?.meals || {};
-            const allLoggedFoods = [];
-            const categoryNames = {
-              breakfast: '☕ Colazione',
-              main: '🍽️ Pasti Principali',
-              lunch: '🍽️ Pasti Principali',
-              dinner: '🍽️ Pasti Principali',
-              snack: '🍌 Spuntino',
-              cheat: '🍕 Sgarro'
-            };
-
-            Object.entries(mealsObj).forEach(([catKey, items]) => {
-              if (Array.isArray(items)) {
-                items.forEach(item => {
-                  allLoggedFoods.push({ ...item, catName: categoryNames[catKey] || catKey });
-                });
-              }
-            });
-
-            const totalProteinsLogged = allLoggedFoods.reduce((acc, curr) => acc + (curr.proteins || 0), 0);
-
+            // Cibo che si consuma (secondo la dieta del profilo) + obiettivo con consiglio + cibi di oggi
+            const current = Number(form.value !== undefined ? form.value : (editData?.proteinsCurrent ?? 0)) || 0;
+            const goalG = Number(form.proteinGoal !== undefined ? form.proteinGoal : (editData?.proteinsGoal || 100)) || 100;
             return (
-              <div className="flex flex-col gap-3.5">
-                <div className="bg-[var(--bg-secondary)] p-3.5 rounded-2xl border border-[var(--glass-border)] flex justify-between items-center text-center">
-                  <div className="w-full">
-                    <span className="block text-[10px] text-text-muted font-bold uppercase">{_t("Totale Proteine Oggi")}</span>
-                    <span className="text-base font-bold text-yellow-500">{editData?.proteinsCurrent || totalProteinsLogged}g / {editData?.proteinsGoal || 100}g</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs font-bold text-text-primary">{_t("📋 Alimenti Consumati & Apporto Proteico:")}</span>
-                  {allLoggedFoods.length === 0 ? (
-                    <div className="p-4 text-center rounded-2xl bg-[var(--bg-secondary)] border border-[var(--glass-border)] text-xs text-text-muted italic">
-                      {_t("Nessun alimento registrato oggi nel diario nutrizionale.")}<br />
-                      {_t("Aggiungi cibi dal Registro Pasti per vedere l'apporto proteico automatico!")}</div>
-                  ) : (
-                    <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-                      {allLoggedFoods.map((food, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--glass-border)]">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">{food.emoji || '🍎'}</span>
-                            <div>
-                              <div className="text-xs font-bold text-text-primary">{food.name}</div>
-                              <div className="text-[10px] text-text-muted">{food.catName} ({food.grams || 100}g)</div>
-                            </div>
-                          </div>
-                          <div className="text-xs font-bold text-yellow-500">{_t("+{0}g prot.", food.proteins || 0)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ProteinPanel
+                grams={current}
+                goal={goalG}
+                profile={editData?.profile || {}}
+                meals={editData?.meals || {}}
+                onGrams={(v) => setForm(prev => ({ ...prev, value: v }))}
+                onGoal={(v) => setForm(prev => ({ ...prev, proteinGoal: v }))}
+              />
             );
           }
 

@@ -1527,10 +1527,16 @@ export default function App() {
             goal: formData.stepGoal !== undefined ? Math.max(500, Math.round(Number(formData.stepGoal)) || prev.steps.goal) : prev.steps.goal
           }
         }));
-      } else if (field === 'protein') {
-        setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, goal: formData.value } }));
-      } else if (field === 'proteins') {
-        setHealth(prev => ({ ...prev, proteins: { ...prev.proteins, consumed: formData.value } }));
+      } else if (field === 'protein' || field === 'proteins') {
+        // Finestra "Apporto Proteico": grammi di oggi e obiettivo (solo se cambiati)
+        setHealth(prev => ({
+          ...prev,
+          proteins: {
+            ...prev.proteins,
+            consumed: formData.value !== undefined ? Math.max(0, Math.round(Number(formData.value) * 10) / 10 || 0) : prev.proteins.consumed,
+            goal: formData.proteinGoal !== undefined ? Math.max(5, Math.round(Number(formData.proteinGoal)) || prev.proteins.goal) : prev.proteins.goal
+          }
+        }));
       } else if (field === 'water' || field === 'water_goal') {
         setHealth(prev => ({
           ...prev,
@@ -2004,6 +2010,8 @@ export default function App() {
             onRepairStreaks={handleRepairStreaks}
             onReset={handleReset}
             onApplyPresetDay={handleApplyPresetDay}
+            health={health}
+            setHealth={setHealth}
           />
         );
       case 'finances':

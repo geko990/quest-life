@@ -5,6 +5,7 @@ import { SHOPPING_CATEGORIES, groupShoppingItems, normalizeShoppingName, categor
 import { _t, getLocale, dayShort } from '../i18n';
 import EmojiField from '../components/EmojiField';
 import { getGameDateObj, formatISO } from '../utils/helpers';
+import { getProfile } from '../utils/profile';
 export default function NutritionTab({
   activeTab,
   health,
@@ -1467,7 +1468,7 @@ export default function NutritionTab({
 
             {/* Protein card */}
             <div
-              onClick={() => onOpenModal('health_protein', { proteinsCurrent, proteinsGoal, meals: health.meals })}
+              onClick={() => onOpenModal('health_protein', { proteinsCurrent, proteinsGoal, meals: health.meals, profile: getProfile(health) })}
               className="glass-panel"
               style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >

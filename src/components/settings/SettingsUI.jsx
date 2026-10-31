@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Mattoncini della schermata Opzioni: una sola "grammatica" per tutte le righe.
 // Tessera (titolo con emoji) → righe con titolo, descrizione facoltativa e comando a destra.
@@ -96,4 +96,39 @@ export function SelectValue({ value, options, onChange, label }) {
 // Tre soli tipi di pulsante: primary, secondary, danger.
 export function OptButton({ variant = 'secondary', small, className = '', ...props }) {
   return <button type="button" className={`opt-btn opt-btn--${variant}${small ? ' opt-btn--small' : ''} ${className}`} {...props} />;
+}
+
+// Valore numerico modificabile (età, altezza, peso, obiettivi): casella compatta con unità, si conferma
+// uscendo dal campo o con Invio; accetta la virgola. Testo a 16 px: su iPhone niente zoom.
+export function NumberValue({ value, unit, onChange, min = 0, max = 100000, decimals = 0, label }) {
+  const [draft, setDraft] = useState(null);
+  const fmt = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '';
+    const r = decimals ? Math.round(n * 10 ** decimals) / 10 ** decimals : Math.round(n);
+    return String(r).replace('.', ',');
+  };
+  const commit = () => {
+    if (draft === null) return;
+    const n = parseFloat(String(draft).replace(/\./g, decimals ? '.' : '').replace(',', '.').replace(/[^\d.]/g, ''));
+    setDraft(null);
+    if (!Number.isFinite(n)) return;
+    const v = Math.min(max, Math.max(min, decimals ? Math.round(n * 10 ** decimals) / 10 ** decimals : Math.round(n)));
+    if (v !== Number(value)) onChange(v);
+  };
+  return (
+    <span className="opt-num">
+      <input
+        type="text"
+        inputMode={decimals ? 'decimal' : 'numeric'}
+        aria-label={label}
+        value={draft !== null ? draft : fmt(value)}
+        onFocus={(e) => { setDraft(fmt(value)); setTimeout(() => { try { e.target.select(); } catch (_) {} }, 0); }}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+      />
+      {unit && <span className="opt-num-unit">{unit}</span>}
+    </span>
+  );
 }

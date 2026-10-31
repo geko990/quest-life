@@ -33,16 +33,6 @@ export default function StepsPanel({ steps, goal, profile = {}, onSteps, onGoal 
     setEditing(false);
   };
 
-  // Inserimento manuale sempre visibile, per chi vuole il numero preciso
-  const [manual, setManual] = useState('');
-  const manualVal = parseInt(String(manual).replace(/\D/g, ''), 10);
-  const applyManual = () => {
-    if (!Number.isFinite(manualVal)) return;
-    onSteps(Math.min(200000, manualVal));
-    setManual('');
-    try { document.activeElement?.blur?.(); } catch (_) {}
-  };
-
   const statusText = status.kind === 'below'
     ? _t("Mancano {0} passi", fmt(status.missing))
     : status.kind === 'goal'
@@ -81,23 +71,8 @@ export default function StepsPanel({ steps, goal, profile = {}, onSteps, onGoal 
           <button type="button" className="wp-remove" disabled={s === 0} onClick={() => onSteps(Math.max(0, s - QUICK_STEPS))}>
             {_t("− {0}", fmt(QUICK_STEPS))}
           </button>
-          <div className="wp-hint">{_t("Oppure trascina il dito sul sentiero")}</div>
+          <div className="wp-hint">{_t("Trascina sul sentiero o tocca il numero per scriverlo")}</div>
         </div>
-      </div>
-
-      {/* Inserimento manuale preciso */}
-      <div className="wp-manual">
-        <label htmlFor="wp-manual-steps">✏️ {_t("Passi esatti")}</label>
-        <input
-          id="wp-manual-steps"
-          type="text"
-          inputMode="numeric"
-          placeholder={_t("Es. {0}", fmt(7342))}
-          value={manual}
-          onChange={(e) => setManual(e.target.value.replace(/[^\d.,\s]/g, ''))}
-          onKeyDown={(e) => { if (e.key === 'Enter') applyManual(); }}
-        />
-        <button type="button" disabled={!Number.isFinite(manualVal)} onClick={applyManual}>{_t("Imposta")}</button>
       </div>
 
       {/* Obiettivo giornaliero */}

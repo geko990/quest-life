@@ -1,5 +1,6 @@
 import { DEFAULT_ATTRIBUTES, DEFAULT_ABILITIES } from './constants.js';
 import { calculateLevelFromXp, getXpForLevel } from './helpers.js';
+import { sanitizeProfileFields } from './profile.js';
 import { buildMedalSnapshot } from './medalSummary.js';
 import { sanitizeCardColors } from './accounts.js';
 
@@ -386,6 +387,9 @@ export function sanitizeState(parsed, defaults = getInitialState()) {
   state.health.proteins.consumed = !isNaN(parsedProt)
     ? Math.max(parsedProt, Math.round(totalMealProt * 10) / 10)
     : Math.round(totalMealProt * 10) / 10;
+
+  // Profilo del giocatore: dieta e campi base validi (Opzioni → Il tuo profilo)
+  sanitizeProfileFields(state.health);
 
   if (!state.health.workouts) state.health.workouts = [];
   const totalWorkoutCal = (state.health.workouts || []).reduce((sum, w) => sum + (Number(w.baseCalories) || 0), 0);
