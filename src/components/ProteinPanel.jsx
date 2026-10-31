@@ -5,13 +5,9 @@ import { PROTEIN_GOAL_STEP, recommendedProtein, proteinStatus, fmtGrams } from '
 
 // Contenuto della finestra "Apporto Proteico": cibo che si consuma a sinistra (secondo la dieta del profilo),
 // numeri a destra (non si modificano a mano: seguono i pasti), obiettivo con il consiglio,
-// cibi di oggi in una sotto-tessera scorrevole. Stessa altezza delle finestre di acqua e passi.
+// stessa struttura e altezza delle finestre di acqua e passi. Un tocco sul cibo rivede i morsi di oggi.
 // Stessa struttura e classi delle finestre di acqua e passi (.wp-*), colori delle proteine (.wp.is-protein).
 
-const MEAL_NAMES = {
-  breakfast: 'Colazione', main: 'Pasti principali', lunch: 'Pasti principali', dinner: 'Pasti principali',
-  snack: 'Spuntino', cheat: 'Sgarro'
-};
 
 export default function ProteinPanel({ grams, goal, profile = {}, meals = {}, onGoal }) {
   const g = Math.max(0, Math.round((Number(grams) || 0) * 10) / 10);
@@ -32,19 +28,19 @@ export default function ProteinPanel({ grams, goal, profile = {}, meals = {}, on
     ? _t("Mancano {0} g", fmtGrams(status.missing))
     : status.kind === 'goal' ? doneText : _t("+{0} g extra ✨", fmtGrams(status.extra));
 
+  // Cibi di oggi in ordine di pasto (colazione → sgarro): servono al tocco sul cibo per rivedere i morsi
   const foods = [];
-  Object.entries(meals || {}).forEach(([cat, items]) => {
-    (Array.isArray(items) ? items : []).forEach(it => {
-      if (Number(it.proteins) > 0) foods.push({ ...it, cat });
+  ['breakfast', 'lunch', 'main', 'dinner', 'snack', 'cheat', ...Object.keys(meals || {})].filter((c, i, a) => a.indexOf(c) === i).forEach(cat => {
+    (Array.isArray(meals?.[cat]) ? meals[cat] : []).forEach(it => {
+      if (Number(it.proteins) > 0) foods.push({ emoji: it.emoji, proteins: Number(it.proteins) });
     });
   });
-  foods.sort((a, b) => (Number(b.proteins) || 0) - (Number(a.proteins) || 0));
   const goalLabel = profile.goalType === 'gain' ? _t("massa") : profile.goalType === 'lose' ? _t("dimagrimento") : _t("mantenimento");
 
   return (
     <div className="wp is-protein">
       <div className="wp-top">
-        <ProteinFood grams={g} goal={t} diet={diet} />
+        <ProteinFood grams={g} goal={t} diet={diet} foods={foods} />
 
         <div className="wp-side">
           <div className="wp-label">{_t("Proteine di oggi")}</div>
@@ -53,6 +49,7 @@ export default function ProteinPanel({ grams, goal, profile = {}, meals = {}, on
           <div key={cheer} className={`wp-status is-${status.kind}${cheer ? ' cheer' : ''}`}>{statusText}</div>
 
           <div className="wp-hint wp-hint-left">{_t("Si aggiorna da solo con i cibi di \"Mangiato oggi\"")}</div>
+          {foods.length > 0 && <div className="wp-hint wp-hint-left wp-hint-tap">👆 {_t("Tocca il cibo per rivedere i morsi di oggi")}</div>}
         </div>
       </div>
 
@@ -81,24 +78,6 @@ export default function ProteinPanel({ grams, goal, profile = {}, meals = {}, on
         </div>
       </div>
 
-      {/* Da dove arrivano le proteine di oggi */}
-      <div className="wp-foods">
-        <div className="wp-label">{_t("Dai cibi di oggi")}{foods.length > 0 ? ` • ${foods.length}` : ''}</div>
-        <div className="wp-foods-list">
-        {foods.length === 0 ? (
-          <div className="wp-foods-empty">{_t("Nessun cibo con proteine registrato oggi: i cibi aggiunti in \"Mangiato oggi\" compaiono qui.")}</div>
-        ) : foods.map((f, i) => (
-          <div key={f.id || i} className="wp-food">
-            <span className="wp-food-emoji">{f.emoji || '🍽️'}</span>
-            <div className="wp-food-text">
-              <div className="wp-food-name">{f.name}</div>
-              <div className="wp-food-sub">{_t(MEAL_NAMES[f.cat] || f.cat)}{f.grams ? ` • ${f.grams}` : ''}</div>
-            </div>
-            <span className="wp-food-prot">+{fmtGrams(f.proteins)} g</span>
-          </div>
-        ))}
-        </div>
-      </div>
     </div>
   );
 }
