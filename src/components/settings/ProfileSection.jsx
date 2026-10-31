@@ -38,7 +38,7 @@ export default function ProfileSection({ health, setHealth, open, onToggle, show
   const recDesc = (txt, same) => same ? _t("Come consigliato") : _t("Consigliato: {0}", txt);
 
   return (
-    <SettingsGroup title={_t("👤 Il tuo profilo")} open={open} onToggle={onToggle} summary={!open ? summary : undefined}>
+    <SettingsGroup title={_t("🪪 Il tuo profilo")} open={open} onToggle={onToggle} summary={!open ? summary : undefined}>
       <div className="opt-subhead">{_t("Dati di base")}</div>
       <SettingRow title={_t("Sesso")} desc={_t("Serve per il calcolo del fabbisogno")}>
         <Segmented options={SEXES.map(s => ({ value: s.id, label: _t(s.label) }))} value={p.sex} onChange={(v) => set('sex', v)} />
@@ -93,7 +93,7 @@ export default function ProfileSection({ health, setHealth, open, onToggle, show
           title={_t("Valori consigliati")}
           desc={allMatch ? _t("Stai già usando tutti i valori consigliati") : _t("Calcolati dai tuoi dati: indicazione di massima, non medica")}
         >
-          <OptButton small variant="primary" disabled={allMatch} onClick={useAll}>{_t("Usa tutti")}</OptButton>
+          {!allMatch && <OptButton small variant="primary" onClick={useAll}>{_t("Usa tutti")}</OptButton>}
         </SettingRow>
       </>)}
     </SettingsGroup>

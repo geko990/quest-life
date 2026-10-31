@@ -2250,7 +2250,10 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     if (activeT === 'quest_detail') return { emoji: '🏆', title: _t("Dettaglio Campagna") };
     if (activeT === 'health_goals' || activeT === 'health_goal') return { emoji: '🚩', title: _t("Obiettivi di Salute") };
     if (activeT === 'health_steps') return { emoji: '👟', title: _t("Registro Passi") };
-    if (activeT === 'health_protein' || activeT === 'health_proteins') return { emoji: '🍗', title: _t("Apporto Proteico") };
+    if (activeT === 'health_protein' || activeT === 'health_proteins') {
+      const d = editData?.profile?.diet;
+      return { emoji: d === 'vegan' ? '🫘' : d === 'vegetarian' ? '🥚' : '🍗', title: _t("Apporto Proteico") };
+    }
     if (activeT === 'health_water' || activeT === 'health_water_goal') return { emoji: '🥛', title: _t("Registro Acqua") };
     if (activeT === 'weight') return { emoji: '⚖️', title: _t("Statistiche Peso & Composizione") };
     if (activeT?.startsWith('health_')) return { emoji: '📊', title: _t("Aggiorna Dati") };

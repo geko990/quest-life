@@ -106,6 +106,7 @@ export function NumberValue({ value, unit, onChange, min = 0, max = 100000, deci
     const n = Number(v);
     if (!Number.isFinite(n)) return '';
     const r = decimals ? Math.round(n * 10 ** decimals) / 10 ** decimals : Math.round(n);
+    if (!decimals && Math.abs(r) >= 1000) return String(r).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return String(r).replace('.', ',');
   };
   const commit = () => {

@@ -1749,7 +1749,6 @@
  "Da completare": "To be completed",
  "Come consigliato": "As suggested",
  "Consigliato: {0}": "Suggested: {0}",
- "👤 Il tuo profilo": "👤 Your profile",
  "Dati di base": "Basics",
  "Serve per il calcolo del fabbisogno": "Used to estimate your needs",
  "Età": "Age",
@@ -1782,5 +1781,6 @@
  "Dimagrire": "Lose weight",
  "Mantenere": "Maintain",
  "Massa": "Build muscle",
- "Dimagrimento": "Weight loss"
+ "Dimagrimento": "Weight loss",
+ "🪪 Il tuo profilo": "🪪 Your profile"
 }

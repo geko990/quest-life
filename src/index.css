@@ -9265,8 +9265,9 @@ html[data-animations="off"] .wc-water { transition: none; }
 html[data-animations="off"] .st-wrap.is-goal .st-flag, html[data-animations="off"] .st-wrap.is-goal .st-sun-glow, html[data-animations="off"] .st-star { animation: none; }
 
 /* Opzioni → Il tuo profilo (ProfileSection.jsx): sottotitoli e caselle numeriche */
-.opt-subhead { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); padding: 12px 2px 2px; display: flex; flex-direction: column; gap: 2px; }
-.opt-subhead:first-child { padding-top: 2px; }
+.opt-subhead { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); padding: 16px 16px 8px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 2px; }
+.opt-subhead:first-child { padding-top: 4px; border-top: none; }
+.opt-subhead + .opt-row { border-top: none; }
 .opt-subhead-note { font-size: 10.5px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--text-muted); }
 .opt-num { display: inline-flex; align-items: center; gap: 5px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0 9px 0 4px; height: 34px; }
 .opt-num input { width: 64px; border: none; background: transparent; color: var(--text-primary); font-size: 16px; font-weight: 800; text-align: right; outline: none; font-family: inherit; padding: 0 2px; }

@@ -10,6 +10,7 @@ import { PROTEIN_SNAP, proteinStatus, fmtGrams } from '../utils/proteins';
 // Trascinando il dito dall'alto verso il basso si "mangia" (blocchi da 5 g).
 
 const VB_W = 150, VB_H = 240;
+const MEAT = 'M 75 14 C 122 14 130 68 120 104 C 112 132 94 148 82 154 L 68 154 C 56 148 38 132 30 104 C 20 68 28 14 75 14 Z';
 
 // Altezza del morso: da dove a dove scende il taglio per ogni cibo (0 g → obiettivo)
 const RANGE = {
@@ -108,6 +109,10 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
     </mask>
   );
 
+  // Ciotola: il mucchio di legumi si abbassa mantenendo la forma a cupola
+  const moundH = Math.max(0, 144 - cutY);
+  const moundPath = `M 30 144 C 30 ${144 - moundH * 0.75} ${50} ${cutY} 75 ${cutY} C 100 ${cutY} 120 ${144 - moundH * 0.75} 120 144 Z`;
+
   const extraEmoji = diet === 'vegan' ? '🫘' : diet === 'vegetarian' ? '🥚' : '🍗';
 
   return (
@@ -147,12 +152,14 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
             <stop offset="50%" stopColor="var(--pf-cup-b)" />
             <stop offset="100%" stopColor="var(--pf-cup-a)" />
           </linearGradient>
-          <clipPath id={`${uid}-mound`}><path d="M 30 144 C 30 96 50 64 75 64 C 100 64 120 96 120 144 Z" /></clipPath>
+          <clipPath id={`${uid}-meatclip`}><path d={MEAT} /></clipPath>
+          <clipPath id={`${uid}-mound`}><path d={moundPath} /></clipPath>
         </defs>
 
         {diet === 'omnivore' && (
           <g>
             {/* Osso (sotto la carne: si vede tutto quando la coscia è finita) */}
+            <circle cx="75" cy="56" r="8" fill={`url(#${uid}-bone)`} />
             <path d="M 70 60 L 80 60 L 82 196 L 68 196 Z" fill={`url(#${uid}-bone)`} />
             <circle cx="64" cy="204" r="11" fill={`url(#${uid}-bone)`} />
             <circle cx="86" cy="204" r="11" fill={`url(#${uid}-bone)`} />
@@ -160,13 +167,13 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
             <path d="M 70 60 L 80 60 L 82 196 L 68 196 Z" fill="none" stroke="rgba(150,120,80,0.35)" strokeWidth="1.2" />
             {/* Carne a morsi */}
             <g mask={`url(#${uid}-bite)`}>
-              <path d="M 75 14 C 122 14 130 68 120 104 C 112 132 94 148 82 154 L 68 154 C 56 148 38 132 30 104 C 20 68 28 14 75 14 Z" fill={`url(#${uid}-meat)`} />
+              <path d={MEAT} fill={`url(#${uid}-meat)`} />
               <ellipse cx="58" cy="52" rx="13" ry="20" fill="rgba(255,235,190,0.35)" transform="rotate(-18 58 52)" />
               {[[92, 40], [100, 78], [52, 96], [86, 118], [64, 70], [78, 134]].map(([x, y], i) => (
                 <circle key={i} cx={x} cy={y} r={i % 2 ? 2.2 : 3} fill="rgba(110,50,15,0.35)" />
               ))}
               {/* Taglio del morso: carne chiara sotto la crosta */}
-              <rect x="0" y={cutY} width={VB_W} height="6" fill="#f3d3a6" opacity={frac > 0.01 && frac < 0.99 ? 0.9 : 0} />
+              <rect x="0" y={cutY} width={VB_W} height="7" fill="#f3d3a6" clipPath={`url(#${uid}-meatclip)`} opacity={frac > 0.01 && frac < 0.99 ? 0.9 : 0} />
             </g>
           </g>
         )}
@@ -192,9 +199,9 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', onChange }
         {diet === 'vegan' && (
           <g>
             {/* Legumi nella ciotola: il mucchio si abbassa */}
-            <g mask={`url(#${uid}-bite)`}>
+            <g>
               <g clipPath={`url(#${uid}-mound)`}>
-                <path d="M 30 144 C 30 96 50 64 75 64 C 100 64 120 96 120 144 Z" fill="#6b3a24" />
+                <path d={moundPath} fill="#6b3a24" />
                 {BEANS.map((b, i) => (
                   <ellipse key={i} cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} fill={b.c} transform={`rotate(${b.rot} ${b.x} ${b.y})`} stroke="rgba(0,0,0,0.18)" strokeWidth="0.6" />
                 ))}
