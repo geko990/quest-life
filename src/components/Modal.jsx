@@ -1,7 +1,7 @@
 import WaterPanel from './WaterPanel';
 import StepsPanel from './StepsPanel';
 import ProteinPanel from './ProteinPanel';
-import { computeGoals } from '../utils/profile';
+import { computeGoals, dietEmoji } from '../utils/profile';
 import React, { useState, useEffect } from 'react';
 
 import { _t, getLocale } from '../i18n';
@@ -1643,7 +1643,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
               
               <div className="mt-1 pt-1.5 border-t border-[var(--glass-border)] flex justify-around text-[10px] text-text-secondary font-semibold">
                 <span>{_t("🎯 Calorie:")}{" "}<b className="text-text-primary">{_t("{0} kcal", editData?.calorieGoal || 1600)}</b></span>
-                <span>{_t("🍗 Proteine:")}{" "}<b className="text-yellow-500">{editData?.proteinGoal || 100}g</b></span>
+                <span>{dietEmoji(editData?.diet)} {_t("Proteine:")}{" "}<b className="text-yellow-500">{editData?.proteinGoal || 100}g</b></span>
               </div>
             </div>
 
@@ -2076,7 +2076,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-text-secondary font-bold mb-1">{_t("🍗 Proteine Target (g)")}</label>
+                    <label className="block text-[11px] text-text-secondary font-bold mb-1">{dietEmoji(editData?.diet)} {_t("Proteine Target (g)")}</label>
                     <input
                       type="number"
                       name="proteinGoal"
@@ -2251,7 +2251,7 @@ export default function Modal({ isOpen, onClose, type, editData, onSave, onDelet
     if (activeT === 'health_steps') return { emoji: '👟', title: _t("Registro Passi") };
     if (activeT === 'health_protein' || activeT === 'health_proteins') {
       const d = editData?.profile?.diet;
-      return { emoji: d === 'vegan' ? '🫘' : d === 'vegetarian' ? '🥚' : '🍗', title: _t("Apporto Proteico") };
+      return { emoji: dietEmoji(d), title: _t("Apporto Proteico") };
     }
     if (activeT === 'health_water' || activeT === 'health_water_goal') return { emoji: '🥛', title: _t("Registro Acqua") };
     if (activeT === 'weight') return { emoji: '⚖️', title: _t("Statistiche Peso & Composizione") };

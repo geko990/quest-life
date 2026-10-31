@@ -13,6 +13,11 @@ export const DIETS = [
   { id: 'vegan', label: 'Vegana', emoji: '🫘' },
 ];
 
+// Icona delle proteine secondo l'alimentazione (tessera Proteine, riepilogo del giorno, finestre)
+export function dietEmoji(diet) {
+  return (DIETS.find(d => d.id === diet) || DIETS[0]).emoji;
+}
+
 export const SEXES = [
   { id: 'male', label: 'Uomo' },
   { id: 'female', label: 'Donna' },

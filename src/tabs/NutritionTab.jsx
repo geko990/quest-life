@@ -5,7 +5,7 @@ import { SHOPPING_CATEGORIES, groupShoppingItems, normalizeShoppingName, categor
 import { _t, getLocale, dayShort } from '../i18n';
 import EmojiField from '../components/EmojiField';
 import { getGameDateObj, formatISO } from '../utils/helpers';
-import { getProfile } from '../utils/profile';
+import { getProfile, dietEmoji } from '../utils/profile';
 export default function NutritionTab({
   activeTab,
   health,
@@ -801,7 +801,8 @@ export default function NutritionTab({
       calcAge: health.calcAge !== undefined ? health.calcAge : 28,
       calcHeight: health.calcHeight !== undefined ? health.calcHeight : 175,
       calcActivity: health.calcActivity !== undefined ? health.calcActivity : 1.375,
-      calcFatPct: health.calcFatPct !== undefined ? health.calcFatPct : (fatPct || '')
+      calcFatPct: health.calcFatPct !== undefined ? health.calcFatPct : (fatPct || ''),
+      diet: health.diet
     });
   };
 
@@ -1475,7 +1476,7 @@ export default function NutritionTab({
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{_t("Proteine")}</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', margin: '6px 0 2px 0' }}>
-                  <span style={{ fontSize: '16px' }}>🍗</span>
+                  <span style={{ fontSize: '16px' }}>{dietEmoji(health.diet)}</span>
                   <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{proteinsCurrent}</span>
                   <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>g</span>
                 </div>
@@ -1576,7 +1577,8 @@ export default function NutritionTab({
                     currentFat: fatPct,
                     currentLean: leanPct,
                     calorieGoal,
-                    proteinGoal: proteinsGoal
+                    proteinGoal: proteinsGoal,
+                    diet: health.diet
                   })}
                   style={{ cursor: 'pointer' }}
                 >
@@ -2616,7 +2618,7 @@ export default function NutritionTab({
               : _t("{0} mangiate • {1} bruciate", fmt(dd.consumed), fmt(dd.burned))
           },
           {
-            g: dd.goals[1], icon: '🍗', name: _t("Proteine"),
+            g: dd.goals[1], icon: dietEmoji(health.diet), name: _t("Proteine"),
             value: `${fmt(dd.rec.proteins, 1)} g`, goal: _t("obiettivo {0} g", fmt(proteinsGoal))
           },
           {
@@ -3039,7 +3041,7 @@ export default function NutritionTab({
                     </div>
                     <div style={{ flex: 1, textAlign: 'center' }}>
                       <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block' }}>{_t("Proteine Totali")}</span>
-                      <b style={{ color: '#eab308', fontSize: '13px' }}>🍗 {previewProt}g</b>
+                      <b style={{ color: '#eab308', fontSize: '13px' }}>{dietEmoji(health.diet)} {previewProt}g</b>
                     </div>
                   </div>
                 );

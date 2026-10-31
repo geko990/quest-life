@@ -12,7 +12,7 @@ import { proteinStatus, fmtGrams } from '../utils/proteins';
 
 const VB_W = 150, VB_H = 240;
 const MEAT = 'M 75 14 C 122 14 130 68 120 104 C 112 132 94 148 82 154 L 68 154 C 56 148 38 132 30 104 C 20 68 28 14 75 14 Z';
-const EGG = { cx: 75, cy: 98, rx: 34, ry: 52 };
+const EGG = { cx: 75, cy: 124, rx: 30, ry: 44 };
 
 const animOn = () => {
   try {
@@ -46,8 +46,8 @@ function getBites(diet) {
   // Griglia sfalsata che copre tutto il cibo; i morsi partono dal bordo (in punti diversi, un po' a caso)
   // e vanno verso il centro, come si mangia davvero: alla fine resta l'osso / il portauovo.
   const pts = [];
-  const [y0, y1] = diet === 'vegetarian' ? [40, 152] : [10, 158];
-  const [cx, cy] = diet === 'vegetarian' ? [75, 100] : [75, 88];
+  const [y0, y1] = diet === 'vegetarian' ? [80, 168] : [10, 158];
+  const [cx, cy] = diet === 'vegetarian' ? [75, 128] : [75, 88];
   let row = 0;
   for (let y = y0; y <= y1; y += 13, row++) {
     for (let x = 18 + (row % 2) * 6.5; x <= 134; x += 13) {
@@ -83,9 +83,9 @@ const BEANS = (() => {
   const out = [];
   const colors = ['#8b3a2b', '#c99a4a', '#6b8f3a', '#a0522d', '#d8b56a', '#7a2f24'];
   const r = rng(7);
-  for (let i = 0; i < 70; i++) {
-    const x = 34 + r() * 82;
-    const y = 66 + r() * 78;
+  for (let i = 0; i < 80; i++) {
+    const x = 26 + r() * 98;
+    const y = 96 + r() * 52;
     out.push({ x, y, rx: 5 + r() * 2.5, ry: 3.4 + r() * 1.6, rot: Math.round(r() * 180), c: colors[Math.floor(r() * colors.length)] });
   }
   return out.sort((a, b) => a.y - b.y);
@@ -166,9 +166,9 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', foods = []
   });
 
   // Ciotola: il mucchio di legumi si abbassa a cucchiaiate mantenendo la forma a cupola
-  const cutY = 62 + (142 - 62) * frac;
-  const moundH = Math.max(0, 144 - cutY);
-  const moundPath = `M 30 144 C 30 ${144 - moundH * 0.75} 50 ${cutY} 75 ${cutY} C 100 ${cutY} 120 ${144 - moundH * 0.75} 120 144 Z`;
+  const cutY = 98 + (148 - 98) * frac;
+  const moundH = Math.max(0, 148 - cutY);
+  const moundPath = `M 24 148 C 27 ${148 - moundH * 0.62} 50 ${cutY} 75 ${cutY} C 100 ${cutY} 123 ${148 - moundH * 0.62} 126 148 Z`;
 
   const extraEmoji = diet === 'vegan' ? '🫘' : diet === 'vegetarian' ? '🥚' : '🍗';
 
@@ -243,29 +243,32 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', foods = []
 
         {diet === 'vegetarian' && (
           <g>
-            {/* Portauovo */}
-            <path d="M 40 150 C 42 178 56 190 75 190 C 94 190 108 178 110 150 Z" fill={`url(#${uid}-cup)`} />
-            <rect x="66" y="188" width="18" height="16" fill={`url(#${uid}-cup)`} />
+            {/* Portauovo: piede e apertura (dietro all'uovo) */}
+            <rect x="66" y="186" width="18" height="18" fill={`url(#${uid}-cup)`} />
             <ellipse cx="75" cy="208" rx="30" ry="7" fill={`url(#${uid}-cup)`} />
             <ellipse cx="75" cy="150" rx="35" ry="7" fill="var(--pf-cup-in)" />
             <g className="pf-food" style={{ opacity: done ? 0 : 1 }}>
               {/* Interno: bianco con il tuorlo al centro (si vede nei morsi) */}
               <g mask={`url(#${uid}-flesh)`} clipPath={`url(#${uid}-eggclip)`}>
                 <ellipse cx={EGG.cx} cy={EGG.cy} rx={EGG.rx} ry={EGG.ry} fill="#f4ecdc" />
-                <circle cx="75" cy="106" r="20" fill="#f5b316" />
+                <circle cx="75" cy="130" r="18" fill="#f5b316" />
               </g>
               {/* Superficie dell'uovo */}
               <g mask={`url(#${uid}-crust)`}>
                 <ellipse cx={EGG.cx} cy={EGG.cy} rx={EGG.rx} ry={EGG.ry} fill={`url(#${uid}-egg)`} />
-                <ellipse cx="62" cy="74" rx="8" ry="14" fill="rgba(255,255,255,0.7)" transform="rotate(-15 62 74)" />
+                <ellipse cx="64" cy="104" rx="7" ry="12" fill="rgba(255,255,255,0.7)" transform="rotate(-15 64 104)" />
               </g>
             </g>
+            {/* Davanti del portauovo: copre la parte bassa dell'uovo, che così sta dentro */}
+            <path d="M 40 150 C 42 178 56 190 75 190 C 94 190 108 178 110 150 A 35 7 0 0 1 40 150 Z" fill={`url(#${uid}-cup)`} />
+            <ellipse cx="75" cy="157" rx="30" ry="3" fill="rgba(0,0,0,0.12)" />
             <path d="M 40 150 C 42 178 56 190 75 190 C 94 190 108 178 110 150" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
           </g>
         )}
 
         {diet === 'vegan' && (
           <g>
+            {/* Apertura della ciotola (dietro ai legumi) */}
             <ellipse cx="75" cy="144" rx="52" ry="11" fill="var(--pf-cup-in)" />
             {/* Legumi nella ciotola: il mucchio si abbassa */}
             <g clipPath={`url(#${uid}-mound)`}>
@@ -274,7 +277,7 @@ export default function ProteinFood({ grams, goal, diet = 'omnivore', foods = []
                 <ellipse key={i} cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} fill={b.c} transform={`rotate(${b.rot} ${b.x} ${b.y})`} stroke="rgba(0,0,0,0.18)" strokeWidth="0.6" />
               ))}
             </g>
-            {/* Ciotola */}
+            {/* Davanti della ciotola: copre la base del mucchio, che così sta dentro */}
             <path d="M 23 144 C 25 182 48 204 75 204 C 102 204 125 182 127 144 C 118 152 100 156 75 156 C 50 156 32 152 23 144 Z" fill={`url(#${uid}-cup)`} />
             <ellipse cx="75" cy="208" rx="24" ry="5" fill={`url(#${uid}-cup)`} />
             <path d="M 30 160 C 36 182 52 194 70 197" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" strokeLinecap="round" />
