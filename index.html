@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Life Quest</title>
+  <meta name="apple-mobile-web-app-title" content="Life Quest" />
+  <meta name="application-name" content="Life Quest" />
+  
+  <!-- PWA Setup -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon.png">
+  <link rel="icon" type="image/png" href="./icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f0f1a">
+
+  <!-- Emergency Auto-Recovery Script (Preserves localStorage user data) -->
+  <!-- Recupero da versione vecchia: se la pagina salvata dal service worker è di una versione precedente
+       e i suoi file non ci sono più sul sito (dopo una pubblicazione), il codice dell'app non si carica
+       ("Importing a module script failed" / "Script error."). Allora si tolgono service worker e copie
+       salvate e si ricarica una volta la pagina dalla rete. I dati (localStorage) restano intatti.
+       __qlRecover è usata anche da src/main.jsx quando il caricamento dell'app fallisce. -->
+  <script>
+    (function() {
+      window.__qlRecover = function (reason) {
+        console.error('[Emergency Recovery] Startup Error:', reason);
+        var lastReload = 0;
+        try { lastReload = parseInt(localStorage.getItem('rpg_last_emergency_reload') || '0', 10) || 0; } catch (e) {}
+        var now = Date.now();
+        if (now - lastReload <= 15000) return false; // già provato da poco: niente ricariche a catena
+        try { localStorage.setItem('rpg_last_emergency_reload', now.toString()); } catch (e) {}
+        var jobs = [];
+        if ('serviceWorker' in navigator) {
+          jobs.push(navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function (r) { return r.unregister(); }));
+          }).catch(function () {}));
+        }
+        if ('caches' in window) {
+          jobs.push(caches.keys().then(function(names) {
+            return Promise.all(names.map(function (n) { return caches.delete(n); }));
+          }).catch(function () {}));
+        }
+        var go = function () {
+          var search = window.location.search || '?';
+          window.location.href = window.location.pathname + search + '&v=' + Date.now();
+        };
+        // si ricarica quando la pulizia è finita (al massimo dopo 1,5 s)
+        Promise.race([Promise.all(jobs), new Promise(function (r) { setTimeout(r, 1500); })]).then(go, go);
+        return true;
+      };
+      window.onerror = function(msg) { window.__qlRecover(msg); };
+    })();
+  </script>
+
+  <!-- Google Fonts: caricati senza bloccare la prima immagine (l'apertura compare subito) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap"></noscript>
+
+  <!-- Immagini di avvio di iOS (primo istante, ferme): uguali al primo fotogramma dell'apertura.
+       Si rigenerano con: python3 scripts/make-splash.py -->
+  <!-- SPLASH-LINKS -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1320x2868.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1290x2796.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1284x2778.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1260x2736.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1242x2688.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash/splash-828x1792.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1206x2622.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1179x2556.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1170x2532.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash/splash-1125x2436.png">
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash/splash-750x1334.png">
+  <!-- /SPLASH-LINKS -->
+
+  <!-- Apertura animata (#41). Deve stare qui e non in React: compare prima che l'app sia partita.
+       Mentre l'app si avvia: medaglione con alone che respira, riflesso e scritta (solo transform/opacity,
+       che iOS fa girare anche quando il telefono è occupato ad avviare l'app). Quando la Home è pronta
+       l'anello si riempie (0,5 s, 0,38 s se l'avvio è stato lungo), lampo dorato (0,15 s) e uscita (0,34 s).
+       Durata minima di tutta la sequenza: 1,2 s (scelta dell'utente, solo all'avvio a freddo).
+       Animazioni spente o "Riduci movimento": immagine ferma, nessuna animazione.
+       Colori fissi del marchio (sfondo notte), uguali all'immagine di avvio di iOS: così dal tocco
+       sull'icona all'animazione non c'è nessuno stacco, qualunque sia il tema dell'app. -->
+  <style>
+    html, body { background: #0f0f1a; }
+    #ql-boot {
+      --u: min(1vw, 0.6vh);
+      --qb-bg: #0f0f1a;
+      --qb-track: rgba(167, 139, 250, 0.14);
+      --qb-word: #d9d2ff;
+      position: fixed; inset: 0; z-index: 2147483000;
+      background: var(--qb-bg);
+      display: flex; align-items: center; justify-content: center;
+      -webkit-user-select: none; user-select: none;
+    }
+    #ql-boot .qb-stack { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 7); transform: translateY(calc(var(--u) * -2)); }
+    #ql-boot.qb-screen .qb-stack { position: absolute; left: 0; right: 0; top: var(--qb-top); transform: none; }
+    #ql-boot .qb-emblem { position: relative; width: calc(var(--u) * 44); height: calc(var(--u) * 44); }
+    #ql-boot .qb-track { position: absolute; inset: 0; width: 100%; height: 100%; }
+    #ql-boot .qb-track circle { fill: none; stroke: var(--qb-track); stroke-width: 3.2; }
+    /* anello che si riempie come una barra XP, quando la Home è pronta */
+    #ql-boot .qb-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    #ql-boot .qb-bar { fill: none; stroke: url(#qbGrad); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 295.3; stroke-dashoffset: 295.3; opacity: 0; }
+    #ql-boot.qb-filling .qb-bar { opacity: 1; stroke-dashoffset: 0; transition: stroke-dashoffset var(--qb-fill, 500ms) cubic-bezier(0.35, 0.1, 0.25, 1); }
+    #ql-boot .qb-glow { position: absolute; inset: 8%; border-radius: 50%; background: radial-gradient(circle, rgba(124, 58, 237, 0.55), rgba(124, 58, 237, 0) 68%); opacity: 0.45; will-change: transform, opacity; animation: qbGlow 1.8s ease-in-out infinite; }
+    #ql-boot .qb-tile { position: absolute; inset: 8%; border-radius: 50%; overflow: hidden; isolation: isolate; box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.14), 0 10px 28px rgba(0, 0, 0, 0.45); }
+    #ql-boot .qb-tile img { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+    #ql-boot .qb-tile::after { content: ''; position: absolute; top: -30%; bottom: -30%; left: 0; width: 38%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.38), transparent); transform: translateX(-190%) skewX(-18deg); will-change: transform; animation: qbShine 2.2s ease-in-out 0.35s infinite; }
+    #ql-boot .qb-word { font-family: 'Cinzel', 'Trajan Pro', Georgia, serif; font-weight: 700; font-size: calc(var(--u) * 5.4); line-height: 1; letter-spacing: 0.32em; padding-left: 0.32em; color: var(--qb-word); opacity: 0; will-change: opacity; animation: qbWord 0.6s ease-out 0.25s forwards; }
+    @keyframes qbGlow { 0%, 100% { opacity: 0.45; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.06); } }
+    @keyframes qbShine { 0% { transform: translateX(-190%) skewX(-18deg); } 55%, 100% { transform: translateX(370%) skewX(-18deg); } }
+    @keyframes qbWord { to { opacity: 1; } }
+    #ql-boot.qb-done .qb-ring { animation: qbRingFlash 0.3s ease-out both; }
+    #ql-boot.qb-done .qb-glow { background: radial-gradient(circle, rgba(245, 158, 11, 0.55), rgba(245, 158, 11, 0) 70%); opacity: 1; animation: none; }
+    @keyframes qbRingFlash { 50% { transform: rotate(-90deg) scale(1.07); } 100% { transform: rotate(-90deg) scale(1.02); } }
+    #ql-boot.qb-exit { animation: qbOut 0.34s ease-in forwards; pointer-events: none; }
+    #ql-boot.qb-exit .qb-emblem { animation: qbEmblemOut 0.34s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
+    @keyframes qbOut { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes qbEmblemOut { to { transform: scale(1.18); opacity: 0; } }
+    /* Immagine ferma (riapertura ravvicinata, Animazioni spente, Riduci movimento) */
+    #ql-boot.qb-quiet .qb-glow, #ql-boot.qb-quiet .qb-ring, #ql-boot.qb-quiet .qb-tile::after { display: none; }
+    #ql-boot.qb-quiet .qb-word { animation: none; opacity: 0; }
+    #ql-boot.qb-quiet.qb-exit, #ql-boot.qb-quiet.qb-exit .qb-emblem { animation: qbQuietOut 0.18s ease-out forwards; }
+    @keyframes qbQuietOut { to { opacity: 0; } }
+  </style>
+  <script type="module" crossorigin src="./assets/index-mG7LMysm.js"></script>
+</head>
+<body class="min-h-screen">
+  <div id="ql-boot" aria-hidden="true">
+    <div class="qb-stack">
+      <div class="qb-emblem">
+        <svg class="qb-track" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47"/></svg>
+        <svg class="qb-ring" viewBox="0 0 100 100">
+          <defs><linearGradient id="qbGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="0.6" stop-color="#a78bfa"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
+          <circle class="qb-bar" cx="50" cy="50" r="47"/>
+        </svg>
+        <div class="qb-glow"></div>
+        <div class="qb-tile"><img src="data:image/jpeg;base64,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" alt=""></div>
+      </div>
+      <div class="qb-word">LIFE QUEST</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var boot = document.getElementById('ql-boot');
+      // Ogni avvio a freddo mostra l'apertura (se l'app è ancora aperta in memoria iOS la riprende
+      // senza ricaricarla, quindi non c'è apertura). Ferma solo con Animazioni spente o "Riduci movimento".
+      var quiet = false;
+      try { if (localStorage.getItem('ql_anim') === 'off') quiet = true; } catch (e) {}
+      try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) quiet = true; } catch (e) {}
+      if (quiet) boot.classList.add('qb-quiet');
+
+      // Nell'app installata lo scudo si posiziona con le misure dello SCHERMO, le stesse usate per
+      // l'immagine di avvio di iOS: così dall'immagine ferma all'animazione non c'è nessun salto
+      // (con le misure della finestra c'era un piccolo spostamento).
+      try {
+        var standalone = window.navigator.standalone === true ||
+          (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        if (standalone && window.screen && screen.width) {
+          var sw = Math.min(screen.width, screen.height), sh = Math.max(screen.width, screen.height);
+          if (window.innerWidth <= window.innerHeight) { // in verticale, come l'immagine di iOS
+            var u = Math.min(sw / 100, 0.6 * sh / 100);
+            boot.style.setProperty('--u', u + 'px');
+            boot.style.setProperty('--qb-top', (sh / 2 - 30.2 * u) + 'px');
+            boot.classList.add('qb-screen');
+          }
+        }
+      } catch (e) {}
+
+      var finished = false;
+      var shownAt = (window.performance && performance.now) ? performance.now() : 0; // quando compare l'apertura
+      var MIN_TOTAL = 1200; // durata minima della sequenza (fino alla fine dell'uscita)
+      var EXIT_MS = 340, FLASH_MS = 150;
+      // Chiamata dall'app quando la Home è disegnata (App.jsx) o dall'error boundary
+      window.__qlBootDone = function () {
+        if (finished || !boot) return;
+        finished = true;
+        var exit = function () {
+          boot.classList.add('qb-exit');
+          try { window.dispatchEvent(new Event('ql-boot-exit')); } catch (e) {}
+          setTimeout(function () { if (boot && boot.parentNode) boot.parentNode.removeChild(boot); boot = null; }, quiet ? 200 : EXIT_MS + 20);
+        };
+        if (quiet) { exit(); return; }
+        var now = (window.performance && performance.now) ? performance.now() : shownAt + 1000;
+        var elapsed = now - shownAt;
+        var fill = elapsed > 900 ? 380 : 500;
+        var wait = Math.max(0, MIN_TOTAL - (elapsed + fill + FLASH_MS + EXIT_MS));
+        setTimeout(function () {
+          if (!boot) return;
+          boot.style.setProperty('--qb-fill', fill + 'ms');
+          void boot.offsetWidth;
+          boot.classList.add('qb-filling');
+          setTimeout(function () {
+            if (!boot) return;
+            boot.classList.add('qb-done');
+            setTimeout(exit, FLASH_MS);
+          }, fill);
+        }, wait);
+      };
+      // Rete di sicurezza: se l'app non risponde, l'apertura non resta mai sopra lo schermo
+      setTimeout(function () { window.__qlBootDone(); }, 8000);
+    })();
+  </script>
+  <script>
+    // Immagine di avvio di iOS su misura per questo schermo (#41).
+    // iOS mostra un'immagine ferma dal tocco sull'icona finché la pagina non compare, ma solo se ne trova
+    // una della misura esatta dello schermo (con lo "Zoom schermo" le misure cambiano). Qui la disegniamo
+    // al volo, identica al primo fotogramma dell'apertura, e la offriamo a iOS: la legge quando si fa
+    // "Aggiungi alla schermata Home" da Safari. Le immagini fisse in splash/ restano come riserva.
+    (function () {
+      var standalone = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      if (standalone) return; // dentro l'app installata non serve
+      var img = document.querySelector('#ql-boot .qb-tile img');
+      var src = img && img.src;
+      if (!src) return;
+      var make = function () {
+        try {
+          var dpr = window.devicePixelRatio || 1;
+          var sw = Math.min(screen.width, screen.height), sh = Math.max(screen.width, screen.height);
+          var W = Math.round(sw * dpr), H = Math.round(sh * dpr);
+          var c = document.createElement('canvas'); c.width = W; c.height = H;
+          var g = c.getContext('2d');
+          var icon = new Image();
+          icon.onload = function () {
+            // stessa geometria di #ql-boot: --u = min(1vw, 0.6vh)
+            var u = Math.min(W / 100, 0.6 * H / 100);
+            var E = 44 * u, cx = W / 2;
+            var cy = H / 2 - 2 * u - (E + 7 * u + 5.4 * u) / 2 + E / 2;
+            g.fillStyle = '#0f0f1a'; g.fillRect(0, 0, W, H);
+            g.beginPath(); g.arc(cx, cy, 0.47 * E, 0, Math.PI * 2);
+            g.lineWidth = 0.032 * E; g.strokeStyle = 'rgba(167, 139, 250, 0.14)'; g.stroke();
+            var r = 0.42 * E;
+            g.save();
+            g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 28 * dpr; g.shadowOffsetY = 10 * dpr;
+            g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#0a0915'; g.fill();
+            g.restore();
+            g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.clip();
+            g.drawImage(icon, cx - r, cy - r, 2 * r, 2 * r); g.restore();
+            g.beginPath(); g.arc(cx, cy, r - dpr / 2, 0, Math.PI * 2);
+            g.lineWidth = dpr; g.strokeStyle = 'rgba(167, 139, 250, 0.14)'; g.stroke();
+            var link = document.createElement('link');
+            link.rel = 'apple-touch-startup-image';
+            link.href = c.toDataURL('image/png');
+            document.head.appendChild(link);
+          };
+          icon.src = src;
+        } catch (e) {}
+      };
+      // dopo l'avvio, quando il telefono è libero
+      window.addEventListener('load', function () { setTimeout(make, 1500); });
+    })();
+  </script>
+  <div id="root"></div>
+</body>
+</html>
