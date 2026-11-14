@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Join the Life Quest beta</title>
+<meta name="description" content="Try Life Quest free on iPhone or Android: the habit tracker RPG where every small thing you do levels up one hero, you.">
+<meta property="og:title" content="Join the Life Quest beta">
+<meta property="og:description" content="Free beta on iPhone and Android. No account, no ads, your data stays on your phone.">
+<meta property="og:image" content="https://geko990.github.io/quest-life/icon.png">
+<meta name="theme-color" content="#140c2c">
+<link rel="icon" href="../icon.png">
+<style>
+  :root { --night: #0d0b1a; --deep: #1c1240; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.12);
+    --ink: #f4f1ff; --soft: rgba(236,230,255,.74); --lilac: #a78bfa; --gold: #f5c86a; --amber: #f59e0b; --ok: #34d399; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; min-height: 100vh; color: var(--ink); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(120% 60% at 50% 0%, #3a1c7a 0%, #22124a 40%, #120c26 75%, var(--night) 100%) fixed, var(--night); }
+  main { max-width: 520px; margin: 0 auto; padding: max(28px, env(safe-area-inset-top)) 16px 48px; }
+  .top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; color: #e9ddff; }
+  .brand img { width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 0 24px rgba(124,58,237,.6); }
+  .lang { color: var(--lilac); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; }
+  h1 { font-size: 32px; line-height: 1.1; margin: 28px 0 10px; letter-spacing: -.02em; }
+  h1 em { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 600; color: var(--gold); }
+  .sub { color: var(--soft); margin: 0 0 22px; }
+  .tabs { display: flex; gap: 8px; margin: 0 0 16px; }
+  .tabs button { flex: 1; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--soft); font-family: inherit; font-weight: 600; font-size: 15px; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: var(--card); color: var(--ink); border-color: var(--lilac); }
+  .step { display: flex; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin: 0 0 12px; }
+  .num { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800;
+    background: linear-gradient(135deg, var(--amber), var(--gold)); color: #2a1a00; }
+  .step.done .num { background: var(--ok); color: #05301f; }
+  .step.done .num span { display: none; } .step.done .num::after { content: "✓"; }
+  .step h2 { font-size: 17px; margin: 3px 0 4px; }
+  .step p { margin: 0 0 12px; color: var(--soft); font-size: 15px; }
+  .step .body { flex: 1; min-width: 0; }
+  a.btn { display: block; text-align: center; text-decoration: none; padding: 13px 16px; border-radius: 14px; font-weight: 700;
+    background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; box-shadow: 0 10px 24px rgba(124,58,237,.35); }
+  a.btn.alt { background: transparent; color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+  .note { font-size: 13px; color: var(--soft); margin: 10px 0 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin: 20px 0 12px; }
+  .card h2 { font-size: 17px; margin: 0 0 4px; }
+  .card p { margin: 0 0 12px; color: var(--soft); font-size: 15px; }
+  .url { font-weight: 700; color: var(--gold); word-break: break-all; }
+  footer { margin-top: 28px; text-align: center; color: var(--soft); font-size: 13px; }
+  footer a { color: var(--lilac); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="brand"><img src="../icon.png" alt="">Life Quest</div>
+    <button class="lang" id="lang" type="button">Italiano</button>
+  </div>
+
+  <h1 data-t="title"></h1>
+  <p class="sub" data-t="sub"></p>
+
+  <div class="tabs" id="tabs">
+    <button type="button" data-os="ios">iPhone</button>
+    <button type="button" data-os="android">Android</button>
+  </div>
+
+  <section data-os-panel="ios">
+    <div class="step" data-step="ios1"><div class="num"><span>1</span></div><div class="body">
+      <h2 data-t="ios1"></h2><p data-t="ios1p"></p>
+      <a class="btn alt" href="https://apps.apple.com/app/testflight/id899247664" data-t="ios1b"></a>
+    </div></div>
+    <div class="step" data-step="ios2"><div class="num"><span>2</span></div><div class="body">
+      <h2 data-t="ios2"></h2><p data-t="ios2p"></p>
+      <a class="btn" href="https://testflight.apple.com/join/5K5D4dH8" data-t="ios2b"></a>
+    </div></div>
+  </section>
+
+  <section data-os-panel="android">
+    <div class="step" data-step="and1"><div class="num"><span>1</span></div><div class="body">
+      <h2 data-t="and1"></h2><p data-t="and1p"></p>
+      <a class="btn" href="https://groups.google.com/g/life-quest-testers" data-t="and1b"></a>
+      <p class="note" data-t="and1n"></p>
+    </div></div>
+    <div class="step" data-step="and2"><div class="num"><span>2</span></div><div class="body">
+      <h2 data-t="and2"></h2><p data-t="and2p"></p>
+      <a class="btn" href="https://play.google.com/apps/testing/com.geko990.lifequest" data-t="and2b"></a>
+    </div></div>
+    <div class="step" data-step="and3"><div class="num"><span>3</span></div><div class="body">
+      <h2 data-t="and3"></h2><p data-t="and3p"></p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.geko990.lifequest" data-t="and3b"></a>
+      <p class="note" data-t="and3n"></p>
+    </div></div>
+  </section>
+
+  <div class="card" id="desk" hidden>
+    <h2 data-t="desk"></h2>
+    <p><span data-t="deskp"></span> <span class="url">geko990.github.io/quest-life/join</span></p>
+  </div>
+
+  <div class="card">
+    <h2 data-t="chat"></h2><p data-t="chatp"></p>
+    <a class="btn alt" href="https://t.me/+okaFZ2vDCVI4Njhi" data-t="chatb"></a>
+  </div>
+
+  <footer>
+    <p data-t="foot"></p>
+    <p><a href="../privacy.html" data-t="privacy"></a></p>
+  </footer>
+</main>
+<script>
+(function () {
+  var T = {
+    en: {
+      title: 'Join the <em>adventure.</em>',
+      sub: 'Life Quest is a habit tracker RPG: every small thing you do levels up one hero, you. The beta is free on iPhone and Android.',
+      ios1: 'Get TestFlight', ios1p: 'Apple’s free app for trying apps before they hit the App Store. Skip this if you already have it.', ios1b: 'TestFlight on the App Store',
+      ios2: 'Open the invite', ios2p: 'Tap “Accept”, then “Install”. That’s it!', ios2b: 'Join the beta on iPhone',
+      and1: 'Join the testers’ group', and1p: 'Use the same Google account you use on the Play Store, then tap “Join group”.', and1b: 'Open the testers’ group',
+      and1n: 'If Google asks you to sign in, do it and come back to this page: your progress is saved here.',
+      and2: 'Become a tester', and2p: 'Tap “Become a tester”.', and2b: 'Become a tester',
+      and3: 'Install Life Quest', and3p: 'Download it from Google Play like any other app.', and3b: 'Install from Google Play',
+      and3n: 'The app can take a few minutes to appear: if so, try again shortly. Please stay in the test for at least 14 days: Google needs that before Life Quest can be published for everyone.',
+      desk: 'On a computer?', deskp: 'Open this page on your phone:',
+      chat: 'Testers’ chat', chatp: 'Ideas, bugs, questions: tell us everything, every idea helps Life Quest grow.', chatb: 'Join the chat on Telegram',
+      foot: 'Free during the beta · no account · your data stays on your phone', privacy: 'Privacy', lang: 'Italiano', htmlLang: 'en',
+      doc: 'Join the Life Quest beta'
+    },
+    it: {
+      title: 'Unisciti <em>all’avventura.</em>',
+      sub: 'Life Quest è un gioco di ruolo per le abitudini: ogni piccolo gesto fa crescere un eroe, tu. La beta è gratuita su iPhone e Android.',
+      ios1: 'Scarica TestFlight', ios1p: 'L’app gratuita di Apple per provare le app prima che arrivino sull’App Store. Se ce l’hai già, salta questo passo.', ios1b: 'TestFlight sull’App Store',
+      ios2: 'Apri l’invito', ios2p: 'Tocca «Accetta» e poi «Installa». Fatto!', ios2b: 'Entra nella beta su iPhone',
+      and1: 'Entra nel gruppo dei tester', and1p: 'Usa lo stesso account Google del Play Store, poi tocca «Partecipa al gruppo».', and1b: 'Apri il gruppo dei tester',
+      and1n: 'Se Google ti chiede di accedere, fallo e poi torna su questa pagina: i passi fatti restano segnati qui.',
+      and2: 'Diventa tester', and2p: 'Tocca «Diventa un tester».', and2b: 'Diventa tester',
+      and3: 'Installa Life Quest', and3p: 'Scaricala da Google Play come qualsiasi altra app.', and3b: 'Installa da Google Play',
+      and3n: 'L’app può metterci qualche minuto a comparire: in quel caso riprova poco dopo. Resta nel test almeno 14 giorni: Google lo chiede prima di pubblicare Life Quest per tutti.',
+      desk: 'Sei al computer?', deskp: 'Apri questa pagina dal telefono:',
+      chat: 'Chat dei tester', chatp: 'Idee, errori, domande: raccontaci tutto, ogni idea fa crescere Life Quest.', chatb: 'Entra nella chat su Telegram',
+      foot: 'Gratis durante la beta · niente account · i dati restano sul tuo telefono', privacy: 'Privacy', lang: 'English', htmlLang: 'it',
+      doc: 'Unisciti alla beta di Life Quest'
+    }
+  };
+  function get(k) { try { return localStorage.getItem('lq_join_' + k); } catch (e) { return null; } }
+  function put(k, v) { try { localStorage.setItem('lq_join_' + k, v); } catch (e) {} }
+
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(ua);
+  var q = new URLSearchParams(location.search);
+  var lang = q.get('lang') || get('lang') || ((navigator.language || 'en').toLowerCase().indexOf('it') === 0 ? 'it' : 'en');
+  if (!T[lang]) lang = 'en';
+  var os = q.get('os') || (isIOS ? 'ios' : isAndroid ? 'android' : 'ios');
+
+  function render() {
+    var t = T[lang];
+    document.documentElement.lang = t.htmlLang;
+    document.title = t.doc;
+    document.querySelectorAll('[data-t]').forEach(function (el) { el.innerHTML = t[el.getAttribute('data-t')]; });
+    document.getElementById('lang').textContent = t.lang;
+  }
+  function showOS(o) {
+    os = o;
+    document.querySelectorAll('[data-os]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-os') === o ? 'true' : 'false'); });
+    document.querySelectorAll('[data-os-panel]').forEach(function (s) { s.hidden = s.getAttribute('data-os-panel') !== o; });
+  }
+  function mark(step) {
+    var el = document.querySelector('[data-step="' + step + '"]');
+    if (el) el.classList.add('done');
+  }
+
+  document.getElementById('lang').addEventListener('click', function () { lang = lang === 'it' ? 'en' : 'it'; put('lang', lang); render(); });
+  document.querySelectorAll('[data-os]').forEach(function (b) { b.addEventListener('click', function () { showOS(b.getAttribute('data-os')); }); });
+  document.querySelectorAll('[data-step]').forEach(function (s) {
+    var k = s.getAttribute('data-step');
+    if (get(k) === '1') mark(k);
+    var a = s.querySelector('a.btn');
+    if (a) a.addEventListener('click', function () { put(k, '1'); setTimeout(function () { mark(k); }, 400); });
+  });
+  if (!isIOS && !isAndroid) document.getElementById('desk').hidden = false;
+
+  render();
+  showOS(os);
+})();
+</script>
+</body>
+</html>
