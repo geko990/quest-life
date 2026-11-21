@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Una cartolina da Life Quest</title>
+<meta name="description" content="Un Lume ti ha mandato una cartolina da Life Quest. Aprila nell'app: finisce tra i tuoi Compagni.">
+<meta property="og:title" content="Una cartolina da Life Quest per te">
+<meta property="og:description" content="Aprila in Life Quest: finisce tra i tuoi Compagni di viaggio. Niente account, i dati restano sul telefono.">
+<meta property="og:image" content="https://geko990.github.io/quest-life/scheda/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Taccuino consegna una cartolina: «Hai posta!»">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#140c2c">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icon.png">
+<!-- Pagina ponte dei Compagni di viaggio (16/11/2026). La Scheda sta tutta dopo il «#» dell'indirizzo, che il browser non
+     manda mai al server: qui si legge e si mostra soltanto, poi «Apri in Life Quest» passa lo stesso codice all'app
+     (lifequest://scheda#…). Decodifica copiata da src/utils/companions.js. Nessun dato esce da questa pagina. -->
+<style>
+  :root { --night: #0d0b1a; --card: rgba(255,255,255,.07); --line: rgba(255,255,255,.12);
+    --ink: #f8fafc; --soft: rgba(248,250,252,.68); --faint: rgba(248,250,252,.45); --gold: #facc15; --goldt: #fde68a; --lilac: #a78bfa; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; min-height: 100vh; color: var(--ink); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(120% 60% at 50% 0%, var(--glow, #3a1c7a) 0%, #22124a 40%, #120c26 75%, var(--night) 100%) fixed, var(--night); }
+  main { max-width: 480px; margin: 0 auto; padding: max(24px, env(safe-area-inset-top)) 16px 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; color: #e9ddff; }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .kick { margin: 26px 0 14px; color: var(--soft); font-size: 15px; }
+  /* la cartolina ha sempre la stessa forma orizzontale delle cartoline dell'app (Compagni, scelta dell'utente del 16/11) */
+  .card { position: relative; border-radius: 22px; padding: 14px 16px; overflow: hidden; display: flex; flex-direction: column; gap: 10px;
+    /* lo stesso fondo dell'immagine della Scheda e delle cartoline nell'app: notte, bagliore della luce, stelline */
+    background: radial-gradient(80% 95% at 28% 18%, var(--g1, rgba(124,58,237,.42)), transparent 70%),
+      radial-gradient(55% 70% at 92% 100%, var(--g2, rgba(245,158,11,.14)), transparent 70%),
+      linear-gradient(180deg, var(--n1, #120d24) 0%, var(--n2, #21143d) 55%, var(--n3, #0d0a1a) 100%);
+    border: 1px solid var(--line); box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+  .stamp { position: absolute !important; top: 12px; right: 14px; width: 46px; height: 58px; border-radius: 3px; overflow: hidden;
+    background: rgba(255,255,255,.12); transform: rotate(2deg); }
+  .stamp img { position: absolute; left: 7px; top: 9px; width: 60px; height: 68px; opacity: .55; }
+  .stamp span { position: absolute; inset: 3px; border: 1.2px dashed rgba(253,230,138,.75); border-radius: 2px; }
+  .star { position: absolute; border-radius: 50%; background: #fff; pointer-events: none; }
+  .card > *:not(.star):not(.stamp) { position: relative; }
+  .top { display: flex; align-items: center; gap: 14px; height: 82px; }
+  .ring { flex: none; width: 76px; height: 76px; border-radius: 50%; border: 3px solid #f59e0b; padding: 2px; }
+  .face { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.08); font-size: 36px; line-height: 1; }
+  .face.figure { font-size: 42px; }
+  .face.bust { align-items: flex-end; font-size: 52px; }
+  .face.bust span { margin-bottom: -8px; }
+  .face img { width: 100%; height: 100%; object-fit: cover; }
+  .who { min-width: 0; flex: 1; padding-right: 50px; display: flex; flex-direction: column; gap: 4px; }
+  h1 { margin: 0; font-size: 19px; line-height: 1.2; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .title { font-family: Georgia, serif; letter-spacing: .08em; text-transform: uppercase; color: var(--goldt); font-size: 11.5px; font-weight: 700; }
+  .lv { padding: 1px 8px; border-radius: 999px; background: var(--gold); color: #5b2a06; font-weight: 800; font-size: 11px; }
+  .motto { margin: 0; font-style: italic; font-size: 12.5px; line-height: 1.3; color: rgba(248,250,252,.78);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .skills { display: flex; flex-wrap: nowrap; gap: 8px; height: 45px; padding: 0 4px 3px 0; }
+  .sk { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: 1 1 0; max-width: 42px; aspect-ratio: 1; border-radius: 13px; background: rgba(255,255,255,.08); font-size: 21px; line-height: 1; }
+  .sk b { position: absolute; right: -4px; bottom: -4px; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 10px; background: var(--gold); color: #5b2a06;
+    border: 2px solid #1a1230; font-size: 10.5px; font-weight: 800; line-height: 16px; text-align: center; }
+  .foot { display: flex; align-items: flex-end; gap: 10px; height: 62px; }
+  .note { flex: none; width: 62%; margin: 0; text-align: right; transform: rotate(-7deg) translateY(-2px); padding-right: 2px;
+    font-family: "Bradley Hand", "Segoe Print", "Comic Neue", cursive; font-weight: 700; font-size: 16px; line-height: 1.2;
+    color: #fde68a; text-shadow: 0 1px 2px rgba(0,0,0,.45); overflow-wrap: anywhere; }
+  .date { flex: 1; text-align: left; font-size: 11px; color: var(--faint); }
+  .btn { display: block; width: 100%; margin: 20px 0 0; padding: 15px; border: 0; border-radius: 14px; text-align: center; text-decoration: none;
+    background: var(--gold); color: #1a1306; font: inherit; font-weight: 800; font-size: 17px; cursor: pointer; }
+  .btn.alt { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 700; font-size: 15px; margin-top: 12px; }
+  .hint { color: var(--faint); font-size: 13px; text-align: center; margin: 14px 4px 0; }
+  .empty { margin-top: 40px; text-align: center; color: var(--soft); }
+  footer { margin-top: 30px; text-align: center; color: var(--faint); font-size: 12px; }
+  footer a { color: var(--lilac); }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><img src="../icon.png" alt="">Life Quest</div>
+  <div id="ok" hidden>
+    <p class="kick" id="kick"></p>
+    <div class="card" id="card">
+      <div class="stamp" aria-hidden="true"><img src="../emblem.png" alt=""><span></span></div>
+      <div class="top">
+        <div class="ring"><div class="face" id="face"></div></div>
+        <div class="who">
+          <h1 id="name"></h1>
+          <div class="rank"><span class="title" id="title"></span><span class="lv" id="lv"></span></div>
+          <p class="motto" id="motto" hidden></p>
+        </div>
+      </div>
+      <div class="skills" id="skills"></div>
+      <div class="foot"><div class="date" id="date"></div><p class="note" id="note" hidden></p></div>
+    </div>
+    <a class="btn" id="open" href="#"></a>
+    <a class="btn alt" id="get" href="../join/"></a>
+    <p class="hint" id="hint"></p>
+  </div>
+  <p class="empty" id="bad" hidden></p>
+  <footer><p id="foot"></p><p><a href="../privacy.html" id="priv"></a></p></footer>
+</main>
+<script>
+(function () {
+  var en = !/^it\b/i.test(navigator.language || '');
+  var T = en ? {
+    doc: 'A postcard from Life Quest', kick: '{0} sent you a postcard ✨', open: 'Open in Life Quest', get: 'Don’t have Life Quest yet? Try it',
+    hint: 'In the app, the postcard goes into your Fellows. It stays on your phone.', bad: 'This link looks incomplete. Ask them to send the postcard again.',
+    lv: 'Lv. {0}', sent: 'Postcard from {0}', foot: 'No account · no ads · your data stays on your phone', priv: 'Privacy'
+  } : {
+    doc: 'Una cartolina da Life Quest', kick: '{0} ti ha mandato una cartolina ✨', open: 'Apri in Life Quest', get: 'Non hai ancora Life Quest? Provala',
+    hint: 'Nell’app la cartolina finisce tra i tuoi Compagni. Resta sul tuo telefono.', bad: 'Questo link sembra incompleto. Chiedi di mandarti di nuovo la cartolina.',
+    lv: 'Liv. {0}', sent: 'Cartolina del {0}', foot: 'Niente account · niente pubblicità · i dati restano sul telefono', priv: 'Privacy'
+  };
+  var f = function (s, a) { return s.replace('{0}', a); };
+  var $ = function (id) { return document.getElementById(id); };
+  document.documentElement.lang = en ? 'en' : 'it';
+  document.title = T.doc; $('foot').textContent = T.foot; $('priv').textContent = T.priv;
+
+  var A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_', R = {};
+  for (var i = 0; i < 64; i++) { R[A[i]] = i; R['ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'[i]] = i; }
+  function bytes(s) { var out = [], buf = 0, bits = 0; for (var k = 0; k < s.length; k++) { var v = R[s[k]]; if (v === undefined) return null; buf = (buf << 6) | v; bits += 6; if (bits >= 8) { bits -= 8; out.push((buf >> bits) & 255); } } return out; }
+  function std(b) { var s = ''; for (var k = 0; k < b.length; k++) s += String.fromCharCode(b[k]); return btoa(s); }
+  function utf8(b) { var s = ''; for (var k = 0; k < b.length; k++) s += '%' + (b[k] < 16 ? '0' : '') + b[k].toString(16); return decodeURIComponent(s); }
+  function txt(v, n) { return typeof v === 'string' ? v.slice(0, n) : ''; }
+
+  var code = (location.hash || '').slice(1), c = null, photo = null;
+  try {
+    if (!/^[A-Za-z0-9_\-.]+$/.test(code)) throw 0;
+    var parts = code.split('.'); var b = bytes(parts[0]); if (!b) throw 0;
+    c = JSON.parse(utf8(b)); if (!c || c.v !== 1 || !c.n) throw 0;
+    if (parts[1]) { var pb = bytes(parts[1]); if (pb && pb.length) photo = 'data:image/jpeg;base64,' + std(pb); }
+  } catch (e) { c = null; }
+  if (!c) { $('bad').hidden = false; $('bad').textContent = T.bad; return; }
+
+  $('ok').hidden = false;
+  var name = txt(c.n, 40);
+  $('kick').textContent = f(T.kick, name);
+  if (/^#[0-9a-f]{6}$/i.test(c.c || '')) {
+    var h = parseInt(c.c.slice(1), 16), rgb = [(h >> 16) & 255, (h >> 8) & 255, h & 255];
+    var mix = function (base, k) { return 'rgb(' + rgb.map(function (v, j) { return Math.round(base[j] + (v - base[j]) * k); }).join(',') + ')'; };
+    const cs = $('card').style, rgba = (a) => 'rgba(' + rgb.join(',') + ',' + a + ')';
+    cs.setProperty('--n1', mix([7, 5, 14], .1)); cs.setProperty('--n2', mix([11, 8, 24], .17)); cs.setProperty('--n3', mix([6, 4, 11], .05));
+    cs.setProperty('--g1', rgba(.42)); cs.setProperty('--g2', rgba(.18));
+    document.body.style.setProperty('--glow', mix([18, 12, 38], .45));
+    $('card').querySelector('.ring').style.borderColor = c.c;
+  }
+  (function () { var x = 11, r = function () { x = (x * 9301 + 49297) % 233280; return x / 233280; };
+    for (var k = 0; k < 22; k++) { var d = document.createElement('i'), sz = 1.5 + r() * 2; d.className = 'star';
+      d.style.cssText = 'left:' + (r() * 100) + '%;top:' + (r() * 100) + '%;width:' + sz + 'px;height:' + sz + 'px;opacity:' + (0.25 + r() * 0.5);
+      $('card').appendChild(d); } })();
+  if (photo) { var im = document.createElement('img'); im.src = photo; im.alt = ''; $('face').appendChild(im); }
+  else {
+    // inquadratura come nell'app (src/utils/avatar.js, avatarFraming): mezzobusti in basso e grandi, figure intere al centro
+    var av = txt(c.a, 16) || '🧙', person = false;
+    try { person = /\p{Emoji_Modifier_Base}/u.test(av); } catch (e) {}
+    var full = '🧜🧚🧝🧞🧟🧛🦸🦹🧘🏃🚶🧍🧎💃🕺🤸⛹🏋🚴🚵🤾🤽🏌🏄🏊🤹🧗🏇🤺⛷🏂🤼👯🛀🛌🧖'.indexOf(String.fromCodePoint(av.codePointAt(0))) >= 0;
+    if (person) $('face').classList.add(full ? 'figure' : 'bust');
+    var sp = document.createElement('span'); sp.textContent = av; $('face').appendChild(sp);
+  }
+  $('lv').textContent = f(T.lv, Number(c.l) || 1);
+  $('name').textContent = name;
+  // il titolo è una parola italiana dell'app: in inglese non si mostra
+  if (!en) $('title').textContent = txt(c.t, 40);
+  if (c.m) { $('motto').hidden = false; $('motto').textContent = '“' + txt(c.m, 120) + '”'; }
+  (Array.isArray(c.s) ? c.s.slice(0, 6) : []).forEach(function (s) {
+    if (!Array.isArray(s)) return;
+    var el = document.createElement('span'); el.className = 'sk';
+    el.textContent = txt(s[0], 16);
+    var lv = document.createElement('b'); lv.textContent = String(Number(s[s.length - 1]) || 1); el.appendChild(lv);
+    $('skills').appendChild(el);
+  });
+  if (c.d) { $('note').hidden = false; $('note').textContent = txt(c.d, 80); }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(c.w || '')) {
+    var p = c.w.split('-').map(Number);
+    try { $('date').textContent = f(T.sent, new Date(p[0], p[1] - 1, p[2]).toLocaleDateString(en ? 'en' : 'it', { day: 'numeric', month: 'long', year: 'numeric' })); } catch (e) {}
+  }
+  $('open').textContent = T.open; $('open').href = 'lifequest://scheda#' + code;
+  $('get').textContent = T.get; $('get').href = '../join/?da=' + encodeURIComponent(name.slice(0, 24));
+  $('hint').textContent = T.hint;
+})();
+</script>
+</body>
+</html>
