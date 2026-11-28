@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Quest · Privacy</title>
+<style>
+  :root { --bg: #0f0f1a; --card: #1a1a2e; --text: #f1f5f9; --sub: #cbd5e1; --accent: #a78bfa; }
+  @media (prefers-color-scheme: light) { :root { --bg: #f4f3f9; --card: #ffffff; --text: #1c1930; --sub: #46425c; --accent: #6d28d9; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 28px 0 8px; color: var(--accent); }
+  p, li { color: var(--sub); }
+  b { color: var(--text); }
+  .card { background: var(--card); border-radius: 16px; padding: 16px 20px; margin: 16px 0; }
+  .lang { display: flex; gap: 12px; margin: 8px 0 24px; }
+  .lang a { color: var(--accent); font-weight: 700; text-decoration: none; }
+  hr { border: 0; border-top: 1px solid rgba(127,127,127,.25); margin: 48px 0; }
+  small { color: var(--sub); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Life Quest · Privacy</h1>
+  <small>Ultimo aggiornamento: 19 novembre 2026 · Last updated: 19 November 2026</small>
+  <div class="lang"><a href="#it">Italiano</a><a href="#en">English</a></div>
+
+  <section id="it">
+    <div class="card"><b>In breve:</b> i tuoi dati restano sul tuo telefono. Life Quest non ha account, non ha un server con i tuoi dati, non mostra pubblicità e non ti traccia.</div>
+
+    <h2>Dove stanno i tuoi dati</h2>
+    <p>Abitudini, missioni, diario della salute, Tesoro, profilo e tutto il resto sono salvati <b>solo sul tuo dispositivo</b> (nell'app, o nel browser per la versione web). Non li riceviamo e non li vediamo. Se cancelli l'app, li cancelli anche tu: per tenerli puoi esportare un backup dalle Opzioni.</p>
+
+    <h2>Apple Salute e Health Connect</h2>
+    <p>Solo se lo attivi tu (Profilo → «Collega a Salute» / «Health Connect»), Life Quest <b>legge</b> passi, energia attiva, acqua, peso e massa grassa per compilare il diario della salute; su iPhone legge anche sonno, minuti di consapevolezza e allenamenti, e su Android il sonno, per spuntare da sole le abitudini che colleghi a questi dati. <b>Scrive</b> l'acqua e il peso che registri. Questi dati restano sul telefono, non vengono mai inviati a noi né a terzi, <b>non sono usati per pubblicità o marketing</b> e non finiscono nella copia su iCloud. Se togli il permesso o azzeri i dati dell'app, Life Quest smette di leggerli; quelli già nel diario si cancellano con «Azzera tutti i dati» o cancellando l'app. Puoi revocare il permesso in qualsiasi momento dalle impostazioni del telefono.</p>
+
+    <h2>Calendario del ciclo</h2>
+    <p>Se lo usi, le date del ciclo e quello che annoti restano solo sul tuo telefono, come il resto del diario della salute. Non li riceviamo e non li condividiamo con nessuno.</p>
+
+    <h2>Calendario, promemoria, foto e fotocamera</h2>
+    <p>Se dai il permesso, l'app legge calendario e promemoria per proporti le azioni della giornata, e usa foto o fotocamera per il ritratto del tuo Lume e per leggere le etichette dei cibi. Tutto avviene sul telefono.</p>
+
+    <h2>Microfono e voce</h2>
+    <p>Quando parli a Taccuino, l'app usa il microfono solo mentre ascolta e trasforma la voce in testo per segnare pasti, acqua, missioni e spese. Se il telefono lo permette, la trascrizione avviene sul dispositivo; altrimenti la fa il servizio vocale del sistema (Apple o Google), come quando detti con la tastiera. Life Quest non registra e non conserva l'audio.</p>
+
+    <h2>Quando l'app usa internet</h2>
+    <ul>
+      <li><b>Ricerca dei cibi</b>: il testo che cerchi viene inviato a Open Food Facts per trovare i valori nutrizionali.</li>
+      <li><b>Quotazioni del Tesoro</b>: i simboli dei titoli che segui vengono inviati a Yahoo Finance (tramite il servizio intermediario allorigins.win) per leggere i prezzi.</li>
+      <li><b>Cartoline e luci tra Compagni</b>: una cartolina viaggia solo dentro il link che mandi tu (con l'app di messaggi che scegli); nessun server la riceve. Le <b>luci</b> che mandi a un compagno passano invece da una casella su Cloudflare, ma partono <b>già cifrate dal tuo telefono</b>: il server non può leggerle, non sa chi le manda né a chi vanno, vede solo un numero di casella casuale e una busta chiusa. La busta si cancella appena chi la riceve apre l'app, e comunque dopo 30 giorni. Per evitare abusi il server conta per un giorno quante luci partono dallo stesso indirizzo IP, senza collegarlo alle buste. Le chiavi per aprire le buste esistono solo sui telefoni. Se tieni acceso l'<b>avviso delle luci</b> (Opzioni), accanto al numero della tua casella il server conserva il codice di notifica del telefono e la lingua: quando arriva una busta manda, tramite il servizio di notifiche di Expo (e da lì Apple o Google), un avviso uguale per tutti («Ti è arrivata un po' di luce»), senza mittente né contenuto. Il codice si cancella se spegni l'avviso, e comunque da solo dopo 60 giorni senza aprire l'app.</li>
+      <li><b>Aggiornamenti</b>: l'app scarica le nuove versioni da Expo (app per iPhone e Android) o dal sito (versione web) e controlla se c'è un'app nuova da installare. In queste richieste non ci sono i tuoi dati.</li>
+      <li><b>Segnalazione di errori</b>: solo se tocchi «Segnala errore» (Opzioni → Guida e info), l'app prepara un'email per lo sviluppatore con la descrizione tecnica degli errori (versione, modello e sistema del telefono, dove è successo; i testi che hai scritto nell'app vengono esclusi). La leggi e la mandi tu dalla tua app di posta; nulla parte da solo. Nella versione web si apre invece una segnalazione su GitHub già compilata, che pubblichi tu.</li>
+    </ul>
+    <p>Questi servizi possono vedere, come ogni sito, l'indirizzo IP della connessione.</p>
+
+    <h2>Sincronizzazione</h2>
+    <p>Su iPhone l'app fa ogni giorno una <b>copia dei tuoi dati nel tuo iCloud privato</b>, a cui solo tu hai accesso, per ritrovarli se cambi telefono (si spegne in Opzioni → Dati e backup). La copia non contiene i dati letti da Salute (passi, energia, peso, massa grassa): dopo un ripristino l'app li rilegge da Salute. Anche l'eventuale sincronizzazione tra dispositivi avverrà nel tuo iCloud privato.</p>
+
+    <h2>Bambini</h2>
+    <p>Life Quest non è pensata per bambini sotto i 13 anni e non raccoglie consapevolmente dati di nessuno.</p>
+
+    <h2>Contatti</h2>
+    <p>Per domande sulla privacy scrivi a <a href="mailto:playlifequest@gmail.com">playlifequest@gmail.com</a>.</p>
+  </section>
+
+  <hr>
+
+  <section id="en">
+    <div class="card"><b>In short:</b> your data stays on your phone. Life Quest has no accounts, no server holding your data, no ads and no tracking.</div>
+
+    <h2>Where your data lives</h2>
+    <p>Habits, quests, health log, Treasury, profile and everything else are stored <b>only on your device</b> (in the app, or in the browser for the web version). We don't receive or see them. If you delete the app, you delete them too: to keep them, export a backup from Settings.</p>
+
+    <h2>Apple Health and Health Connect</h2>
+    <p>Only if you turn it on (Profile → "Connect to Health" / "Health Connect"), Life Quest <b>reads</b> steps, active energy, water, weight and body fat to fill in your health log; on iPhone it also reads sleep, mindful minutes and workouts, and on Android sleep, to check off by themselves the habits you link to this data. It <b>writes</b> the water and weight you log. This data stays on your phone, is never sent to us or third parties, is <b>never used for advertising or marketing</b> and is left out of the iCloud copy. If you revoke access, Life Quest stops reading it; what is already in your log is deleted with "Reset all data" or by deleting the app. You can revoke access at any time in your phone's settings.</p>
+
+    <h2>Cycle calendar</h2>
+    <p>If you use it, your cycle dates and notes stay only on your phone, like the rest of your health log. We never receive them or share them with anyone.</p>
+
+    <h2>Calendar, reminders, photos and camera</h2>
+    <p>If you allow it, the app reads your calendar and reminders to suggest your day's actions, and uses photos or the camera for your Lume's portrait and to read nutrition labels. Everything happens on your phone.</p>
+
+    <h2>Microphone and voice</h2>
+    <p>When you talk to J., your enchanted journal, the app uses the microphone only while it's listening, and turns your voice into text to log meals, water, quests and expenses. If your phone supports it, transcription happens on the device; otherwise it's done by the system's speech service (Apple or Google), just like dictating with the keyboard. Life Quest never records or keeps the audio.</p>
+
+    <h2>When the app uses the internet</h2>
+    <ul>
+      <li><b>Food search</b>: the text you search for is sent to Open Food Facts to find nutrition values.</li>
+      <li><b>Treasury quotes</b>: the symbols of the stocks you follow are sent to Yahoo Finance (through the allorigins.win relay) to read prices.</li>
+      <li><b>Postcards and light between Fellows</b>: a postcard travels only inside the link you send (with the messaging app you choose); no server receives it. The <b>light</b> you send to a fellow goes through a mailbox on Cloudflare, but it leaves <b>already encrypted on your phone</b>: the server can't read it and doesn't know who sends it or who it's for; it only sees a random mailbox number and a sealed envelope. The envelope is deleted as soon as the recipient opens the app, and in any case after 30 days. To prevent abuse the server counts, for one day, how many lights leave the same IP address, without linking it to the envelopes. The keys to open the envelopes exist only on the phones. If you keep the <b>light alerts</b> on (Options), next to your mailbox number the server keeps your phone's notification code and your language: when an envelope arrives it sends, through Expo's notification service (and from there Apple or Google), the same alert for everyone ("A companion sent you a little light"), with no sender or content. The code is deleted if you turn the alert off, and in any case on its own after 60 days without opening the app.</li>
+      <li><b>Updates</b>: the app downloads new versions from Expo (iPhone and Android apps) or from the website (web version) and checks whether a new app version is available. These requests contain none of your data.</li>
+      <li><b>Error reports</b>: only if you tap "Report error" (Options → Guide and info), the app prepares an email to the developer with the technical description of the errors (version, phone model and system, where it happened; texts you wrote in the app are left out). You read it and send it yourself from your mail app; nothing is sent on its own. In the web version a pre-filled GitHub report opens instead, and you publish it yourself.</li>
+    </ul>
+    <p>Like any website, these services may see your connection's IP address.</p>
+
+    <h2>Sync</h2>
+    <p>On iPhone the app makes a daily <b>copy of your data in your private iCloud</b>, which only you can access, so you can get it back if you change phone (turn it off in Options → Data and backup). The copy does not contain data read from Health (steps, energy, weight, body fat): after a restore the app reads them again from Health. Any future sync between devices will also happen in your private iCloud.</p>
+
+    <h2>Children</h2>
+    <p>Life Quest is not intended for children under 13 and does not knowingly collect anyone's data.</p>
+
+    <h2>Contact</h2>
+    <p>For privacy questions, write to <a href="mailto:playlifequest@gmail.com">playlifequest@gmail.com</a>.</p>
+  </section>
+</main>
+</body>
+</html>
